@@ -1,0 +1,128 @@
+{
+  "language_code": "eng",
+  "language_probability": 0.8073866367340088,
+  "text": "Morning, Violet. I'm Hagrid. Your wizarding year starts today",
+  "words": [
+    {
+      "text": "Morning,",
+      "start": 0.099,
+      "end": 0.36,
+      "type": "word",
+      "logprob": -0.04606339428573847
+    },
+    {
+      "text": " ",
+      "start": 0.36,
+      "end": 0.419,
+      "type": "spacing",
+      "logprob": -0.00016664070426486433
+    },
+    {
+      "text": "Violet.",
+      "start": 0.419,
+      "end": 0.799,
+      "type": "word",
+      "logprob": -0.004949587605161858
+    },
+    {
+      "text": " ",
+      "start": 0.799,
+      "end": 0.899,
+      "type": "spacing",
+      "logprob": 0
+    },
+    {
+      "text": "I'm",
+      "start": 0.899,
+      "end": 1.039,
+      "type": "word",
+      "logprob": -0.0000466473090128261
+    },
+    {
+      "text": " ",
+      "start": 1.039,
+      "end": 1.059,
+      "type": "spacing",
+      "logprob": -0.000008106198947643861
+    },
+    {
+      "text": "Hagrid.",
+      "start": 1.059,
+      "end": 1.559,
+      "type": "word",
+      "logprob": -0.000005619846888293978
+    },
+    {
+      "text": " ",
+      "start": 1.559,
+      "end": 1.879,
+      "type": "spacing",
+      "logprob": -5.960462772236497e-7
+    },
+    {
+      "text": "Your",
+      "start": 1.879,
+      "end": 1.979,
+      "type": "word",
+      "logprob": -5.960462772236497e-7
+    },
+    {
+      "text": " ",
+      "start": 1.979,
+      "end": 2.019,
+      "type": "spacing",
+      "logprob": -0.001383420079946518
+    },
+    {
+      "text": "wizarding",
+      "start": 2.019,
+      "end": 2.399,
+      "type": "word",
+      "logprob": -0.0009223197897251604
+    },
+    {
+      "text": " ",
+      "start": 2.399,
+      "end": 2.479,
+      "type": "spacing",
+      "logprob": -0.0000058412379075889476
+    },
+    {
+      "text": "year",
+      "start": 2.48,
+      "end": 2.619,
+      "type": "word",
+      "logprob": -0.0000058412379075889476
+    },
+    {
+      "text": " ",
+      "start": 2.619,
+      "end": 2.759,
+      "type": "spacing",
+      "logprob": -0.0000019073468138230965
+    },
+    {
+      "text": "starts",
+      "start": 2.759,
+      "end": 3.099,
+      "type": "word",
+      "logprob": -0.0000019073468138230965
+    },
+    {
+      "text": " ",
+      "start": 3.099,
+      "end": 3.139,
+      "type": "spacing",
+      "logprob": -1.1920928244535389e-7
+    },
+    {
+      "text": "today",
+      "start": 3.139,
+      "end": 3.479,
+      "type": "word",
+      "logprob": -1.1920928244535389e-7
+    }
+  ],
+  "transcription_id": "oMOP0P3LzDgbuVhyDVgj",
+  "audio_duration_secs": 3.8545
+}

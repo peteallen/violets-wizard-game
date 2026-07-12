@@ -21,3 +21,9 @@ A private, non-commercial fan game for Violet (6): she goes to Hogwarts as a fir
 ## House rules (inherited from the sibling games)
 
 Playable without fluent reading. Touch-first on iPad. Forgiving everywhere. No fail-locked states, no punishment, celebration over score. Her save is sacred. Quietly a learning game (spelling hides inside spellcasting) but governed by hard anti-ed-game rules — if it ever smells like homework, it's a bug. All art, music, voice, and code are original and generated offline — no service credentials ever ship to the browser.
+
+## Development reset
+
+Open the game with `?debug=1` while building or testing to show a large `DEV: Reset game` control at the top of the canvas. The same reset is available from the keyboard with `Alt+Shift+R`, or from the browser console with `window.__violetWizard.resetGame()`. Each route clears both the current save and its recovery backup before returning to the opening title.
+
+For automation or a clean one-time launch, use `?reset=1`. The game clears the save before it starts, removes the `reset` parameter from the address without disturbing other parameters or the URL fragment, and does not add another browser-history entry. The ordinary game URL shows no reset control and does not enable the keyboard shortcut.

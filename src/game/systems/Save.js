@@ -392,7 +392,7 @@ export class Save {
     setTimer = globalThis.setTimeout?.bind(globalThis),
     clearTimer = globalThis.clearTimeout?.bind(globalThis),
   } = {}) {
-    if (!storage || typeof storage.getItem !== 'function' || typeof storage.setItem !== 'function') {
+    if (!storage || typeof storage.getItem !== 'function' || typeof storage.setItem !== 'function' || typeof storage.removeItem !== 'function') {
       throw new TypeError('Save requires a localStorage-compatible storage adapter.');
     }
     if (typeof clock !== 'function') throw new TypeError('Save requires an injected clock returning an ISO timestamp.');
@@ -546,6 +546,43 @@ export class Save {
 
   export(value) {
     return serializeSave(value);
+  }
+
+  clear() {
+    const errors = [];
+    const timer = this.timer;
+    this.timer = null;
+    this.pending = null;
+
+    if (timer !== null) {
+      try {
+        this.clearTimer(timer);
+      } catch (error) {
+        errors.push({ operation: 'cancel-timer', error });
+      }
+    }
+
+    for (const [operation, key] of [
+      ['remove-primary', this.key],
+      ['remove-backup', this.backupKey],
+    ]) {
+      try {
+        this.storage.removeItem(key);
+      } catch (error) {
+        errors.push({ operation, error });
+      }
+    }
+
+    if (errors.length > 0) {
+      return {
+        ok: false,
+        status: 'storage-error',
+        save: null,
+        error: errors[0].error,
+        errors,
+      };
+    }
+    return { ok: true, status: 'cleared', save: null };
   }
 
   destroy() {

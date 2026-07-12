@@ -180,6 +180,7 @@ export class World {
     }
     for (const occupant of this.room.occupants ?? []) {
       if (!conditionMatches(occupant.when, this.save)) continue;
+      if (occupant.npc === 'npc.violet' || occupant.npc.startsWith('npc.pet.')) continue;
       const npc = this.chapter.npcs[occupant.npc];
       if (!npc?.defaultTalk) continue;
       targets.push({

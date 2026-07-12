@@ -163,4 +163,62 @@ describe('safe storage adapter', () => {
     expect(saves.setFlag(save, 'ch1.letterOpened')).toBe(false);
     expect(saves.pending).toBeNull();
   });
+
+  it('clears primary and backup saves without letting a queued autosave resurrect them', () => {
+    const storage = new MemoryStorage();
+    storage.setItem(SAVE_STORAGE_KEY, serializeSave(saveFixture()));
+    storage.setItem(SAVE_BACKUP_KEY, serializeSave(saveFixture()));
+    let queuedCallback;
+    const cancelledTimers = [];
+    const saves = new Save({
+      storage,
+      clock: () => SECOND_TIME,
+      setTimer: (callback) => { queuedCallback = callback; return 17; },
+      clearTimer: (timer) => cancelledTimers.push(timer),
+    });
+    saves.queue(saveFixture());
+
+    expect(saves.clear()).toEqual({ ok: true, status: 'cleared', save: null });
+    expect(cancelledTimers).toEqual([17]);
+    expect(saves.pending).toBeNull();
+    expect(saves.timer).toBeNull();
+    expect(storage.getItem(SAVE_STORAGE_KEY)).toBeNull();
+    expect(storage.getItem(SAVE_BACKUP_KEY)).toBeNull();
+
+    queuedCallback();
+    expect(storage.getItem(SAVE_STORAGE_KEY)).toBeNull();
+    expect(storage.getItem(SAVE_BACKUP_KEY)).toBeNull();
+  });
+
+  it('still clears queued state and attempts both removals when storage denies one key', () => {
+    const storage = new MemoryStorage();
+    storage.setItem(SAVE_STORAGE_KEY, serializeSave(saveFixture()));
+    storage.setItem(SAVE_BACKUP_KEY, serializeSave(saveFixture()));
+    const removeItem = storage.removeItem.bind(storage);
+    storage.removeItem = (key) => {
+      if (key === SAVE_STORAGE_KEY) throw new Error('primary removal denied');
+      removeItem(key);
+    };
+    let queuedCallback;
+    const saves = new Save({
+      storage,
+      clock: () => SECOND_TIME,
+      setTimer: (callback) => { queuedCallback = callback; return 23; },
+      clearTimer: () => {},
+    });
+    saves.queue(saveFixture());
+
+    const result = saves.clear();
+    expect(result).toMatchObject({
+      ok: false,
+      status: 'storage-error',
+      errors: [{ operation: 'remove-primary' }],
+    });
+    expect(saves.pending).toBeNull();
+    expect(saves.timer).toBeNull();
+    expect(storage.getItem(SAVE_BACKUP_KEY)).toBeNull();
+
+    queuedCallback();
+    expect(storage.getItem(SAVE_BACKUP_KEY)).toBeNull();
+  });
 });

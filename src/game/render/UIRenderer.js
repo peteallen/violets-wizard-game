@@ -4,6 +4,7 @@ export const UI_RECTS = Object.freeze({
   quest: { x: 28, y: 28, width: 104, height: 104 },
   satchel: { x: 28, y: 584, width: 108, height: 108 },
   wand: { x: 1144, y: 584, width: 108, height: 108 },
+  debugReset: { x: 510, y: 18, width: 260, height: 88 },
   dialogueAdvance: { x: 0, y: 0, width: WORLD.width, height: WORLD.height },
 });
 
@@ -164,15 +165,20 @@ export class UIRenderer {
     drawClose(context);
   }
 
-  drawChapterCard(context, card, time) {
-    const gradient = context.createLinearGradient(0, 0, 0, WORLD.height);
-    gradient.addColorStop(0, '#1b2a4a');
-    gradient.addColorStop(0.55, '#3a2d5e');
-    gradient.addColorStop(1, '#141126');
-    context.fillStyle = gradient;
-    context.fillRect(0, 0, WORLD.width, WORLD.height);
+  drawChapterCard(context, card, time, { paintedBackground = false } = {}) {
+    if (!paintedBackground) {
+      const gradient = context.createLinearGradient(0, 0, 0, WORLD.height);
+      gradient.addColorStop(0, '#1b2a4a');
+      gradient.addColorStop(0.55, '#3a2d5e');
+      gradient.addColorStop(1, '#141126');
+      context.fillStyle = gradient;
+      context.fillRect(0, 0, WORLD.width, WORLD.height);
+    } else {
+      context.fillStyle = 'rgba(20,17,38,0.36)';
+      context.fillRect(0, 0, WORLD.width, WORLD.height);
+    }
     const drift = Math.sin(time * 0.7) * 8;
-    context.fillStyle = 'rgba(244,213,141,0.18)';
+    context.fillStyle = 'rgba(244,213,141,0.22)';
     context.beginPath();
     context.arc(980 + drift, 190, 90, 0, Math.PI * 2);
     context.fill();
@@ -220,6 +226,23 @@ export class UIRenderer {
     context.fillStyle = 'rgba(240,227,200,0.78)';
     context.font = '24px "Trebuchet MS", sans-serif';
     context.fillText('Best with sound on', WORLD.width / 2, 565);
+  }
+
+  drawDebugReset(context) {
+    const rect = UI_RECTS.debugReset;
+    context.save();
+    context.globalAlpha = 0.94;
+    context.fillStyle = '#4d2430';
+    roundRect(context, rect.x, rect.y, rect.width, rect.height, 24);
+    context.fill();
+    context.strokeStyle = '#f0d58d';
+    context.lineWidth = 4;
+    context.stroke();
+    context.fillStyle = '#fff8e8';
+    context.textAlign = 'center';
+    context.font = '700 26px "Trebuchet MS", sans-serif';
+    context.fillText('DEV: Reset game', rect.x + rect.width / 2, rect.y + rect.height / 2 + 9);
+    context.restore();
   }
 }
 

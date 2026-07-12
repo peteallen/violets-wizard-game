@@ -1,0 +1,128 @@
+{
+  "language_code": "eng",
+  "language_probability": 0.9947768449783325,
+  "text": "There you are. The wand has chosen its witch",
+  "words": [
+    {
+      "text": "There",
+      "start": 0.079,
+      "end": 0.199,
+      "type": "word",
+      "logprob": -0.000041126360883936286
+    },
+    {
+      "text": " ",
+      "start": 0.199,
+      "end": 0.259,
+      "type": "spacing",
+      "logprob": -0.000001311301275563892
+    },
+    {
+      "text": "you",
+      "start": 0.259,
+      "end": 0.359,
+      "type": "word",
+      "logprob": -0.000001311301275563892
+    },
+    {
+      "text": " ",
+      "start": 0.359,
+      "end": 0.379,
+      "type": "spacing",
+      "logprob": -2.3841855067985307e-7
+    },
+    {
+      "text": "are.",
+      "start": 0.379,
+      "end": 0.519,
+      "type": "word",
+      "logprob": -0.00013529582063398493
+    },
+    {
+      "text": " ",
+      "start": 0.519,
+      "end": 0.919,
+      "type": "spacing",
+      "logprob": -0.0000019073468138230965
+    },
+    {
+      "text": "The",
+      "start": 0.919,
+      "end": 0.98,
+      "type": "word",
+      "logprob": -0.0000019073468138230965
+    },
+    {
+      "text": " ",
+      "start": 0.98,
+      "end": 1.039,
+      "type": "spacing",
+      "logprob": -0.0013933007139712572
+    },
+    {
+      "text": "wand",
+      "start": 1.039,
+      "end": 1.22,
+      "type": "word",
+      "logprob": -0.0013933007139712572
+    },
+    {
+      "text": " ",
+      "start": 1.22,
+      "end": 1.24,
+      "type": "spacing",
+      "logprob": 0
+    },
+    {
+      "text": "has",
+      "start": 1.24,
+      "end": 1.419,
+      "type": "word",
+      "logprob": 0
+    },
+    {
+      "text": " ",
+      "start": 1.419,
+      "end": 1.459,
+      "type": "spacing",
+      "logprob": -0.0000015497195136049413
+    },
+    {
+      "text": "chosen",
+      "start": 1.459,
+      "end": 1.759,
+      "type": "word",
+      "logprob": -0.0000015497195136049413
+    },
+    {
+      "text": " ",
+      "start": 1.759,
+      "end": 1.799,
+      "type": "spacing",
+      "logprob": -0.00000250339189733495
+    },
+    {
+      "text": "its",
+      "start": 1.799,
+      "end": 1.919,
+      "type": "word",
+      "logprob": -0.00000250339189733495
+    },
+    {
+      "text": " ",
+      "start": 1.919,
+      "end": 2,
+      "type": "spacing",
+      "logprob": -0.00010966652916977182
+    },
+    {
+      "text": "witch",
+      "start": 2,
+      "end": 2.319,
+      "type": "word",
+      "logprob": -0.00010966652916977182
+    }
+  ],
+  "transcription_id": "AA8qpLkfzgJT1fDE8ovb",
+  "audio_duration_secs": 2.5541875
+}

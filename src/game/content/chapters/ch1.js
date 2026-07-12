@@ -46,7 +46,7 @@ function voiceLine({ speaker, voice, text, caption, next, portraitPose = 'talk' 
 }
 
 const roomSize = Object.freeze({ width: 1280, height: 720 });
-const streetSize = Object.freeze({ width: 1920, height: 720 });
+const streetSize = roomSize;
 const walkBand = Object.freeze({ top: 560, bottom: 640 });
 
 const dialogueGraphs = [
@@ -817,13 +817,13 @@ export const chapter1 = {
       walkBand,
       spawns: {
         'street.west': { x: 180, y: 610, facing: 'right' },
-        'street.east': { x: 1690, y: 610, facing: 'left' },
+        'street.east': { x: 1100, y: 610, facing: 'left' },
         'street.guide': { x: 260, y: 610, facing: 'right' },
       },
       exits: [
         {
           id: 'street.ollivandersDoor',
-          hitArea: circle(570, 405, 100),
+          hitArea: circle(390, 405, 100),
           to: { room: 'ch1.ollivanders', spawn: 'ollivanders.entry' },
           icon: 'door',
           transition: 'ink',
@@ -831,7 +831,7 @@ export const chapter1 = {
         },
         {
           id: 'street.malkinsDoor',
-          hitArea: circle(1080, 405, 100),
+          hitArea: circle(690, 405, 100),
           to: { room: 'ch1.malkins', spawn: 'malkins.entry' },
           icon: 'door',
           transition: 'ink',
@@ -839,7 +839,7 @@ export const chapter1 = {
         },
         {
           id: 'street.menagerieDoor',
-          hitArea: circle(1550, 405, 100),
+          hitArea: circle(1010, 405, 100),
           to: { room: 'ch1.menagerie', spawn: 'menagerie.entry' },
           icon: 'door',
           transition: 'ink',
@@ -876,8 +876,8 @@ export const chapter1 = {
         {
           id: 'street.broomDisplay',
           kind: 'inspect',
-          hitArea: circle(1330, 300, 75),
-          approach: { x: 1330, y: 610, facing: 'right' },
+          hitArea: circle(900, 300, 75),
+          approach: { x: 900, y: 610, facing: 'right' },
           when: noCondition,
           presentation: { icon: 'look', glow: 'soft' },
           repeat: 'always',

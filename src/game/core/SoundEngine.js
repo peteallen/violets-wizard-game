@@ -177,11 +177,22 @@ export class SoundEngine {
     else if (this.pendingMusic) await this.playMusic(this.pendingMusic);
   }
 
-  destroy() {
+  stopAll() {
     this.stopVoice();
-    this.music?.pause();
+    if (this.music) {
+      this.music.pause();
+      this.music.currentTime = 0;
+    }
     this.music = null;
+    this.musicKey = null;
+    this.pendingMusic = null;
+    this.eventLog.length = 0;
+  }
+
+  destroy() {
+    this.stopAll();
     this.context?.close?.();
     this.context = null;
+    this.unlocked = false;
   }
 }

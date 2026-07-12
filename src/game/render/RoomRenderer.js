@@ -41,7 +41,8 @@ export class RoomRenderer {
   draw(context, room, state, time, camera = { x: 0 }) {
     const roomId = room?.id ?? state?.roomId ?? 'ch1.bedroom';
     const variant = state?.roomVariant ?? 'base';
-    const backgroundKey = room?.background?.variants?.[variant]?.[0] ?? room?.background?.layers?.[0];
+    const variantLayers = room?.background?.variants?.[variant];
+    const backgroundKey = variantLayers?.at(-1) ?? room?.background?.layers?.at(-1);
     const image = this.images.get(backgroundKey);
 
     if (image?.complete && image.naturalWidth > 0) {

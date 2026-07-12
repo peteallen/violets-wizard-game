@@ -23,6 +23,7 @@ export class Game {
     if (!this.context) throw new Error('Canvas 2D is unavailable.');
 
     this.harness = Boolean(options.harness);
+    this.debug = Boolean(options.debug);
     this.clock = options.clock ?? (() => this.harness ? FIXED_HARNESS_TIME : new Date().toISOString());
     this.running = false;
     this.destroyed = false;
@@ -38,6 +39,7 @@ export class Game {
     this.lastRenderState = null;
     this.replayMode = false;
     this.canonicalSave = null;
+    this.sessionGeneration = 0;
     this.reducedMotion = options.reducedMotion ?? matchMedia('(prefers-reduced-motion: reduce)').matches;
 
     const storage = options.storage ?? safeStorage();
@@ -68,6 +70,7 @@ export class Game {
     this.boundFrame = (time) => this.frame(time);
     this.boundPointerDown = (event) => this.onPointerDown(event);
     this.boundPointerUp = (event) => this.onPointerUp(event);
+    this.boundKeyDown = (event) => this.onKeyDown(event);
     this.boundVisibility = () => this.onVisibilityChanged();
     this.boundMotionChanged = (event) => {
       this.reducedMotion = event.matches || Boolean(this.saveData.settings.reducedMotion);
@@ -81,6 +84,7 @@ export class Game {
     canvas.addEventListener('pointerdown', this.boundPointerDown);
     canvas.addEventListener('pointerup', this.boundPointerUp);
     canvas.addEventListener('pointercancel', this.boundPointerUp);
+    if (this.debug) window.addEventListener('keydown', this.boundKeyDown);
     this.resize(options.width, options.height, options.dpr);
 
     if (options.startImmediately) this.createWorld(this.saveData);
@@ -108,7 +112,9 @@ export class Game {
   }
 
   async startAdventure() {
+    const generation = this.sessionGeneration;
     await this.sound.unlock();
+    if (this.destroyed || generation !== this.sessionGeneration) return;
     this.createWorld(this.saveData);
     this.sound.playSfx('sfx/ch1/sealCrack', 'flourish');
     this.particles.emit('sparkle', WORLD.width / 2, WORLD.height / 2, 28);
@@ -190,6 +196,10 @@ export class Game {
   }
 
   handleTap(point) {
+    if (this.debug && pointInUiRect(point, UI_RECTS.debugReset)) {
+      this.resetGame();
+      return;
+    }
     this.sound.unlock().catch(() => {});
     if (this.screen === 'title') {
       this.startAdventure();
@@ -244,6 +254,13 @@ export class Game {
 
     this.world.tap(point);
     this.processWorldEvents();
+  }
+
+  onKeyDown(event) {
+    if (!this.debug || event.repeat || event.ctrlKey || event.metaKey) return;
+    if (!event.altKey || !event.shiftKey || event.key.toLowerCase() !== 'r') return;
+    event.preventDefault();
+    this.resetGame();
   }
 
   handleOverlayTap(point, state) {
@@ -343,6 +360,48 @@ export class Game {
     return result;
   }
 
+  resetGame() {
+    if (!this.debug) return { ok: false, status: 'debug-disabled', save: null };
+
+    const result = this.saveManager.clear();
+    if (!result.ok) {
+      this.updateStatus('The development reset could not clear this browser’s saved game.');
+      return result;
+    }
+
+    this.sessionGeneration += 1;
+    if (this.pointer && this.canvas.hasPointerCapture?.(this.pointer.id)) {
+      this.canvas.releasePointerCapture?.(this.pointer.id);
+    }
+    this.pointer = null;
+    this.sound.stopAll();
+
+    this.saveData = createSaveV1({
+      now: this.clock(),
+      appVersion: import.meta.env.VITE_BUILD_SHA ?? 'development',
+      worldSeed: 12072026,
+    });
+    this.sound.setMuted(this.saveData.settings.muted);
+    this.sound.setVolumes(this.saveData.settings.volumes);
+    this.reducedMotion = this.motionQuery.matches || Boolean(this.saveData.settings.reducedMotion);
+    this.particles = new Particles(new SeededRandom(this.saveData.worldSeed).fork('particles'), { reducedMotion: this.reducedMotion });
+
+    this.loadStatus = { ok: true, status: 'reset', save: null };
+    this.hasStoredSave = false;
+    this.world = null;
+    this.screen = 'title';
+    this.replayMode = false;
+    this.canonicalSave = null;
+    this.accumulator = 0;
+    this.simTime = 0;
+    this.lastFrame = null;
+    this.transitionAlpha = 0;
+    this.lastRenderState = null;
+    this.updateStatus('Development reset complete. Violet is back at the beginning.');
+    this.render();
+    return { ...result, save: structuredClone(this.saveData) };
+  }
+
   captureYearbook(moment, caption = 'My wand') {
     if (this.saveData.yearbook.entries.some((entry) => entry.id === moment)) return;
     const thumbnail = document.createElement('canvas');
@@ -392,9 +451,8 @@ export class Game {
     this.withWorldTransform((ctx) => {
       if (this.screen === 'title' || !this.world) {
         this.uiRenderer.drawTitle(ctx, this.simTime, this.hasStoredSave);
-        return;
-      }
-      this.renderWorld(ctx);
+      } else this.renderWorld(ctx);
+      if (this.debug) this.uiRenderer.drawDebugReset(ctx);
     });
   }
 
@@ -404,10 +462,11 @@ export class Game {
     const room = this.world.room;
 
     if (this.world.chapter.id === 'ch2' || state.roomId === 'ch1.chapterCardRoom') {
+      this.roomRenderer.draw(context, room, state, this.simTime, { x: 0 });
       const card = this.world.chapter.id === 'ch2'
         ? { eyebrow: 'Chapter Two', title: 'Platform Nine and Three-Quarters', subtitle: 'Coming next: the Hogwarts Express!', buttonLabel: 'Choose below' }
         : { eyebrow: 'Chapter One Complete', title: 'Platform Nine and Three-Quarters', subtitle: 'Next time: the Hogwarts Express!' };
-      this.uiRenderer.drawChapterCard(context, card, this.simTime);
+      this.uiRenderer.drawChapterCard(context, card, this.simTime, { paintedBackground: true });
     } else {
       this.roomRenderer.draw(context, room, state, this.simTime, { x: state.cameraX });
       this.drawWorldTargets(context, state);
@@ -504,8 +563,11 @@ export class Game {
   }
 
   semanticTargets() {
-    if (this.screen === 'title') return [{ id: 'foundation.start', x: 640, y: 460 }];
-    if (!this.world) return [];
+    const debugTargets = this.debug
+      ? [{ id: 'debug.reset', x: UI_RECTS.debugReset.x + UI_RECTS.debugReset.width / 2, y: UI_RECTS.debugReset.y + UI_RECTS.debugReset.height / 2 }]
+      : [];
+    if (this.screen === 'title') return [{ id: 'foundation.start', x: 640, y: 460 }, ...debugTargets];
+    if (!this.world) return debugTargets;
     const state = this.lastRenderState ?? this.world.snapshot();
     const targets = state.targets.map((target) => ({
       id: target.id,
@@ -520,6 +582,7 @@ export class Game {
     for (const choice of state.dialogue?.choices ?? []) {
       if (choice.__rect) targets.push({ id: `dialogue.${choice.id}`, x: choice.__rect.x + choice.__rect.width / 2, y: choice.__rect.y + choice.__rect.height / 2 });
     }
+    targets.push(...debugTargets);
     return targets;
   }
 
@@ -551,6 +614,7 @@ export class Game {
   destroy() {
     this.running = false;
     this.destroyed = true;
+    this.sessionGeneration += 1;
     this.saveManager.destroy();
     this.sound.destroy();
     window.removeEventListener('resize', this.boundResize);
@@ -559,6 +623,7 @@ export class Game {
     this.canvas.removeEventListener('pointerdown', this.boundPointerDown);
     this.canvas.removeEventListener('pointerup', this.boundPointerUp);
     this.canvas.removeEventListener('pointercancel', this.boundPointerUp);
+    if (this.debug) window.removeEventListener('keydown', this.boundKeyDown);
   }
 }
 
