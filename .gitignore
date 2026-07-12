@@ -9,3 +9,4 @@ output/
 tmp/
 coverage/
 *.log
+.playwright-cli/

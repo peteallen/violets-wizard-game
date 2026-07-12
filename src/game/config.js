@@ -32,8 +32,10 @@ export const HINTS = Object.freeze({
 });
 
 export const EFFECTS = Object.freeze({
-  particleCap: 360,
-  reducedParticleCap: 90,
+  particleCap: 300,
+  celebrationParticleCap: 400,
+  reducedParticleCap: 120,
+  hardParticleCap: 400,
 });
 
 export const DUEL = Object.freeze({
