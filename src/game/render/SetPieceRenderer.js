@@ -1,48 +1,43 @@
 import { easeInOutCubic, easeOutBack, easeOutCubic } from '../core/math.js';
 import { PALETTE, WORLD } from '../config.js';
+import { drawVectorOwl, sampleOwlDelivery } from './OwlRenderer.js';
 
 export class SetPieceRenderer {
-  draw(context, active, worldState) {
+  draw(context, active, worldState, { reducedMotion = false } = {}) {
     if (!active) return;
     const id = active.requestedId ?? active.id;
-    if (id.includes('letter')) this.drawLetter(context, active);
+    if (id.includes('letter')) this.drawLetter(context, active, { reducedMotion });
     else if (id.includes('brick')) this.drawBrickWall(context, active);
     else if (id.includes('wandChaos') || id.includes('wand-chaos')) this.drawWandChaos(context, active);
     else if (id.includes('wandChosen') || id.includes('wand-chosen')) this.drawWandChosen(context, active, worldState);
-    else if (id.includes('ticket')) this.drawTicket(context, active);
+    else if (id.toLowerCase().includes('ticket')) this.drawTicket(context, active);
   }
 
-  drawLetter(context, active) {
-    const progress = active.time / active.descriptor.duration;
+  drawLetter(context, active, { reducedMotion = false } = {}) {
+    const t = active.time;
+    const progress = t / active.descriptor.duration;
+    const delivery = sampleOwlDelivery(t, { reducedMotion });
     context.fillStyle = 'rgba(20,17,38,0.24)';
     context.fillRect(0, 0, WORLD.width, WORLD.height);
-    const drop = easeOutCubic(Math.min(1, progress * 2.2));
-    const x = 650 + Math.sin(progress * Math.PI * 3) * (1 - drop) * 110;
-    const y = -110 + drop * 460;
-    const scale = progress > 0.52 ? 1 + easeOutBack(Math.min(1, (progress - 0.52) * 2.1)) * 0.35 : 1;
+
+    if (delivery.owl.opacity > 0) {
+      drawVectorOwl(context, {
+        ...delivery.owl,
+        variant: 'post',
+        facing: 'left',
+        reducedMotion,
+        lookX: -0.25,
+        lookY: 0.2,
+      }, t);
+    }
+
+    const focus = easeOutBack(clamp01((t - 2.18) / 1.25));
+    const scale = delivery.letter.scale * (1 + focus * 0.34);
     context.save();
-    context.translate(x, y);
-    context.rotate((1 - drop) * 0.35);
+    context.translate(delivery.letter.x, delivery.letter.y);
+    context.rotate(delivery.letter.rotation);
     context.scale(scale, scale);
-    context.fillStyle = PALETTE.parchment;
-    context.strokeStyle = '#8e704c';
-    context.lineWidth = 6;
-    roundRect(context, -180, -105, 360, 210, 18);
-    context.fill();
-    context.stroke();
-    context.beginPath();
-    context.moveTo(-175, -98);
-    context.lineTo(0, 25);
-    context.lineTo(175, -98);
-    context.stroke();
-    context.fillStyle = '#8f273f';
-    context.beginPath();
-    context.arc(0, 32, 33, 0, Math.PI * 2);
-    context.fill();
-    context.fillStyle = PALETTE.candle;
-    context.textAlign = 'center';
-    context.font = '700 52px "Andika", "Trebuchet MS", sans-serif';
-    context.fillText('VIOLET', 0, -25);
+    drawDeliveryEnvelope(context, progress, { reducedMotion });
     context.restore();
   }
 
@@ -171,4 +166,66 @@ function roundRect(context, x, y, width, height, radius) {
   context.arcTo(x, y + height, x, y, r);
   context.arcTo(x, y, x + width, y, r);
   context.closePath();
+}
+
+function drawDeliveryEnvelope(context, progress, { reducedMotion = false } = {}) {
+  context.fillStyle = PALETTE.parchment;
+  context.strokeStyle = '#72543b';
+  context.lineWidth = 6;
+  roundRect(context, -180, -105, 360, 210, 18);
+  context.fill();
+  context.stroke();
+
+  context.fillStyle = 'rgba(205,169,105,0.2)';
+  context.beginPath();
+  context.moveTo(-174, 95);
+  context.lineTo(0, -8);
+  context.lineTo(174, 95);
+  context.closePath();
+  context.fill();
+
+  context.strokeStyle = '#8e704c';
+  context.lineWidth = 4;
+  context.beginPath();
+  context.moveTo(-175, -98);
+  context.lineTo(0, 25);
+  context.lineTo(175, -98);
+  context.moveTo(-174, 96);
+  context.lineTo(-34, 15);
+  context.moveTo(174, 96);
+  context.lineTo(34, 15);
+  context.stroke();
+
+  context.fillStyle = '#7a2940';
+  context.beginPath();
+  for (let index = 0; index < 16; index += 1) {
+    const angle = index * Math.PI / 8;
+    const radius = index % 2 === 0 ? 35 : 30;
+    const x = Math.cos(angle) * radius;
+    const y = 34 + Math.sin(angle) * radius;
+    if (index === 0) context.moveTo(x, y);
+    else context.lineTo(x, y);
+  }
+  context.closePath();
+  context.fill();
+  context.strokeStyle = '#4e2630';
+  context.lineWidth = 3;
+  context.stroke();
+  context.fillStyle = PALETTE.candle;
+  context.textAlign = 'center';
+  context.font = '700 52px "Andika", "Trebuchet MS", sans-serif';
+  context.globalAlpha = deliveryLetteringAlpha(progress, { reducedMotion });
+  context.fillText('VIOLET', 0, -25);
+  context.globalAlpha = 1;
+  context.fillStyle = '#f1d898';
+  context.font = '700 29px "Andika", "Trebuchet MS", sans-serif';
+  context.fillText('✦', 0, 44);
+}
+
+export function deliveryLetteringAlpha(progress, { reducedMotion = false } = {}) {
+  return reducedMotion ? 0.9 : 0.82 + Math.sin(progress * Math.PI * 8) * 0.14;
+}
+
+function clamp01(value) {
+  return Math.max(0, Math.min(1, value));
 }

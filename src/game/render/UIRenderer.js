@@ -1,4 +1,5 @@
 import { INPUT, PALETTE, WORLD } from '../config.js';
+import { CharacterRenderer } from './CharacterRenderer.js';
 import {
   drawHoldGear,
   drawParchmentAction,
@@ -9,17 +10,35 @@ import {
   drawWaxMedallion,
   traceRoundedRect,
 } from './uiPrimitives.js';
+import {
+  drawBrassCameoFrame,
+  drawBrassWandHolster,
+  drawCompassQuest,
+  drawDeckledParchment,
+  drawLeatherSatchel,
+  drawVectorIcon,
+  drawWaxIcon,
+} from './uiIllustrations.js';
 
 const STORY_GRADIENTS = new WeakMap();
+
+export const UI_REVIEW_SCENES = Object.freeze([
+  'ui-dialogue-review',
+  'ui-choices-review',
+  'ui-satchel-map-review',
+  'ui-objective-review',
+  'ui-chapter-card-review',
+]);
 
 export const UI_RECTS = Object.freeze({
   quest: { x: 28, y: 28, width: 104, height: 104 },
   satchel: { x: 28, y: 584, width: 108, height: 108 },
   wand: { x: 1144, y: 584, width: 108, height: 108 },
+  dialogueReplay: { x: 1008, y: 493, width: 108, height: 140 },
   debugReset: { x: 510, y: 18, width: 260, height: 88 },
-  satchelMapTab: { x: 205, y: 86, width: 210, height: 88 },
-  satchelCardsTab: { x: 435, y: 86, width: 210, height: 88 },
-  satchelGear: { x: 690, y: 82, width: 96, height: 96 },
+  satchelMapTab: { x: 205, y: 145, width: 210, height: 88 },
+  satchelCardsTab: { x: 435, y: 145, width: 210, height: 88 },
+  satchelGear: { x: 698, y: 141, width: 96, height: 96 },
   close: { x: 1046, y: 76, width: 88, height: 88 },
   replayExit: { x: 430, y: 18, width: 420, height: 88 },
   parentPlayTab: { x: 175, y: 142, width: 230, height: 88 },
@@ -52,56 +71,149 @@ export const UI_RECTS = Object.freeze({
 });
 
 export class UIRenderer {
-  constructor({ resolveAsset = () => null } = {}) {
+  constructor({ resolveAsset = () => null, characterRenderer = new CharacterRenderer() } = {}) {
     this.resolveAsset = resolveAsset;
+    this.characterRenderer = characterRenderer;
     this.images = new Map();
     this.failedImages = new Set();
     this.yearbookImages = new Map();
   }
 
-  drawHud(context, state, time) {
-    if (state.overlay || state.dialogue || state.screen !== 'playing') return;
-    drawQuestButton(context, UI_RECTS.quest, time, Boolean(state.newObjective));
-    drawSatchelButton(context, UI_RECTS.satchel);
-    drawWandButton(context, UI_RECTS.wand, Boolean(state.hasWand));
+  drawReviewScene(context, scene, time = 0, { reducedMotion = false } = {}) {
+    if (!UI_REVIEW_SCENES.includes(scene)) return false;
+    context.fillStyle = storyGradient(context);
+    context.fillRect(0, 0, WORLD.width, WORLD.height);
+    if (scene === 'ui-dialogue-review') {
+      this.drawDialogue(context, {
+        type: 'line', speaker: 'npc.guide', speakerLabel: 'Hagrid', portraitPose: 'talk',
+        caption: 'This way!', text: 'Come along, Violet. Diagon Alley is waiting for you.',
+      }, time, false, reducedMotion);
+    } else if (scene === 'ui-choices-review') {
+      this.drawDialogue(context, {
+        type: 'choice',
+        choices: [
+          { id: 'owl', icon: 'pet-owl', caption: 'Owl' },
+          { id: 'cat', icon: 'pet-cat', caption: 'Cat' },
+          { id: 'toad', icon: 'pet-toad', caption: 'Toad' },
+        ],
+      }, time, false, reducedMotion);
+    } else if (scene === 'ui-satchel-map-review') {
+      this.drawSatchel(context, {
+        overlay: { surface: 'satchel', tab: 'map' },
+        unlockedRooms: ['ch1.ollivanders', 'ch1.malkins', 'ch1.menagerie'],
+        objective: { mapStar: { room: 'ch1.diagonStreet', hotspot: 'street.menagerieDoor' } },
+        cards: [],
+      });
+    } else if (scene === 'ui-objective-review') {
+      this.drawObjective(
+        context,
+        { caption: 'Choose a pet', text: 'Visit the Magical Menagerie with Hagrid.' },
+        time,
+        { reducedMotion },
+      );
+    } else {
+      this.drawChapterCard(context, {
+        eyebrow: 'Chapter One Complete',
+        title: 'Platform Nine and Three-Quarters',
+        subtitle: 'Next time: the Hogwarts Express!',
+        buttonLabel: 'See what is next',
+      }, time, { reducedMotion });
+    }
+    return true;
   }
 
-  drawDialogue(context, dialogue, time, muted = false) {
-    if (!dialogue) return;
-    context.fillStyle = 'rgba(20,17,38,0.34)';
-    context.fillRect(0, 0, WORLD.width, WORLD.height);
-    const frame = { x: 150, y: 480, width: 980, height: 205 };
-    parchmentPanel(context, frame.x, frame.y, frame.width, frame.height, 34);
+  drawHud(context, state, time, reducedMotion = false) {
+    if (state.overlay || state.dialogue || state.screen !== 'playing') return;
+    const animationTime = reducedMotion ? 0 : time;
+    drawQuestButton(context, UI_RECTS.quest, animationTime, Boolean(state.newObjective) && !reducedMotion);
+    drawSatchelButton(context, UI_RECTS.satchel);
+    drawWandButton(context, UI_RECTS.wand, Boolean(state.hasWand), animationTime);
+  }
 
-    context.fillStyle = PALETTE.oak;
-    context.beginPath();
-    context.arc(244, 570, 68, 0, Math.PI * 2);
+  drawDialogue(context, dialogue, time, muted = false, reducedMotion = false) {
+    if (!dialogue) return;
+    context.fillStyle = 'rgba(20,17,38,0.28)';
+    context.fillRect(0, 0, WORLD.width, WORLD.height);
+    if (dialogue.type === 'choice' && dialogue.choices?.length) {
+      this.drawChoices(context, dialogue.choices);
+      return;
+    }
+    const frame = { x: 128, y: 462, width: 1024, height: 230 };
+    drawDeckledParchment(context, frame);
+
+    const portrait = { x: 232, y: 562, radius: 79 };
+    const portraitDrawn = typeof this.characterRenderer?.drawPortrait === 'function';
+    if (portraitDrawn) {
+      this.characterRenderer.drawPortrait(context, {
+        speaker: dialogue.speaker,
+        pose: dialogue.portraitPose ?? 'talk',
+        x: portrait.x,
+        y: portrait.y,
+        scale: 1.2,
+      }, time);
+    } else {
+      drawBrassCameoFrame(context, portrait.x, portrait.y, portrait.radius);
+      context.save();
+      context.beginPath();
+      context.ellipse(portrait.x, portrait.y, 67, 71, 0, 0, Math.PI * 2);
+      context.clip();
+      context.fillStyle = '#3a3046';
+      context.fillRect(portrait.x - 70, portrait.y - 74, 140, 148);
+      drawVectorIcon(context, dialogue.speaker === 'npc.narrator' ? 'quill' : 'owl', portrait.x, portrait.y, 78, {
+        color: PALETTE.parchment,
+        secondary: PALETTE.candle,
+      });
+      context.restore();
+    }
+
+    context.fillStyle = '#4d2430';
+    traceRoundedRect(context, 165, 635, 134, 39, 16);
     context.fill();
     context.strokeStyle = PALETTE.candle;
-    context.lineWidth = 6;
+    context.lineWidth = 2;
     context.stroke();
-    context.fillStyle = PALETTE.parchment;
+    context.fillStyle = '#fff8e8';
     context.textAlign = 'center';
-    context.font = '700 25px "Andika", "Trebuchet MS", sans-serif';
-    fitText(context, dialogue.speakerLabel ?? 'Friend', 244, 578, 110);
+    context.font = '700 20px "Andika", "Trebuchet MS", sans-serif';
+    fitText(context, dialogue.speakerLabel ?? 'Friend', 232, 661, 112);
 
-    context.textAlign = 'left';
+    context.fillStyle = '#fff1cf';
+    traceRoundedRect(context, 338, 488, 624, 82, 34);
+    context.fill();
+    context.strokeStyle = '#bd8e45';
+    context.lineWidth = 4;
+    context.stroke();
+    drawVectorIcon(context, 'owl', 375, 529, 44, { color: '#6b4a31', secondary: '#d8b56f' });
     context.fillStyle = '#382a24';
-    context.font = '700 28px "Andika", "Trebuchet MS", sans-serif';
-    context.fillText(dialogue.caption ?? '', 335, 535);
-    context.font = '25px "Andika", "Trebuchet MS", sans-serif';
-    const shownText = muted ? dialogue.text : dialogue.text;
-    wrapText(context, shownText ?? '', 335, 580, 690, 32, 2);
+    context.textAlign = 'center';
+    context.font = '700 43px "Andika", "Trebuchet MS", sans-serif';
+    fitText(context, dialogue.caption ?? 'Listen', 665, 544, 530);
 
-    const pulse = 1 + Math.sin(time * 4) * 0.08;
+    if (muted) {
+      context.fillStyle = '#5c4738';
+      context.font = '23px "Andika", "Trebuchet MS", sans-serif';
+      wrapText(context, dialogue.text ?? '', 350, 603, 610, 29, 2, 'center');
+    } else {
+      context.fillStyle = '#6b5744';
+      context.font = '21px "Andika", "Trebuchet MS", sans-serif';
+      context.fillText('Tap the page to continue', 655, 620);
+    }
+
+    drawWaxIcon(context, 1062, 549, 43, 'speaker');
+    context.fillStyle = '#5c4738';
+    context.font = '700 18px "Andika", "Trebuchet MS", sans-serif';
+    context.fillText('Again', 1062, 613);
+
+    const animationTime = reducedMotion ? 0 : time;
+    const pulse = reducedMotion ? 1 : 1 + Math.sin(animationTime * 4) * 0.08;
     context.save();
-    context.translate(1065, 630);
+    context.translate(1060, 654);
     context.scale(pulse, pulse);
     context.fillStyle = PALETTE.violet;
     context.beginPath();
-    context.moveTo(-18, -12);
-    context.lineTo(18, 0);
-    context.lineTo(-18, 12);
+    context.moveTo(-13, -10);
+    context.lineTo(14, 0);
+    context.lineTo(-13, 10);
     context.closePath();
     context.fill();
     context.restore();
@@ -109,45 +221,50 @@ export class UIRenderer {
     if (dialogue.choices?.length) this.drawChoices(context, dialogue.choices);
   }
 
-  drawResumeRecap(context, recap, time, muted = false) {
+  drawResumeRecap(context, recap, time, muted = false, reducedMotion = false) {
     this.drawDialogue(context, {
       speakerLabel: 'Story so far',
       caption: recap.caption,
       text: recap.text,
-    }, time, muted);
+    }, time, muted, reducedMotion);
   }
 
   drawChoices(context, choices) {
-    const width = 250;
+    drawDeckledParchment(context, { x: 335, y: 122, width: 610, height: 88 }, { ornament: false });
+    drawVectorIcon(context, 'owl', 390, 166, 56, { color: '#6b4a31', secondary: '#d8b56f' });
+    context.fillStyle = '#382a24';
+    context.textAlign = 'center';
+    context.font = '700 34px "Andika", "Trebuchet MS", sans-serif';
+    context.fillText('What should Violet choose?', 665, 178);
+    const width = 262;
     const gap = 28;
     const total = choices.length * width + (choices.length - 1) * gap;
     const startX = (WORLD.width - total) / 2;
     choices.forEach((choice, index) => {
-      const rect = { x: startX + index * (width + gap), y: 245, width, height: 150 };
+      const rect = { x: startX + index * (width + gap), y: 244, width, height: 166 };
       choice.__rect = rect;
-      parchmentPanel(context, rect.x, rect.y, rect.width, rect.height, 28);
-      context.fillStyle = PALETTE.violet;
-      context.textAlign = 'center';
-      context.font = '50px "Andika", "Trebuchet MS", sans-serif';
-      context.fillText(iconGlyph(choice.icon), rect.x + width / 2, rect.y + 67);
+      drawDeckledParchment(context, rect, { ornament: false });
+      drawWaxIcon(context, rect.x + width / 2, rect.y + 62, 43, choice.icon, { selected: true });
       context.fillStyle = '#382a24';
+      context.textAlign = 'center';
       context.font = '700 29px "Andika", "Trebuchet MS", sans-serif';
-      context.fillText(choice.caption, rect.x + width / 2, rect.y + 118);
+      fitText(context, choice.caption, rect.x + width / 2, rect.y + 134, width - 34);
     });
   }
 
   drawSatchel(context, state, cardDefinitions = [], { parentGateProgress = 0 } = {}) {
-    context.fillStyle = 'rgba(20,17,38,0.78)';
-    context.fillRect(0, 0, WORLD.width, WORLD.height);
-    parchmentPanel(context, 130, 65, 1020, 590, 42);
     const activeTab = state.overlay?.tab === 'cards' ? 'cards' : 'map';
-    drawSatchelTab(context, UI_RECTS.satchelMapTab, '⌁', 'Map', activeTab === 'map');
-    drawSatchelTab(context, UI_RECTS.satchelCardsTab, '▣', 'Cards', activeTab === 'cards');
-    drawHoldGear(context, UI_RECTS.satchelGear, parentGateProgress);
+    drawStorybookSpread(context, { x: 72, y: 32, width: 1136, height: 652 }, {
+      title: 'Violet’s Satchel',
+      subtitle: activeTab === 'cards' ? 'Chocolate Frog cards and magical keepsakes.' : 'A map that remembers where Violet needs to go.',
+    });
+    drawSatchelTab(context, UI_RECTS.satchelMapTab, 'map', 'Map', activeTab === 'map');
+    drawSatchelTab(context, UI_RECTS.satchelCardsTab, 'cards', 'Cards', activeTab === 'cards');
+    drawHoldGear(context, UI_RECTS.satchelGear, parentGateProgress, vectorControlIcon('gear'));
     context.fillStyle = '#5d4b3d';
     context.textAlign = 'center';
     context.font = '700 17px "Andika", "Trebuchet MS", sans-serif';
-    context.fillText(parentGateProgress > 0 ? 'Keep holding…' : 'Grown-ups', 738, 188);
+    context.fillText(parentGateProgress > 0 ? 'Keep holding…' : 'Grown-ups', 746, 258);
 
     if (activeTab === 'cards') this.drawCardAlbumContent(context, state, cardDefinitions);
     else this.drawMapContent(context, state);
@@ -159,33 +276,43 @@ export class UIRenderer {
   }
 
   drawMapContent(context, state) {
-    context.textAlign = 'center';
-    context.fillStyle = '#382a24';
-    context.font = '700 34px "Andika", "Trebuchet MS", sans-serif';
-    context.fillText('Diagon Alley', 900, 139);
-
     const locations = [
-      { id: 'ch1.ollivanders', label: 'Wands', icon: '✦', x: 330, y: 375 },
-      { id: 'ch1.malkins', label: 'Robes', icon: '♢', x: 640, y: 300 },
-      { id: 'ch1.menagerie', label: 'Pets', icon: '♥', x: 950, y: 415 },
+      { id: 'ch1.ollivanders', hotspot: 'street.ollivandersDoor', label: 'Wands', icon: 'wand', x: 300, y: 427 },
+      { id: 'ch1.malkins', hotspot: 'street.malkinsDoor', label: 'Robes', icon: 'rose', x: 640, y: 350 },
+      { id: 'ch1.menagerie', hotspot: 'street.menagerieDoor', label: 'Pets', icon: 'owl', x: 980, y: 447 },
     ];
+    context.save();
+    context.strokeStyle = '#8b6845';
+    context.lineWidth = 9;
+    context.setLineDash([2, 18]);
+    context.lineCap = 'round';
+    context.beginPath();
+    context.moveTo(295, 437);
+    context.bezierCurveTo(420, 240, 535, 262, 640, 350);
+    context.bezierCurveTo(770, 456, 850, 528, 980, 447);
+    context.stroke();
+    context.setLineDash([]);
+    context.restore();
+
+    context.textAlign = 'center';
     for (const location of locations) {
       const unlocked = state.unlockedRooms?.includes(location.id);
-      const current = state.objectiveRoom === location.id;
-      const rect = { x: location.x - 105, y: location.y - 90, width: 210, height: 180 };
+      const current = state.objective?.mapStar?.hotspot === location.hotspot || state.objectiveRoom === location.id;
+      const rect = { x: location.x - 106, y: location.y - 92, width: 212, height: 184 };
       location.__rect = rect;
       context.globalAlpha = unlocked ? 1 : 0.42;
-      context.fillStyle = current ? PALETTE.interactive : PALETTE.oak;
-      roundRect(context, rect.x, rect.y, rect.width, rect.height, 28);
-      context.fill();
-      context.strokeStyle = PALETTE.candle;
-      context.lineWidth = current ? 8 : 4;
-      context.stroke();
-      context.fillStyle = PALETTE.parchment;
-      context.font = '54px "Andika", "Trebuchet MS", sans-serif';
-      context.fillText(location.icon, location.x, location.y - 10);
-      context.font = '700 28px "Andika", "Trebuchet MS", sans-serif';
-      context.fillText(location.label, location.x, location.y + 48);
+      drawDeckledParchment(context, rect, {
+        fill: current ? '#fff0ba' : '#ead9b7',
+        edge: current ? PALETTE.interactive : '#8a6b44',
+        ornament: false,
+      });
+      drawWaxIcon(context, location.x, location.y - 28, 39, unlocked ? location.icon : 'close', { selected: current });
+      context.fillStyle = '#382a24';
+      context.font = '700 27px "Andika", "Trebuchet MS", sans-serif';
+      context.fillText(location.label, location.x, location.y + 49);
+      context.fillStyle = current ? '#6b385b' : '#765d48';
+      context.font = '700 17px "Andika", "Trebuchet MS", sans-serif';
+      context.fillText(current ? 'Violet goes here' : unlocked ? 'Tap to travel' : 'Still hidden', location.x, location.y + 78);
       context.globalAlpha = 1;
     }
     state.__mapLocations = locations;
@@ -197,16 +324,8 @@ export class UIRenderer {
     const found = entries.filter((entry) => entry.earned).length;
     context.textAlign = 'center';
     context.fillStyle = '#382a24';
-    context.font = '700 30px "Andika", "Trebuchet MS", sans-serif';
-    context.fillText(`${found} of ${entries.length} cards found`, 900, 139);
-
-    if (found === 0) {
-      context.fillStyle = '#6b5744';
-      context.font = '700 28px "Andika", "Trebuchet MS", sans-serif';
-      context.fillText('No cards yet', WORLD.width / 2, 207);
-      context.font = '24px "Andika", "Trebuchet MS", sans-serif';
-      context.fillText('Look for sparkles!', WORLD.width / 2, 240);
-    }
+    context.font = '700 25px "Andika", "Trebuchet MS", sans-serif';
+    context.fillText(`${found} of ${entries.length} cards found`, WORLD.width / 2, 270);
 
     for (const entry of entries) this.drawAlbumCard(context, entry);
     state.__cardSlots = entries;
@@ -216,12 +335,11 @@ export class UIRenderer {
   drawAlbumCard(context, entry) {
     const rect = entry.__rect;
     context.save();
-    context.fillStyle = entry.earned ? '#5e4634' : '#665c6e';
-    roundRect(context, rect.x, rect.y, rect.width, rect.height, 30);
-    context.fill();
-    context.strokeStyle = entry.earned ? PALETTE.candle : '#9a8fa2';
-    context.lineWidth = 7;
-    context.stroke();
+    drawDeckledParchment(context, rect, {
+      fill: entry.earned ? '#6a4c35' : '#5a5264',
+      edge: entry.earned ? PALETTE.candle : '#9a8fa2',
+      ornament: false,
+    });
 
     const portrait = { x: rect.x + 38, y: rect.y + 28, width: rect.width - 76, height: 250 };
     if (entry.earned) {
@@ -234,9 +352,9 @@ export class UIRenderer {
     context.fillStyle = PALETTE.parchment;
     context.font = '700 31px "Andika", "Trebuchet MS", sans-serif';
     context.fillText(entry.earned ? entry.name : 'Not found', rect.x + rect.width / 2, rect.y + 327);
-    context.fillStyle = entry.earned ? PALETTE.interactive : '#b9aebe';
-    context.font = '27px "Andika", "Trebuchet MS", sans-serif';
-    context.fillText(entry.earned ? 'Tap to listen' : '?', rect.x + rect.width / 2, rect.y + 365);
+    context.fillStyle = entry.earned ? PALETTE.interactive : '#d2c5d7';
+    context.font = '22px "Andika", "Trebuchet MS", sans-serif';
+    context.fillText(entry.earned ? 'Tap to listen' : 'A secret still waiting', rect.x + rect.width / 2, rect.y + 361);
     context.restore();
   }
 
@@ -260,56 +378,62 @@ export class UIRenderer {
   }
 
   drawSelection(context, selection) {
-    context.fillStyle = 'rgba(20,17,38,0.74)';
-    context.fillRect(0, 0, WORLD.width, WORLD.height);
-    parchmentPanel(context, 150, 85, 980, 550, 42);
-    context.textAlign = 'center';
-    context.fillStyle = '#382a24';
-    context.font = '700 48px "Andika", "Trebuchet MS", sans-serif';
-    context.fillText(selection.title, WORLD.width / 2, 170);
-    if (selection.subtitle) {
-      context.font = '26px "Andika", "Trebuchet MS", sans-serif';
-      context.fillText(selection.subtitle, WORLD.width / 2, 212);
-    }
+    drawStorybookSpread(context, { x: 72, y: 32, width: 1136, height: 652 }, {
+      title: selection.title,
+      subtitle: selection.subtitle,
+    });
     const count = selection.options.length;
-    const width = Math.min(230, (860 - (count - 1) * 24) / count);
-    const total = count * width + (count - 1) * 24;
+    const width = Math.min(248, (940 - (count - 1) * 26) / count);
+    const total = count * width + (count - 1) * 26;
     const x = (WORLD.width - total) / 2;
     selection.options.forEach((option, index) => {
-      const rect = { x: x + index * (width + 24), y: 285, width, height: 210 };
+      const rect = { x: x + index * (width + 26), y: 273, width, height: 244 };
       option.__rect = rect;
-      context.fillStyle = option.color ?? PALETTE.oak;
-      roundRect(context, rect.x, rect.y, rect.width, rect.height, 28);
+      drawDeckledParchment(context, rect, { ornament: false });
+      context.fillStyle = option.color ?? '#6e4b68';
+      context.beginPath();
+      context.arc(rect.x + width / 2, rect.y + 91, 60, 0, Math.PI * 2);
       context.fill();
       context.strokeStyle = PALETTE.candle;
       context.lineWidth = 5;
       context.stroke();
-      context.fillStyle = PALETTE.parchment;
-      context.font = '64px "Andika", "Trebuchet MS", sans-serif';
-      context.fillText(iconGlyph(option.icon), rect.x + width / 2, rect.y + 92);
+      drawVectorIcon(context, option.icon, rect.x + width / 2, rect.y + 91, 88, {
+        color: '#fff8e8',
+        secondary: '#f4d58d',
+      });
+      context.textAlign = 'center';
+      context.fillStyle = '#382a24';
       context.font = '700 29px "Andika", "Trebuchet MS", sans-serif';
-      fitText(context, option.label, rect.x + width / 2, rect.y + 159, width - 22);
+      fitText(context, option.label, rect.x + width / 2, rect.y + 189, width - 28);
+      context.fillStyle = '#765d48';
+      context.font = '19px "Andika", "Trebuchet MS", sans-serif';
+      context.fillText('Tap to choose', rect.x + width / 2, rect.y + 220);
     });
     drawClose(context);
   }
 
-  drawObjective(context, objective) {
+  drawObjective(context, objective, time = 0, { reducedMotion = false } = {}) {
     context.fillStyle = 'rgba(20,17,38,0.74)';
     context.fillRect(0, 0, WORLD.width, WORLD.height);
-    parchmentPanel(context, 250, 190, 780, 340, 45);
+    drawDeckledParchment(context, { x: 235, y: 170, width: 810, height: 382 });
+    drawCompassQuest(
+      context,
+      { x: 574, y: 205, width: 132, height: 132 },
+      reducedMotion ? 0 : time,
+      { pulse: !reducedMotion },
+    );
     context.textAlign = 'center';
-    context.fillStyle = PALETTE.candle;
-    context.font = '70px "Andika", "Trebuchet MS", sans-serif';
-    context.fillText('★', WORLD.width / 2, 300);
     context.fillStyle = '#382a24';
     context.font = '700 42px "Andika", "Trebuchet MS", sans-serif';
-    context.fillText(objective?.caption ?? 'Explore!', WORLD.width / 2, 380);
+    context.fillText(objective?.caption ?? 'Explore!', WORLD.width / 2, 400);
     context.font = '28px "Andika", "Trebuchet MS", sans-serif';
-    wrapText(context, objective?.text ?? '', 360, 432, 560, 34, 2, 'center');
+    wrapText(context, objective?.text ?? '', 355, 452, 570, 36, 2, 'center');
+    drawVectorIcon(context, 'owl', 297, 492, 62, { color: '#805d3d', secondary: '#d4b174' });
+    drawVectorIcon(context, 'owl', 983, 492, 62, { color: '#805d3d', secondary: '#d4b174' });
     drawClose(context);
   }
 
-  drawChapterCard(context, card, time, { paintedBackground = false } = {}) {
+  drawChapterCard(context, card, time, { paintedBackground = false, reducedMotion = false } = {}) {
     if (!paintedBackground) {
       context.fillStyle = storyGradient(context);
       context.fillRect(0, 0, WORLD.width, WORLD.height);
@@ -317,51 +441,90 @@ export class UIRenderer {
       context.fillStyle = 'rgba(20,17,38,0.36)';
       context.fillRect(0, 0, WORLD.width, WORLD.height);
     }
-    const drift = Math.sin(time * 0.7) * 8;
-    context.fillStyle = 'rgba(244,213,141,0.22)';
+    const animationTime = reducedMotion ? 0 : time;
+    const drift = reducedMotion ? 0 : Math.sin(animationTime * 0.7) * 8;
+    drawDeckledParchment(context, { x: 156, y: 82, width: 968, height: 550 }, { fill: '#efe0bd' });
+    context.fillStyle = 'rgba(244,213,141,0.24)';
     context.beginPath();
-    context.arc(980 + drift, 190, 90, 0, Math.PI * 2);
+    context.arc(977 + drift, 184, 83, 0, Math.PI * 2);
+    context.fill();
+    drawVectorIcon(context, 'owl', 975 + drift, 183, 104, { color: '#69472f', secondary: '#d9b876' });
+    drawVectorIcon(context, 'owl', 292 - drift * 0.35, 180, 68, { color: '#815d3b', secondary: '#d9b876' });
+    context.textAlign = 'center';
+    context.fillStyle = '#66405f';
+    traceRoundedRect(context, 425, 126, 430, 58, 24);
     context.fill();
     context.strokeStyle = PALETTE.candle;
-    context.lineWidth = 12;
-    context.strokeRect(170, 105, 940, 510);
-    context.textAlign = 'center';
-    context.fillStyle = PALETTE.parchment;
-    context.font = '700 36px "Andika", "Trebuchet MS", sans-serif';
-    context.fillText(card?.eyebrow ?? 'Chapter One Complete', WORLD.width / 2, 190);
+    context.lineWidth = 3;
+    context.stroke();
+    context.fillStyle = '#fff8e8';
+    context.font = '700 31px "Andika", "Trebuchet MS", sans-serif';
+    context.fillText(card?.eyebrow ?? 'Chapter One Complete', WORLD.width / 2, 165);
+    context.fillStyle = '#382a24';
     context.font = '700 64px "Andika", "Trebuchet MS", sans-serif';
-    wrapText(context, card?.title ?? 'Platform Nine and Three-Quarters', 250, 300, 780, 76, 2, 'center');
-    context.fillStyle = PALETTE.honey;
+    wrapText(context, card?.title ?? 'Platform Nine and Three-Quarters', 250, 276, 780, 73, 2, 'center');
+    context.fillStyle = '#6b4f38';
     context.font = '31px "Andika", "Trebuchet MS", sans-serif';
-    context.fillText(card?.subtitle ?? 'Next time: the Hogwarts Express!', WORLD.width / 2, 475);
-    drawBigButton(context, card?.buttonLabel ?? 'See what is next', 440, 525, 400, 90);
+    context.fillText(card?.subtitle ?? 'Next time: the Hogwarts Express!', WORLD.width / 2, 465);
+    drawInvitationButton(context, card?.buttonLabel ?? 'See what is next', { x: 425, y: 506, width: 430, height: 91 });
   }
 
-  drawTitle(context, time, hasSave) {
+  drawTitle(context, time, hasSave, reducedMotion = false) {
+    const animationTime = reducedMotion ? 0 : time;
     context.fillStyle = storyGradient(context);
     context.fillRect(0, 0, WORLD.width, WORLD.height);
     context.fillStyle = PALETTE.interactive;
     for (let index = 0; index < 28; index += 1) {
-      const x = ((index * 197) % WORLD.width) + Math.sin(time * 0.6 + index) * 7;
+      const x = ((index * 197) % WORLD.width) + Math.sin(animationTime * 0.6 + index) * (reducedMotion ? 0 : 7);
       const y = 60 + ((index * 83) % 410);
-      const alpha = 0.22 + (Math.sin(time * 2 + index) + 1) * 0.18;
+      const alpha = reducedMotion ? 0.32 : 0.22 + (Math.sin(animationTime * 2 + index) + 1) * 0.18;
       context.globalAlpha = alpha;
       context.beginPath();
       context.arc(x, y, 2 + (index % 3), 0, Math.PI * 2);
       context.fill();
     }
     context.globalAlpha = 1;
+    const moonX = 1010 + Math.sin(animationTime * 0.22) * (reducedMotion ? 0 : 4);
+    context.fillStyle = 'rgba(244,213,141,0.16)';
+    context.beginPath();
+    context.arc(moonX, 142, 104, 0, Math.PI * 2);
+    context.fill();
+    context.fillStyle = '#f5dfaa';
+    context.beginPath();
+    context.arc(moonX, 142, 73, 0, Math.PI * 2);
+    context.fill();
+    context.fillStyle = 'rgba(130,102,69,0.2)';
+    for (const [dx, dy, radius] of [[-24, -16, 10], [17, 12, 13], [7, -31, 7]]) {
+      context.beginPath();
+      context.arc(moonX + dx, 142 + dy, radius, 0, Math.PI * 2);
+      context.fill();
+    }
+    const owlFlight = Math.sin(animationTime * 1.7) * (reducedMotion ? 0 : 0.08);
+    context.save();
+    context.translate(
+      1003 + Math.sin(animationTime * 0.45) * (reducedMotion ? 0 : 18),
+      130 + Math.sin(animationTime * 1.2) * (reducedMotion ? 0 : 7),
+    );
+    context.rotate(owlFlight);
+    drawVectorIcon(context, 'owl', 0, 0, 118, { color: '#352a35', secondary: '#6f5c62' });
+    context.restore();
+
+    drawTitleFlourish(context, WORLD.width / 2, 172);
     context.textAlign = 'center';
     context.fillStyle = PALETTE.parchment;
-    context.font = '700 76px "Andika", "Trebuchet MS", sans-serif';
-    context.fillText("Violet's Wizard Game", WORLD.width / 2, 255);
+    context.font = '700 73px "Andika", "Trebuchet MS", sans-serif';
+    context.fillText("Violet’s Wizard Game", WORLD.width / 2, 254);
     context.fillStyle = PALETTE.honey;
     context.font = '34px "Andika", "Trebuchet MS", sans-serif';
-    context.fillText('Your letter is waiting.', WORLD.width / 2, 320);
-    drawBigButton(context, hasSave ? 'Continue' : 'Open the letter', 420, 405, 440, 105);
+    context.fillText(hasSave ? 'Your adventure remembers you.' : 'Your letter is waiting.', WORLD.width / 2, 316);
+    drawInvitationButton(context, hasSave ? 'Continue Violet’s story' : 'Open Violet’s letter', {
+      x: 394, y: 379, width: 492, height: 142,
+    }, { largeSeal: true, time: animationTime, reducedMotion });
     context.fillStyle = 'rgba(240,227,200,0.78)';
     context.font = '24px "Andika", "Trebuchet MS", sans-serif';
-    context.fillText('Best with sound on', WORLD.width / 2, 565);
+    context.fillText('Best with sound on', WORLD.width / 2, 568);
+    drawVectorIcon(context, 'owl', 520, 561, 38, { color: '#d7bd82', secondary: '#6b536d' });
+    drawVectorIcon(context, 'speaker', 760, 561, 35, { color: '#d7bd82', secondary: '#6b536d' });
   }
 
   drawDebugReset(context) {
@@ -396,9 +559,9 @@ export class UIRenderer {
       title: 'The Grown-up Book',
       subtitle: model.replayMode ? 'Chapter replay — Violet’s saved adventure is safe.' : 'Settings and keepsakes for Violet’s adventure.',
     });
-    drawRibbonTab(context, UI_RECTS.parentPlayTab, 'Play', { icon: '◆', active: page === 'play' });
-    drawRibbonTab(context, UI_RECTS.parentSettingsTab, 'Sound & feel', { icon: '♫', active: page === 'settings' });
-    drawRibbonTab(context, UI_RECTS.parentSaveTab, 'Save', { icon: '▣', active: page === 'save' });
+    drawRibbonTab(context, UI_RECTS.parentPlayTab, 'Play', { icon: vectorControlIcon('owl'), active: page === 'play' });
+    drawRibbonTab(context, UI_RECTS.parentSettingsTab, 'Sound & feel', { icon: vectorControlIcon('speaker'), active: page === 'settings' });
+    drawRibbonTab(context, UI_RECTS.parentSaveTab, 'Save', { icon: vectorControlIcon('cards'), active: page === 'save' });
 
     if (page === 'settings') this.drawParentSettings(context, model);
     else if (page === 'save') this.drawParentSave(context, model);
@@ -413,13 +576,13 @@ export class UIRenderer {
       detail: model.replayMode
         ? 'Leave this practice adventure'
         : model.chapter1Completed ? 'Play from the letter again' : 'Unlocks after Chapter One',
-      icon: model.replayMode ? '↩' : '↻',
+      icon: vectorControlIcon('replay'),
       disabled: !model.replayMode && !model.chapter1Completed,
     });
     drawParchmentAction(context, UI_RECTS.parentYearbook, {
       label: 'Violet’s Yearbook',
       detail: model.yearbookCount === 1 ? '1 magical memory' : `${model.yearbookCount} magical memories`,
-      icon: '★',
+      icon: vectorControlIcon('cards'),
     });
 
     context.fillStyle = '#685240';
@@ -454,7 +617,7 @@ export class UIRenderer {
     });
     drawParchmentAction(context, UI_RECTS.parentMute, {
       label: model.settings.muted ? 'Sound is off' : 'Sound is on',
-      icon: model.settings.muted ? '×' : '♫',
+      icon: vectorControlIcon(model.settings.muted ? 'close' : 'speaker'),
       selected: model.settings.muted,
       compact: true,
     });
@@ -462,7 +625,7 @@ export class UIRenderer {
       label: model.systemReducedMotion && !model.settings.reducedMotion
         ? 'Gentler (device)'
         : model.effectiveReducedMotion ? 'Gentler movement' : 'Full movement',
-      icon: model.effectiveReducedMotion ? '≈' : '✦',
+      icon: vectorControlIcon(model.effectiveReducedMotion ? 'owl' : 'star'),
       selected: model.effectiveReducedMotion,
       compact: true,
     });
@@ -478,7 +641,7 @@ export class UIRenderer {
     ]) {
       drawParchmentAction(context, rect, {
         label,
-        icon: level === 'off' ? '○' : level === 'gentle' ? '◇' : '✦',
+        icon: vectorControlIcon(level === 'off' ? 'close' : level === 'gentle' ? 'owl' : 'star'),
         selected: model.settings.learning === level,
         compact: true,
       });
@@ -487,16 +650,16 @@ export class UIRenderer {
 
   drawParentSave(context, model) {
     drawParchmentAction(context, UI_RECTS.parentExport, {
-      label: 'Export Violet’s save', detail: 'Copy it to another device', icon: '↑',
+      label: 'Export Violet’s save', detail: 'Copy it to another device', icon: vectorControlIcon('quill'),
     });
     drawParchmentAction(context, UI_RECTS.parentImport, {
-      label: 'Import a save', detail: 'Bring Violet’s adventure here', icon: '↓',
+      label: 'Import a save', detail: 'Bring Violet’s adventure here', icon: vectorControlIcon('satchel'),
     });
     drawParchmentAction(context, UI_RECTS.parentRestore, {
-      label: 'Recover backup', detail: 'Use the safety copy on this device', icon: '↶',
+      label: 'Recover backup', detail: 'Use the safety copy on this device', icon: vectorControlIcon('replay'),
     });
     drawParchmentAction(context, UI_RECTS.parentStartOver, {
-      label: 'Start over', detail: 'Keeps sound and learning settings', icon: '×', danger: true,
+      label: 'Start over', detail: 'Keeps sound and learning settings', icon: vectorControlIcon('close'), danger: true,
     });
   }
 
@@ -509,7 +672,7 @@ export class UIRenderer {
         : 'The current adventure will be replaced by the safety copy.',
     });
 
-    drawWaxMedallion(context, WORLD.width / 2, 335, 62, startOver ? '!' : '↶', { danger: startOver });
+    drawWaxMedallion(context, WORLD.width / 2, 335, 62, vectorControlIcon(startOver ? 'close' : 'replay'), { danger: startOver });
     context.fillStyle = '#5e4939';
     context.textAlign = 'center';
     context.font = '25px "Andika", "Trebuchet MS", sans-serif';
@@ -519,11 +682,11 @@ export class UIRenderer {
       420,
     );
     drawParchmentAction(context, UI_RECTS.parentCancelConfirm, {
-      label: 'No, go back', icon: '↩',
+      label: 'No, go back', icon: vectorControlIcon('replay'),
     });
     drawParchmentAction(context, UI_RECTS.parentAcceptConfirm, {
       label: startOver ? 'Yes, start over' : 'Use the backup',
-      icon: startOver ? '×' : '↶',
+      icon: vectorControlIcon(startOver ? 'close' : 'replay'),
       danger: startOver,
     });
     drawPanelNotice(context, model.overlay?.notice);
@@ -537,7 +700,7 @@ export class UIRenderer {
     drawClose(context);
 
     if (entries.length === 0) {
-      drawWaxMedallion(context, WORLD.width / 2, 340, 76, '★');
+      drawWaxMedallion(context, WORLD.width / 2, 340, 76, vectorControlIcon('cards'));
       context.fillStyle = '#49382e';
       context.textAlign = 'center';
       context.font = '700 34px "Andika", "Trebuchet MS", sans-serif';
@@ -598,7 +761,7 @@ export function buildCardAlbumEntries(cardDefinitions, earnedCardIds) {
     earned: earned.has(card.id),
     __rect: {
       x: startX + (index % columns) * (slotWidth + gap),
-      y: 250 + Math.floor(index / columns) * (slotHeight + 28),
+      y: 286 + Math.floor(index / columns) * (slotHeight + 28),
       width: slotWidth,
       height: slotHeight,
     },
@@ -606,18 +769,29 @@ export function buildCardAlbumEntries(cardDefinitions, earnedCardIds) {
 }
 
 function drawSatchelTab(context, rect, icon, label, active) {
-  context.fillStyle = active ? PALETTE.oak : '#a38b69';
-  roundRect(context, rect.x, rect.y, rect.width, rect.height, 24);
+  context.save();
+  context.fillStyle = active ? '#66405f' : '#8f765a';
+  context.beginPath();
+  context.moveTo(rect.x + 15, rect.y);
+  context.lineTo(rect.x + rect.width - 15, rect.y);
+  context.lineTo(rect.x + rect.width, rect.y + rect.height / 2);
+  context.lineTo(rect.x + rect.width - 15, rect.y + rect.height);
+  context.lineTo(rect.x + 15, rect.y + rect.height);
+  context.lineTo(rect.x, rect.y + rect.height / 2);
+  context.closePath();
   context.fill();
-  context.strokeStyle = active ? PALETTE.interactive : '#7b684d';
-  context.lineWidth = active ? 6 : 4;
+  context.strokeStyle = active ? PALETTE.interactive : '#5f4d3e';
+  context.lineWidth = active ? 5 : 3;
   context.stroke();
-  context.fillStyle = active ? PALETTE.parchment : '#3f3328';
+  drawVectorIcon(context, icon, rect.x + 47, rect.y + rect.height / 2, 51, {
+    color: active ? '#fff8e8' : '#30261f',
+    secondary: active ? '#f4d58d' : '#c8a876',
+  });
+  context.fillStyle = active ? '#fff8e8' : '#30261f';
   context.textAlign = 'center';
-  context.font = '36px "Andika", "Trebuchet MS", sans-serif';
-  context.fillText(icon, rect.x + 45, rect.y + 57);
   context.font = '700 29px "Andika", "Trebuchet MS", sans-serif';
   context.fillText(label, rect.x + 130, rect.y + 56);
+  context.restore();
 }
 
 function drawCoverImage(context, image, rect, radius) {
@@ -645,10 +819,10 @@ function drawPortraitLoading(context, rect) {
   context.fillStyle = '#3d3347';
   roundRect(context, rect.x, rect.y, rect.width, rect.height, 20);
   context.fill();
-  context.fillStyle = PALETTE.candle;
-  context.textAlign = 'center';
-  context.font = '64px "Andika", "Trebuchet MS", sans-serif';
-  context.fillText('✦', rect.x + rect.width / 2, rect.y + rect.height / 2 + 22);
+  drawVectorIcon(context, 'owl', rect.x + rect.width / 2, rect.y + rect.height / 2, 98, {
+    color: PALETTE.candle,
+    secondary: '#6f5d78',
+  });
 }
 
 function drawLockedPortrait(context, rect) {
@@ -659,109 +833,91 @@ function drawLockedPortrait(context, rect) {
   context.lineWidth = 5;
   roundRect(context, rect.x + 15, rect.y + 15, rect.width - 30, rect.height - 30, 14);
   context.stroke();
-  context.fillStyle = '#a99daf';
-  context.textAlign = 'center';
-  context.font = '700 88px "Andika", "Trebuchet MS", sans-serif';
-  context.fillText('?', rect.x + rect.width / 2, rect.y + rect.height / 2 + 30);
+  drawVectorIcon(context, 'owl', rect.x + rect.width / 2, rect.y + rect.height / 2 - 9, 104, {
+    color: '#a99daf',
+    secondary: '#51495a',
+  });
+  drawWaxIcon(context, rect.x + rect.width / 2, rect.y + rect.height - 43, 28, 'close');
 }
 
 function drawQuestButton(context, rect, time, pulse) {
-  const scale = pulse ? 1 + Math.sin(time * 4) * 0.08 : 1;
-  context.save();
-  context.translate(rect.x + rect.width / 2, rect.y + rect.height / 2);
-  context.scale(scale, scale);
-  context.fillStyle = PALETTE.oak;
-  context.beginPath();
-  context.arc(0, 0, 48, 0, Math.PI * 2);
-  context.fill();
-  context.strokeStyle = PALETTE.candle;
-  context.lineWidth = 5;
-  context.stroke();
-  context.fillStyle = PALETTE.interactive;
-  context.textAlign = 'center';
-  context.font = '54px "Andika", "Trebuchet MS", sans-serif';
-  context.fillText('★', 0, 19);
-  context.restore();
+  drawCompassQuest(context, rect, time, { pulse });
 }
 
 function drawSatchelButton(context, rect) {
-  context.fillStyle = '#6e4b32';
-  roundRect(context, rect.x + 8, rect.y + 19, rect.width - 16, rect.height - 27, 21);
-  context.fill();
-  context.strokeStyle = PALETTE.candle;
-  context.lineWidth = 5;
-  context.stroke();
-  context.beginPath();
-  context.arc(rect.x + rect.width / 2, rect.y + 32, 32, Math.PI, 0);
-  context.stroke();
-  context.fillStyle = PALETTE.candle;
-  context.fillRect(rect.x + rect.width / 2 - 7, rect.y + 55, 14, 18);
+  drawLeatherSatchel(context, rect);
 }
 
-function drawWandButton(context, rect, enabled) {
-  context.fillStyle = enabled ? '#59402d' : '#3d3743';
-  context.beginPath();
-  context.arc(rect.x + rect.width / 2, rect.y + rect.height / 2, 49, 0, Math.PI * 2);
-  context.fill();
-  context.strokeStyle = enabled ? PALETTE.candle : '#77717f';
-  context.lineWidth = 5;
-  context.stroke();
-  context.strokeStyle = enabled ? '#aa7655' : '#716b73';
-  context.lineWidth = 10;
-  context.beginPath();
-  context.moveTo(rect.x + 34, rect.y + 77);
-  context.lineTo(rect.x + 79, rect.y + 30);
-  context.stroke();
-  if (enabled) {
-    context.fillStyle = PALETTE.interactive;
-    context.beginPath();
-    context.arc(rect.x + 81, rect.y + 28, 7, 0, Math.PI * 2);
-    context.fill();
-  }
-}
-
-function parchmentPanel(context, x, y, width, height, radius) {
-  context.fillStyle = PALETTE.parchment;
-  roundRect(context, x, y, width, height, radius);
-  context.fill();
-  context.strokeStyle = PALETTE.candle;
-  context.lineWidth = 7;
-  context.stroke();
-  context.strokeStyle = '#8a6b44';
-  context.lineWidth = 2;
-  roundRect(context, x + 13, y + 13, width - 26, height - 26, Math.max(8, radius - 10));
-  context.stroke();
+function drawWandButton(context, rect, enabled, time = 0) {
+  drawBrassWandHolster(context, rect, { enabled, time });
 }
 
 function drawClose(context) {
-  context.fillStyle = PALETTE.violet;
-  context.beginPath();
-  context.arc(1090, 120, 45, 0, Math.PI * 2);
-  context.fill();
-  context.strokeStyle = PALETTE.candle;
-  context.lineWidth = 5;
-  context.stroke();
-  context.strokeStyle = PALETTE.parchment;
-  context.lineWidth = 7;
-  context.beginPath();
-  context.moveTo(1075, 105);
-  context.lineTo(1105, 135);
-  context.moveTo(1105, 105);
-  context.lineTo(1075, 135);
-  context.stroke();
+  drawWaxIcon(context, 1090, 120, 45, 'close');
 }
 
-function drawBigButton(context, label, x, y, width, height) {
-  context.fillStyle = PALETTE.oak;
-  roundRect(context, x, y, width, height, height / 2);
+function drawInvitationButton(context, label, rect, { largeSeal = false, time = 0 } = {}) {
+  const { x, y, width, height } = rect;
+  const sealRadius = largeSeal ? 47 : 34;
+  const sealX = x + (largeSeal ? 72 : 58);
+  const sealY = y + height / 2;
+  context.save();
+  context.fillStyle = 'rgba(20,17,38,0.45)';
+  traceRoundedRect(context, x + 8, y + 11, width, height, 18);
+  context.fill();
+  context.fillStyle = '#ead7ae';
+  traceRoundedRect(context, x, y, width, height, 18);
   context.fill();
   context.strokeStyle = PALETTE.interactive;
   context.lineWidth = 6;
   context.stroke();
-  context.fillStyle = PALETTE.parchment;
+  context.strokeStyle = 'rgba(126,86,45,0.55)';
+  context.lineWidth = 3;
+  context.beginPath();
+  context.moveTo(x + 10, y + 11);
+  context.lineTo(x + width / 2, y + height * 0.58);
+  context.lineTo(x + width - 10, y + 11);
+  context.moveTo(x + 12, y + height - 12);
+  context.lineTo(x + width * 0.4, y + height * 0.49);
+  context.moveTo(x + width - 12, y + height - 12);
+  context.lineTo(x + width * 0.6, y + height * 0.49);
+  context.stroke();
+  const sealPulse = largeSeal ? 1 + Math.sin(time * 2.4) * 0.035 : 1;
+  context.save();
+  context.translate(sealX, sealY);
+  context.scale(sealPulse, sealPulse);
+  drawWaxIcon(context, 0, 0, sealRadius, 'owl', { selected: true });
+  context.restore();
+  context.fillStyle = 'rgba(255,246,219,0.9)';
+  traceRoundedRect(
+    context,
+    x + (largeSeal ? 133 : 105),
+    y + height * 0.27,
+    width - (largeSeal ? 155 : 124),
+    height * 0.46,
+    height * 0.2,
+  );
+  context.fill();
+  context.fillStyle = '#382a24';
   context.textAlign = 'center';
-  context.font = '700 34px "Andika", "Trebuchet MS", sans-serif';
-  context.fillText(label, x + width / 2, y + height / 2 + 12);
+  context.font = `700 ${largeSeal ? 31 : 28}px "Andika", "Trebuchet MS", sans-serif`;
+  fitText(context, label, x + width / 2 + (largeSeal ? 43 : 35), y + height / 2 + 10, width - (largeSeal ? 150 : 120));
+  context.restore();
+}
+
+function drawTitleFlourish(context, x, y) {
+  context.save();
+  context.strokeStyle = 'rgba(244,213,141,0.72)';
+  context.lineWidth = 3;
+  context.beginPath();
+  context.moveTo(x - 250, y);
+  context.bezierCurveTo(x - 185, y - 28, x - 126, y + 27, x - 61, y);
+  context.bezierCurveTo(x - 34, y - 13, x - 20, y - 12, x, y);
+  context.bezierCurveTo(x + 20, y - 12, x + 34, y - 13, x + 61, y);
+  context.bezierCurveTo(x + 126, y + 27, x + 185, y - 28, x + 250, y);
+  context.stroke();
+  drawVectorIcon(context, 'owl', x, y, 52, { color: '#f4d58d', secondary: '#604566' });
+  context.restore();
 }
 
 function drawPanelNotice(context, notice) {
@@ -780,13 +936,11 @@ function drawPanelNotice(context, notice) {
   context.restore();
 }
 
-function iconGlyph(icon) {
-  return ({
-    wand: '✦', eyes: '◉', cat: '♛', owl: '◉', toad: '●', replay: '↻', explore: '⌁',
-    purple: '◆', rose: '♥', teal: '●', gold: '★', 'pet-cat': '♛', 'pet-owl': '◉',
-    'pet-toad': '●', 'name-biscuit': '●', 'name-pip': '✦', 'name-star': '★',
-    'name-custom': '✎', 'wax-check': '✓',
-  })[icon] ?? '✦';
+function vectorControlIcon(icon) {
+  return (context, x, y, size) => drawVectorIcon(context, icon, x, y, size, {
+    color: '#fff8e8',
+    secondary: '#f4d58d',
+  });
 }
 
 function fitText(context, text, x, y, maxWidth) {

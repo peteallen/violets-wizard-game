@@ -10,28 +10,96 @@ const ROOM_MOODS = Object.freeze({
   'ch1.menagerie': ['#426660', '#d6aa62', '#453426'],
 });
 
+export const ROOM_MEMORY_LIMITS = Object.freeze({
+  globalCanvasCount: 5,
+  reservedCanvasSlots: 3,
+  roomCanvasCount: 2,
+  decodedImageCount: 3,
+});
+
 export class RoomRenderer {
-  constructor({ resolveAsset = () => null } = {}) {
+  constructor({
+    resolveAsset = () => null,
+    imageFactory = defaultImageFactory,
+    canvasFactory = defaultCanvasFactory,
+    logger = globalThis.console,
+    maxCanvasCount = ROOM_MEMORY_LIMITS.globalCanvasCount,
+    reservedCanvasSlots = ROOM_MEMORY_LIMITS.reservedCanvasSlots,
+    maxRoomCaches = ROOM_MEMORY_LIMITS.roomCanvasCount,
+    maxDecodedImages = ROOM_MEMORY_LIMITS.decodedImageCount,
+  } = {}) {
     this.resolveAsset = resolveAsset;
+    this.imageFactory = imageFactory;
+    this.canvasFactory = canvasFactory;
+    this.logger = logger;
+    this.maxCanvasCount = Math.min(ROOM_MEMORY_LIMITS.globalCanvasCount, Math.max(1, maxCanvasCount));
+    this.reservedCanvasSlots = Math.min(this.maxCanvasCount, Math.max(0, reservedCanvasSlots));
+    this.maxRoomCaches = Math.min(
+      ROOM_MEMORY_LIMITS.roomCanvasCount,
+      Math.max(0, this.maxCanvasCount - this.reservedCanvasSlots),
+      Math.max(0, maxRoomCaches),
+    );
+    this.maxDecodedImages = Math.min(
+      ROOM_MEMORY_LIMITS.decodedImageCount,
+      Math.max(1, maxDecodedImages),
+    );
     this.images = new Map();
+    this.imageUse = new Map();
+    this.loads = new Map();
     this.failed = new Set();
     this.gradients = new WeakMap();
+    this.roomCaches = new Map();
+    this.canvasRecords = new Map();
+    this.preparations = new Map();
+    this.currentCacheKey = null;
+    this.useSequence = 0;
+    this.lifecycleGeneration = 0;
+    this.destroyed = false;
   }
 
   async preload(keys = []) {
-    await Promise.all(keys.map((key) => this.load(key)));
+    const uniqueKeys = [...new Set(keys.filter(Boolean))];
+    for (const key of uniqueKeys) await this.load(key);
+    const activeComposites = [...this.preparations.values()];
+    if (activeComposites.length) await Promise.allSettled(activeComposites);
+    return uniqueKeys.map((key) => this.images.get(key) ?? null);
   }
 
   async load(key) {
-    if (!key || this.images.has(key) || this.failed.has(key) || typeof Image === 'undefined') return this.images.get(key) ?? null;
+    if (this.destroyed || !key || this.failed.has(key)) return null;
+    if (this.images.has(key)) {
+      this.touchImage(key);
+      return this.images.get(key);
+    }
+    if (this.loads.has(key)) return this.loads.get(key);
     const path = this.resolveAsset(key);
     if (!path) return null;
-    const image = new Image();
-    image.decoding = 'async';
-    image.src = path;
+    const generation = this.lifecycleGeneration;
+    const load = this.decodeImage(key, path, generation);
+    this.loads.set(key, load);
     try {
+      return await load;
+    } finally {
+      if (this.loads.get(key) === load) this.loads.delete(key);
+    }
+  }
+
+  async decodeImage(key, path, generation) {
+    let image;
+    try {
+      image = this.imageFactory();
+      if (!image) throw new Error('Image allocation returned no object.');
+      image.decoding = 'async';
+      image.src = path;
+      if (typeof image.decode !== 'function') throw new Error('Image.decode() is unavailable.');
       await image.decode();
+      if (!image.complete || !(image.naturalWidth > 0) || !(image.naturalHeight > 0)) {
+        throw new Error('Decoded image has no drawable pixels.');
+      }
+      if (this.destroyed || generation !== this.lifecycleGeneration) return null;
       this.images.set(key, image);
+      this.touchImage(key);
+      this.enforceDecodedImageLimit();
       return image;
     } catch {
       this.failed.add(key);
@@ -39,24 +107,242 @@ export class RoomRenderer {
     }
   }
 
+  touchImage(key) {
+    this.imageUse.set(key, ++this.useSequence);
+  }
+
+  enforceDecodedImageLimit() {
+    while (this.images.size > this.maxDecodedImages) {
+      const oldest = [...this.images.keys()].sort((left, right) => {
+        return (this.imageUse.get(left) ?? 0) - (this.imageUse.get(right) ?? 0);
+      })[0];
+      this.releaseDecodedImage(oldest);
+    }
+  }
+
+  releaseDecodedImage(key, expectedImage = null) {
+    if (expectedImage && this.images.get(key) !== expectedImage) return false;
+    const removed = this.images.delete(key);
+    this.imageUse.delete(key);
+    return removed;
+  }
+
+  async preloadRoom(room, state = {}, { scale = 1 } = {}) {
+    return this.prepareRoom(room, state, { scale });
+  }
+
+  async prepareRoom(room, state = {}, { scale = 1 } = {}) {
+    if (this.destroyed) return null;
+    const description = describeRoomCache(room, state, scale, this.resolveAsset);
+    if (!description.keys.length || this.maxRoomCaches === 0) return null;
+    const cached = this.roomCaches.get(description.key);
+    if (cached) {
+      this.touchCache(cached);
+      return cached;
+    }
+    if (this.preparations.has(description.key)) return this.preparations.get(description.key);
+
+    const generation = this.lifecycleGeneration;
+    const preparation = this.compositeRoom(description, generation);
+    this.preparations.set(description.key, preparation);
+    try {
+      return await preparation;
+    } finally {
+      if (this.preparations.get(description.key) === preparation) this.preparations.delete(description.key);
+    }
+  }
+
+  async compositeRoom(description, generation) {
+    let record = null;
+    let drawnLayers = 0;
+    const paths = new Set();
+    try {
+      for (const key of description.keys) {
+        const path = this.resolveAsset(key);
+        if (!path || paths.has(path)) continue;
+        paths.add(path);
+        const image = await this.load(key);
+        if (!image) continue;
+        try {
+          if (this.destroyed || generation !== this.lifecycleGeneration) return null;
+          if (!record) {
+            record = this.allocateRoomCanvas(description);
+            if (!record) return null;
+          }
+          compositeLayer(record.context, image, description);
+          drawnLayers += 1;
+        } finally {
+          this.releaseDecodedImage(key, image);
+        }
+      }
+
+      if (!record || drawnLayers === 0 || this.destroyed || generation !== this.lifecycleGeneration) return null;
+
+      record.status = 'ready';
+      record.lastUsed = ++this.useSequence;
+      const cache = {
+        key: description.key,
+        roomId: description.roomId,
+        variant: description.variant,
+        keys: [...description.keys],
+        canvas: record.canvas,
+        width: description.width,
+        height: description.height,
+        lastUsed: record.lastUsed,
+        record,
+      };
+      this.roomCaches.set(description.key, cache);
+      record = null;
+      return cache;
+    } finally {
+      if (record) this.releaseCanvasRecord(record);
+    }
+  }
+
+  allocateRoomCanvas(description, retry = true) {
+    while (this.canvasRecords.size >= this.maxRoomCaches) {
+      const evicted = this.evictLeastRecentlyUsed(this.currentCacheKey);
+      if (!evicted) return null;
+    }
+
+    let canvas;
+    let context;
+    try {
+      canvas = this.canvasFactory(description.width, description.height);
+      if (!canvas) throw new Error('Canvas allocation returned no object.');
+      canvas.width = description.width;
+      canvas.height = description.height;
+      context = canvas.getContext?.('2d', { alpha: false }) ?? null;
+    } catch (error) {
+      this.releaseUntrackedCanvas(canvas);
+      this.handleCanvasAllocationFailure(error);
+      if (retry) return this.allocateRoomCanvas(description, false);
+      return null;
+    }
+
+    if (!context) {
+      this.releaseUntrackedCanvas(canvas);
+      this.handleCanvasAllocationFailure(new Error('Canvas 2D context allocation returned null.'));
+      if (retry) return this.allocateRoomCanvas(description, false);
+      return null;
+    }
+
+    const record = {
+      key: description.key,
+      canvas,
+      context,
+      status: 'building',
+      lastUsed: ++this.useSequence,
+    };
+    this.canvasRecords.set(canvas, record);
+    return record;
+  }
+
+  handleCanvasAllocationFailure(error) {
+    this.logger?.warn?.('Room canvas allocation failed; evicting cached rooms before retrying.', error);
+    this.emergencyEvict('get-context-null');
+  }
+
+  emergencyEvict(reason = 'emergency') {
+    for (const key of [...this.roomCaches.keys()]) this.evictCache(key, reason);
+    for (const key of [...this.images.keys()]) this.releaseDecodedImage(key);
+  }
+
+  evictLeastRecentlyUsed(protectedKey = null) {
+    const candidates = [...this.roomCaches.values()]
+      .filter((cache) => cache.key !== protectedKey)
+      .sort((left, right) => left.lastUsed - right.lastUsed || left.key.localeCompare(right.key));
+    const selected = candidates[0]
+      ?? [...this.roomCaches.values()].sort((left, right) => left.lastUsed - right.lastUsed || left.key.localeCompare(right.key))[0];
+    if (!selected) return false;
+    return this.evictCache(selected.key, 'lru');
+  }
+
+  evictCache(key) {
+    const cache = this.roomCaches.get(key);
+    if (!cache) return false;
+    this.roomCaches.delete(key);
+    if (this.currentCacheKey === key) this.currentCacheKey = null;
+    this.releaseCanvasRecord(cache.record);
+    return true;
+  }
+
+  releaseCanvasRecord(record) {
+    if (!record) return;
+    this.canvasRecords.delete(record.canvas);
+    this.releaseUntrackedCanvas(record.canvas);
+    record.status = 'evicted';
+  }
+
+  releaseUntrackedCanvas(canvas) {
+    if (!canvas) return;
+    canvas.width = 1;
+    canvas.height = 1;
+  }
+
+  touchCache(cache) {
+    const used = ++this.useSequence;
+    cache.lastUsed = used;
+    cache.record.lastUsed = used;
+  }
+
+  clear() {
+    this.lifecycleGeneration += 1;
+    for (const key of [...this.roomCaches.keys()]) this.evictCache(key, 'clear');
+    for (const record of [...this.canvasRecords.values()]) this.releaseCanvasRecord(record);
+    for (const key of [...this.images.keys()]) this.releaseDecodedImage(key);
+    this.preparations.clear();
+    this.loads.clear();
+    this.currentCacheKey = null;
+  }
+
+  destroy() {
+    if (this.destroyed) return;
+    this.destroyed = true;
+    this.clear();
+    this.loads.clear();
+    this.failed.clear();
+    this.gradients = new WeakMap();
+  }
+
+  memorySnapshot() {
+    return Object.freeze({
+      globalCanvasLimit: this.maxCanvasCount,
+      reservedCanvasSlots: this.reservedCanvasSlots,
+      roomCanvasLimit: this.maxRoomCaches,
+      roomCanvasCount: this.canvasRecords.size,
+      fullScreenCanvasEquivalentCount: this.reservedCanvasSlots + this.canvasRecords.size,
+      decodedImageLimit: this.maxDecodedImages,
+      decodedImageCount: this.images.size,
+      cacheKeys: Object.freeze([...this.roomCaches.keys()]),
+      decodedImageKeys: Object.freeze([...this.images.keys()]),
+    });
+  }
+
   draw(context, room, state, time, camera = { x: 0 }) {
     const roomId = room?.id ?? state?.roomId ?? 'ch1.bedroom';
     const variant = state?.roomVariant ?? 'base';
-    const variantLayers = room?.background?.variants?.[variant];
-    const backgroundKey = variantLayers?.at(-1) ?? room?.background?.layers?.at(-1);
-    const image = this.images.get(backgroundKey);
+    const scale = contextScale(context);
+    const description = describeRoomCache(room, state, scale, this.resolveAsset);
+    this.currentCacheKey = description.key;
+    const cache = this.roomCaches.get(description.key);
 
-    if (image?.complete && image.naturalWidth > 0) {
+    if (cache?.canvas && cache.canvas.width > 1 && cache.canvas.height > 1) {
+      this.touchCache(cache);
       const roomWidth = room?.size?.width ?? WORLD.width;
-      const sourceWidth = Math.min(image.naturalWidth, image.naturalHeight * (WORLD.width / WORLD.height));
+      const sourceWidth = Math.min(cache.width, cache.height * (WORLD.width / WORLD.height));
       const cameraRatio = Math.max(0, Math.min(1, camera.x / Math.max(1, roomWidth - WORLD.width)));
-      const sourceX = (image.naturalWidth - sourceWidth) * cameraRatio;
-      context.drawImage(image, sourceX, 0, sourceWidth, image.naturalHeight, 0, 0, WORLD.width, WORLD.height);
+      const sourceX = (cache.width - sourceWidth) * cameraRatio;
+      context.drawImage(cache.canvas, sourceX, 0, sourceWidth, cache.height, 0, 0, WORLD.width, WORLD.height);
       return;
     }
 
     this.drawProcedural(context, roomId, variant, time, camera.x);
-    if (backgroundKey) this.load(backgroundKey);
+    if (description.keys.length) {
+      void this.prepareRoom(room, state, { scale }).catch((error) => {
+        this.logger?.warn?.('Room cache preparation failed; keeping the procedural fallback.', error);
+      });
+    }
   }
 
   drawProcedural(context, roomId, variant, time, cameraX = 0) {
@@ -110,6 +396,76 @@ export class RoomRenderer {
     context.fillStyle = 'rgba(20,17,38,0.17)';
     context.fillRect(0, 640, WORLD.width, 80);
   }
+}
+
+function defaultImageFactory() {
+  return typeof globalThis.Image === 'function' ? new globalThis.Image() : null;
+}
+
+function defaultCanvasFactory(width, height) {
+  if (globalThis.document?.createElement) {
+    const canvas = globalThis.document.createElement('canvas');
+    canvas.width = width;
+    canvas.height = height;
+    return canvas;
+  }
+  if (typeof globalThis.OffscreenCanvas === 'function') return new globalThis.OffscreenCanvas(width, height);
+  return null;
+}
+
+function contextScale(context) {
+  const transform = context?.getTransform?.();
+  const candidate = Math.max(Math.abs(transform?.a ?? 1), Math.abs(transform?.d ?? 1));
+  if (!Number.isFinite(candidate) || candidate <= 0) return 1;
+  return Math.max(0.25, Math.min(2, candidate));
+}
+
+function describeRoomCache(room, state, scale, resolveAsset) {
+  const roomId = room?.id ?? state?.roomId ?? 'ch1.bedroom';
+  const variant = state?.roomVariant ?? 'base';
+  const variantLayers = room?.background?.variants?.[variant];
+  const layers = variantLayers?.length ? variantLayers : (room?.background?.layers ?? []);
+  const keys = [...new Set(layers.filter((key) => key && resolveAsset(key)))];
+  const safeScale = Number.isFinite(scale) && scale > 0 ? Math.max(0.25, Math.min(2, scale)) : 1;
+  const width = Math.max(1, Math.round(WORLD.width * safeScale));
+  const height = Math.max(1, Math.round(WORLD.height * safeScale));
+  const key = `${roomId}:${variant}:${width}x${height}:${keys.join('|')}`;
+  return {
+    key,
+    roomId,
+    variant,
+    keys,
+    width,
+    height,
+    fit: room?.background?.fit ?? 'cover',
+    focalPoint: room?.background?.focalPoint ?? { x: 0.5, y: 0.5 },
+  };
+}
+
+function compositeLayer(context, image, description) {
+  const destinationAspect = description.width / description.height;
+  const imageAspect = image.naturalWidth / image.naturalHeight;
+  let sourceWidth = image.naturalWidth;
+  let sourceHeight = image.naturalHeight;
+  if (description.fit === 'cover') {
+    if (imageAspect > destinationAspect) sourceWidth = image.naturalHeight * destinationAspect;
+    else sourceHeight = image.naturalWidth / destinationAspect;
+  }
+  const focalX = Math.max(0, Math.min(1, description.focalPoint.x ?? 0.5));
+  const focalY = Math.max(0, Math.min(1, description.focalPoint.y ?? 0.5));
+  const sourceX = (image.naturalWidth - sourceWidth) * focalX;
+  const sourceY = (image.naturalHeight - sourceHeight) * focalY;
+  context.drawImage(
+    image,
+    sourceX,
+    sourceY,
+    sourceWidth,
+    sourceHeight,
+    0,
+    0,
+    description.width,
+    description.height,
+  );
 }
 
 function drawBedroom(context, time) {

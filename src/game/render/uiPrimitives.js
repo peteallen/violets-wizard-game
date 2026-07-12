@@ -86,7 +86,10 @@ export function drawRibbonTab(context, rect, label, { icon = '', active = false 
   context.fillStyle = active ? '#fff8e8' : '#30261f';
   context.textAlign = 'center';
   context.font = '700 25px "Andika", "Trebuchet MS", sans-serif';
-  context.fillText(`${icon ? `${icon}  ` : ''}${label}`, x + width / 2, y + height / 2 + 9);
+  if (typeof icon === 'function') {
+    icon(context, x + 42, y + height / 2, Math.min(46, height * 0.55));
+    context.fillText(label, x + width / 2 + 20, y + height / 2 + 9);
+  } else context.fillText(`${icon ? `${icon}  ` : ''}${label}`, x + width / 2, y + height / 2 + 9);
   context.restore();
 }
 
@@ -163,12 +166,12 @@ export function drawReplayRibbon(context, rect, label = 'Return to saved game') 
   context.restore();
 }
 
-export function drawHoldGear(context, rect, progress = 0) {
+export function drawHoldGear(context, rect, progress = 0, icon = '⚙') {
   const x = rect.x + rect.width / 2;
   const y = rect.y + rect.height / 2;
   const radius = Math.min(rect.width, rect.height) * 0.38;
   context.save();
-  drawWaxMedallion(context, x, y, radius, '⚙');
+  drawWaxMedallion(context, x, y, radius, icon);
   if (progress > 0) {
     context.strokeStyle = '#fff8e8';
     context.lineWidth = 9;
@@ -199,8 +202,11 @@ export function drawWaxMedallion(context, x, y, radius, glyph, { danger = false 
   context.stroke();
   context.fillStyle = '#fff8e8';
   context.textAlign = 'center';
-  context.font = `700 ${Math.round(radius * 1.05)}px "Andika", "Trebuchet MS", sans-serif`;
-  context.fillText(glyph, x, y + radius * 0.36);
+  if (typeof glyph === 'function') glyph(context, x, y, radius * 1.18);
+  else {
+    context.font = `700 ${Math.round(radius * 1.05)}px "Andika", "Trebuchet MS", sans-serif`;
+    context.fillText(glyph, x, y + radius * 0.36);
+  }
   context.restore();
 }
 

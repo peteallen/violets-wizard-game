@@ -59,7 +59,7 @@ describe('ImmutableRegistry', () => {
 });
 
 describe('state fixtures', () => {
-  it('registers the five deterministic progression states as immutable data', () => {
+  it('registers deterministic progression and visual-review states as immutable data', () => {
     expect(STATE_FIXTURE_IDS).toEqual([
       'foundation',
       'ch1-start',
@@ -72,6 +72,15 @@ describe('state fixtures', () => {
       'parent-confirm',
       'parent-yearbook',
       'save-transfer',
+      'character-cast-review',
+      'character-pets-review',
+      'character-portraits-review',
+      'owl-motion-review',
+      'ui-dialogue-review',
+      'ui-choices-review',
+      'ui-satchel-map-review',
+      'ui-objective-review',
+      'ui-chapter-card-review',
     ]);
     for (const id of STATE_FIXTURE_IDS) {
       const fixture = getStateFixture(id);
@@ -140,6 +149,14 @@ describe('action fixtures', () => {
 });
 
 describe('registered harness scenarios', () => {
+  it('registers dedicated gameplay-scale review scenes for the cast, companions, portraits, and owl poses', () => {
+    for (const id of ['character-cast-review', 'character-pets-review', 'character-portraits-review', 'owl-motion-review']) {
+      expect(STATE_FIXTURE_IDS).toContain(id);
+      expect(ACTION_FIXTURE_IDS).toContain(id);
+      expect(parseHarnessRequest(`?scene=${id}`)).toMatchObject({ scene: id, state: id, actions: id });
+    }
+  });
+
   it('defaults manual scene URLs to matching immutable state and action fixtures', () => {
     expect(parseHarnessRequest('?scene=ch1-start&frame=120&seed=1337')).toEqual({
       scene: 'ch1-start',

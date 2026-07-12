@@ -94,6 +94,29 @@ describe('Chapter 1 resume recaps', () => {
     expect(game.world.tap).not.toHaveBeenCalled();
   });
 
+  it('replays a resume recap from the visible Again control without dismissing it', () => {
+    const recap = chapter1ResumeRecaps[1];
+    const game = Object.create(Game.prototype);
+    game.debug = false;
+    game.screen = 'playing';
+    game.replayMode = false;
+    game.resumeRecap = recap;
+    game.shouldShowDebugReset = () => false;
+    game.shouldShowReplayExit = () => false;
+    game.sound = {
+      unlock: vi.fn().mockResolvedValue(undefined),
+      playSfx: vi.fn(),
+      speak: vi.fn(),
+    };
+    game.updateStatus = vi.fn();
+
+    game.handleTap({ x: 1062, y: 549 });
+
+    expect(game.resumeRecap).toBe(recap);
+    expect(game.sound.speak).toHaveBeenCalledWith(recap.voice, recap.text);
+    expect(game.updateStatus).toHaveBeenCalledWith(recap.text);
+  });
+
   it('pauses world simulation until the recap is dismissed', () => {
     const game = Object.create(Game.prototype);
     game.simTime = 0;

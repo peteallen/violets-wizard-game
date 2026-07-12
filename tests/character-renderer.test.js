@@ -1,0 +1,86 @@
+import { describe, expect, it } from 'vitest';
+import {
+  CHARACTER_REVIEW_SCENES,
+  CharacterRenderer,
+  sampleCompanionMotion,
+} from '../src/game/render/CharacterRenderer.js';
+
+function recordingContext() {
+  const calls = [];
+  let depth = 0;
+  const gradient = { addColorStop: (...args) => calls.push(['addColorStop', ...args]) };
+  const methods = new Set([
+    'arc', 'arcTo', 'beginPath', 'bezierCurveTo', 'clip', 'closePath', 'ellipse', 'fill', 'fillRect',
+    'fillText', 'lineTo', 'moveTo', 'quadraticCurveTo', 'rect', 'restore', 'rotate', 'roundRect',
+    'save', 'scale', 'setLineDash', 'stroke', 'strokeRect', 'translate',
+  ]);
+  const target = { globalAlpha: 1, calls, get depth() { return depth; } };
+  return new Proxy(target, {
+    get(object, property) {
+      if (property === 'createLinearGradient' || property === 'createRadialGradient') {
+        return (...args) => { calls.push([property, ...args]); return gradient; };
+      }
+      if (methods.has(property)) {
+        return (...args) => {
+          calls.push([property, ...args]);
+          if (property === 'save') depth += 1;
+          if (property === 'restore') depth -= 1;
+        };
+      }
+      return object[property];
+    },
+    set(object, property, value) {
+      object[property] = value;
+      return true;
+    },
+  });
+}
+
+describe('illustrated character renderer', () => {
+  it('draws every registered review surface deterministically without leaking canvas state', () => {
+    const renderer = new CharacterRenderer();
+    for (const scene of CHARACTER_REVIEW_SCENES) {
+      const first = recordingContext();
+      const second = recordingContext();
+      expect(renderer.drawReviewScene(first, scene, 1.375)).toBe(true);
+      expect(renderer.drawReviewScene(second, scene, 1.375)).toBe(true);
+      expect(first.calls).toEqual(second.calls);
+      expect(first.calls.length).toBeGreaterThan(100);
+      expect(first.depth).toBe(0);
+    }
+    expect(renderer.drawReviewScene(recordingContext(), 'unrelated-scene', 0)).toBe(false);
+  });
+
+  it('provides one balanced portrait API for the whole dialogue cast and narrator', () => {
+    const renderer = new CharacterRenderer();
+    const speakers = ['Violet', 'Hagrid', 'Ollivander', 'Madam Malkin', 'Menagerie keeper', 'Narrator', 'cat', 'owl', 'toad'];
+    for (const speaker of speakers) {
+      const context = recordingContext();
+      renderer.drawPortrait(context, { speaker, pose: 'speaking', x: 80, y: 90, scale: 1.2 }, 2.25);
+      expect(context.calls.length).toBeGreaterThan(35);
+      expect(context.depth).toBe(0);
+      expect(context.calls.some(([name]) => name === 'clip')).toBe(true);
+    }
+
+    const authoredTalk = recordingContext();
+    const canonicalSpeaking = recordingContext();
+    renderer.drawPortrait(authoredTalk, { speaker: 'Hagrid', pose: 'talk', x: 80, y: 90 }, 0.37);
+    renderer.drawPortrait(canonicalSpeaking, { speaker: 'Hagrid', pose: 'speaking', x: 80, y: 90 }, 0.37);
+    expect(authoredTalk.calls).toEqual(canonicalSpeaking.calls);
+  });
+
+  it('keeps cat and toad follow motion deterministic, bounded, and calmer in reduced motion', () => {
+    for (const type of ['cat', 'toad']) {
+      const input = { type, pose: 'pet-follow', time: 0.25 };
+      const full = sampleCompanionMotion(input);
+      const repeated = sampleCompanionMotion(input);
+      const reduced = sampleCompanionMotion({ ...input, reducedMotion: true });
+      expect(repeated).toEqual(full);
+      expect(Object.values(full).every(Number.isFinite)).toBe(true);
+      expect(Math.abs(full.tilt)).toBeLessThan(0.08);
+      expect(full.hop).toBeGreaterThanOrEqual(0);
+      expect(Math.abs(reduced.tilt)).toBeLessThan(Math.abs(full.tilt));
+      expect(reduced.hop).toBeLessThan(full.hop);
+    }
+  });
+});

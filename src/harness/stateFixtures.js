@@ -125,6 +125,10 @@ function completedSurfaceFixture(id, description) {
   );
 }
 
+function characterReviewFixture(id, description) {
+  return createFixture(description, { chapter: 0, scene: id }, createSave());
+}
+
 registry
   .register('foundation', createFixture(
     'The title screen before Violet begins the story.',
@@ -191,6 +195,42 @@ registry
   .register('save-transfer', completedSurfaceFixture(
     'save-transfer',
     'The accessible save export transfer dialog over the game.',
+  ))
+  .register('character-cast-review', characterReviewFixture(
+    'character-cast-review',
+    'The full Chapter One cast together at their real in-world rendering scale.',
+  ))
+  .register('character-pets-review', characterReviewFixture(
+    'character-pets-review',
+    'All three companion choices enlarged enough to review follow motion and material detail.',
+  ))
+  .register('character-portraits-review', characterReviewFixture(
+    'character-portraits-review',
+    'Every dialogue cameo produced from the same illustrated puppet family.',
+  ))
+  .register('owl-motion-review', characterReviewFixture(
+    'owl-motion-review',
+    'The hero owl shown across every shipped pose at gameplay scale.',
+  ))
+  .register('ui-dialogue-review', characterReviewFixture(
+    'ui-dialogue-review',
+    'The illustrated dialogue parchment, animated Hagrid cameo, short caption, and replay control.',
+  ))
+  .register('ui-choices-review', characterReviewFixture(
+    'ui-choices-review',
+    'Three authored companion choice cards without font-glyph stand-ins.',
+  ))
+  .register('ui-satchel-map-review', characterReviewFixture(
+    'ui-satchel-map-review',
+    'The open storybook satchel and its objective-aware Diagon Alley map.',
+  ))
+  .register('ui-objective-review', characterReviewFixture(
+    'ui-objective-review',
+    'The enchanted-compass objective page with owl ornament.',
+  ))
+  .register('ui-chapter-card-review', characterReviewFixture(
+    'ui-chapter-card-review',
+    'The illustrated Chapter One completion page and invitation action.',
   ))
   .seal();
 

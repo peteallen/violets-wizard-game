@@ -45,6 +45,10 @@ Rules learned from the sibling pipelines:
 
 Characters are drawn in canvas as layered part-puppets (body, head, hair, arms, wand, accessories) with bone-lite tweening — walk bob, idle sway, head-turns toward whatever was tapped, blink cycles, big readable emotes (jump-for-joy, tumble, giggle).
 
+“Vector” is an implementation medium, not a license to simplify the cast. Finished puppets use shaped anatomy, overlapping hair/fur/feather masses, articulated hands and shoes, facial structure, brows and eyelids, clothing folds, material accents, asymmetry, expressive posture, and secondary motion. No final character may read as a stack of geometric primitives, a low-poly model, or a placeholder at gameplay scale. The hero owl establishes the floor for the entire cast: layered feathers, distinct facial disks, eye tracking, blinking, breathing, head turns, wing articulation, hops, perching, flight, and companion-follow behavior.
+
+Owls recur as a personal motif for Violet wherever the fiction supports them: post, pets, brass hardware, wax seals, satchel clasps, maps, letters, chapter pages, and keepsakes. The motif should make the game feel made specifically for her without becoming repeated decorative clutter.
+
 Why code-drawn against painted rooms: full control of Violet's exact look, animation without a spritesheet pipeline, crisp at any DPR, and instant iteration. The two layers are stitched together by a shared treatment:
 
 - **Soft dark-brown outlines** (`#3a2d22`, ~2.5px virtual, slightly varying weight), never black.

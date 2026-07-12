@@ -114,6 +114,14 @@ async function settleAsyncAction() {
 
 async function preloadVisibleRoom(game) {
   if (!game.world) return;
+  if (typeof game.roomRenderer.preloadRoom === 'function') {
+    await game.roomRenderer.preloadRoom(
+      game.world.room,
+      game.world.snapshot(),
+      { scale: game.dpr * game.scale },
+    );
+    return;
+  }
   const background = game.world.room?.background;
   const keys = [
     ...(background?.layers ?? []),
@@ -144,6 +152,7 @@ export async function bootHarness({
     let game;
     game = new Game(canvas, {
       harness: true,
+      harnessScene: request.scene,
       width: request.width,
       height: request.height,
       dpr: request.dpr,

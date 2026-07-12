@@ -55,24 +55,95 @@ canvas {
   z-index: 10;
   top: max(18px, env(safe-area-inset-top));
   right: max(18px, env(safe-area-inset-right));
-  min-height: 88px;
-  max-width: min(360px, calc(100vw - 36px));
-  padding: 18px 26px;
-  border: 4px solid #ffd76a;
-  border-radius: 28px;
-  color: #141126;
-  background: #f0e3c8;
-  box-shadow: 0 8px 0 rgb(20 17 38 / 35%);
-  font: 700 24px/1.2 "Trebuchet MS", "Avenir Next", system-ui, sans-serif;
-  text-align: center;
+  display: grid;
+  grid-template-columns: 68px minmax(0, 1fr);
+  gap: 10px 14px;
+  width: min(430px, calc(100vw - 36px));
+  padding: 16px 18px 18px;
+  border: 5px double #a78137;
+  clip-path: polygon(16px 0, calc(100% - 16px) 0, 100% 16px, 100% calc(100% - 16px), calc(100% - 16px) 100%, 16px 100%, 0 calc(100% - 16px), 0 16px);
+  color: #382a24;
+  background: #f3e6ca;
+  box-shadow: 0 10px 0 rgb(20 17 38 / 38%), inset 0 0 0 3px #ead09b;
+  font: 22px/1.2 "Andika", "Trebuchet MS", sans-serif;
+  touch-action: manipulation;
+}
+
+.version-reload-owl {
+  grid-row: 1 / span 2;
+  width: 68px;
+  height: 68px;
+  align-self: center;
+  overflow: visible;
+}
+
+.version-reload-owl > :first-child {
+  fill: #5e4634;
+  stroke: #382a24;
+  stroke-width: 3;
+  stroke-linejoin: round;
+}
+
+.version-reload-owl ellipse {
+  fill: #fff8e8;
+  stroke: #382a24;
+  stroke-width: 2.5;
+}
+
+.version-reload-owl circle {
+  fill: #382a24;
+}
+
+.version-reload-owl > :last-child {
+  fill: none;
+  stroke: #d6a142;
+  stroke-width: 4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.version-reload-copy {
+  display: grid;
+  gap: 2px;
+}
+
+.version-reload-copy strong {
+  color: #4d2430;
+  font-size: 24px;
+}
+
+.version-reload-copy span {
+  color: #6b5744;
+  font-size: 18px;
+}
+
+.version-reload-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.version-reload-actions button {
+  min-height: 58px;
+  border: 3px solid #8a6b44;
+  border-radius: 18px;
+  color: #382a24;
+  background: #ead9b7;
+  font: 700 20px/1 "Andika", "Trebuchet MS", sans-serif;
   cursor: pointer;
   touch-action: manipulation;
   -webkit-tap-highlight-color: transparent;
 }
 
-.version-reload:focus-visible {
-  outline: 6px solid #fff;
-  outline-offset: 4px;
+.version-reload-actions button:first-child {
+  border-color: #ffd76a;
+  color: #fff8e8;
+  background: #4d2430;
+}
+
+.version-reload-actions button:focus-visible {
+  outline: 5px solid #fff;
+  outline-offset: 3px;
 }
 
 .version-reload[hidden] {

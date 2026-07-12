@@ -2,6 +2,7 @@ import { describe, expect, it, vi } from 'vitest';
 import {
   VersionWatcher,
   resolveVersionUrl,
+  shouldRevealVersionOffer,
   validateVersionPayload,
 } from '../src/game/core/VersionWatcher.js';
 import { createBuildIdentity, versionFilePlugin } from '../vite.config.js';
@@ -37,6 +38,21 @@ describe('deployed build identity', () => {
 });
 
 describe('VersionWatcher', () => {
+  it('defers update offers until a calm story surface', () => {
+    expect(shouldRevealVersionOffer({ screen: 'title' })).toBe(true);
+    expect(shouldRevealVersionOffer({ screen: 'playing', state: { roomId: 'ch1.bedroom' } })).toBe(false);
+    expect(shouldRevealVersionOffer({
+      screen: 'playing',
+      state: { roomId: 'ch1.bedroom', dialogue: { type: 'line' }, overlay: { surface: 'satchel' } },
+    })).toBe(false);
+    expect(shouldRevealVersionOffer({
+      screen: 'playing', state: { roomId: 'ch1.bedroom', overlay: { surface: 'satchel' } },
+    })).toBe(true);
+    expect(shouldRevealVersionOffer({
+      screen: 'playing', state: { chapterId: 'ch2', roomId: 'ch2.previewRoom' },
+    })).toBe(true);
+  });
+
   it('resolves version.json beneath BASE_URL and bypasses caches', async () => {
     expect(resolveVersionUrl('./', 'https://example.test/wizard/index.html')).toBe(
       'https://example.test/wizard/version.json',

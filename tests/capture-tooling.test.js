@@ -65,6 +65,10 @@ describe('snap command helpers', () => {
     expect(options.seeds).toEqual([1, 42]);
     expect(options.dpr).toBe(2);
     expect(scenarioDirectoryName(options)).toBe('foundation__foundation__reduced__off__640x360@2x');
+
+    const chapter = parseSnapArgs(['--scene', 'ch1-start', '--frames', '470']);
+    expect(chapter).toMatchObject({ scene: 'ch1-start', state: 'ch1-start', actions: 'ch1-start' });
+    expect(scenarioDirectoryName(chapter)).toBe('ch1-start__ch1-start__full__gentle__640x360@1x');
   });
 
   it('rejects off-grid times and decodes only PNG data URLs', () => {

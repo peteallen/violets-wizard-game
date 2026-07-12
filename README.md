@@ -2,7 +2,7 @@
 
 A private, non-commercial fan game for Violet (6): she goes to Hogwarts as a first-year, learns spells class by class, and at the end of the year she duels Voldemort and wins.
 
-**Status: planning.** No game code exists yet — by design. The documentation suite below is the source of truth, written before the first line of engine code. Read in this order:
+**Status: Chapter One is playable end to end, with an intentional Chapter Two preview.** The current game is published at [peteallen.github.io/violets-wizard-game](https://peteallen.github.io/violets-wizard-game/). The documentation remains the product source of truth; read it in this order:
 
 | Doc | What it holds |
 |---|---|
@@ -27,3 +27,7 @@ Playable without fluent reading. Touch-first on iPad. Forgiving everywhere. No f
 Open the game with `?debug=1` while building or testing to show a large `DEV: Reset game` control at the top of the canvas. The same reset is available from the keyboard with `Alt+Shift+R`, or from the browser console with `window.__violetWizard.resetGame()`. Each route clears both the current save and its recovery backup before returning to the opening title.
 
 For automation or a clean one-time launch, use `?reset=1`. The game clears the save before it starts, removes the `reset` parameter from the address without disturbing other parameters or the URL fragment, and does not add another browser-history entry. The ordinary game URL shows no reset control and does not enable the keyboard shortcut.
+
+## Build and visual review
+
+Use `npm run dev` for the local game and `npm run build` for the complete test, asset, voice, audio, and production-build gate. Visual work is reviewed through deterministic registered scenes: `npm run snap -- --scene <scene-id> --times 0,0.5,1 --seed 42` writes ignored review frames, while `npm run flipbook -- --scene <scene-id>` produces the motion strip. Agents may prepare those review artifacts, but only explicit human approval can bless a new golden.

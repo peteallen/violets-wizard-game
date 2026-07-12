@@ -16,9 +16,22 @@
     <main id="game-root">
       <canvas id="game" aria-label="Violet's Wizard Game"></canvas>
       <p id="game-status" class="visually-hidden" aria-live="polite">Loading Violet's adventure.</p>
-      <button id="version-reload" class="version-reload" type="button" hidden>
-        New magic is ready — reload
-      </button>
+      <aside id="version-reload" class="version-reload" aria-label="A game update is ready" hidden>
+        <svg class="version-reload-owl" viewBox="0 0 64 64" aria-hidden="true">
+          <path d="M12 18 23 9c6-3 12-3 18 0l11 9c3 17-4 31-20 39C16 49 9 35 12 18Z" />
+          <ellipse cx="24" cy="26" rx="9" ry="10" /><ellipse cx="40" cy="26" rx="9" ry="10" />
+          <circle cx="24" cy="26" r="3" /><circle cx="40" cy="26" r="3" />
+          <path d="m28 35 4 5 4-5" />
+        </svg>
+        <span class="version-reload-copy">
+          <strong>New magic is ready</strong>
+          <span>Reload now, or keep playing this version.</span>
+        </span>
+        <span class="version-reload-actions">
+          <button id="version-reload-now" type="button">Reload</button>
+          <button id="version-reload-later" type="button">Later</button>
+        </span>
+      </aside>
     </main>
     <script type="module" src="/src/main.js"></script>
   </body>

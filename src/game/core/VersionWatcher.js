@@ -1,4 +1,13 @@
 const FULL_GIT_SHA = /^[a-f0-9]{40}$/;
+const CALM_UPDATE_SURFACES = new Set(['satchel', 'parent', 'yearbook']);
+
+export function shouldRevealVersionOffer({ screen, state } = {}) {
+  if (screen === 'title') return true;
+  if (!state || state.dialogue || state.setPiece) return false;
+  return CALM_UPDATE_SURFACES.has(state.overlay?.surface)
+    || state.roomId === 'ch1.chapterCardRoom'
+    || state.chapterId === 'ch2';
+}
 
 export function validateVersionPayload(value, path = 'version.json') {
   if (!value || typeof value !== 'object' || Array.isArray(value)) throw new TypeError(`${path} must be an object.`);

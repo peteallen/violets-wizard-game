@@ -99,6 +99,12 @@ export class World {
       this.runActions(deferred);
     }
 
+    let pendingTarget = this.resolvePendingInteraction();
+    if (this.pendingInteraction && (!pendingTarget || this.blocked)) {
+      this.cancelPendingInteraction();
+      pendingTarget = null;
+    }
+
     const delta = this.player.targetX - this.player.x;
     if (Math.abs(delta) > 2) {
       const step = Math.sign(delta) * Math.min(Math.abs(delta), this.walkSpeed * dt);
@@ -108,11 +114,13 @@ export class World {
     } else {
       this.player.x = this.player.targetX;
       this.player.walking = false;
-      if (this.pendingInteraction) {
-        const interaction = this.pendingInteraction;
-        this.pendingInteraction = null;
-        this.runActions(interaction.actions);
-      }
+    }
+
+    if (
+      pendingTarget
+      && Math.abs(this.player.x - pendingTarget.approach.x) <= 45
+    ) {
+      this.activatePendingInteraction(pendingTarget);
     }
 
     const roomWidth = this.room.size?.width ?? WORLD.width;
@@ -135,7 +143,7 @@ export class World {
     const band = this.room.walkBand ?? { top: 560, bottom: 640 };
     this.player.targetX = Math.max(55, Math.min((this.room.size?.width ?? WORLD.width) - 55, worldPoint.x));
     this.player.y = Math.max(band.top, Math.min(band.bottom, worldPoint.y));
-    this.pendingInteraction = null;
+    this.cancelPendingInteraction({ stopWalking: false });
     this.recordFailedAttempt();
     this.emit('feedback.command', { kind: 'emptyTap', x: point.x, y: point.y });
     return { kind: 'walk', x: this.player.targetX };
@@ -152,10 +160,57 @@ export class World {
     const approach = target.approach;
     if (approach && Math.abs(this.player.x - approach.x) > 45) {
       this.player.targetX = approach.x;
-      this.pendingInteraction = { actions: target.actions };
+      this.pendingInteraction = {
+        chapterId: this.chapter.id,
+        roomId: this.roomId,
+        targetId: target.id,
+        kind: target.kind,
+        approach: { ...approach },
+      };
+      const center = hitAreaCenter(target.hitArea);
+      this.emit('feedback.command', {
+        kind: 'approach',
+        target: target.id,
+        x: center.x - this.cameraX,
+        y: center.y,
+      });
       return;
     }
+    this.cancelPendingInteraction();
+    if (approach?.facing) this.player.facing = approach.facing;
     this.runActions(target.actions);
+  }
+
+  resolvePendingInteraction() {
+    const pending = this.pendingInteraction;
+    if (!pending || pending.chapterId !== this.chapter.id || pending.roomId !== this.roomId) return null;
+    const target = this.targets().find((candidate) => candidate.id === pending.targetId);
+    if (!target?.approach) return null;
+    if (target.approach.x !== pending.approach.x || target.approach.y !== pending.approach.y) return null;
+    return target;
+  }
+
+  activatePendingInteraction(target) {
+    if (!this.pendingInteraction || target.id !== this.pendingInteraction.targetId) return false;
+    const approach = target.approach;
+    this.pendingInteraction = null;
+    this.player.x = approach.x;
+    this.player.targetX = approach.x;
+    this.player.y = approach.y;
+    this.player.facing = approach.facing;
+    this.player.walking = false;
+    this.runActions(target.actions);
+    return true;
+  }
+
+  cancelPendingInteraction({ stopWalking = true } = {}) {
+    if (!this.pendingInteraction) return false;
+    this.pendingInteraction = null;
+    if (stopWalking) {
+      this.player.targetX = this.player.x;
+      this.player.walking = false;
+    }
+    return true;
   }
 
   targets() {
@@ -359,6 +414,7 @@ export class World {
 
   travel(roomId, spawnId, transition = 'ink') {
     this.noteProgress();
+    this.cancelPendingInteraction();
     const requestedChapter = roomId.split('.')[0];
     if (requestedChapter !== this.chapter.id && this.chapters[requestedChapter]) {
       this.changeChapter(requestedChapter, roomId, spawnId);
@@ -374,7 +430,6 @@ export class World {
     this.player.targetX = this.player.x;
     this.player.facing = spawn?.facing ?? 'right';
     this.cameraX = 0;
-    this.pendingInteraction = null;
     this.save.resume = { chapter: this.chapter.id, scene: room.scene ?? roomId, room: roomId, spawn: spawnId };
     this.markDirty('scene-change', true);
     this.emit('room.transitionRequested', { from, to: roomId, spawn: spawnId, effect: transition });
@@ -386,6 +441,7 @@ export class World {
     const chapter = this.chapters[chapterId];
     if (!chapter) throw new Error(`Unknown chapter ${chapterId}.`);
     this.noteProgress();
+    this.cancelPendingInteraction();
     const from = this.roomId;
     this.chapter = chapter;
     this.bindSystems();
@@ -569,6 +625,11 @@ export class World {
       } : null,
       occupants: (this.room.occupants ?? []).filter((occupant) => conditionMatches(occupant.when, this.save)),
       targets: this.targets(),
+      pendingInteraction: this.pendingInteraction ? {
+        targetId: this.pendingInteraction.targetId,
+        kind: this.pendingInteraction.kind,
+        approach: { ...this.pendingInteraction.approach },
+      } : null,
       objective: this.objective,
       dialogue: this.dialoguePresentation,
       setPiece: this.setPieces.active,
@@ -599,6 +660,14 @@ function hitTest(point, hitArea) {
   }
   const radius = hitArea.radius ?? hitArea.r ?? 44;
   return Math.hypot(point.x - hitArea.x, point.y - hitArea.y) <= radius;
+}
+
+function hitAreaCenter(hitArea) {
+  if (!hitArea) return { x: 0, y: 0 };
+  if (hitArea.shape === 'rect') {
+    return { x: hitArea.x + hitArea.width / 2, y: hitArea.y + hitArea.height / 2 };
+  }
+  return { x: hitArea.x, y: hitArea.y };
 }
 
 function trimColor(trim) {

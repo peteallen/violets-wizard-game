@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { Game } from '../src/game/Game.js';
+import { Game, worldViewportSourceRect } from '../src/game/Game.js';
 import { INPUT, WORLD } from '../src/game/config.js';
 import { UI_RECTS } from '../src/game/render/UIRenderer.js';
 import { createSaveV1 } from '../src/game/systems/Save.js';
@@ -269,6 +269,18 @@ describe('guarded recovery and Start Over', () => {
 
     expect(game.restoreBackupSave()).toMatchObject({ ok: true, status: 'restored-backup' });
     expect(game.adoptSave).toHaveBeenCalledWith(restored, expect.objectContaining({ preserveSave: true }));
+  });
+});
+
+describe('yearbook viewport framing', () => {
+  it('crops a 4:3 iPad canvas to the centered 16:9 game viewport', () => {
+    expect(worldViewportSourceRect({
+      canvas: { width: 2048, height: 1536 },
+      dpr: 2,
+      scale: 0.8,
+      offsetX: 0,
+      offsetY: 96,
+    })).toEqual({ x: 0, y: 192, width: 2048, height: 1152 });
   });
 });
 

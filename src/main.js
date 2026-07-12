@@ -1,7 +1,7 @@
 import './style.css';
 import { Game } from './game/Game.js';
 import { loadGameFonts } from './game/core/loadFonts.js';
-import { VersionWatcher } from './game/core/VersionWatcher.js';
+import { VersionWatcher, shouldRevealVersionOffer } from './game/core/VersionWatcher.js';
 import { Save } from './game/systems/Save.js';
 
 const url = new URL(window.location.href);
@@ -29,18 +29,38 @@ const game = new Game(canvas, { debug: params.get('debug') === '1' });
 game.start();
 
 const reloadOffer = document.querySelector('#version-reload');
+const reloadNow = document.querySelector('#version-reload-now');
+const reloadLater = document.querySelector('#version-reload-later');
 const reloadForUpdate = () => window.location.reload();
+const dismissUpdate = () => { reloadOffer.hidden = true; };
 let versionWatcher = null;
+let updateOfferTimer = null;
 
-if (import.meta.env.PROD && reloadOffer) {
-  reloadOffer.addEventListener('click', reloadForUpdate);
+function updateOfferIsCalm() {
+  return shouldRevealVersionOffer({
+    screen: game.screen,
+    state: game.world?.snapshot?.(),
+  });
+}
+
+function revealUpdateAtCalmMoment() {
+  if (updateOfferIsCalm()) {
+    reloadOffer.hidden = false;
+    game.updateStatus('New magic is ready. Reload now, or keep playing this version.');
+    return;
+  }
+  updateOfferTimer = window.setTimeout(revealUpdateAtCalmMoment, 2_000);
+}
+
+if (import.meta.env.PROD && reloadOffer && reloadNow && reloadLater) {
+  reloadNow.addEventListener('click', reloadForUpdate);
+  reloadLater.addEventListener('click', dismissUpdate);
   versionWatcher = new VersionWatcher({
     currentSha: import.meta.env.VITE_BUILD_SHA,
     baseUrl: import.meta.env.BASE_URL,
     locationHref: window.location.href,
     onUpdate: () => {
-      reloadOffer.hidden = false;
-      game.updateStatus('New magic is ready. Reload whenever you are ready.');
+      revealUpdateAtCalmMoment();
     },
   });
   versionWatcher.start();
@@ -55,7 +75,9 @@ window.__violetWizard = game;
 if (import.meta.hot) {
   import.meta.hot.dispose(() => {
     versionWatcher?.stop();
-    reloadOffer?.removeEventListener('click', reloadForUpdate);
+    if (updateOfferTimer !== null) window.clearTimeout(updateOfferTimer);
+    reloadNow?.removeEventListener('click', reloadForUpdate);
+    reloadLater?.removeEventListener('click', dismissUpdate);
     game.destroy();
   });
 }

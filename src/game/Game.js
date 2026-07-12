@@ -11,6 +11,7 @@ import { Particles } from './render/Particles.js';
 import { RoomRenderer } from './render/RoomRenderer.js';
 import { SetPieceRenderer } from './render/SetPieceRenderer.js';
 import { UIRenderer, UI_RECTS, pointInUiRect } from './render/UIRenderer.js';
+import { WorldPropRenderer } from './render/WorldPropRenderer.js';
 import { Save, YEARBOOK_MAX_BYTES, createSaveV1 } from './systems/Save.js';
 import { World } from './world/World.js';
 
@@ -24,6 +25,7 @@ export class Game {
     if (!this.context) throw new Error('Canvas 2D is unavailable.');
 
     this.harness = Boolean(options.harness);
+    this.harnessScene = typeof options.harnessScene === 'string' ? options.harnessScene : null;
     this.debug = Boolean(options.debug);
     this.promptForText = options.promptForText ?? ((message, initialValue = '') => globalThis.prompt?.(message, initialValue) ?? null);
     this.clock = options.clock ?? (() => this.harness ? FIXED_HARNESS_TIME : new Date().toISOString());
@@ -65,6 +67,7 @@ export class Game {
       volumes: this.saveData.settings.volumes,
     });
     this.roomRenderer = new RoomRenderer({ resolveAsset });
+    this.worldPropRenderer = new WorldPropRenderer();
     this.characterRenderer = new CharacterRenderer();
     this.uiRenderer = new UIRenderer({ resolveAsset });
     this.setPieceRenderer = new SetPieceRenderer();
@@ -300,6 +303,12 @@ export class Game {
       return;
     }
     if (this.resumeRecap) {
+      if (pointInUiRect(point, UI_RECTS.dialogueReplay)) {
+        this.sound.playSfx('sfx/ui/tap', 'tap');
+        this.sound.speak(this.resumeRecap.voice, this.resumeRecap.text);
+        this.updateStatus(this.resumeRecap.text);
+        return;
+      }
       this.dismissResumeRecap();
       return;
     }
@@ -322,6 +331,9 @@ export class Game {
         }
         this.sound.playSfx('sfx/ui/choice', 'chime');
         this.world.advanceDialogue(choice.id);
+      } else if (pointInUiRect(point, UI_RECTS.dialogueReplay)) {
+        this.sound.playSfx('sfx/ui/tap', 'tap');
+        this.world.dialogue.replay();
       } else {
         this.sound.playSfx('sfx/ui/page', 'tap');
         this.world.advanceDialogue();
@@ -899,7 +911,18 @@ export class Game {
     thumbnail.height = 270;
     const context = thumbnail.getContext('2d');
     if (!context) return;
-    context.drawImage(this.canvas, 0, 0, this.canvas.width, this.canvas.height, 0, 0, 480, 270);
+    const source = worldViewportSourceRect(this);
+    context.drawImage(
+      this.canvas,
+      source.x,
+      source.y,
+      source.width,
+      source.height,
+      0,
+      0,
+      480,
+      270,
+    );
     let dataUrl = thumbnail.toDataURL('image/jpeg', 0.58);
     let byteLength = dataUrlBytes(dataUrl);
     if (byteLength > YEARBOOK_MAX_BYTES) {
@@ -966,8 +989,20 @@ export class Game {
     context.fillStyle = PALETTE.ink;
     context.fillRect(0, 0, this.canvas.width, this.canvas.height);
     this.withWorldTransform((ctx) => {
+      if (this.harness && this.characterRenderer.drawReviewScene(
+        ctx,
+        this.harnessScene,
+        this.simTime,
+        { reducedMotion: this.reducedMotion },
+      )) return;
+      if (this.harness && this.uiRenderer.drawReviewScene(
+        ctx,
+        this.harnessScene,
+        this.simTime,
+        { reducedMotion: this.reducedMotion },
+      )) return;
       if (this.screen === 'title' || !this.world) {
-        this.uiRenderer.drawTitle(ctx, this.simTime, this.hasStoredSave);
+        this.uiRenderer.drawTitle(ctx, this.simTime, this.hasStoredSave, this.reducedMotion);
       } else this.renderWorld(ctx);
       if (this.shouldShowDebugReset()) this.uiRenderer.drawDebugReset(ctx);
     });
@@ -983,23 +1018,44 @@ export class Game {
       const card = this.world.chapter.id === 'ch2'
         ? { eyebrow: 'Chapter Two', title: 'Platform Nine and Three-Quarters', subtitle: 'Coming next: the Hogwarts Express!', buttonLabel: 'Choose below' }
         : { eyebrow: 'Chapter One Complete', title: 'Platform Nine and Three-Quarters', subtitle: 'Next time: the Hogwarts Express!' };
-      this.uiRenderer.drawChapterCard(context, card, this.simTime, { paintedBackground: true });
+      this.uiRenderer.drawChapterCard(context, card, this.simTime, {
+        paintedBackground: true,
+        reducedMotion: this.reducedMotion,
+      });
     } else {
       this.roomRenderer.draw(context, room, state, this.simTime, { x: state.cameraX });
+      this.worldPropRenderer.draw(context, state, this.simTime, { reducedMotion: this.reducedMotion });
       this.drawWorldTargets(context, state);
       this.drawCharacters(context, state);
       this.particles.draw(context);
     }
 
-    this.setPieceRenderer.draw(context, state.setPiece, state);
-    this.uiRenderer.drawHud(context, state, this.simTime);
-    if (this.resumeRecap) this.uiRenderer.drawResumeRecap(context, this.resumeRecap, this.simTime, this.saveData.settings.muted);
-    else {
-      if (state.dialogue) this.uiRenderer.drawDialogue(context, state.dialogue, this.simTime, this.saveData.settings.muted);
+    this.setPieceRenderer.draw(context, state.setPiece, state, { reducedMotion: this.reducedMotion });
+    this.uiRenderer.drawHud(context, state, this.simTime, this.reducedMotion);
+    if (this.resumeRecap) {
+      this.uiRenderer.drawResumeRecap(
+        context,
+        this.resumeRecap,
+        this.simTime,
+        this.saveData.settings.muted,
+        this.reducedMotion,
+      );
+    } else {
+      if (state.dialogue) {
+        this.uiRenderer.drawDialogue(
+          context,
+          state.dialogue,
+          this.simTime,
+          this.saveData.settings.muted,
+          this.reducedMotion,
+        );
+      }
       if (state.overlay?.surface === 'satchel') {
         this.uiRenderer.drawSatchel(context, state, cards, { parentGateProgress: this.parentGateProgress });
       }
-      if (state.overlay?.surface === 'objective') this.uiRenderer.drawObjective(context, state.objective);
+      if (state.overlay?.surface === 'objective') {
+        this.uiRenderer.drawObjective(context, state.objective, this.simTime, { reducedMotion: this.reducedMotion });
+      }
       if (state.overlay?.surface === 'parent') this.uiRenderer.drawParentPanel(context, this.parentPanelModel(state.overlay));
       if (state.overlay?.surface === 'yearbook') {
         const durableSave = this.replayMode && this.canonicalSave ? this.canonicalSave : this.saveData;
@@ -1070,11 +1126,30 @@ export class Game {
       if (actor.type === 'violet') {
         this.characterRenderer.draw(context, { ...state.player, x: state.player.x - state.cameraX }, this.simTime);
       } else if (actor.type === 'pet') {
-        this.characterRenderer.drawPet(context, { ...state.pet, x: state.pet.x - state.cameraX }, this.simTime);
+        this.characterRenderer.drawPet(context, {
+          ...state.pet,
+          x: state.pet.x - state.cameraX,
+          facing: state.player.facing,
+          variant: state.pet.type === 'owl' ? 'pet' : undefined,
+          pose: state.player.walking ? 'pet-follow' : 'idle',
+          reducedMotion: this.reducedMotion,
+          lookX: state.player.facing === 'right' ? 0.45 : -0.45,
+        }, this.simTime);
       } else {
         const { occupant } = actor;
         if (occupant.npc === 'npc.owlPost') {
-          this.characterRenderer.drawPet(context, { type: 'owl', x: occupant.x - state.cameraX, y: occupant.y + 80 }, this.simTime);
+          this.characterRenderer.drawPet(context, {
+            type: 'owl',
+            variant: 'post',
+            pose: occupant.pose ?? 'perch',
+            x: occupant.x - state.cameraX,
+            y: occupant.y + 80,
+            scale: 1.08,
+            facing: occupant.facing,
+            reducedMotion: this.reducedMotion,
+            lookX: clamp((state.player.x - occupant.x) / 360, -1, 1),
+            lookY: clamp((state.player.y - occupant.y - 170) / 300, -1, 1),
+          }, this.simTime);
           continue;
         }
         const kind = occupant.npc === 'npc.guide'
@@ -1090,7 +1165,10 @@ export class Game {
 
     if (state.roomId === 'ch1.menagerie' && !this.world.flags['ch1.petNamed']) {
       this.characterRenderer.drawPet(context, { type: 'cat', x: 650 - state.cameraX, y: 585 }, this.simTime);
-      this.characterRenderer.drawPet(context, { type: 'owl', x: 900 - state.cameraX, y: 520 }, this.simTime + 0.7);
+      this.characterRenderer.drawPet(context, {
+        type: 'owl', variant: 'pet', pose: 'idle', x: 900 - state.cameraX, y: 520,
+        scale: 0.92, reducedMotion: this.reducedMotion, lookX: -0.35,
+      }, this.simTime + 0.7);
       this.characterRenderer.drawPet(context, { type: 'toad', x: 1110 - state.cameraX, y: 595 }, this.simTime + 1.3);
     }
   }
@@ -1109,7 +1187,12 @@ export class Game {
       : [];
     if (this.screen === 'title') return [{ id: 'foundation.start', x: 640, y: 460 }, ...debugTargets];
     if (!this.world) return debugTargets;
-    if (this.resumeRecap) return [{ id: 'resume.continue', x: 1065, y: 630 }];
+    if (this.resumeRecap) {
+      return [
+        { id: 'resume.continue', x: 1065, y: 630 },
+        semanticRect('dialogue.replay', UI_RECTS.dialogueReplay),
+      ];
+    }
     const state = this.lastRenderState ?? this.world.snapshot();
     const targets = state.targets.map((target) => ({
       id: target.id,
@@ -1122,6 +1205,7 @@ export class Game {
       { id: 'hud.wand', x: 1198, y: 638 },
     );
     if (this.shouldShowReplayExit()) targets.push(semanticRect('replay.exit', UI_RECTS.replayExit));
+    if (state.dialogue?.type === 'line') targets.push(semanticRect('dialogue.replay', UI_RECTS.dialogueReplay));
     for (const choice of state.dialogue?.choices ?? []) {
       if (choice.__rect) targets.push({ id: `dialogue.${choice.id}`, x: choice.__rect.x + choice.__rect.width / 2, y: choice.__rect.y + choice.__rect.height / 2 });
     }
@@ -1257,6 +1341,7 @@ export class Game {
     this.sessionGeneration += 1;
     this.saveManager.destroy();
     this.sound.destroy();
+    this.roomRenderer.destroy?.();
     this.saveTransferDialog?.destroy?.();
     window.removeEventListener('resize', this.boundResize);
     document.removeEventListener('visibilitychange', this.boundVisibility);
@@ -1267,6 +1352,18 @@ export class Game {
     this.canvas.removeEventListener('pointercancel', this.boundPointerCancel);
     if (this.debug) window.removeEventListener('keydown', this.boundKeyDown);
   }
+}
+
+export function worldViewportSourceRect(game) {
+  const dpr = Number.isFinite(game?.dpr) && game.dpr > 0 ? game.dpr : 1;
+  const scale = Number.isFinite(game?.scale) && game.scale > 0 ? game.scale : 1;
+  const canvasWidth = Math.max(1, game?.canvas?.width ?? WORLD.width);
+  const canvasHeight = Math.max(1, game?.canvas?.height ?? WORLD.height);
+  const x = clamp((game?.offsetX ?? 0) * dpr, 0, canvasWidth - 1);
+  const y = clamp((game?.offsetY ?? 0) * dpr, 0, canvasHeight - 1);
+  const width = clamp(WORLD.width * scale * dpr, 1, canvasWidth - x);
+  const height = clamp(WORLD.height * scale * dpr, 1, canvasHeight - y);
+  return Object.freeze({ x, y, width, height });
 }
 
 function safeStorage() {

@@ -96,8 +96,8 @@ export function parseFrames(options) {
 
 export function normalizeCaptureSelectors(options) {
   const scene = options.scene ?? 'foundation';
-  const state = options.state ?? 'foundation';
-  const actions = options.actions ?? 'foundation';
+  const state = options.state ?? scene;
+  const actions = options.actions ?? scene;
   assertRegistryId(scene, 'scene');
   assertRegistryId(state, 'state fixture');
   assertRegistryId(actions, 'action fixture');

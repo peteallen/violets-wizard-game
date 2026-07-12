@@ -741,8 +741,8 @@ export const chapter1 = {
         {
           id: 'bedroom.letter',
           kind: 'inspect',
-          hitArea: circle(910, 485, 100),
-          approach: { x: 825, y: 610, facing: 'right' },
+          hitArea: circle(650, 350, 160),
+          approach: { x: 760, y: 610, facing: 'left' },
           when: when({ allFlags: ['ch1.owlTapped'], noFlags: ['ch1.letterRead'] }),
           presentation: { icon: 'letter', glow: 'objective' },
           repeat: 'until-condition',

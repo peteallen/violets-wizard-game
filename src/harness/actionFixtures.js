@@ -115,6 +115,33 @@ registry
       { frame: 280, type: 'tap', target: 'parent.save.export' },
     ],
   ))
+  .register('character-cast-review', createFixture(
+    'Hold the full cast on their deterministic idle and speaking loops.',
+  ))
+  .register('character-pets-review', createFixture(
+    'Hold all companion choices on their deterministic follow loops.',
+  ))
+  .register('character-portraits-review', createFixture(
+    'Hold every dialogue cameo on its deterministic speaking loop.',
+  ))
+  .register('owl-motion-review', createFixture(
+    'Hold the hero owl pose library on deterministic motion loops.',
+  ))
+  .register('ui-dialogue-review', createFixture(
+    'Hold the illustrated voiced-dialogue frame and replay control.',
+  ))
+  .register('ui-choices-review', createFixture(
+    'Hold a complete set of authored vector choice cards.',
+  ))
+  .register('ui-satchel-map-review', createFixture(
+    'Hold the open satchel map with an objective destination.',
+  ))
+  .register('ui-objective-review', createFixture(
+    'Hold the illustrated quest-compass objective page.',
+  ))
+  .register('ui-chapter-card-review', createFixture(
+    'Hold the illustrated Chapter One completion page.',
+  ))
   .seal();
 
 export const ACTION_FIXTURE_IDS = registry.ids();

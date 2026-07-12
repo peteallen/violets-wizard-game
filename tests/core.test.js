@@ -3,6 +3,7 @@ import { clamp, easeInOutCubic, pointInCircle } from '../src/game/core/math.js';
 import { SeededRandom } from '../src/game/core/rng.js';
 import { SoundEngine } from '../src/game/core/SoundEngine.js';
 import { Game } from '../src/game/Game.js';
+import { UI_RECTS } from '../src/game/render/UIRenderer.js';
 
 afterEach(() => {
   vi.unstubAllGlobals();
@@ -95,5 +96,66 @@ describe('Game audio commands', () => {
     expect(game.sound.playMusic).toHaveBeenCalledWith('music/ch1/chapterTriumph');
     expect(game.sound.stopMusic).toHaveBeenCalledOnce();
     expect(game.sound.stopVoice).toHaveBeenCalledOnce();
+  });
+});
+
+describe('Game dialogue controls', () => {
+  it('replays the current voiced line without advancing the story', () => {
+    const game = Object.create(Game.prototype);
+    game.shouldShowDebugReset = () => false;
+    game.shouldShowReplayExit = () => false;
+    game.sound = { unlock: vi.fn(() => Promise.resolve()), playSfx: vi.fn() };
+    game.replayMode = false;
+    game.screen = 'playing';
+    game.resumeRecap = null;
+    game.lastRenderState = { setPiece: null, dialogue: { type: 'line' }, overlay: null };
+    game.world = {
+      dialogue: { replay: vi.fn() },
+      advanceDialogue: vi.fn(),
+    };
+    game.processWorldEvents = vi.fn();
+
+    game.handleTap({
+      x: UI_RECTS.dialogueReplay.x + UI_RECTS.dialogueReplay.width / 2,
+      y: UI_RECTS.dialogueReplay.y + UI_RECTS.dialogueReplay.height / 2,
+    });
+
+    expect(game.world.dialogue.replay).toHaveBeenCalledOnce();
+    expect(game.world.advanceDialogue).not.toHaveBeenCalled();
+    expect(game.processWorldEvents).toHaveBeenCalledOnce();
+  });
+});
+
+describe('Game lifecycle', () => {
+  it('releases the room renderer when the game is destroyed', () => {
+    const game = Object.create(Game.prototype);
+    Object.assign(game, {
+      running: true,
+      destroyed: false,
+      sessionGeneration: 0,
+      saveManager: { destroy: vi.fn() },
+      sound: { destroy: vi.fn() },
+      roomRenderer: { destroy: vi.fn() },
+      saveTransferDialog: { destroy: vi.fn() },
+      motionQuery: { removeEventListener: vi.fn() },
+      canvas: { removeEventListener: vi.fn() },
+      debug: false,
+      boundResize: vi.fn(),
+      boundVisibility: vi.fn(),
+      boundMotionChanged: vi.fn(),
+      boundPointerDown: vi.fn(),
+      boundPointerMove: vi.fn(),
+      boundPointerUp: vi.fn(),
+      boundPointerCancel: vi.fn(),
+      boundKeyDown: vi.fn(),
+    });
+    vi.stubGlobal('window', { removeEventListener: vi.fn() });
+    vi.stubGlobal('document', { removeEventListener: vi.fn() });
+
+    game.destroy();
+
+    expect(game.roomRenderer.destroy).toHaveBeenCalledOnce();
+    expect(game.destroyed).toBe(true);
+    expect(game.running).toBe(false);
   });
 });
