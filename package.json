@@ -1,0 +1,30 @@
+{
+  "name": "violets-wizard-game",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "A private, voice-first wizard adventure made for Violet.",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "check:node": "node scripts/check-node.mjs",
+    "dev": "npm run check:node && vite --host 0.0.0.0",
+    "test": "npm run check:node && vitest run",
+    "test:watch": "vitest",
+    "check:assets": "node scripts/check-assets.mjs",
+    "build:app": "vite build",
+    "build": "npm run test && npm run check:assets && npm run build:app",
+    "preview": "vite preview --host 0.0.0.0",
+    "snap": "node scripts/snap.mjs",
+    "flipbook": "node scripts/flipbook.mjs",
+    "diff:goldens": "node scripts/diff.mjs"
+  },
+  "devDependencies": {
+    "pixelmatch": "^7.1.0",
+    "playwright": "1.58.2",
+    "pngjs": "^7.0.0",
+    "vite": "^7.0.4",
+    "vitest": "^3.2.4"
+  }
+}

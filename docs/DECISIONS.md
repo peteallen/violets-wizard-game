@@ -1,0 +1,39 @@
+# Decision Log
+
+Running record of every significant decision, its reasoning, and what's still open. Append-only; newest decisions at the bottom. Reversals get a new entry pointing at the old one, never an edit.
+
+## Decided
+
+| # | Date | Decision | Why |
+|---|------|----------|-----|
+| D1 | 2026-07-11 | Content scope: book 1 + film 1, with film 2 contributing the Dueling Club / Expelliarmus | It's exactly what Violet knows (2/3 through book 1 read aloud; seen films 1–2) |
+| D2 | 2026-07-11 | Genre: side-view point-and-click adventure-RPG; painted room dioramas + illustrated castle map for travel; no spatial navigation challenges anywhere | Kills the two things that wreck 6-year-olds in RPGs (getting lost, navigating under pressure); the format where painted art shines |
+| D3 | 2026-07-11 | Progression = the spellbook; spells are verbs that gate world interactions; no stats, XP, or numbers | Real RPG ability-gating with zero reading or arithmetic overhead |
+| D4 | 2026-07-11 | Chapters as the level system: stable engine, data-driven content modules (`src/game/content/chapters/`) | Incremental building; ship Ch. 1, grow chapter by chapter with her feedback |
+| D5 | 2026-07-11 | Stack: Vite + vanilla ESM + full-window Canvas 2D + Vitest; headless World/Game split | House style proven 3×; deterministic chapter tests; Pixi/Phaser already tried and abandoned in the family |
+| D6 | 2026-07-11 | Adopt robotgame hardening: asset manifest contract + `check:assets` gate, `assetUrl` SHA busting, `VersionWatcher`, Pages artifact deploy with branch-push fallback, five-layer deploy verification | Lessons already paid for once |
+| D7 | 2026-07-11 | Hybrid art: AI-generated painted backgrounds (no people, no text in them) + code-drawn vector puppet characters/UI/effects | Rich rooms cheaply; exact control of Violet's look and animation; no spritesheet pipeline |
+| D8 | 2026-07-11 | Voice-first dialogue: every line voiced (ElevenLabs, all-British cast), 1–3-word caption chips, tap-to-advance + replay; player choices are icon cards with no wrong answers | RPG dialogue without fluent reading; supports independent play |
+| D9 | 2026-07-11 | Duels: telegraphed two-verb rhythm (Shield / spell openings), windows ≥0.7s, invisible rubber-band assist, phase checkpoints, comic losses with instant retry and enemy staying weakened | "Challenging at times, easy to get out of trouble" — tension without frustration |
+| D10 | 2026-07-11 | Save: localStorage, versioned schema + migrations + auto-backup, autosave on flag mutation, export/import, new-game behind parent long-press | Her witch survives months of dev; wipe-proof |
+| D11 | 2026-07-11 | Violet's design: light brown long *slightly messy* hair, brown eyes, purple as her signature color (lining, sneakers, pre-Sorting scarf) | Per dad; purple = her name |
+| D12 | 2026-07-11 | The duel block is called "Shield" (not Protego) | One readable word; Protego isn't in her books/films yet; voice line still shouts it with flair |
+| D13 | 2026-07-12 | **Stealth learning layer**: incantation assembly on first-learn only (letter/syllable tiles with phonics voice), potion labels + counted ingredients, name-on-envelope beat, Expelliarmus letter-tap finisher; governed by eight anti-ed-game rules (always diegetic, never gates the spine, never re-drills, failure = comedy, no school voice, dosage cap of one beat per scene, invisible adaptivity, the "tell test"); parent dial Off/Gentle/Stretchy | Dad wants subtle education without ed-game smell; Hogwarts makes learning diegetic — classes, incantations, and recipes are canon fiction |
+| D14 | 2026-07-12 | Learning voice packs (letter names, phonics sounds, counting, syllable chants) recorded in the Charms Professor voice | Even phonics should sound like magic class, not flashcards |
+| D15 | 2026-07-12 | **Siblings are a floor, not a ceiling**: keep their infrastructure DNA (manifest gates, deploy verification, headless testing) but go all-out creatively — living castle (tracking-eye portraits, floating candles, cinemagraph layers), seasonal year progression, ink-bloom transitions, spell-mastery visual growth, yearbook capture system | Per dad: "don't let them hold us back" |
+| D16 | 2026-07-12 | Every magical moment must compose from the SET_PIECES.md technique toolbox ("if it moves, we drew it; if it's still, it's painted"); T3 flagships capped ~1/chapter, each with a pre-named fallback and a harness scene; new techniques require an M1 prototype spike before any chapter depends on them | The tight line: don't squash imagination, don't promise imagination we can't pull off |
+| D17 | 2026-07-12 | Ch. 6 opens on Christmas morning; the invisibility cloak is a Christmas gift (the book's own placement); seasonal variants advance with chapters | Faithfulness + the year should feel lived |
+| D18 | 2026-07-12 | Owl post from home between chapters doubles as the diegetic resume-recap; letter voice assets accept real family recordings as drop-in replacements | Recap without menus; family in the game |
+| D19 | 2026-07-12 | **Device-reality rules** (red-team verified, full detail in ARCHITECTURE.md §Device reality): 5-canvas memory cap with `width=1` eviction + getContext-null canary (WebKit's 224–384MB global cap fails *silently transparent*); fixed-timestep accumulator sim (iOS rAF runs 30Hz in Low Power Mode, 120Hz on ProMotion) — supersedes soccer's variable dt; `ctx.filter` banned (disabled in Safari!) along with shadowBlur / per-frame gradients / frame-loop getImageData; ≤5 full-screen passes per frame, darkness overlay at half res; voice = mono AAC decoded per-chapter, music in `<audio>`; explicit FontFace.load gating; everything sRGB | The imagination has to survive contact with a real base iPad |
+| D20 | 2026-07-12 | **Verification doctrine** (smoke-tested live, full detail in VERIFICATION.md): every visual is a pure function of (scene, seed, t) reachable via a harness URL; agents self-review keyframe PNGs against geometric illusion checklists, assemble GIFs for the human gate, and lock approved looks as per-environment goldens (pixelmatch 0.1 / >0.5% — never exact, never cross-platform); Playwright pinned exactly 1.58.2 (Chromium already cached on this machine); `.nvmrc` 22.17.0 because non-interactive shells here resolve node v14 | Agents can't watch 60fps motion — this is how they still prove it looks right |
+| D21 | 2026-07-12 | Brick-wall class effects use pre-sliced tile sprite canvases (1–2px duplicated-edge gutters, ~1% overlap, integer-snap until moving, intact wall drawn beneath with per-tile reveal); mirror-class effects mask an offscreen bounding-box canvas with a feathered-ellipse sprite via destination-in rather than raw `clip()` | Red-team: kills hairline seam cracks and cross-engine clip-AA divergence while keeping the magic |
+
+## Open — needs Pete
+
+| # | Question | What it blocks |
+|---|----------|----------------|
+| O1 | **The Sorting**: does the Hat honor Violet's choice in the moment, is she destined for a specific house, or does dad pre-set it? Does she already have a claimed house? | Ch. 2 scene script; house palette set; which common room gets painted first |
+| O2 | **The trio**: Harry/Ron/Hermione as friendly classmates, book beats happening around her, Violet landing the final blow — confirm this framing | Ch. 2–8 dialogue scripts |
+| O3 | **Family cameos**: real pet's name as a preset, Theo in a portrait, dad as a shopkeeper, mom…? | Ch. 1 content detail pass |
+| O4 | **Hosting**: GitHub Pages like the siblings (public-but-unlisted URL) — OK? | Repo creation, CI setup, M0 |
+| O5 | **Her reading specifics** (optional, sharpens the learning layer): does she know letter *sounds* vs letter *names*? Any sight words she already owns? Counting range comfortable to 10? | Tuning `vocabulary.js` and the Gentle/Stretchy dial defaults — can start with safe defaults and tune from playtests |
