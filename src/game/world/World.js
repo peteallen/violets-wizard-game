@@ -1,4 +1,4 @@
-import { WORLD } from '../config.js';
+import { HINTS, WORLD } from '../config.js';
 import { conditionMatches, writePath } from '../core/conditions.js';
 import { SeededRandom } from '../core/rng.js';
 import { Dialogue } from '../systems/Dialogue.js';
@@ -17,6 +17,11 @@ export class World {
     this.events = [];
     this.idleTime = 0;
     this.failedAttempts = 0;
+    this.hintObjective = null;
+    this.hintLookShown = false;
+    this.hintVoiceRepeated = false;
+    this.hintTrailShown = false;
+    this.hintAssistTriggered = false;
     this.pendingInteraction = null;
     this.afterSetPieceActions = [];
     this.walkSpeed = 310;
@@ -86,7 +91,6 @@ export class World {
 
   update(dt) {
     this.time += dt;
-    this.idleTime += dt;
     const hadSetPiece = Boolean(this.setPieces.active);
     this.setPieces.update(dt);
     if (hadSetPiece && !this.setPieces.active && this.afterSetPieceActions.length) {
@@ -101,7 +105,6 @@ export class World {
       this.player.x += step;
       this.player.facing = step < 0 ? 'left' : 'right';
       this.player.walking = true;
-      this.idleTime = 0;
     } else {
       this.player.x = this.player.targetX;
       this.player.walking = false;
@@ -117,10 +120,10 @@ export class World {
     this.cameraX += (desiredCamera - this.cameraX) * Math.min(1, dt * 6);
     this.quests.update();
     this.syncScene();
+    this.updateHintLadder(dt);
   }
 
   tap(point) {
-    this.idleTime = 0;
     if (this.setPieces.active) return { kind: 'blocked', reason: 'set-piece' };
     if (this.dialogue.active) return { kind: 'dialogue' };
     const worldPoint = { x: point.x + this.cameraX, y: point.y };
@@ -133,6 +136,7 @@ export class World {
     this.player.targetX = Math.max(55, Math.min((this.room.size?.width ?? WORLD.width) - 55, worldPoint.x));
     this.player.y = Math.max(band.top, Math.min(band.bottom, worldPoint.y));
     this.pendingInteraction = null;
+    this.recordFailedAttempt();
     this.emit('feedback.command', { kind: 'emptyTap', x: point.x, y: point.y });
     return { kind: 'walk', x: this.player.targetX };
   }
@@ -144,6 +148,7 @@ export class World {
   }
 
   interactTarget(target) {
+    this.noteMeaningfulInput();
     const approach = target.approach;
     if (approach && Math.abs(this.player.x - approach.x) > 45) {
       this.player.targetX = approach.x;
@@ -212,10 +217,12 @@ export class World {
         this.setFlag(action.flag, action.value ?? true);
         break;
       case 'choice.record':
+        this.noteProgress();
         this.save.progress.storyChoices[action.id] = action.value;
         this.markDirty('choice');
         break;
       case 'character.set':
+        this.noteProgress();
         if (action.field === 'pet.type') {
           this.pendingPetType = action.value;
           this.emit('state.changed', { paths: ['character.pet.type'], reason: 'pending-choice' });
@@ -234,6 +241,7 @@ export class World {
         this.markDirty('character');
         break;
       case 'pet.choose':
+        this.noteProgress();
         this.save.character.pet = { type: action.pet, name: this.save.character.pet?.name ?? null };
         this.markDirty('pet');
         this.emit('selection.completed', { id: 'pet', value: action.pet });
@@ -291,6 +299,7 @@ export class World {
     if (!this.selection) return false;
     const option = this.selection.options.find((candidate) => candidate.id === optionId);
     if (!option) return false;
+    this.noteMeaningfulInput();
     this.selection = null;
     this.runActions(option.actions ?? []);
     return true;
@@ -299,20 +308,29 @@ export class World {
   setPetName(name) {
     if (typeof name !== 'string' || name.trim().length === 0 || name.length > 80) return false;
     if (!this.pendingPetType && !this.save.character.pet?.type) return false;
+    this.noteMeaningfulInput();
     this.runAction({ type: 'character.set', field: 'pet.name', value: name.trim() });
     return true;
   }
 
   advanceDialogue(choiceId = null) {
+    if (!this.dialogue.active) return null;
+    if (this.dialogue.node?.type === 'choice' && !this.dialogue.node.choices.some((choice) => choice.id === choiceId)) {
+      return this.dialogue.presentation();
+    }
+    this.noteMeaningfulInput();
     return this.dialogue.advance(choiceId);
   }
 
   closeOverlay() {
+    if (!this.overlay) return;
+    this.noteMeaningfulInput();
     this.overlay = null;
   }
 
   setFlag(flag, value = true) {
     if (this.flags[flag] === value) return;
+    this.noteProgress();
     this.flags[flag] = value;
     this.markDirty('flag');
     this.emit('state.changed', { paths: [`progress.questFlags.${flag}`], reason: 'flag' });
@@ -322,6 +340,7 @@ export class World {
   addCollection(collection, id) {
     const target = this.save.collections[collection];
     if (!Array.isArray(target) || target.includes(id)) return;
+    this.noteProgress();
     target.push(id);
     this.markDirty('collection');
     this.emit('reward.granted', { collection, id });
@@ -329,6 +348,7 @@ export class World {
 
   grantReward(action) {
     if (this.save.progress.rewardReceipts.includes(action.receipt)) return;
+    this.noteProgress();
     this.save.progress.rewardReceipts.push(action.receipt);
     for (const card of action.cards ?? []) this.addCollection('cards', card);
     for (const treasure of action.treasures ?? []) this.addCollection('treasures', treasure);
@@ -338,6 +358,7 @@ export class World {
   }
 
   travel(roomId, spawnId, transition = 'ink') {
+    this.noteProgress();
     const requestedChapter = roomId.split('.')[0];
     if (requestedChapter !== this.chapter.id && this.chapters[requestedChapter]) {
       this.changeChapter(requestedChapter, roomId, spawnId);
@@ -364,6 +385,7 @@ export class World {
   changeChapter(chapterId, roomId = null, spawnId = null) {
     const chapter = this.chapters[chapterId];
     if (!chapter) throw new Error(`Unknown chapter ${chapterId}.`);
+    this.noteProgress();
     const from = this.roomId;
     this.chapter = chapter;
     this.bindSystems();
@@ -385,6 +407,7 @@ export class World {
   }
 
   completeChapter(chapterId, nextChapter) {
+    this.noteProgress();
     if (!this.save.progress.completedChapters.includes(chapterId)) this.save.progress.completedChapters.push(chapterId);
     this.save.progress.highestUnlockedChapter = Math.max(this.save.progress.highestUnlockedChapter, Number(nextChapter.replace('ch', '')) || 2);
     this.setFlag(`${chapterId}.complete`, true);
@@ -396,6 +419,98 @@ export class World {
     this.save.updatedAt = this.clock();
     this.onDirty({ reason, flush, save: this.save });
     this.emit(flush ? 'save.flushRequested' : 'save.dirty', { reason });
+  }
+
+  noteMeaningfulInput() {
+    this.resetHintLadder('input');
+  }
+
+  noteProgress() {
+    this.resetHintLadder('progress');
+  }
+
+  recordFailedAttempt() {
+    const active = this.syncHintObjective();
+    if (!active || this.blocked) return false;
+
+    this.idleTime = 0;
+    this.failedAttempts += 1;
+
+    const { quest, step, stepId } = active;
+    const hints = step.hints;
+    if (!this.hintTrailShown && this.failedAttempts >= HINTS.sparkleFailures && hints.trailTarget) {
+      this.hintTrailShown = true;
+      this.emit('hint.trailRequested', { quest: quest.id, step: stepId, target: hints.trailTarget });
+    }
+
+    const assistTarget = hints.trailTarget ?? hints.lookTarget;
+    if (
+      !this.hintAssistTriggered
+      && this.failedAttempts >= HINTS.autoCompleteFailures
+      && hints.assistActions.length > 0
+      && assistTarget
+      && this.hintTargetAvailable(assistTarget)
+    ) {
+      this.hintAssistTriggered = true;
+      this.emit('hint.assistTriggered', { quest: quest.id, step: stepId, target: assistTarget });
+      this.runActions(hints.assistActions);
+    }
+
+    return true;
+  }
+
+  updateHintLadder(dt) {
+    const active = this.syncHintObjective();
+    if (!active || this.blocked || this.player.walking || this.pendingInteraction) return;
+
+    this.idleTime += dt;
+    const { quest, step, stepId } = active;
+    if (!this.hintLookShown && this.idleTime >= HINTS.petLookSeconds) {
+      this.hintLookShown = true;
+      if (step.hints.lookTarget) {
+        this.emit('hint.lookRequested', { quest: quest.id, step: stepId, target: step.hints.lookTarget });
+      }
+    }
+    if (!this.hintVoiceRepeated && this.idleTime >= HINTS.repeatSeconds) {
+      this.hintVoiceRepeated = true;
+      if (step.hints.repeatVoice) {
+        this.emit('hint.voiceRequested', {
+          quest: quest.id,
+          step: stepId,
+          voice: step.hints.repeatVoice,
+          text: step.objective.text,
+        });
+      }
+    }
+  }
+
+  syncHintObjective() {
+    const active = this.quests.active();
+    const next = active ? { quest: active.quest.id, step: active.stepId } : null;
+    const currentKey = this.hintObjective ? `${this.hintObjective.quest}:${this.hintObjective.step}` : null;
+    const nextKey = next ? `${next.quest}:${next.step}` : null;
+    if (currentKey !== nextKey) {
+      this.resetHintLadder('objective');
+      this.hintObjective = next;
+    }
+    return active;
+  }
+
+  resetHintLadder(reason) {
+    if (this.hintObjective && (this.hintLookShown || this.hintTrailShown)) {
+      this.emit('hint.cleared', { ...this.hintObjective, reason });
+    }
+    this.idleTime = 0;
+    this.failedAttempts = 0;
+    this.hintLookShown = false;
+    this.hintVoiceRepeated = false;
+    this.hintTrailShown = false;
+    this.hintAssistTriggered = false;
+  }
+
+  hintTargetAvailable(target) {
+    if (target.startsWith('hud.')) return true;
+    return this.targets().some((candidate) => candidate.id === target || candidate.semanticId === target);
   }
 
   syncPlayerProfile() {

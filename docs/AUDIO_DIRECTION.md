@@ -9,7 +9,7 @@ Original characters-shaped-like-the-books, voiced with distinct, instantly tella
 | Role | Voice direction | Appears |
 |---|---|---|
 | **Narrator** | Warm grandfather, fireside storyteller, unhurried | Letter, chapter cards, resume recaps |
-| **The Guide** (half-giant) | Deep, rumbly, West Country warmth; gentle giant energy | Ch. 1 tutorial voice, recurring |
+| **The Guide** (half-giant) | Deep, rumbly, gruff Scottish warmth; gentle giant energy | Ch. 1 tutorial voice, recurring |
 | **Wandmaker** | Whispery, wide-eyed wonder, slightly odd | Ch. 1 |
 | **Deputy Head** (stern professor) | Brisk Edinburgh Scottish, warmth under starch | Sorting, discipline-with-a-wink beats |
 | **Charms Professor** | Bright, squeaky, delighted by everything | Ch. 3 classes |

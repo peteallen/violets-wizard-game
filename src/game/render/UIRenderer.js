@@ -69,6 +69,14 @@ export class UIRenderer {
     if (dialogue.choices?.length) this.drawChoices(context, dialogue.choices);
   }
 
+  drawResumeRecap(context, recap, time, muted = false) {
+    this.drawDialogue(context, {
+      speakerLabel: 'Story so far',
+      caption: recap.caption,
+      text: recap.text,
+    }, time, muted);
+  }
+
   drawChoices(context, choices) {
     const width = 250;
     const gap = 28;

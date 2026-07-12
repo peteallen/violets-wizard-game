@@ -13,6 +13,7 @@
     "test": "npm run check:node && vitest run",
     "test:watch": "vitest",
     "check:assets": "node scripts/check-assets.mjs",
+    "check:voice-qa": "node scripts/check-voice-qa.mjs",
     "build:app": "vite build",
     "build": "npm run test && npm run check:assets && npm run build:app",
     "preview": "vite preview --host 0.0.0.0",

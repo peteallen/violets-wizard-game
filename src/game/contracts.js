@@ -18,6 +18,11 @@ export const WORLD_EVENT_TYPES = Object.freeze([
   'dialogue.choicesChanged',
   'dialogue.closed',
   'quest.objectiveChanged',
+  'hint.lookRequested',
+  'hint.voiceRequested',
+  'hint.trailRequested',
+  'hint.assistTriggered',
+  'hint.cleared',
   'reward.granted',
   'learning.started',
   'learning.completed',
@@ -983,6 +988,27 @@ export function validateWorldEventPayload(type, value, path = 'event.payload') {
       payloadObject(value, path, ['quest', 'step']);
       id(value.quest, `${path}.quest`);
       localId(value.step, `${path}.step`);
+      break;
+    case 'hint.lookRequested':
+    case 'hint.trailRequested':
+    case 'hint.assistTriggered':
+      payloadObject(value, path, ['quest', 'step', 'target']);
+      id(value.quest, `${path}.quest`);
+      localId(value.step, `${path}.step`);
+      id(value.target, `${path}.target`);
+      break;
+    case 'hint.voiceRequested':
+      payloadObject(value, path, ['quest', 'step', 'voice', 'text']);
+      id(value.quest, `${path}.quest`);
+      localId(value.step, `${path}.step`);
+      ref(value.voice, `${path}.voice`);
+      string(value.text, `${path}.text`, { max: 1000 });
+      break;
+    case 'hint.cleared':
+      payloadObject(value, path, ['quest', 'step', 'reason']);
+      id(value.quest, `${path}.quest`);
+      localId(value.step, `${path}.step`);
+      oneOf(value.reason, ['input', 'progress', 'objective'], `${path}.reason`);
       break;
     case 'reward.granted':
       payloadObject(value, path, ['receipt']);

@@ -1,5 +1,5 @@
 import { cards, cardsById, contentRegistry } from './content/index.js';
-import { chapter1Map } from './content/chapters/ch1.js';
+import { chapter1Map, chapter1ResumeRecaps } from './content/chapters/ch1.js';
 import { PALETTE, WORLD } from './config.js';
 import { resolveAsset } from './core/assetManifest.js';
 import { SoundEngine } from './core/SoundEngine.js';
@@ -40,6 +40,7 @@ export class Game {
     this.lastRenderState = null;
     this.replayMode = false;
     this.canonicalSave = null;
+    this.resumeRecap = null;
     this.sessionGeneration = 0;
     this.reducedMotion = options.reducedMotion ?? matchMedia('(prefers-reduced-motion: reduce)').matches;
 
@@ -116,7 +117,12 @@ export class Game {
     const generation = this.sessionGeneration;
     await this.sound.unlock();
     if (this.destroyed || generation !== this.sessionGeneration) return;
+    const recap = this.hasStoredSave ? selectChapter1ResumeRecap(this.saveData) : null;
     this.createWorld(this.saveData);
+    if (recap) {
+      this.beginResumeRecap(recap);
+      return;
+    }
     this.sound.playSfx('sfx/ch1/sealCrack', 'flourish');
     this.particles.emit('sparkle', WORLD.width / 2, WORLD.height / 2, 28);
     this.updateStatus('Violet’s letter is waiting by the window.');
@@ -144,7 +150,7 @@ export class Game {
     this.simTime += dt;
     this.particles.update(dt);
     this.transitionAlpha = Math.max(0, this.transitionAlpha - dt * 2.8);
-    if (this.screen === 'playing' && this.world) {
+    if (this.screen === 'playing' && this.world && !this.resumeRecap) {
       this.world.update(dt);
       this.processWorldEvents();
     }
@@ -204,6 +210,10 @@ export class Game {
     this.sound.unlock().catch(() => {});
     if (this.screen === 'title') {
       this.startAdventure();
+      return;
+    }
+    if (this.resumeRecap) {
+      this.dismissResumeRecap();
       return;
     }
     if (!this.world) return;
@@ -297,6 +307,22 @@ export class Game {
     return !this.world.overlay;
   }
 
+  beginResumeRecap(recap) {
+    this.resumeRecap = recap;
+    this.sound.speak(recap.voice, recap.text);
+    this.updateStatus(recap.text);
+  }
+
+  dismissResumeRecap() {
+    if (!this.resumeRecap) return;
+    this.resumeRecap = null;
+    this.sound.stopVoice();
+    this.sound.playSfx('sfx/ui/page', 'tap');
+    const dialogue = this.world?.dialoguePresentation;
+    if (dialogue?.voice) this.sound.speak(dialogue.voice, dialogue.text);
+    this.updateStatus(dialogue?.text ?? 'Continue Violet’s adventure.');
+  }
+
   handleOverlayTap(point, state) {
     if (Math.hypot(point.x - 1090, point.y - 120) <= 62) {
       this.world.closeOverlay();
@@ -362,6 +388,28 @@ export class Game {
       case 'dialogue.closed':
         this.sound.stopVoice();
         break;
+      case 'hint.lookRequested':
+        this.emitHintPath(event.payload.target, { steps: 3, particlesPerStep: 2 });
+        this.updateStatus(this.world.objective?.text ?? '');
+        break;
+      case 'hint.voiceRequested':
+        this.sound.speak(event.payload.voice, event.payload.text);
+        this.updateStatus(event.payload.text);
+        break;
+      case 'hint.trailRequested':
+        this.emitHintPath(event.payload.target, { steps: 8, particlesPerStep: 3 });
+        this.updateStatus(this.world.objective?.text ?? '');
+        break;
+      case 'hint.assistTriggered': {
+        const target = this.hintTargetPosition(event.payload.target);
+        if (target) this.particles.emit('sparkle', target.x, target.y, 18, { size: 9, speed: 55 });
+        this.sound.playSfx('sfx/ui/choice', 'chime');
+        this.updateStatus(this.world.objective?.text ?? '');
+        break;
+      }
+      case 'hint.cleared':
+        this.sound.stopVoice();
+        break;
       case 'setPiece.started':
         this.playSetPieceSound(event.payload.id);
         break;
@@ -400,6 +448,41 @@ export class Game {
     else if (id.includes('wandChosen')) this.sound.playSfx('sfx/ch1/wandChosen', 'flourish');
     else if (id.includes('chapterCard')) this.sound.playSfx('sfx/ch1/chapterTurn', 'flourish');
     else if (id.includes('previewTicket')) this.sound.playSfx('sfx/ch2/trainWhistle', 'flourish');
+  }
+
+  hintTargetPosition(targetId) {
+    const targets = this.semanticTargets();
+    const mapTarget = this.world.objective?.mapStar?.hotspot;
+    const target = targets.find((candidate) => candidate.id === targetId)
+      ?? targets.find((candidate) => candidate.id === mapTarget)
+      ?? targets.find((candidate) => candidate.id === 'hud.quest');
+    if (!target) return null;
+    return {
+      x: clamp(target.x, 40, WORLD.width - 40),
+      y: clamp(target.y, 40, WORLD.height - 40),
+    };
+  }
+
+  emitHintPath(targetId, { steps, particlesPerStep }) {
+    const target = this.hintTargetPosition(targetId);
+    if (!target) return;
+    const state = this.lastRenderState ?? this.world.snapshot();
+    const guide = state.pet ?? state.player;
+    const origin = {
+      x: clamp(guide.x - state.cameraX, 40, WORLD.width - 40),
+      y: clamp(guide.y - (state.pet ? 45 : 90), 40, WORLD.height - 40),
+    };
+    const visibleSteps = this.reducedMotion ? Math.min(steps, 2) : steps;
+    for (let index = 1; index <= visibleSteps; index += 1) {
+      const progress = index / visibleSteps;
+      this.particles.emit(
+        'sparkle',
+        origin.x + (target.x - origin.x) * progress,
+        origin.y + (target.y - origin.y) * progress,
+        particlesPerStep,
+        { size: 6, speed: 28, gravity: 0, life: 1.5 },
+      );
+    }
   }
 
   updateMusic() {
@@ -454,6 +537,7 @@ export class Game {
     this.lastFrame = null;
     this.transitionAlpha = 0;
     this.lastRenderState = null;
+    this.resumeRecap = null;
     this.updateStatus('Development reset complete. Violet is back at the beginning.');
     this.render();
     return { ...result, save: structuredClone(this.saveData) };
@@ -533,9 +617,12 @@ export class Game {
 
     this.setPieceRenderer.draw(context, state.setPiece, state);
     this.uiRenderer.drawHud(context, state, this.simTime);
-    if (state.dialogue) this.uiRenderer.drawDialogue(context, state.dialogue, this.simTime, this.saveData.settings.muted);
-    if (state.overlay?.surface === 'satchel') this.uiRenderer.drawSatchel(context, state, cards);
-    if (state.overlay?.surface === 'objective') this.uiRenderer.drawObjective(context, state.objective);
+    if (this.resumeRecap) this.uiRenderer.drawResumeRecap(context, this.resumeRecap, this.simTime, this.saveData.settings.muted);
+    else {
+      if (state.dialogue) this.uiRenderer.drawDialogue(context, state.dialogue, this.simTime, this.saveData.settings.muted);
+      if (state.overlay?.surface === 'satchel') this.uiRenderer.drawSatchel(context, state, cards);
+      if (state.overlay?.surface === 'objective') this.uiRenderer.drawObjective(context, state.objective);
+    }
 
     if (this.transitionAlpha > 0) {
       context.fillStyle = `rgba(20,17,38,${this.transitionAlpha})`;
@@ -625,6 +712,7 @@ export class Game {
       : [];
     if (this.screen === 'title') return [{ id: 'foundation.start', x: 640, y: 460 }, ...debugTargets];
     if (!this.world) return debugTargets;
+    if (this.resumeRecap) return [{ id: 'resume.continue', x: 1065, y: 630 }];
     const state = this.lastRenderState ?? this.world.snapshot();
     const targets = state.targets.map((target) => ({
       id: target.id,
@@ -711,4 +799,19 @@ function dataUrlBytes(dataUrl) {
   const encoded = dataUrl.slice(dataUrl.indexOf(',') + 1);
   const padding = encoded.endsWith('==') ? 2 : encoded.endsWith('=') ? 1 : 0;
   return encoded.length * 3 / 4 - padding;
+}
+
+export function selectChapter1ResumeRecap(save, recaps = chapter1ResumeRecaps) {
+  if (save?.resume?.chapter !== 'ch1') return null;
+  if (save.progress?.completedChapters?.includes('ch1')) return null;
+
+  const flags = save.progress?.questFlags ?? {};
+  let step = 'openLetter';
+  if (flags['ch1.letterRead']) step = 'followGuide';
+  if (flags['ch1.wallOpened']) step = 'useMap';
+  if (flags['ch1.wandChosen']) step = 'chooseRobes';
+  if (flags['ch1.trimChosen']) step = 'choosePet';
+  if (flags['ch1.petNamed']) step = 'returnToGuide';
+  if (flags['ch1.ticketReceived'] || flags['ch1.complete']) return null;
+  return recaps.find((recap) => recap.step === step) ?? null;
 }

@@ -1,0 +1,59 @@
+{
+  "version": 2,
+  "transcripts": {
+    "voice/ch1/guide/arrival": {
+      "transcript": "guide/arrival.json",
+      "audio": "voice/ch1/guide/arrival.mp3",
+      "bytes": 62737,
+      "sha256": "6d87b8b6fe3ce3eab8746393f422ae7c480604d75169e3d3bffba2af384e9d13"
+    },
+    "voice/ch1/guide/leaky": {
+      "transcript": "guide/leaky.json",
+      "audio": "voice/ch1/guide/leaky.mp3",
+      "bytes": 55214,
+      "sha256": "2d8e7674ad817ca8345eef0915602a1b869d2d51120cf22d9c9b701aa43a4d5c"
+    },
+    "voice/ch1/guide/map": {
+      "transcript": "guide/map.json",
+      "audio": "voice/ch1/guide/map.mp3",
+      "bytes": 82799,
+      "sha256": "6e1dd0f5339b2dd6de629e25f51c1e244a85af154f5f6f7be4f3ddfada8ed864"
+    },
+    "voice/ch1/guide/platform": {
+      "transcript": "guide/platform.json",
+      "audio": "voice/ch1/guide/platform.mp3",
+      "bytes": 53124,
+      "sha256": "c6fc7e9e3b1208c9667825da9954a98717b1fd22f8d7fc1645bf276b75d58b34"
+    },
+    "voice/ch1/guide/ticket": {
+      "transcript": "guide/ticket.json",
+      "audio": "voice/ch1/guide/ticket.mp3",
+      "bytes": 67753,
+      "sha256": "854bde91e387aa1f13d34212e9a0e133a645a13913869c475d7a165e1415b621"
+    },
+    "voice/ch1/guide/wall": {
+      "transcript": "guide/wall.json",
+      "audio": "voice/ch1/guide/wall.mp3",
+      "bytes": 64827,
+      "sha256": "a0b778ce10ef934199898c2d1c188435a4f098a310637a65b537d5a7a7ca052b"
+    },
+    "voice/ch1/narrator/letterInvitation": {
+      "transcript": "letterInvitation.json",
+      "audio": "voice/ch1/narrator/letterInvitation.mp3",
+      "bytes": 79874,
+      "sha256": "65830ad9e3256a8d04cf20c9e717300618a2c4506d91d2d7e4cd8fa7c5cfe6ce"
+    },
+    "voice/ch1/wandmaker/chosen": {
+      "transcript": "wandChosen.json",
+      "audio": "voice/ch1/wandmaker/chosen.mp3",
+      "bytes": 41839,
+      "sha256": "aab5d71c68b7dfaea7402a198058ec8f08b9478708139f397ac7341af7710338"
+    },
+    "voice/ch2/narrator/preview": {
+      "transcript": "ch2Preview.json",
+      "audio": "voice/ch2/narrator/preview.mp3",
+      "bytes": 86561,
+      "sha256": "76b4326aab6b7622ecf504be44a63addb95699f7cd90205ee76d820c3ae41f8b"
+    }
+  }
+}
