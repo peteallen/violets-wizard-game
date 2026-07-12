@@ -1,0 +1,128 @@
+{
+  "language_code": "eng",
+  "language_probability": 1,
+  "text": "A fine name. I think you've made a friend",
+  "words": [
+    {
+      "text": "A",
+      "start": 0.079,
+      "end": 0.199,
+      "type": "word",
+      "logprob": -0.00026174934464506805
+    },
+    {
+      "text": " ",
+      "start": 0.199,
+      "end": 0.219,
+      "type": "spacing",
+      "logprob": -0.00021002470748499036
+    },
+    {
+      "text": "fine",
+      "start": 0.219,
+      "end": 0.539,
+      "type": "word",
+      "logprob": -0.00021002470748499036
+    },
+    {
+      "text": " ",
+      "start": 0.539,
+      "end": 0.599,
+      "type": "spacing",
+      "logprob": -0.0000020265558760002023
+    },
+    {
+      "text": "name.",
+      "start": 0.599,
+      "end": 0.919,
+      "type": "word",
+      "logprob": -0.00044254301883484004
+    },
+    {
+      "text": " ",
+      "start": 0.919,
+      "end": 1.179,
+      "type": "spacing",
+      "logprob": 0
+    },
+    {
+      "text": "I",
+      "start": 1.179,
+      "end": 1.199,
+      "type": "word",
+      "logprob": 0
+    },
+    {
+      "text": " ",
+      "start": 1.199,
+      "end": 1.259,
+      "type": "spacing",
+      "logprob": 0
+    },
+    {
+      "text": "think",
+      "start": 1.259,
+      "end": 1.419,
+      "type": "word",
+      "logprob": 0
+    },
+    {
+      "text": " ",
+      "start": 1.419,
+      "end": 1.439,
+      "type": "spacing",
+      "logprob": -1.1920928244535389e-7
+    },
+    {
+      "text": "you've",
+      "start": 1.439,
+      "end": 1.599,
+      "type": "word",
+      "logprob": -0.0000032186208009932216
+    },
+    {
+      "text": " ",
+      "start": 1.599,
+      "end": 1.639,
+      "type": "spacing",
+      "logprob": 0
+    },
+    {
+      "text": "made",
+      "start": 1.639,
+      "end": 1.799,
+      "type": "word",
+      "logprob": 0
+    },
+    {
+      "text": " ",
+      "start": 1.799,
+      "end": 1.839,
+      "type": "spacing",
+      "logprob": 0
+    },
+    {
+      "text": "a",
+      "start": 1.839,
+      "end": 1.859,
+      "type": "word",
+      "logprob": 0
+    },
+    {
+      "text": " ",
+      "start": 1.859,
+      "end": 1.959,
+      "type": "spacing",
+      "logprob": -2.3841855067985307e-7
+    },
+    {
+      "text": "friend",
+      "start": 1.959,
+      "end": 2.379,
+      "type": "word",
+      "logprob": -2.3841855067985307e-7
+    }
+  ],
+  "transcription_id": "WqxZluelJpGr64ptL5if",
+  "audio_duration_secs": 2.6935
+}

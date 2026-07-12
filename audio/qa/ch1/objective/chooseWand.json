@@ -1,0 +1,100 @@
+{
+  "language_code": "eng",
+  "language_probability": 1,
+  "text": "Go to Ollivanders and choose your wand",
+  "words": [
+    {
+      "text": "Go",
+      "start": 0.059,
+      "end": 0.14,
+      "type": "word",
+      "logprob": -0.000020861407392658293
+    },
+    {
+      "text": " ",
+      "start": 0.14,
+      "end": 0.219,
+      "type": "spacing",
+      "logprob": -0.0000019073468138230965
+    },
+    {
+      "text": "to",
+      "start": 0.219,
+      "end": 0.299,
+      "type": "word",
+      "logprob": -0.0000019073468138230965
+    },
+    {
+      "text": " ",
+      "start": 0.299,
+      "end": 0.34,
+      "type": "spacing",
+      "logprob": -0.029874686151742935
+    },
+    {
+      "text": "Ollivanders",
+      "start": 0.34,
+      "end": 0.899,
+      "type": "word",
+      "logprob": -0.10640304560696347
+    },
+    {
+      "text": " ",
+      "start": 0.899,
+      "end": 0.939,
+      "type": "spacing",
+      "logprob": -0.000006794906312279636
+    },
+    {
+      "text": "and",
+      "start": 0.939,
+      "end": 1.079,
+      "type": "word",
+      "logprob": -0.000006794906312279636
+    },
+    {
+      "text": " ",
+      "start": 1.079,
+      "end": 1.119,
+      "type": "spacing",
+      "logprob": -0.000014781842764932662
+    },
+    {
+      "text": "choose",
+      "start": 1.12,
+      "end": 1.36,
+      "type": "word",
+      "logprob": -0.000014781842764932662
+    },
+    {
+      "text": " ",
+      "start": 1.36,
+      "end": 1.399,
+      "type": "spacing",
+      "logprob": -2.3841855067985307e-7
+    },
+    {
+      "text": "your",
+      "start": 1.399,
+      "end": 1.579,
+      "type": "word",
+      "logprob": -2.3841855067985307e-7
+    },
+    {
+      "text": " ",
+      "start": 1.579,
+      "end": 1.619,
+      "type": "spacing",
+      "logprob": -0.00007068861305015162
+    },
+    {
+      "text": "wand",
+      "start": 1.62,
+      "end": 2.019,
+      "type": "word",
+      "logprob": -0.00007068861305015162
+    }
+  ],
+  "transcription_id": "x7TRKUy1ZGJ5Y08ydshi",
+  "audio_duration_secs": 2.2755625
+}

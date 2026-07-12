@@ -1,0 +1,44 @@
+{
+  "language_code": "eng",
+  "language_probability": 1,
+  "text": "I look magical",
+  "words": [
+    {
+      "text": "I",
+      "start": 0.059,
+      "end": 0.179,
+      "type": "word",
+      "logprob": -0.0000033378546504536644
+    },
+    {
+      "text": " ",
+      "start": 0.179,
+      "end": 0.199,
+      "type": "spacing",
+      "logprob": -0.00000822540732769994
+    },
+    {
+      "text": "look",
+      "start": 0.199,
+      "end": 0.379,
+      "type": "word",
+      "logprob": -0.00000822540732769994
+    },
+    {
+      "text": " ",
+      "start": 0.379,
+      "end": 0.419,
+      "type": "spacing",
+      "logprob": -0.0000029802276912960224
+    },
+    {
+      "text": "magical",
+      "start": 0.419,
+      "end": 0.879,
+      "type": "word",
+      "logprob": -0.0000029802276912960224
+    }
+  ],
+  "transcription_id": "NtQ1NrH9R5XAxbPTrw5X",
+  "audio_duration_secs": 1.2074375
+}

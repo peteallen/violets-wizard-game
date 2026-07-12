@@ -28,6 +28,8 @@ describe('voice transcription QA', () => {
   it('ignores harmless punctuation and letter-case differences', () => {
     expect(normalizeSpokenText("Here’s Violet & Hagrid!"))
       .toBe(normalizeSpokenText('HERES VIOLET AND HAGRID'));
+    expect(normalizeSpokenText('Which colour?'))
+      .toBe(normalizeSpokenText('Which color?'));
   });
 
   it('reports missing, mismatched, and unexpected transcripts separately', () => {
@@ -52,13 +54,13 @@ describe('voice transcription QA', () => {
     expect(result.unexpected[0].key).toBe('voice/extra');
   });
 
-  it('keeps complete Hagrid coverage while reporting the remaining transcription queue', async () => {
+  it('keeps complete Hagrid coverage while reporting the current transcription coverage', async () => {
     const result = await runVoiceQa();
 
     expect(result.issues).toEqual([]);
-    expect(result.totals).toMatchObject({ expected: 39, present: 9, matched: 9, missing: 30, mismatched: 0 });
+    expect(result.totals).toMatchObject({ expected: 39, present: 39, matched: 39, missing: 0, mismatched: 0 });
     expect(result.roles.guide).toMatchObject({ expected: 6, present: 6, matched: 6, missing: 0 });
-    expect(result.passed).toBe(false);
+    expect(result.passed).toBe(true);
   });
 
   it('rejects an audio file whose size or SHA-256 no longer matches its transcript binding', async () => {

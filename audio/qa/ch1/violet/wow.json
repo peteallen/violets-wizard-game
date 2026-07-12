@@ -1,0 +1,16 @@
+{
+  "language_code": "eng",
+  "language_probability": 1,
+  "text": "Wow",
+  "words": [
+    {
+      "text": "Wow",
+      "start": 0.119,
+      "end": 0.439,
+      "type": "word",
+      "logprob": -0.000003933898824470816
+    }
+  ],
+  "transcription_id": "yAp2OCGkkLb8z9rlodDf",
+  "audio_duration_secs": 0.7430625
+}

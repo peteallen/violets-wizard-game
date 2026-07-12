@@ -1,0 +1,100 @@
+{
+  "language_code": "eng",
+  "language_probability": 1,
+  "text": "An owl brought a letter for Violet",
+  "words": [
+    {
+      "text": "An",
+      "start": 0.059,
+      "end": 0.159,
+      "type": "word",
+      "logprob": -0.00007748303323751315
+    },
+    {
+      "text": " ",
+      "start": 0.159,
+      "end": 0.239,
+      "type": "spacing",
+      "logprob": -0.000019550132492440753
+    },
+    {
+      "text": "owl",
+      "start": 0.239,
+      "end": 0.5,
+      "type": "word",
+      "logprob": -0.000019550132492440753
+    },
+    {
+      "text": " ",
+      "start": 0.5,
+      "end": 0.599,
+      "type": "spacing",
+      "logprob": -0.000004887569048150908
+    },
+    {
+      "text": "brought",
+      "start": 0.599,
+      "end": 0.799,
+      "type": "word",
+      "logprob": -0.000004887569048150908
+    },
+    {
+      "text": " ",
+      "start": 0.799,
+      "end": 0.819,
+      "type": "spacing",
+      "logprob": -7.152555099310121e-7
+    },
+    {
+      "text": "a",
+      "start": 0.819,
+      "end": 0.839,
+      "type": "word",
+      "logprob": -7.152555099310121e-7
+    },
+    {
+      "text": " ",
+      "start": 0.839,
+      "end": 0.899,
+      "type": "spacing",
+      "logprob": -0.000001311301275563892
+    },
+    {
+      "text": "letter",
+      "start": 0.899,
+      "end": 1.139,
+      "type": "word",
+      "logprob": -0.000001311301275563892
+    },
+    {
+      "text": " ",
+      "start": 1.139,
+      "end": 1.159,
+      "type": "spacing",
+      "logprob": -5.960462772236497e-7
+    },
+    {
+      "text": "for",
+      "start": 1.159,
+      "end": 1.279,
+      "type": "word",
+      "logprob": -5.960462772236497e-7
+    },
+    {
+      "text": " ",
+      "start": 1.279,
+      "end": 1.319,
+      "type": "spacing",
+      "logprob": -0.0002503081923350692
+    },
+    {
+      "text": "Violet",
+      "start": 1.319,
+      "end": 1.759,
+      "type": "word",
+      "logprob": -0.0002503081923350692
+    }
+  ],
+  "transcription_id": "H5h3mjmz6YfMz38YQFfT",
+  "audio_duration_secs": 1.9969375
+}

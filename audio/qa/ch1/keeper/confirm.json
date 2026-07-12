@@ -1,0 +1,86 @@
+{
+  "language_code": "eng",
+  "language_probability": 1,
+  "text": "Is this the friend for you?",
+  "words": [
+    {
+      "text": "Is",
+      "start": 0.099,
+      "end": 0.219,
+      "type": "word",
+      "logprob": -0.000028490614567999728
+    },
+    {
+      "text": " ",
+      "start": 0.219,
+      "end": 0.239,
+      "type": "spacing",
+      "logprob": -0.000007510157047363464
+    },
+    {
+      "text": "this",
+      "start": 0.239,
+      "end": 0.4,
+      "type": "word",
+      "logprob": -0.000007510157047363464
+    },
+    {
+      "text": " ",
+      "start": 0.4,
+      "end": 0.439,
+      "type": "spacing",
+      "logprob": -0.0000014305104514278355
+    },
+    {
+      "text": "the",
+      "start": 0.439,
+      "end": 0.5,
+      "type": "word",
+      "logprob": -0.0000014305104514278355
+    },
+    {
+      "text": " ",
+      "start": 0.5,
+      "end": 0.579,
+      "type": "spacing",
+      "logprob": -0.0000598412734689191
+    },
+    {
+      "text": "friend",
+      "start": 0.579,
+      "end": 0.839,
+      "type": "word",
+      "logprob": -0.0000598412734689191
+    },
+    {
+      "text": " ",
+      "start": 0.839,
+      "end": 0.879,
+      "type": "spacing",
+      "logprob": -2.3841855067985307e-7
+    },
+    {
+      "text": "for",
+      "start": 0.879,
+      "end": 1,
+      "type": "word",
+      "logprob": -2.3841855067985307e-7
+    },
+    {
+      "text": " ",
+      "start": 1,
+      "end": 1.039,
+      "type": "spacing",
+      "logprob": -0.0000014305104514278355
+    },
+    {
+      "text": "you?",
+      "start": 1.039,
+      "end": 1.199,
+      "type": "word",
+      "logprob": -0.0014860843067765472
+    }
+  ],
+  "transcription_id": "SAApZCIm0eXyglxbMb14",
+  "audio_duration_secs": 1.5325
+}

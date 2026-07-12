@@ -1,0 +1,128 @@
+{
+  "language_code": "eng",
+  "language_probability": 1,
+  "text": "Hagrid is waiting to show you the magical street",
+  "words": [
+    {
+      "text": "Hagrid",
+      "start": 0.059,
+      "end": 0.399,
+      "type": "word",
+      "logprob": -0.0001982181852326903
+    },
+    {
+      "text": " ",
+      "start": 0.399,
+      "end": 0.439,
+      "type": "spacing",
+      "logprob": -7.152555099310121e-7
+    },
+    {
+      "text": "is",
+      "start": 0.439,
+      "end": 0.579,
+      "type": "word",
+      "logprob": -7.152555099310121e-7
+    },
+    {
+      "text": " ",
+      "start": 0.579,
+      "end": 0.62,
+      "type": "spacing",
+      "logprob": -0.0000032186455882765586
+    },
+    {
+      "text": "waiting",
+      "start": 0.62,
+      "end": 0.919,
+      "type": "word",
+      "logprob": -0.0000032186455882765586
+    },
+    {
+      "text": " ",
+      "start": 0.919,
+      "end": 0.939,
+      "type": "spacing",
+      "logprob": 0
+    },
+    {
+      "text": "to",
+      "start": 0.939,
+      "end": 0.979,
+      "type": "word",
+      "logprob": 0
+    },
+    {
+      "text": " ",
+      "start": 0.979,
+      "end": 1.079,
+      "type": "spacing",
+      "logprob": -4.768370445162873e-7
+    },
+    {
+      "text": "show",
+      "start": 1.079,
+      "end": 1.259,
+      "type": "word",
+      "logprob": -4.768370445162873e-7
+    },
+    {
+      "text": " ",
+      "start": 1.259,
+      "end": 1.299,
+      "type": "spacing",
+      "logprob": -2.3841855067985307e-7
+    },
+    {
+      "text": "you",
+      "start": 1.299,
+      "end": 1.399,
+      "type": "word",
+      "logprob": -2.3841855067985307e-7
+    },
+    {
+      "text": " ",
+      "start": 1.399,
+      "end": 1.419,
+      "type": "spacing",
+      "logprob": -0.000027656173188006505
+    },
+    {
+      "text": "the",
+      "start": 1.419,
+      "end": 1.519,
+      "type": "word",
+      "logprob": -0.000027656173188006505
+    },
+    {
+      "text": " ",
+      "start": 1.519,
+      "end": 1.559,
+      "type": "spacing",
+      "logprob": -0.002214600332081318
+    },
+    {
+      "text": "magical",
+      "start": 1.559,
+      "end": 1.899,
+      "type": "word",
+      "logprob": -0.002214600332081318
+    },
+    {
+      "text": " ",
+      "start": 1.899,
+      "end": 2.039,
+      "type": "spacing",
+      "logprob": -0.0006298227235674858
+    },
+    {
+      "text": "street",
+      "start": 2.039,
+      "end": 2.42,
+      "type": "word",
+      "logprob": -0.0006298227235674858
+    }
+  ],
+  "transcription_id": "irpNfJLJWXThxfbxzuY2",
+  "audio_duration_secs": 2.6470625
+}

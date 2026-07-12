@@ -1,0 +1,142 @@
+{
+  "language_code": "eng",
+  "language_probability": 1,
+  "text": "You found your wand and robes. Now choose a friend",
+  "words": [
+    {
+      "text": "You",
+      "start": 0.099,
+      "end": 0.199,
+      "type": "word",
+      "logprob": -0.0000027418097943154862
+    },
+    {
+      "text": " ",
+      "start": 0.199,
+      "end": 0.239,
+      "type": "spacing",
+      "logprob": -0.0001212284987559542
+    },
+    {
+      "text": "found",
+      "start": 0.239,
+      "end": 0.439,
+      "type": "word",
+      "logprob": -0.0001212284987559542
+    },
+    {
+      "text": " ",
+      "start": 0.439,
+      "end": 0.479,
+      "type": "spacing",
+      "logprob": -8.344646857949556e-7
+    },
+    {
+      "text": "your",
+      "start": 0.479,
+      "end": 0.56,
+      "type": "word",
+      "logprob": -8.344646857949556e-7
+    },
+    {
+      "text": " ",
+      "start": 0.56,
+      "end": 0.659,
+      "type": "spacing",
+      "logprob": -0.00002169585604860913
+    },
+    {
+      "text": "wand",
+      "start": 0.659,
+      "end": 0.899,
+      "type": "word",
+      "logprob": -0.00002169585604860913
+    },
+    {
+      "text": " ",
+      "start": 0.899,
+      "end": 0.919,
+      "type": "spacing",
+      "logprob": -0.002186885569244623
+    },
+    {
+      "text": "and",
+      "start": 0.919,
+      "end": 1.019,
+      "type": "word",
+      "logprob": -0.002186885569244623
+    },
+    {
+      "text": " ",
+      "start": 1.019,
+      "end": 1.1,
+      "type": "spacing",
+      "logprob": -0.0000084638240878121
+    },
+    {
+      "text": "robes.",
+      "start": 1.1,
+      "end": 1.62,
+      "type": "word",
+      "logprob": -0.002696551663423937
+    },
+    {
+      "text": " ",
+      "start": 1.62,
+      "end": 2.199,
+      "type": "spacing",
+      "logprob": -0.0000019073468138230965
+    },
+    {
+      "text": "Now",
+      "start": 2.2,
+      "end": 2.379,
+      "type": "word",
+      "logprob": -0.0000019073468138230965
+    },
+    {
+      "text": " ",
+      "start": 2.379,
+      "end": 2.419,
+      "type": "spacing",
+      "logprob": -0.0000295634672511369
+    },
+    {
+      "text": "choose",
+      "start": 2.419,
+      "end": 2.619,
+      "type": "word",
+      "logprob": -0.0000295634672511369
+    },
+    {
+      "text": " ",
+      "start": 2.619,
+      "end": 2.679,
+      "type": "spacing",
+      "logprob": -1.1920928244535389e-7
+    },
+    {
+      "text": "a",
+      "start": 2.679,
+      "end": 2.759,
+      "type": "word",
+      "logprob": -1.1920928244535389e-7
+    },
+    {
+      "text": " ",
+      "start": 2.759,
+      "end": 2.799,
+      "type": "spacing",
+      "logprob": -1.1920928244535389e-7
+    },
+    {
+      "text": "friend",
+      "start": 2.799,
+      "end": 3.24,
+      "type": "word",
+      "logprob": -1.1920928244535389e-7
+    }
+  ],
+  "transcription_id": "RP8arWeji6SRNUIAJDMW",
+  "audio_duration_secs": 3.483
+}

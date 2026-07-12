@@ -1,0 +1,58 @@
+{
+  "language_code": "eng",
+  "language_probability": 1,
+  "text": "I need a spell",
+  "words": [
+    {
+      "text": "I",
+      "start": 0.219,
+      "end": 0.239,
+      "type": "word",
+      "logprob": -0.0000069141146923357155
+    },
+    {
+      "text": " ",
+      "start": 0.239,
+      "end": 0.239,
+      "type": "spacing",
+      "logprob": -4.768370445162873e-7
+    },
+    {
+      "text": "need",
+      "start": 0.239,
+      "end": 0.379,
+      "type": "word",
+      "logprob": -4.768370445162873e-7
+    },
+    {
+      "text": " ",
+      "start": 0.379,
+      "end": 0.479,
+      "type": "spacing",
+      "logprob": 0
+    },
+    {
+      "text": "a",
+      "start": 0.479,
+      "end": 0.5,
+      "type": "word",
+      "logprob": 0
+    },
+    {
+      "text": " ",
+      "start": 0.5,
+      "end": 0.5,
+      "type": "spacing",
+      "logprob": -0.0000015497195136049413
+    },
+    {
+      "text": "spell",
+      "start": 0.5,
+      "end": 0.859,
+      "type": "word",
+      "logprob": -0.0000015497195136049413
+    }
+  ],
+  "transcription_id": "AMhvzJGqipo7LXkKY7yS",
+  "audio_duration_secs": 1.253875
+}

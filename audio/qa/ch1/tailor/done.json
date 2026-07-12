@@ -1,0 +1,58 @@
+{
+  "language_code": "eng",
+  "language_probability": 1,
+  "text": "That suits you beautifully",
+  "words": [
+    {
+      "text": "That",
+      "start": 0.099,
+      "end": 0.319,
+      "type": "word",
+      "logprob": -0.000003814689989667386
+    },
+    {
+      "text": " ",
+      "start": 0.319,
+      "end": 0.419,
+      "type": "spacing",
+      "logprob": -0.0000034570634852570947
+    },
+    {
+      "text": "suits",
+      "start": 0.419,
+      "end": 0.659,
+      "type": "word",
+      "logprob": -0.0000034570634852570947
+    },
+    {
+      "text": " ",
+      "start": 0.659,
+      "end": 0.699,
+      "type": "spacing",
+      "logprob": -1.1920928244535389e-7
+    },
+    {
+      "text": "you",
+      "start": 0.699,
+      "end": 0.779,
+      "type": "word",
+      "logprob": -1.1920928244535389e-7
+    },
+    {
+      "text": " ",
+      "start": 0.779,
+      "end": 0.799,
+      "type": "spacing",
+      "logprob": -0.000011205610462639015
+    },
+    {
+      "text": "beautifully",
+      "start": 0.799,
+      "end": 1.279,
+      "type": "word",
+      "logprob": -0.000011205610462639015
+    }
+  ],
+  "transcription_id": "eyKSbEY1AA3ZiA4jLagV",
+  "audio_duration_secs": 1.5789375
+}

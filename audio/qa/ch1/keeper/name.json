@@ -1,0 +1,114 @@
+{
+  "language_code": "eng",
+  "language_probability": 1,
+  "text": "Wonderful. What shall we call your new friend?",
+  "words": [
+    {
+      "text": "Wonderful.",
+      "start": 0.099,
+      "end": 0.539,
+      "type": "word",
+      "logprob": -0.07807541440997738
+    },
+    {
+      "text": " ",
+      "start": 0.539,
+      "end": 0.739,
+      "type": "spacing",
+      "logprob": -5.960462772236497e-7
+    },
+    {
+      "text": "What",
+      "start": 0.739,
+      "end": 0.879,
+      "type": "word",
+      "logprob": -5.960462772236497e-7
+    },
+    {
+      "text": " ",
+      "start": 0.879,
+      "end": 0.919,
+      "type": "spacing",
+      "logprob": -0.0001419681793777272
+    },
+    {
+      "text": "shall",
+      "start": 0.919,
+      "end": 1.039,
+      "type": "word",
+      "logprob": -0.0001419681793777272
+    },
+    {
+      "text": " ",
+      "start": 1.039,
+      "end": 1.059,
+      "type": "spacing",
+      "logprob": 0
+    },
+    {
+      "text": "we",
+      "start": 1.059,
+      "end": 1.159,
+      "type": "word",
+      "logprob": 0
+    },
+    {
+      "text": " ",
+      "start": 1.159,
+      "end": 1.219,
+      "type": "spacing",
+      "logprob": -1.1920928244535389e-7
+    },
+    {
+      "text": "call",
+      "start": 1.22,
+      "end": 1.419,
+      "type": "word",
+      "logprob": -1.1920928244535389e-7
+    },
+    {
+      "text": " ",
+      "start": 1.419,
+      "end": 1.459,
+      "type": "spacing",
+      "logprob": -1.1920928244535389e-7
+    },
+    {
+      "text": "your",
+      "start": 1.459,
+      "end": 1.539,
+      "type": "word",
+      "logprob": -1.1920928244535389e-7
+    },
+    {
+      "text": " ",
+      "start": 1.539,
+      "end": 1.699,
+      "type": "spacing",
+      "logprob": 0
+    },
+    {
+      "text": "new",
+      "start": 1.699,
+      "end": 1.879,
+      "type": "word",
+      "logprob": 0
+    },
+    {
+      "text": " ",
+      "start": 1.879,
+      "end": 1.919,
+      "type": "spacing",
+      "logprob": -1.1920928244535389e-7
+    },
+    {
+      "text": "friend?",
+      "start": 1.919,
+      "end": 2.339,
+      "type": "word",
+      "logprob": -0.00035453115456261585
+    }
+  ],
+  "transcription_id": "gkH6hOwvvdGCLRqbbYvh",
+  "audio_duration_secs": 2.6470625
+}

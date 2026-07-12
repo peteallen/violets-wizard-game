@@ -1,0 +1,100 @@
+{
+  "language_code": "eng",
+  "language_probability": 1,
+  "text": "Oh, that one has too many ideas",
+  "words": [
+    {
+      "text": "Oh,",
+      "start": 0.099,
+      "end": 0.539,
+      "type": "word",
+      "logprob": -0.0003839959390461445
+    },
+    {
+      "text": " ",
+      "start": 0.539,
+      "end": 0.579,
+      "type": "spacing",
+      "logprob": -0.000024318398573086597
+    },
+    {
+      "text": "that",
+      "start": 0.579,
+      "end": 0.719,
+      "type": "word",
+      "logprob": -0.000024318398573086597
+    },
+    {
+      "text": " ",
+      "start": 0.719,
+      "end": 0.779,
+      "type": "spacing",
+      "logprob": -0.000001311301275563892
+    },
+    {
+      "text": "one",
+      "start": 0.779,
+      "end": 0.859,
+      "type": "word",
+      "logprob": -0.000001311301275563892
+    },
+    {
+      "text": " ",
+      "start": 0.859,
+      "end": 0.899,
+      "type": "spacing",
+      "logprob": 0
+    },
+    {
+      "text": "has",
+      "start": 0.899,
+      "end": 1.079,
+      "type": "word",
+      "logprob": 0
+    },
+    {
+      "text": " ",
+      "start": 1.079,
+      "end": 1.099,
+      "type": "spacing",
+      "logprob": -2.3841855067985307e-7
+    },
+    {
+      "text": "too",
+      "start": 1.099,
+      "end": 1.24,
+      "type": "word",
+      "logprob": -2.3841855067985307e-7
+    },
+    {
+      "text": " ",
+      "start": 1.24,
+      "end": 1.279,
+      "type": "spacing",
+      "logprob": 0
+    },
+    {
+      "text": "many",
+      "start": 1.279,
+      "end": 1.439,
+      "type": "word",
+      "logprob": 0
+    },
+    {
+      "text": " ",
+      "start": 1.439,
+      "end": 1.619,
+      "type": "spacing",
+      "logprob": -4.768370445162873e-7
+    },
+    {
+      "text": "ideas",
+      "start": 1.62,
+      "end": 1.959,
+      "type": "word",
+      "logprob": -4.768370445162873e-7
+    }
+  ],
+  "transcription_id": "5HqLJBANVqmYIRsIlgIp",
+  "audio_duration_secs": 2.0898125
+}

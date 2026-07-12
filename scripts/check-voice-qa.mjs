@@ -45,6 +45,7 @@ export function normalizeSpokenText(value) {
   return value
     .normalize('NFKC')
     .toLocaleLowerCase('en-US')
+    .replace(/\bcolour\b/gu, 'color')
     .replace(/&/gu, ' and ')
     .replace(/[\u2018\u2019'`]/gu, '')
     .replace(/[^\p{L}\p{N}]+/gu, ' ')

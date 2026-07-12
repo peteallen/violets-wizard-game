@@ -1,0 +1,156 @@
+{
+  "language_code": "eng",
+  "language_probability": 1,
+  "text": "Welcome, Violet. Which little edge of color feels most like you?",
+  "words": [
+    {
+      "text": "Welcome,",
+      "start": 0.119,
+      "end": 0.419,
+      "type": "word",
+      "logprob": -0.002934333110147236
+    },
+    {
+      "text": " ",
+      "start": 0.419,
+      "end": 0.519,
+      "type": "spacing",
+      "logprob": -0.00016342257731594145
+    },
+    {
+      "text": "Violet.",
+      "start": 0.519,
+      "end": 0.939,
+      "type": "word",
+      "logprob": -0.0001511454995904517
+    },
+    {
+      "text": " ",
+      "start": 0.939,
+      "end": 1.259,
+      "type": "spacing",
+      "logprob": -4.768370445162873e-7
+    },
+    {
+      "text": "Which",
+      "start": 1.259,
+      "end": 1.419,
+      "type": "word",
+      "logprob": -4.768370445162873e-7
+    },
+    {
+      "text": " ",
+      "start": 1.419,
+      "end": 1.5,
+      "type": "spacing",
+      "logprob": -0.0000032186455882765586
+    },
+    {
+      "text": "little",
+      "start": 1.5,
+      "end": 1.679,
+      "type": "word",
+      "logprob": -0.0000032186455882765586
+    },
+    {
+      "text": " ",
+      "start": 1.679,
+      "end": 1.779,
+      "type": "spacing",
+      "logprob": -0.000004172316494077677
+    },
+    {
+      "text": "edge",
+      "start": 1.779,
+      "end": 1.939,
+      "type": "word",
+      "logprob": -0.000004172316494077677
+    },
+    {
+      "text": " ",
+      "start": 1.939,
+      "end": 1.959,
+      "type": "spacing",
+      "logprob": 0
+    },
+    {
+      "text": "of",
+      "start": 1.959,
+      "end": 2.019,
+      "type": "word",
+      "logprob": 0
+    },
+    {
+      "text": " ",
+      "start": 2.019,
+      "end": 2.139,
+      "type": "spacing",
+      "logprob": -0.0019288521725684404
+    },
+    {
+      "text": "color",
+      "start": 2.139,
+      "end": 2.44,
+      "type": "word",
+      "logprob": -0.0019288521725684404
+    },
+    {
+      "text": " ",
+      "start": 2.44,
+      "end": 2.5,
+      "type": "spacing",
+      "logprob": -5.960462772236497e-7
+    },
+    {
+      "text": "feels",
+      "start": 2.5,
+      "end": 2.779,
+      "type": "word",
+      "logprob": -5.960462772236497e-7
+    },
+    {
+      "text": " ",
+      "start": 2.779,
+      "end": 2.879,
+      "type": "spacing",
+      "logprob": 0
+    },
+    {
+      "text": "most",
+      "start": 2.879,
+      "end": 3.119,
+      "type": "word",
+      "logprob": 0
+    },
+    {
+      "text": " ",
+      "start": 3.119,
+      "end": 3.179,
+      "type": "spacing",
+      "logprob": 0
+    },
+    {
+      "text": "like",
+      "start": 3.179,
+      "end": 3.399,
+      "type": "word",
+      "logprob": 0
+    },
+    {
+      "text": " ",
+      "start": 3.399,
+      "end": 3.459,
+      "type": "spacing",
+      "logprob": -3.576278118089249e-7
+    },
+    {
+      "text": "you?",
+      "start": 3.46,
+      "end": 3.659,
+      "type": "word",
+      "logprob": -0.0021541940513571944
+    }
+  ],
+  "transcription_id": "imbzspV9Osmv8ysrKwUn",
+  "audio_duration_secs": 3.947375
+}

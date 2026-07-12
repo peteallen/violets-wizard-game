@@ -1,0 +1,100 @@
+{
+  "language_code": "eng",
+  "language_probability": 1,
+  "text": "A lively wand, but not your wand",
+  "words": [
+    {
+      "text": "A",
+      "start": 0.159,
+      "end": 0.179,
+      "type": "word",
+      "logprob": -0.00007009260298218578
+    },
+    {
+      "text": " ",
+      "start": 0.179,
+      "end": 0.199,
+      "type": "spacing",
+      "logprob": -0.00013553177996072918
+    },
+    {
+      "text": "lively",
+      "start": 0.199,
+      "end": 0.519,
+      "type": "word",
+      "logprob": -0.00013553177996072918
+    },
+    {
+      "text": " ",
+      "start": 0.519,
+      "end": 0.56,
+      "type": "spacing",
+      "logprob": -0.0010798105504363775
+    },
+    {
+      "text": "wand,",
+      "start": 0.56,
+      "end": 0.959,
+      "type": "word",
+      "logprob": -0.002226928807795048
+    },
+    {
+      "text": " ",
+      "start": 0.959,
+      "end": 0.979,
+      "type": "spacing",
+      "logprob": -3.576278118089249e-7
+    },
+    {
+      "text": "but",
+      "start": 0.979,
+      "end": 1.1,
+      "type": "word",
+      "logprob": -3.576278118089249e-7
+    },
+    {
+      "text": " ",
+      "start": 1.1,
+      "end": 1.139,
+      "type": "spacing",
+      "logprob": 0
+    },
+    {
+      "text": "not",
+      "start": 1.139,
+      "end": 1.339,
+      "type": "word",
+      "logprob": 0
+    },
+    {
+      "text": " ",
+      "start": 1.339,
+      "end": 1.339,
+      "type": "spacing",
+      "logprob": -0.00008260862523457035
+    },
+    {
+      "text": "your",
+      "start": 1.339,
+      "end": 1.539,
+      "type": "word",
+      "logprob": -0.00008260862523457035
+    },
+    {
+      "text": " ",
+      "start": 1.539,
+      "end": 1.579,
+      "type": "spacing",
+      "logprob": -0.00003528532761265524
+    },
+    {
+      "text": "wand",
+      "start": 1.579,
+      "end": 1.859,
+      "type": "word",
+      "logprob": -0.00003528532761265524
+    }
+  ],
+  "transcription_id": "erxmE2aUcihKuE8rDfm6",
+  "audio_duration_secs": 1.9969375
+}

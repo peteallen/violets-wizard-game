@@ -1,0 +1,128 @@
+{
+  "language_code": "eng",
+  "language_probability": 1,
+  "text": "The magical street is open. Your wand is waiting.",
+  "words": [
+    {
+      "text": "The",
+      "start": 0.079,
+      "end": 0.159,
+      "type": "word",
+      "logprob": -0.00001585470999998506
+    },
+    {
+      "text": " ",
+      "start": 0.159,
+      "end": 0.199,
+      "type": "spacing",
+      "logprob": -0.005949762649834156
+    },
+    {
+      "text": "magical",
+      "start": 0.199,
+      "end": 0.639,
+      "type": "word",
+      "logprob": -0.005949762649834156
+    },
+    {
+      "text": " ",
+      "start": 0.639,
+      "end": 0.759,
+      "type": "spacing",
+      "logprob": -0.00010990492592100054
+    },
+    {
+      "text": "street",
+      "start": 0.759,
+      "end": 1.039,
+      "type": "word",
+      "logprob": -0.00010990492592100054
+    },
+    {
+      "text": " ",
+      "start": 1.039,
+      "end": 1.099,
+      "type": "spacing",
+      "logprob": 0
+    },
+    {
+      "text": "is",
+      "start": 1.1,
+      "end": 1.199,
+      "type": "word",
+      "logprob": 0
+    },
+    {
+      "text": " ",
+      "start": 1.199,
+      "end": 1.279,
+      "type": "spacing",
+      "logprob": -3.576278118089249e-7
+    },
+    {
+      "text": "open.",
+      "start": 1.279,
+      "end": 1.559,
+      "type": "word",
+      "logprob": -0.0002734940032951272
+    },
+    {
+      "text": " ",
+      "start": 1.559,
+      "end": 1.959,
+      "type": "spacing",
+      "logprob": -3.576278118089249e-7
+    },
+    {
+      "text": "Your",
+      "start": 1.959,
+      "end": 2.159,
+      "type": "word",
+      "logprob": -3.576278118089249e-7
+    },
+    {
+      "text": " ",
+      "start": 2.159,
+      "end": 2.219,
+      "type": "spacing",
+      "logprob": -0.000021815061700181104
+    },
+    {
+      "text": "wand",
+      "start": 2.22,
+      "end": 2.539,
+      "type": "word",
+      "logprob": -0.000021815061700181104
+    },
+    {
+      "text": " ",
+      "start": 2.539,
+      "end": 2.579,
+      "type": "spacing",
+      "logprob": 0
+    },
+    {
+      "text": "is",
+      "start": 2.579,
+      "end": 2.699,
+      "type": "word",
+      "logprob": 0
+    },
+    {
+      "text": " ",
+      "start": 2.699,
+      "end": 2.759,
+      "type": "spacing",
+      "logprob": -0.0000010728830375228426
+    },
+    {
+      "text": "waiting.",
+      "start": 2.759,
+      "end": 3.159,
+      "type": "word",
+      "logprob": -0.03151831403324934
+    }
+  ],
+  "transcription_id": "H8A74QF6ovVmIU2NDYvd",
+  "audio_duration_secs": 3.4365625
+}

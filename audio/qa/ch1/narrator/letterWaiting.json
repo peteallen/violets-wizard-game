@@ -1,0 +1,114 @@
+{
+  "language_code": "eng",
+  "language_probability": 1,
+  "text": "Your place is waiting. Bring your brightest curiosity",
+  "words": [
+    {
+      "text": "Your",
+      "start": 0.099,
+      "end": 0.179,
+      "type": "word",
+      "logprob": -0.00008570780482841656
+    },
+    {
+      "text": " ",
+      "start": 0.179,
+      "end": 0.259,
+      "type": "spacing",
+      "logprob": -1.1920928244535389e-7
+    },
+    {
+      "text": "place",
+      "start": 0.259,
+      "end": 0.5,
+      "type": "word",
+      "logprob": -1.1920928244535389e-7
+    },
+    {
+      "text": " ",
+      "start": 0.5,
+      "end": 0.56,
+      "type": "spacing",
+      "logprob": 0
+    },
+    {
+      "text": "is",
+      "start": 0.56,
+      "end": 0.699,
+      "type": "word",
+      "logprob": 0
+    },
+    {
+      "text": " ",
+      "start": 0.699,
+      "end": 0.74,
+      "type": "spacing",
+      "logprob": -5.960462772236497e-7
+    },
+    {
+      "text": "waiting.",
+      "start": 0.74,
+      "end": 1.22,
+      "type": "word",
+      "logprob": -0.00000615405254933421
+    },
+    {
+      "text": " ",
+      "start": 1.22,
+      "end": 1.779,
+      "type": "spacing",
+      "logprob": -0.0000058412379075889476
+    },
+    {
+      "text": "Bring",
+      "start": 1.779,
+      "end": 1.939,
+      "type": "word",
+      "logprob": -0.0000058412379075889476
+    },
+    {
+      "text": " ",
+      "start": 1.939,
+      "end": 2.019,
+      "type": "spacing",
+      "logprob": -1.1920928244535389e-7
+    },
+    {
+      "text": "your",
+      "start": 2.019,
+      "end": 2.2,
+      "type": "word",
+      "logprob": -1.1920928244535389e-7
+    },
+    {
+      "text": " ",
+      "start": 2.2,
+      "end": 2.24,
+      "type": "spacing",
+      "logprob": -0.000027417760065873154
+    },
+    {
+      "text": "brightest",
+      "start": 2.24,
+      "end": 2.7,
+      "type": "word",
+      "logprob": -0.000027417760065873154
+    },
+    {
+      "text": " ",
+      "start": 2.7,
+      "end": 2.819,
+      "type": "spacing",
+      "logprob": -0.0000010728830375228426
+    },
+    {
+      "text": "curiosity",
+      "start": 2.819,
+      "end": 3.679,
+      "type": "word",
+      "logprob": -0.0000010728830375228426
+    }
+  ],
+  "transcription_id": "0whLx2eq48vbQqz8bybb",
+  "audio_duration_secs": 3.9938125
+}

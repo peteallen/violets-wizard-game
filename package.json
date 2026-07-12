@@ -15,7 +15,7 @@
     "check:assets": "node scripts/check-assets.mjs",
     "check:voice-qa": "node scripts/check-voice-qa.mjs",
     "build:app": "vite build",
-    "build": "npm run test && npm run check:assets && npm run build:app",
+    "build": "npm run test && npm run check:assets && npm run check:voice-qa && npm run build:app",
     "preview": "vite preview --host 0.0.0.0",
     "snap": "node scripts/snap.mjs",
     "flipbook": "node scripts/flipbook.mjs",

@@ -1,0 +1,114 @@
+{
+  "language_code": "eng",
+  "language_probability": 1,
+  "text": "Go to the menagerie and choose a pet",
+  "words": [
+    {
+      "text": "Go",
+      "start": 0.079,
+      "end": 0.239,
+      "type": "word",
+      "logprob": -0.000033378044463461265
+    },
+    {
+      "text": " ",
+      "start": 0.239,
+      "end": 0.28,
+      "type": "spacing",
+      "logprob": -0.0000017881377516459906
+    },
+    {
+      "text": "to",
+      "start": 0.28,
+      "end": 0.359,
+      "type": "word",
+      "logprob": -0.0000017881377516459906
+    },
+    {
+      "text": " ",
+      "start": 0.359,
+      "end": 0.379,
+      "type": "spacing",
+      "logprob": -0.00002253030106658116
+    },
+    {
+      "text": "the",
+      "start": 0.379,
+      "end": 0.459,
+      "type": "word",
+      "logprob": -0.00002253030106658116
+    },
+    {
+      "text": " ",
+      "start": 0.459,
+      "end": 0.479,
+      "type": "spacing",
+      "logprob": -0.04863661155104637
+    },
+    {
+      "text": "menagerie",
+      "start": 0.479,
+      "end": 1.1,
+      "type": "word",
+      "logprob": -0.016214826449565106
+    },
+    {
+      "text": " ",
+      "start": 1.1,
+      "end": 1.139,
+      "type": "spacing",
+      "logprob": -0.000002622600959512056
+    },
+    {
+      "text": "and",
+      "start": 1.139,
+      "end": 1.339,
+      "type": "word",
+      "logprob": -0.000002622600959512056
+    },
+    {
+      "text": " ",
+      "start": 1.339,
+      "end": 1.359,
+      "type": "spacing",
+      "logprob": -0.000003099436753473128
+    },
+    {
+      "text": "choose",
+      "start": 1.36,
+      "end": 1.619,
+      "type": "word",
+      "logprob": -0.000003099436753473128
+    },
+    {
+      "text": " ",
+      "start": 1.619,
+      "end": 1.639,
+      "type": "spacing",
+      "logprob": -2.3841855067985307e-7
+    },
+    {
+      "text": "a",
+      "start": 1.639,
+      "end": 1.74,
+      "type": "word",
+      "logprob": -2.3841855067985307e-7
+    },
+    {
+      "text": " ",
+      "start": 1.74,
+      "end": 1.779,
+      "type": "spacing",
+      "logprob": -3.576278118089249e-7
+    },
+    {
+      "text": "pet",
+      "start": 1.779,
+      "end": 2.099,
+      "type": "word",
+      "logprob": -3.576278118089249e-7
+    }
+  ],
+  "transcription_id": "CzDSPd8tiFMkHtyKKnbT",
+  "audio_duration_secs": 2.2755625
+}

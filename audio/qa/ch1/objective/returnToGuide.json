@@ -1,0 +1,100 @@
+{
+  "language_code": "eng",
+  "language_probability": 1,
+  "text": "Go back to Hagrid on the street",
+  "words": [
+    {
+      "text": "Go",
+      "start": 0.079,
+      "end": 0.14,
+      "type": "word",
+      "logprob": -0.002421425189822912
+    },
+    {
+      "text": " ",
+      "start": 0.14,
+      "end": 0.199,
+      "type": "spacing",
+      "logprob": -0.00001156323378381785
+    },
+    {
+      "text": "back",
+      "start": 0.199,
+      "end": 0.399,
+      "type": "word",
+      "logprob": -0.00001156323378381785
+    },
+    {
+      "text": " ",
+      "start": 0.399,
+      "end": 0.439,
+      "type": "spacing",
+      "logprob": -1.1920928244535389e-7
+    },
+    {
+      "text": "to",
+      "start": 0.439,
+      "end": 0.56,
+      "type": "word",
+      "logprob": -1.1920928244535389e-7
+    },
+    {
+      "text": " ",
+      "start": 0.56,
+      "end": 0.659,
+      "type": "spacing",
+      "logprob": -0.00003671578815556131
+    },
+    {
+      "text": "Hagrid",
+      "start": 0.659,
+      "end": 1,
+      "type": "word",
+      "logprob": -0.000023066638732416322
+    },
+    {
+      "text": " ",
+      "start": 1,
+      "end": 1.039,
+      "type": "spacing",
+      "logprob": -0.0000011920922133867862
+    },
+    {
+      "text": "on",
+      "start": 1.039,
+      "end": 1.139,
+      "type": "word",
+      "logprob": -0.0000011920922133867862
+    },
+    {
+      "text": " ",
+      "start": 1.139,
+      "end": 1.159,
+      "type": "spacing",
+      "logprob": -0.000005722029527532868
+    },
+    {
+      "text": "the",
+      "start": 1.159,
+      "end": 1.259,
+      "type": "word",
+      "logprob": -0.000005722029527532868
+    },
+    {
+      "text": " ",
+      "start": 1.259,
+      "end": 1.279,
+      "type": "spacing",
+      "logprob": -0.00008511180931236595
+    },
+    {
+      "text": "street",
+      "start": 1.279,
+      "end": 1.659,
+      "type": "word",
+      "logprob": -0.00008511180931236595
+    }
+  ],
+  "transcription_id": "oN6NUOuyVh76YN2nUlNw",
+  "audio_duration_secs": 1.857625
+}
