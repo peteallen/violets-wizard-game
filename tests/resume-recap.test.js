@@ -66,7 +66,8 @@ describe('Chapter 1 resume recaps', () => {
     await fresh.startAdventure();
     expect(fresh.resumeRecap).toBeNull();
     expect(fresh.sound.speak).not.toHaveBeenCalled();
-    expect(fresh.sound.playSfx).toHaveBeenCalledWith('sfx/ch1/sealCrack', 'flourish');
+    expect(fresh.sound.playSfx).not.toHaveBeenCalledWith('sfx/ch1/sealCrack', 'flourish');
+    expect(fresh.updateStatus).toHaveBeenCalledWith('Violet’s letter is waiting by the window.');
   });
 
   it('uses one tap to dismiss the recap and then restores normal dialogue', () => {

@@ -8,51 +8,51 @@
       "start": 0.099,
       "end": 0.3,
       "type": "word",
-      "logprob": -0.0000019073468138230965
+      "logprob": -0.0000027418097943154862
     },
     {
       "text": " ",
       "start": 0.3,
       "end": 0.3,
       "type": "spacing",
-      "logprob": -0.0004551566671580076
+      "logprob": -0.0007057083421386778
     },
     {
       "text": "broom",
       "start": 0.3,
       "end": 0.519,
       "type": "word",
-      "logprob": -0.0004551566671580076
+      "logprob": -0.0007057083421386778
     },
     {
       "text": " ",
       "start": 0.519,
       "end": 0.599,
       "type": "spacing",
-      "logprob": -0.000001311301275563892
+      "logprob": -0.0000011920922133867862
     },
     {
       "text": "looks",
       "start": 0.599,
-      "end": 0.779,
+      "end": 0.759,
       "type": "word",
-      "logprob": -0.000001311301275563892
+      "logprob": -0.0000011920922133867862
     },
     {
       "text": " ",
-      "start": 0.779,
+      "start": 0.759,
       "end": 0.839,
       "type": "spacing",
-      "logprob": -2.3841855067985307e-7
+      "logprob": -4.768370445162873e-7
     },
     {
       "text": "fast",
       "start": 0.839,
       "end": 1.259,
       "type": "word",
-      "logprob": -2.3841855067985307e-7
+      "logprob": -4.768370445162873e-7
     }
   ],
-  "transcription_id": "DqyQzu3j69d7F1sf6MMu",
+  "transcription_id": "CkCcVkwoEIw0auMekRAN",
   "audio_duration_secs": 1.34675
 }

@@ -8,35 +8,35 @@
       "start": 0.059,
       "end": 0.399,
       "type": "word",
-      "logprob": -0.0001982181852326903
+      "logprob": -0.00024969659019310103
     },
     {
       "text": " ",
       "start": 0.399,
       "end": 0.439,
       "type": "spacing",
-      "logprob": -7.152555099310121e-7
+      "logprob": -9.536738616588991e-7
     },
     {
       "text": "is",
       "start": 0.439,
-      "end": 0.579,
+      "end": 0.539,
       "type": "word",
-      "logprob": -7.152555099310121e-7
+      "logprob": -9.536738616588991e-7
     },
     {
       "text": " ",
-      "start": 0.579,
-      "end": 0.62,
+      "start": 0.539,
+      "end": 0.599,
       "type": "spacing",
-      "logprob": -0.0000032186455882765586
+      "logprob": -0.000004172316494077677
     },
     {
       "text": "waiting",
-      "start": 0.62,
+      "start": 0.599,
       "end": 0.919,
       "type": "word",
-      "logprob": -0.0000032186455882765586
+      "logprob": -0.000004172316494077677
     },
     {
       "text": " ",
@@ -57,28 +57,28 @@
       "start": 0.979,
       "end": 1.079,
       "type": "spacing",
-      "logprob": -4.768370445162873e-7
+      "logprob": -5.960462772236497e-7
     },
     {
       "text": "show",
       "start": 1.079,
       "end": 1.259,
       "type": "word",
-      "logprob": -4.768370445162873e-7
+      "logprob": -5.960462772236497e-7
     },
     {
       "text": " ",
       "start": 1.259,
       "end": 1.299,
       "type": "spacing",
-      "logprob": -2.3841855067985307e-7
+      "logprob": -1.1920928244535389e-7
     },
     {
       "text": "you",
       "start": 1.299,
       "end": 1.399,
       "type": "word",
-      "logprob": -2.3841855067985307e-7
+      "logprob": -1.1920928244535389e-7
     },
     {
       "text": " ",
@@ -99,30 +99,30 @@
       "start": 1.519,
       "end": 1.559,
       "type": "spacing",
-      "logprob": -0.002214600332081318
+      "logprob": -0.002831024117767811
     },
     {
       "text": "magical",
       "start": 1.559,
       "end": 1.899,
       "type": "word",
-      "logprob": -0.002214600332081318
+      "logprob": -0.002831024117767811
     },
     {
       "text": " ",
       "start": 1.899,
       "end": 2.039,
       "type": "spacing",
-      "logprob": -0.0006298227235674858
+      "logprob": -0.00033718624035827816
     },
     {
       "text": "street",
       "start": 2.039,
       "end": 2.42,
       "type": "word",
-      "logprob": -0.0006298227235674858
+      "logprob": -0.00033718624035827816
     }
   ],
-  "transcription_id": "irpNfJLJWXThxfbxzuY2",
+  "transcription_id": "TUOOfOYg6g49NG27Ydf2",
   "audio_duration_secs": 2.6470625
 }

@@ -8,93 +8,93 @@
       "start": 0.059,
       "end": 0.14,
       "type": "word",
-      "logprob": -0.000020861407392658293
+      "logprob": -0.000017762025890988298
     },
     {
       "text": " ",
       "start": 0.14,
       "end": 0.219,
       "type": "spacing",
-      "logprob": -0.0000019073468138230965
+      "logprob": -0.0000029802276912960224
     },
     {
       "text": "to",
       "start": 0.219,
       "end": 0.299,
       "type": "word",
-      "logprob": -0.0000019073468138230965
+      "logprob": -0.0000029802276912960224
     },
     {
       "text": " ",
       "start": 0.299,
       "end": 0.34,
       "type": "spacing",
-      "logprob": -0.029874686151742935
+      "logprob": -0.029872952029109
     },
     {
       "text": "Ollivanders",
       "start": 0.34,
       "end": 0.899,
       "type": "word",
-      "logprob": -0.10640304560696347
+      "logprob": -0.10641825403184736
     },
     {
       "text": " ",
       "start": 0.899,
       "end": 0.939,
       "type": "spacing",
-      "logprob": -0.000006794906312279636
+      "logprob": -0.00000965590606938349
     },
     {
       "text": "and",
       "start": 0.939,
       "end": 1.079,
       "type": "word",
-      "logprob": -0.000006794906312279636
+      "logprob": -0.00000965590606938349
     },
     {
       "text": " ",
       "start": 1.079,
       "end": 1.119,
       "type": "spacing",
-      "logprob": -0.000014781842764932662
+      "logprob": -0.000023841574147809297
     },
     {
       "text": "choose",
       "start": 1.12,
-      "end": 1.36,
+      "end": 1.379,
       "type": "word",
-      "logprob": -0.000014781842764932662
+      "logprob": -0.000023841574147809297
     },
     {
       "text": " ",
-      "start": 1.36,
-      "end": 1.399,
+      "start": 1.379,
+      "end": 1.419,
       "type": "spacing",
-      "logprob": -2.3841855067985307e-7
+      "logprob": -3.576278118089249e-7
     },
     {
       "text": "your",
-      "start": 1.399,
+      "start": 1.419,
       "end": 1.579,
       "type": "word",
-      "logprob": -2.3841855067985307e-7
+      "logprob": -3.576278118089249e-7
     },
     {
       "text": " ",
       "start": 1.579,
       "end": 1.619,
       "type": "spacing",
-      "logprob": -0.00007068861305015162
+      "logprob": -0.00008987976616481319
     },
     {
       "text": "wand",
       "start": 1.62,
       "end": 2.019,
       "type": "word",
-      "logprob": -0.00007068861305015162
+      "logprob": -0.00008987976616481319
     }
   ],
-  "transcription_id": "x7TRKUy1ZGJ5Y08ydshi",
+  "transcription_id": "8mDgPXQp2mqJy6la7dNC",
   "audio_duration_secs": 2.2755625
 }

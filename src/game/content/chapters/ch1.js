@@ -28,6 +28,18 @@ function setPiecePlay(id) {
   return { type: 'setPiece.play', id };
 }
 
+function audioSfx(key) {
+  return { type: 'audio.command', command: 'sfx', key };
+}
+
+function sfxCue(at, key) {
+  return { type: 'cue', at, event: 'audio.command', payload: { command: 'sfx', key } };
+}
+
+function musicCue(at, key) {
+  return { type: 'cue', at, event: 'audio.command', payload: { command: 'music', key, mode: 'crossfade', fadeSeconds: 0.8 } };
+}
+
 function travel(room, spawn) {
   return { type: 'travel.request', room, spawn: spawn.split('.').at(-1) };
 }
@@ -308,21 +320,21 @@ const dialogueGraphs = [
             id: 'petCat',
             icon: 'pet-cat',
             caption: 'Cat',
-            actions: [{ type: 'character.set', field: 'pet.type', value: 'cat' }],
+            actions: [{ type: 'character.set', field: 'pet.type', value: 'cat' }, audioSfx('sfx/ch1/petCat')],
             next: 'confirm',
           },
           {
             id: 'petOwl',
             icon: 'pet-owl',
             caption: 'Owl',
-            actions: [{ type: 'character.set', field: 'pet.type', value: 'owl' }],
+            actions: [{ type: 'character.set', field: 'pet.type', value: 'owl' }, audioSfx('sfx/ch1/petOwl')],
             next: 'confirm',
           },
           {
             id: 'petToad',
             icon: 'pet-toad',
             caption: 'Toad',
-            actions: [{ type: 'character.set', field: 'pet.type', value: 'toad' }],
+            actions: [{ type: 'character.set', field: 'pet.type', value: 'toad' }, audioSfx('sfx/ch1/petToad')],
             next: 'confirm',
           },
         ],
@@ -403,10 +415,11 @@ const dialogueGraphs = [
   },
   {
     id: 'ch1.guide.ticket',
-    start: 'ticket',
+    start: 'present',
     resumePolicy: 'restart-current-node',
     replayable: true,
     nodes: {
+      present: { type: 'action', actions: [audioSfx('sfx/ch1/ticket')], next: 'ticket' },
       ticket: voiceLine({
         speaker: 'npc.guide',
         voice: 'voice/ch1/guide/ticket',
@@ -723,7 +736,7 @@ export const chapter1 = {
           presentation: { icon: 'owl', glow: 'objective' },
           repeat: 'once',
           requiredSpell: null,
-          onInteract: [flagSet('ch1.owlTapped'), setPiecePlay('sp.letter')],
+          onInteract: [audioSfx('sfx/ch1/owlTap'), flagSet('ch1.owlTapped'), setPiecePlay('sp.letter')],
         },
         {
           id: 'bedroom.letter',
@@ -734,7 +747,7 @@ export const chapter1 = {
           presentation: { icon: 'letter', glow: 'objective' },
           repeat: 'until-condition',
           requiredSpell: null,
-          onInteract: [flagSet('ch1.letterOpened'), dialogueStart('ch1.letter.read')],
+          onInteract: [audioSfx('sfx/ch1/sealCrack'), flagSet('ch1.letterOpened'), dialogueStart('ch1.letter.read')],
         },
         {
           id: 'bedroom.guide',
@@ -1101,7 +1114,7 @@ export const chapter1 = {
       fallback: 'fallback.letterCrossfade',
       reducedMotion: 'reduced.letterFade',
       params: { specification: 'SP-01' },
-      timeline: { tracks: [] },
+      timeline: { tracks: [sfxCue(0.25, 'sfx/ch1/owlFlap'), sfxCue(0.95, 'sfx/ch1/paperSlide')] },
       verification: { keyframes: [0, 2, 3.2, 4.8], checklist: ['Violet is legible on the envelope.', 'The letter folds do not intersect.', 'No painting edge is exposed.'] },
       onComplete: [],
     },
@@ -1116,7 +1129,7 @@ export const chapter1 = {
       fallback: 'fallback.doubleHingedWall',
       reducedMotion: 'reduced.wallCrossfade',
       params: { specification: 'SP-02', columns: 10, rows: 8 },
-      timeline: { tracks: [] },
+      timeline: { tracks: [sfxCue(0, 'sfx/ch1/wallRumble'), sfxCue(0.45, 'sfx/ch1/brickClack')] },
       verification: { keyframes: [0, 0.6, 1, 1.4, 1.8, 2.2, 2.6, 3.2], checklist: ['The intact wall has no visible seams.', 'The opening reads from the center outward.', 'The street horizon remains aligned.'] },
       onComplete: [flagSet('ch1.wallOpened'), travel('ch1.diagonStreet', 'street.west')],
     },
@@ -1131,7 +1144,7 @@ export const chapter1 = {
       fallback: 'fallback.papersOnly',
       reducedMotion: 'reduced.papersShort',
       params: { specification: 'SP-03', variant: 'papers' },
-      timeline: { tracks: [] },
+      timeline: { tracks: [sfxCue(0, 'sfx/ch1/wandPaperWhirl')] },
       verification: { keyframes: [0, 0.8, 1.5, 2.2], checklist: ['Every paper settles before control returns.'] },
       onComplete: [],
     },
@@ -1146,7 +1159,7 @@ export const chapter1 = {
       fallback: 'fallback.papersAndWobble',
       reducedMotion: 'reduced.vaseSwap',
       params: { specification: 'SP-03', variant: 'vase' },
-      timeline: { tracks: [] },
+      timeline: { tracks: [sfxCue(0, 'sfx/ch1/wandPaperWhirl'), sfxCue(1.05, 'sfx/ch1/vaseShatter')] },
       verification: { keyframes: [0, 0.8, 1.6, 2.6], checklist: ['Vase shards stay inside the room.', 'Every prop settles before control returns.'] },
       onComplete: [],
     },
@@ -1161,7 +1174,7 @@ export const chapter1 = {
       fallback: 'fallback.goldenWash',
       reducedMotion: 'reduced.goldenFade',
       params: { specification: 'SP-03', variant: 'golden-choice' },
-      timeline: { tracks: [] },
+      timeline: { tracks: [sfxCue(0, 'sfx/ch1/wandChosen')] },
       verification: { keyframes: [0, 1, 2, 3], checklist: ['The golden wash does not clip to white.', 'The chosen wand remains visible.'] },
       onComplete: [],
     },
@@ -1176,7 +1189,7 @@ export const chapter1 = {
       fallback: 'fallback.staticPage',
       reducedMotion: 'reduced.staticPage',
       params: { specification: 'chapter-card' },
-      timeline: { tracks: [] },
+      timeline: { tracks: [sfxCue(0, 'sfx/ch1/chapterTurn'), musicCue(0.2, 'music/ch1/chapterTriumph')] },
       verification: { keyframes: [0, 1, 4], checklist: ['The chapter title is legible.', 'The page transition reveals no blank frame.'] },
       onComplete: [dialogueStart('ch1.narrator.chapterEnd')],
     },

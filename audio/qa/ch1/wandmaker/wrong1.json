@@ -5,10 +5,10 @@
   "words": [
     {
       "text": "Oh,",
-      "start": 0.099,
+      "start": 0.119,
       "end": 0.539,
       "type": "word",
-      "logprob": -0.0003839959390461445
+      "logprob": -0.0005834366990408549
     },
     {
       "text": " ",
@@ -41,13 +41,13 @@
     {
       "text": " ",
       "start": 0.859,
-      "end": 0.899,
+      "end": 0.919,
       "type": "spacing",
       "logprob": 0
     },
     {
       "text": "has",
-      "start": 0.899,
+      "start": 0.919,
       "end": 1.079,
       "type": "word",
       "logprob": 0
@@ -57,14 +57,14 @@
       "start": 1.079,
       "end": 1.099,
       "type": "spacing",
-      "logprob": -2.3841855067985307e-7
+      "logprob": -3.576278118089249e-7
     },
     {
       "text": "too",
-      "start": 1.099,
+      "start": 1.1,
       "end": 1.24,
       "type": "word",
-      "logprob": -2.3841855067985307e-7
+      "logprob": -3.576278118089249e-7
     },
     {
       "text": " ",
@@ -95,6 +95,6 @@
       "logprob": -4.768370445162873e-7
     }
   ],
-  "transcription_id": "5HqLJBANVqmYIRsIlgIp",
+  "transcription_id": "kkJn0JqnIj5mhtnLiEKp",
   "audio_duration_secs": 2.0898125
 }

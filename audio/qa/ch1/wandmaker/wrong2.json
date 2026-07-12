@@ -8,35 +8,35 @@
       "start": 0.159,
       "end": 0.179,
       "type": "word",
-      "logprob": -0.00007009260298218578
+      "logprob": -0.000059960475482512265
     },
     {
       "text": " ",
       "start": 0.179,
       "end": 0.199,
       "type": "spacing",
-      "logprob": -0.00013553177996072918
+      "logprob": -0.0003110878460574895
     },
     {
       "text": "lively",
       "start": 0.199,
       "end": 0.519,
       "type": "word",
-      "logprob": -0.00013553177996072918
+      "logprob": -0.0003110878460574895
     },
     {
       "text": " ",
       "start": 0.519,
-      "end": 0.56,
+      "end": 0.539,
       "type": "spacing",
-      "logprob": -0.0010798105504363775
+      "logprob": -0.0006068295333534479
     },
     {
       "text": "wand,",
-      "start": 0.56,
+      "start": 0.539,
       "end": 0.959,
       "type": "word",
-      "logprob": -0.002226928807795048
+      "logprob": -0.002234603650867939
     },
     {
       "text": " ",
@@ -71,30 +71,30 @@
       "start": 1.339,
       "end": 1.339,
       "type": "spacing",
-      "logprob": -0.00008260862523457035
+      "logprob": -0.00007378782902378589
     },
     {
       "text": "your",
       "start": 1.339,
-      "end": 1.539,
+      "end": 1.559,
       "type": "word",
-      "logprob": -0.00008260862523457035
+      "logprob": -0.00007378782902378589
     },
     {
       "text": " ",
-      "start": 1.539,
+      "start": 1.559,
       "end": 1.579,
       "type": "spacing",
-      "logprob": -0.00003528532761265524
+      "logprob": -0.000050424259825376794
     },
     {
       "text": "wand",
       "start": 1.579,
       "end": 1.859,
       "type": "word",
-      "logprob": -0.00003528532761265524
+      "logprob": -0.000050424259825376794
     }
   ],
-  "transcription_id": "erxmE2aUcihKuE8rDfm6",
+  "transcription_id": "9YTc0CNupI9Q8PxvgEPc",
   "audio_duration_secs": 1.9969375
 }

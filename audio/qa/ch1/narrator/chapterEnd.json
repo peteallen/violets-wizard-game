@@ -8,77 +8,77 @@
       "start": 0.079,
       "end": 0.28,
       "type": "word",
-      "logprob": -0.00000834461570775602
+      "logprob": -0.000008583032467868179
     },
     {
       "text": " ",
       "start": 0.28,
       "end": 0.34,
       "type": "spacing",
-      "logprob": -0.0000014305104514278355
+      "logprob": -0.0000023841830625315197
     },
     {
       "text": "time,",
       "start": 0.34,
       "end": 0.639,
       "type": "word",
-      "logprob": -0.0008372685863832885
+      "logprob": -0.00034921988626592795
     },
     {
       "text": " ",
       "start": 0.639,
       "end": 0.899,
       "type": "spacing",
-      "logprob": -0.0001387499796692282
+      "logprob": -0.00011205045302631333
     },
     {
       "text": "Violet",
       "start": 0.899,
       "end": 1.279,
       "type": "word",
-      "logprob": -0.0001387499796692282
+      "logprob": -0.00011205045302631333
     },
     {
       "text": " ",
       "start": 1.279,
       "end": 1.319,
       "type": "spacing",
-      "logprob": -0.000005364403477869928
+      "logprob": -0.000004768360213347478
     },
     {
       "text": "takes",
       "start": 1.319,
-      "end": 1.559,
+      "end": 1.579,
       "type": "word",
-      "logprob": -0.000005364403477869928
+      "logprob": -0.000004768360213347478
     },
     {
       "text": " ",
-      "start": 1.559,
+      "start": 1.579,
       "end": 1.599,
       "type": "spacing",
-      "logprob": -2.3841855067985307e-7
+      "logprob": -5.960462772236497e-7
     },
     {
       "text": "the",
       "start": 1.599,
       "end": 1.659,
       "type": "word",
-      "logprob": -2.3841855067985307e-7
+      "logprob": -5.960462772236497e-7
     },
     {
       "text": " ",
       "start": 1.659,
       "end": 1.74,
       "type": "spacing",
-      "logprob": -7.152555099310121e-7
+      "logprob": -9.536738616588991e-7
     },
     {
       "text": "train",
       "start": 1.74,
       "end": 1.959,
       "type": "word",
-      "logprob": -7.152555099310121e-7
+      "logprob": -9.536738616588991e-7
     },
     {
       "text": " ",
@@ -99,16 +99,16 @@
       "start": 2.059,
       "end": 2.119,
       "type": "spacing",
-      "logprob": -4.768370445162873e-7
+      "logprob": -0.0000015497195136049413
     },
     {
       "text": "Hogwarts",
       "start": 2.119,
       "end": 2.779,
       "type": "word",
-      "logprob": -4.768370445162873e-7
+      "logprob": -0.0000015497195136049413
     }
   ],
-  "transcription_id": "Rc0efw7Ho0gigNGH1PKh",
+  "transcription_id": "9mU0W8G0Vjmev2X222fv",
   "audio_duration_secs": 3.018625
 }

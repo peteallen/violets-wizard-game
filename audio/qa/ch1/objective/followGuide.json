@@ -8,79 +8,79 @@
       "start": 0.059,
       "end": 0.299,
       "type": "word",
-      "logprob": -0.000039934315282152966
+      "logprob": -0.00005149708886165172
     },
     {
       "text": " ",
       "start": 0.299,
       "end": 0.359,
       "type": "spacing",
-      "logprob": -0.000020503786799963564
+      "logprob": -0.000014662635294371285
     },
     {
       "text": "Hagrid",
       "start": 0.359,
       "end": 0.759,
       "type": "word",
-      "logprob": -0.000012040029560012044
+      "logprob": -0.000009357871476822766
     },
     {
       "text": " ",
       "start": 0.759,
       "end": 0.799,
       "type": "spacing",
-      "logprob": -3.576278118089249e-7
+      "logprob": -9.536738616588991e-7
     },
     {
       "text": "to",
       "start": 0.799,
       "end": 0.859,
       "type": "word",
-      "logprob": -3.576278118089249e-7
+      "logprob": -9.536738616588991e-7
     },
     {
       "text": " ",
       "start": 0.859,
       "end": 0.899,
       "type": "spacing",
-      "logprob": -0.000010371154530730564
+      "logprob": -0.00002455681169521995
     },
     {
       "text": "the",
       "start": 0.899,
       "end": 0.939,
       "type": "word",
-      "logprob": -0.000010371154530730564
+      "logprob": -0.00002455681169521995
     },
     {
       "text": " ",
       "start": 0.939,
       "end": 0.999,
       "type": "spacing",
-      "logprob": -0.0036275077145546675
+      "logprob": -0.006744596175849438
     },
     {
       "text": "magical",
       "start": 1,
       "end": 1.319,
       "type": "word",
-      "logprob": -0.0036275077145546675
+      "logprob": -0.006744596175849438
     },
     {
       "text": " ",
       "start": 1.319,
       "end": 1.399,
       "type": "spacing",
-      "logprob": -0.00012468514614738524
+      "logprob": -0.0001411338453181088
     },
     {
       "text": "street",
       "start": 1.399,
       "end": 1.779,
       "type": "word",
-      "logprob": -0.00012468514614738524
+      "logprob": -0.0001411338453181088
     }
   ],
-  "transcription_id": "pJlcJCqia5AEq73jWWGO",
+  "transcription_id": "1LoFhfPAI2V7o0YEjk2k",
   "audio_duration_secs": 1.9969375
 }

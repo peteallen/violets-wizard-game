@@ -8,107 +8,107 @@
       "start": 0.059,
       "end": 0.299,
       "type": "word",
-      "logprob": -0.00003504691630951129
+      "logprob": -0.00008987976616481319
     },
     {
       "text": " ",
       "start": 0.299,
       "end": 0.359,
       "type": "spacing",
-      "logprob": -2.3841855067985307e-7
+      "logprob": -4.768370445162873e-7
     },
     {
       "text": "your",
       "start": 0.359,
       "end": 0.439,
       "type": "word",
-      "logprob": -2.3841855067985307e-7
+      "logprob": -4.768370445162873e-7
     },
     {
       "text": " ",
       "start": 0.439,
       "end": 0.56,
       "type": "spacing",
-      "logprob": -0.00003290122185717337
+      "logprob": -0.00004100715523236431
     },
     {
       "text": "satchel",
       "start": 0.56,
       "end": 0.939,
       "type": "word",
-      "logprob": -0.00001539479451041968
+      "logprob": -0.00001989055661916999
     },
     {
       "text": " ",
       "start": 0.939,
       "end": 0.979,
       "type": "spacing",
-      "logprob": -0.0000020265558760002023
+      "logprob": -0.000006437280717364047
     },
     {
       "text": "and",
       "start": 0.979,
       "end": 1.079,
       "type": "word",
-      "logprob": -0.0000020265558760002023
+      "logprob": -0.000006437280717364047
     },
     {
       "text": " ",
       "start": 1.079,
-      "end": 1.199,
+      "end": 1.219,
       "type": "spacing",
-      "logprob": -2.3841855067985307e-7
+      "logprob": -3.576278118089249e-7
     },
     {
       "text": "tap",
-      "start": 1.199,
+      "start": 1.22,
       "end": 1.459,
       "type": "word",
-      "logprob": -2.3841855067985307e-7
+      "logprob": -3.576278118089249e-7
     },
     {
       "text": " ",
       "start": 1.459,
-      "end": 1.48,
+      "end": 1.499,
       "type": "spacing",
-      "logprob": -5.960462772236497e-7
+      "logprob": -0.0000010728830375228426
     },
     {
       "text": "the",
-      "start": 1.48,
+      "start": 1.5,
       "end": 1.559,
       "type": "word",
-      "logprob": -5.960462772236497e-7
+      "logprob": -0.0000010728830375228426
     },
     {
       "text": " ",
       "start": 1.559,
       "end": 1.62,
       "type": "spacing",
-      "logprob": -0.001007645158097148
+      "logprob": -0.0008572241058573127
     },
     {
       "text": "golden",
       "start": 1.62,
       "end": 2.079,
       "type": "word",
-      "logprob": -0.001007645158097148
+      "logprob": -0.0008572241058573127
     },
     {
       "text": " ",
       "start": 2.079,
       "end": 2.119,
       "type": "spacing",
-      "logprob": -9.536738616588991e-7
+      "logprob": -0.0000020265558760002023
     },
     {
       "text": "star",
       "start": 2.119,
       "end": 2.619,
       "type": "word",
-      "logprob": -9.536738616588991e-7
+      "logprob": -0.0000020265558760002023
     }
   ],
-  "transcription_id": "TDAQ79Ghxg620FxlI6kb",
+  "transcription_id": "SP3FYQQNpiwx51RgqWpT",
   "audio_duration_secs": 2.8793125
 }

@@ -61,6 +61,7 @@ export const ACTION_TYPES = Object.freeze([
   'ui.open',
   'yearbook.capture',
   'chapter.complete',
+  'audio.command',
 ]);
 
 const WORLD_EVENT_TYPE_SET = new Set(WORLD_EVENT_TYPES);
@@ -324,6 +325,11 @@ export function validateAction(value, path = 'action') {
       exactObject(value, path, ['type', 'chapter']);
       chapterId(value.chapter, `${path}.chapter`);
       break;
+    case 'audio.command': {
+      const { type: _type, ...payload } = value;
+      validateAudioPayload(payload, path);
+      break;
+    }
     default:
       fail(`${path}.type`, 'is unsupported');
   }

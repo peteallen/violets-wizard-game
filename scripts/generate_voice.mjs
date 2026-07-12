@@ -1,19 +1,16 @@
-import { execFile } from 'node:child_process';
 import { mkdir, stat, unlink, writeFile } from 'node:fs/promises';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { promisify } from 'node:util';
 import { cards } from '../src/game/content/cards.js';
 import { chapter1, chapter1ResumeRecaps } from '../src/game/content/chapters/ch1.js';
 import { chapter2 } from '../src/game/content/chapters/ch2.js';
+import { masterAudio } from './audio_mastering.mjs';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const API_KEY = process.env.ELEVENLABS_API_KEY;
 const force = process.argv.includes('--force');
 const roleFilter = argumentValue('--role');
-const run = promisify(execFile);
 const VOICE_TARGET_LUFS = -16;
-const SHORT_CLIP_NORMALIZER_TARGET_LUFS = -14;
 if (!API_KEY) throw new Error('ELEVENLABS_API_KEY is not set.');
 
 const VOICES = Object.freeze({
@@ -113,18 +110,17 @@ function voiceSettings(role) {
 }
 
 async function normalizeVoice(input, output) {
-  await run('ffmpeg', [
-    '-hide_banner', '-loglevel', 'error', '-y',
-    '-i', input,
-    '-af', [
+  await masterAudio(input, output, {
+    targetLufs: VOICE_TARGET_LUFS,
+    truePeakDbtp: -1,
+    loudnessRange: 7,
+    preFilters: [
       'highpass=f=65',
       'acompressor=threshold=-20dB:ratio=2.5:attack=15:release=140:makeup=3dB',
-      `loudnorm=I=${SHORT_CLIP_NORMALIZER_TARGET_LUFS}:TP=-1.0:LRA=7`,
-    ].join(','),
-    '-ar', '44100', '-ac', '1',
-    '-codec:a', 'libmp3lame', '-b:a', '128k',
-    output,
-  ]);
+    ],
+    channels: 1,
+    bitrate: '128k',
+  });
 }
 
 function argumentValue(name) {

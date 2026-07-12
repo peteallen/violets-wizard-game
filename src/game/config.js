@@ -22,6 +22,7 @@ export const PALETTE = Object.freeze({
 export const INPUT = Object.freeze({
   minimumTarget: 88,
   tapSlop: 20,
+  parentHoldSeconds: 3,
 });
 
 export const HINTS = Object.freeze({

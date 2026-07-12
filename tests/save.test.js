@@ -255,6 +255,131 @@ describe('safe storage adapter', () => {
     expect(saves.pending).toBeNull();
   });
 
+  it('backs up the current device save before importing a valid replacement', () => {
+    const storage = new MemoryStorage();
+    const current = saveFixture();
+    current.progress.storyChoices.transfer = 'current-device';
+    const replacement = saveFixture();
+    replacement.progress.storyChoices.transfer = 'replacement';
+    const currentRaw = serializeSave(current);
+    storage.setItem(SAVE_STORAGE_KEY, currentRaw);
+    const saves = new Save({ storage, clock: () => SECOND_TIME });
+
+    const result = saves.import(serializeSave(replacement));
+
+    expect(result).toMatchObject({
+      ok: true,
+      status: 'imported',
+      backupStatus: 'backed-up',
+    });
+    expect(storage.getItem(SAVE_BACKUP_KEY)).toBe(currentRaw);
+    expect(saves.load().save.progress.storyChoices.transfer).toBe('replacement');
+  });
+
+  it('flushes pending progress into the backup before replacing the device save', () => {
+    const storage = new MemoryStorage();
+    const persisted = saveFixture();
+    persisted.progress.storyChoices.transfer = 'older-persisted-progress';
+    storage.setItem(SAVE_STORAGE_KEY, serializeSave(persisted));
+    const saves = new Save({
+      storage,
+      clock: () => SECOND_TIME,
+      setTimer: () => 43,
+      clearTimer: () => {},
+    });
+    const pending = saveFixture();
+    pending.progress.storyChoices.transfer = 'latest-pending-progress';
+    saves.queue(pending);
+    const replacement = saveFixture();
+    replacement.progress.storyChoices.transfer = 'replacement';
+
+    const result = saves.import(serializeSave(replacement));
+
+    expect(result).toMatchObject({
+      ok: true,
+      status: 'imported',
+      backupStatus: 'backed-up',
+      flushStatus: 'saved',
+    });
+    expect(parseSave(storage.getItem(SAVE_BACKUP_KEY)).progress.storyChoices.transfer)
+      .toBe('latest-pending-progress');
+    expect(saves.pending).toBeNull();
+    expect(saves.timer).toBeNull();
+  });
+
+  it('does not mutate storage or queued progress when imported text is invalid', () => {
+    const storage = new MemoryStorage();
+    const primaryRaw = serializeSave(saveFixture());
+    const backup = saveFixture();
+    backup.progress.storyChoices.transfer = 'existing-backup';
+    const backupRaw = serializeSave(backup);
+    storage.setItem(SAVE_STORAGE_KEY, primaryRaw);
+    storage.setItem(SAVE_BACKUP_KEY, backupRaw);
+    const saves = new Save({
+      storage,
+      clock: () => SECOND_TIME,
+      setTimer: () => 41,
+      clearTimer: () => {},
+    });
+    const queued = saveFixture();
+    queued.progress.storyChoices.transfer = 'still-pending';
+    saves.queue(queued);
+
+    const result = saves.import('{"schemaVersion":1');
+
+    expect(result).toMatchObject({ ok: false, status: 'invalid-import', save: null });
+    expect(storage.getItem(SAVE_STORAGE_KEY)).toBe(primaryRaw);
+    expect(storage.getItem(SAVE_BACKUP_KEY)).toBe(backupRaw);
+    expect(saves.pending.progress.storyChoices.transfer).toBe('still-pending');
+    expect(saves.timer).toBe(41);
+  });
+
+  it('leaves the current save untouched when its pre-import backup cannot be written', () => {
+    const storage = new MemoryStorage();
+    const currentRaw = serializeSave(saveFixture());
+    storage.setItem(SAVE_STORAGE_KEY, currentRaw);
+    const setItem = storage.setItem.bind(storage);
+    storage.setItem = (key, value) => {
+      if (key === SAVE_BACKUP_KEY) throw new Error('backup write denied');
+      setItem(key, value);
+    };
+    const replacement = saveFixture();
+    replacement.progress.storyChoices.transfer = 'must-not-land';
+    const saves = new Save({ storage, clock: () => SECOND_TIME });
+
+    const result = saves.import(serializeSave(replacement));
+
+    expect(result).toMatchObject({ ok: false, status: 'backup-error', save: null });
+    expect(storage.getItem(SAVE_STORAGE_KEY)).toBe(currentRaw);
+  });
+
+  it('does not retry a replacement later when the confirmed import write fails', () => {
+    const storage = new MemoryStorage();
+    const currentRaw = serializeSave(saveFixture());
+    storage.setItem(SAVE_STORAGE_KEY, currentRaw);
+    const setItem = storage.setItem.bind(storage);
+    let failReplacement = true;
+    storage.setItem = (key, value) => {
+      if (key === SAVE_STORAGE_KEY && failReplacement) {
+        failReplacement = false;
+        throw new Error('replacement write denied');
+      }
+      setItem(key, value);
+    };
+    const replacement = saveFixture();
+    replacement.progress.storyChoices.transfer = 'failed-replacement';
+    const saves = new Save({ storage, clock: () => SECOND_TIME });
+
+    const result = saves.import(serializeSave(replacement));
+
+    expect(result).toMatchObject({ ok: false, status: 'storage-error', save: null });
+    expect(storage.getItem(SAVE_STORAGE_KEY)).toBe(currentRaw);
+    expect(storage.getItem(SAVE_BACKUP_KEY)).toBe(currentRaw);
+    expect(saves.pending).toBeNull();
+    expect(saves.destroy()).toMatchObject({ ok: true, status: 'idle' });
+    expect(storage.getItem(SAVE_STORAGE_KEY)).toBe(currentRaw);
+  });
+
   it('clears primary and backup saves without letting a queued autosave resurrect them', () => {
     const storage = new MemoryStorage();
     storage.setItem(SAVE_STORAGE_KEY, serializeSave(saveFixture()));

@@ -66,6 +66,12 @@ describe('state fixtures', () => {
       'ch1-wand-chosen',
       'ch1-complete',
       'ch2-placeholder',
+      'parent-panel',
+      'parent-settings',
+      'parent-save',
+      'parent-confirm',
+      'parent-yearbook',
+      'save-transfer',
     ]);
     for (const id of STATE_FIXTURE_IDS) {
       const fixture = getStateFixture(id);
@@ -114,6 +120,12 @@ describe('action fixtures', () => {
       'letter.seal',
     ]);
     expect(getActionFixture('ch1-start').actions.map((action) => action.frame)).toEqual([30, 480, 520, 540]);
+    expect(getActionFixture('parent-panel').actions.at(-1)).toEqual({
+      frame: 60,
+      type: 'hold',
+      target: 'satchel.grownups',
+      durationFrames: 180,
+    });
   });
 
   it('rejects coordinate-like targets and non-monotonic scripts', () => {

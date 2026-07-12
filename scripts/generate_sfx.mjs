@@ -1,10 +1,12 @@
-import { mkdir, stat, writeFile } from 'node:fs/promises';
+import { mkdir, stat, unlink, writeFile } from 'node:fs/promises';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { analyzeAudio, masterAudio } from './audio_mastering.mjs';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const API_KEY = process.env.ELEVENLABS_API_KEY;
 const force = process.argv.includes('--force');
+const SFX_TARGET_LUFS = -18;
 if (!API_KEY) throw new Error('ELEVENLABS_API_KEY is not set.');
 
 const effects = [
@@ -46,8 +48,25 @@ async function generate([key, text, duration]) {
     body: JSON.stringify({ text, duration_seconds: duration, prompt_influence: 0.45 }),
   });
   if (!response.ok) throw new Error(`${key}: ElevenLabs returned ${response.status} ${await response.text()}`);
-  await writeFile(output, Buffer.from(await response.arrayBuffer()));
-  console.log(`wrote ${key}`);
+  const rawOutput = `${output}.raw-${process.pid}.mp3`;
+  try {
+    await writeFile(rawOutput, Buffer.from(await response.arrayBuffer()));
+    const rawMeasurements = await analyzeAudio(rawOutput, { targetLufs: SFX_TARGET_LUFS, truePeakDbtp: -2.5 });
+    const crestFactor = Number(rawMeasurements.input_tp) - Number(rawMeasurements.input_i);
+    const preFilters = Number(rawMeasurements.input_i) < -20 || crestFactor > 14
+      ? ['acompressor=threshold=-40dB:ratio=10:attack=1:release=220:makeup=0dB']
+      : [];
+    await masterAudio(rawOutput, output, {
+      targetLufs: SFX_TARGET_LUFS,
+      truePeakDbtp: -2.5,
+      loudnessRange: 7,
+      preFilters,
+      bitrate: '128k',
+    });
+  } finally {
+    await unlink(rawOutput).catch(() => {});
+  }
+  console.log(`wrote ${key} (${SFX_TARGET_LUFS} LUFS)`);
 }
 
 async function exists(path) {

@@ -98,3 +98,227 @@ canvas {
   white-space: nowrap;
   border: 0;
 }
+
+.save-transfer-backdrop {
+  position: fixed;
+  z-index: 40;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding:
+    max(20px, env(safe-area-inset-top))
+    max(20px, env(safe-area-inset-right))
+    max(20px, env(safe-area-inset-bottom))
+    max(20px, env(safe-area-inset-left));
+  overflow: auto;
+  color: #251833;
+  background: rgb(20 17 38 / 82%);
+  touch-action: pan-y;
+}
+
+.save-transfer-backdrop[hidden] {
+  display: none;
+}
+
+.save-transfer-dialog {
+  position: relative;
+  width: min(780px, 100%);
+  max-height: 100%;
+  padding: clamp(24px, 4vw, 42px);
+  overflow: auto;
+  border: 7px double #a78137;
+  border-radius: 4px;
+  clip-path: polygon(
+    20px 0,
+    calc(100% - 20px) 0,
+    100% 20px,
+    100% calc(100% - 20px),
+    calc(100% - 20px) 100%,
+    20px 100%,
+    0 calc(100% - 20px),
+    0 20px
+  );
+  color: #382a24;
+  background: #f3e6ca;
+  box-shadow: inset 0 0 0 4px #ead09b;
+  -webkit-overflow-scrolling: touch;
+}
+
+.save-transfer-dialog::before {
+  position: absolute;
+  top: 18px;
+  right: 28px;
+  color: #a78137;
+  content: "✦";
+  font-size: 32px;
+}
+
+.save-transfer-dialog:focus-visible {
+  outline: 6px solid #fff;
+  outline-offset: 5px;
+}
+
+.save-transfer-title {
+  margin: 0 0 8px;
+  color: #3c2458;
+  font-size: clamp(30px, 5vw, 44px);
+  line-height: 1.1;
+}
+
+.save-transfer-instructions,
+.save-transfer-status,
+.save-transfer-preview-text,
+.save-transfer-warning {
+  font-size: clamp(19px, 2.8vw, 24px);
+  line-height: 1.35;
+}
+
+.save-transfer-instructions {
+  margin: 0 0 20px;
+}
+
+.save-transfer-label {
+  display: block;
+  margin-bottom: 8px;
+  color: #3c2458;
+  font-size: 20px;
+  font-weight: 700;
+}
+
+.save-transfer-data {
+  display: block;
+  width: 100%;
+  min-height: clamp(150px, 28vh, 260px);
+  padding: 16px;
+  resize: vertical;
+  border: 4px double #624b73;
+  border-radius: 3px;
+  clip-path: polygon(10px 0, calc(100% - 10px) 0, 100% 10px, 100% calc(100% - 10px), calc(100% - 10px) 100%, 10px 100%, 0 calc(100% - 10px), 0 10px);
+  color: #1d1629;
+  background: #fffdf8;
+  font: 17px/1.45 ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+  overflow-wrap: normal;
+  white-space: pre;
+  touch-action: pan-x pan-y pinch-zoom;
+  -webkit-user-select: text;
+  user-select: text;
+  -webkit-overflow-scrolling: touch;
+}
+
+.save-transfer-data:focus-visible {
+  border-color: #7855a5;
+  outline: 5px solid #fff;
+  box-shadow: 0 0 0 10px #7855a5;
+}
+
+.save-transfer-data[aria-invalid="true"] {
+  border-color: #9e263d;
+}
+
+.save-transfer-preview {
+  margin-top: 18px;
+  padding: 16px 20px;
+  border: 3px double #a78137;
+  border-radius: 2px;
+  clip-path: polygon(10px 0, calc(100% - 10px) 0, 100% 10px, 100% calc(100% - 10px), calc(100% - 10px) 100%, 10px 100%, 0 calc(100% - 10px), 0 10px);
+  background: #fff4c8;
+}
+
+.save-transfer-preview[hidden] {
+  display: none;
+}
+
+.save-transfer-preview-heading {
+  margin: 0 0 4px;
+  color: #3c2458;
+  font-size: 22px;
+  font-weight: 700;
+}
+
+.save-transfer-preview-text,
+.save-transfer-warning {
+  margin: 4px 0 0;
+}
+
+.save-transfer-warning {
+  color: #74253a;
+  font-weight: 700;
+}
+
+.save-transfer-status {
+  min-height: 1.35em;
+  margin: 14px 0;
+  font-weight: 700;
+}
+
+.save-transfer-status[data-tone="success"] {
+  color: #365d2c;
+}
+
+.save-transfer-status[data-tone="error"] {
+  color: #8b2039;
+}
+
+.save-transfer-actions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.save-transfer-button {
+  min-height: 88px;
+  padding: 14px 22px;
+  border: 4px solid #3c2458;
+  border-radius: 2px;
+  clip-path: polygon(16px 0, calc(100% - 16px) 0, 100% 50%, calc(100% - 16px) 100%, 16px 100%, 0 50%);
+  box-shadow: inset 0 -7px 0 rgb(40 25 58 / 18%);
+  font: 700 clamp(20px, 3vw, 26px)/1.15 "Andika", "Trebuchet MS", sans-serif;
+  cursor: pointer;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.save-transfer-button-primary {
+  color: #1f1730;
+  background: #ffd76a;
+}
+
+.save-transfer-button-secondary {
+  color: #fff;
+  background: #624b73;
+}
+
+.save-transfer-button:focus-visible {
+  outline: 6px solid #fff;
+  outline-offset: 4px;
+  box-shadow: 0 0 0 11px #7855a5;
+}
+
+.save-transfer-button:active {
+  transform: translateY(4px);
+  box-shadow: inset 0 -3px 0 rgb(40 25 58 / 18%);
+}
+
+.save-transfer-button:disabled {
+  cursor: wait;
+  opacity: 0.65;
+}
+
+@media (max-width: 560px), (max-height: 600px) {
+  .save-transfer-backdrop {
+    place-items: start center;
+  }
+
+  .save-transfer-dialog {
+    padding: 22px;
+    border-radius: 3px;
+  }
+
+  .save-transfer-actions {
+    grid-template-columns: 1fr;
+  }
+
+  .save-transfer-data {
+    min-height: 130px;
+  }
+}

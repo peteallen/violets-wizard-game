@@ -5,13 +5,13 @@
       "transcript": "ch1/card/dumbledore.json",
       "audio": "voice/ch1/card/dumbledore.mp3",
       "bytes": 47691,
-      "sha256": "c73330109f95ab942d1287b1c4b8863458073153207864f27868392fdf547cb4"
+      "sha256": "ec309121df36e0942075091be0d0805fb6c61f7b16c8cba3fafe88af49630659"
     },
     "voice/ch1/card/morgana": {
       "transcript": "ch1/card/morgana.json",
       "audio": "voice/ch1/card/morgana.mp3",
       "bytes": 57722,
-      "sha256": "6cd59a7e26cf9c29eea31f1001c4cd9cc8bd1a603c0799a9357b0b2f275a3cb3"
+      "sha256": "bf5ca69de3d6d1b25ac81d5020f5fcd3e05d66cf828b969eed78bfacc502cb53"
     },
     "voice/ch1/guide/arrival": {
       "transcript": "guide/arrival.json",
@@ -53,187 +53,187 @@
       "transcript": "ch1/keeper/confirm.json",
       "audio": "voice/ch1/keeper/confirm.mp3",
       "bytes": 25539,
-      "sha256": "b9745c6de03bbb3533c670c25a07a56359b54a2a07ad9a7379cd4095b9759325"
+      "sha256": "127ef6a2dd8b65c4a9d75e1e89f0b369d2fb0d994ee1950d51913ea23e5238f3"
     },
     "voice/ch1/keeper/done": {
       "transcript": "ch1/keeper/done.json",
       "audio": "voice/ch1/keeper/done.mp3",
       "bytes": 44347,
-      "sha256": "287bacb0f8ab49cfb1345a1b137f4295c5cc2be9a576a5c9a09f187634cae7b2"
+      "sha256": "0bd851d209d2f0ca2f5b07c6c710cd33a4ac6597ab91781a04fcb61c9e0fcfb1"
     },
     "voice/ch1/keeper/name": {
       "transcript": "ch1/keeper/name.json",
       "audio": "voice/ch1/keeper/name.mp3",
       "bytes": 43511,
-      "sha256": "fc78c14ea0c7d5e5a57b6db1dc5f071b0d29a404f2601adb1f20871790f810ab"
+      "sha256": "66993d86ea0a05c3d6d0300ec16f2d099bd92824a7d071d49013491692da5dc8"
     },
     "voice/ch1/keeper/welcome": {
       "transcript": "ch1/keeper/welcome.json",
       "audio": "voice/ch1/keeper/welcome.mp3",
       "bytes": 61902,
-      "sha256": "bee0d0c371d1974cc174eb88d3a948e63b10edb0965bcdfb84980a4835804f9a"
+      "sha256": "19b52ab7ba48d7d57de0a87790827a9cabf2bc215874c57d602be10ae09028c6"
     },
     "voice/ch1/narrator/chapterEnd": {
       "transcript": "ch1/narrator/chapterEnd.json",
       "audio": "voice/ch1/narrator/chapterEnd.mp3",
       "bytes": 49363,
-      "sha256": "2d364e725c7b5362ad6959b1e7e18e222273691dda5b3873efefbecc0a4ae83b"
+      "sha256": "5c76493afb17a0eb4e656cd6efbbf7fcce55c01f0908dd548bd1b1f53e6f402a"
     },
     "voice/ch1/narrator/letterInvitation": {
       "transcript": "letterInvitation.json",
       "audio": "voice/ch1/narrator/letterInvitation.mp3",
       "bytes": 79874,
-      "sha256": "65830ad9e3256a8d04cf20c9e717300618a2c4506d91d2d7e4cd8fa7c5cfe6ce"
+      "sha256": "3409850cdb43408237a9f05a5e670f85b4bc4456e51cc6157b1e1103869e5fa6"
     },
     "voice/ch1/narrator/letterWaiting": {
       "transcript": "ch1/narrator/letterWaiting.json",
       "audio": "voice/ch1/narrator/letterWaiting.mp3",
       "bytes": 64827,
-      "sha256": "0507cf59b5a8a974c006f054f7bf0a6f25aa5c3edfdd77010ccb4420817e573b"
+      "sha256": "9facfa02e116f08b69476e4e413fed84405cf4edb51e7c65432ab2aa4cb3a558"
     },
     "voice/ch1/objective/choosePet": {
       "transcript": "ch1/objective/choosePet.json",
       "audio": "voice/ch1/objective/choosePet.mp3",
       "bytes": 37660,
-      "sha256": "66cb4ca62e4320db0f4204f4a4e289e5b49d79536a4fdc3d2932446c0fc5c6dd"
+      "sha256": "11595acc36e1c89f3f1ba66aac2ae2fa9c1ccb78fe770f125645ceedd5c34779"
     },
     "voice/ch1/objective/chooseRobes": {
       "transcript": "ch1/objective/chooseRobes.json",
       "audio": "voice/ch1/objective/chooseRobes.mp3",
       "bytes": 40586,
-      "sha256": "d4bb3df4fd27f9f2dbb3e03970d8d0b45aa3530aa645c5d5cc0e81feb027ad5b"
+      "sha256": "b569de5a550844d172377e1a59cbfe814b9d1a8eca987d116a1b5dcf792cb114"
     },
     "voice/ch1/objective/chooseWand": {
       "transcript": "ch1/objective/chooseWand.json",
       "audio": "voice/ch1/objective/chooseWand.mp3",
       "bytes": 37660,
-      "sha256": "e5eb44e880363ecacfc7b9e4c0ee45e575491a51d04b061fc3ebb74ae3f6558a"
+      "sha256": "0cf03551bdf1689068d39d1f342627b599cc4dd476b3f9f91e164a6a83f50230"
     },
     "voice/ch1/objective/followGuide": {
       "transcript": "ch1/objective/followGuide.json",
       "audio": "voice/ch1/objective/followGuide.mp3",
       "bytes": 33062,
-      "sha256": "d5ba3b06d94363d6359a87321c1aa85e75d34b9bb5bdfaa35e6e12d93936205f"
+      "sha256": "58a11104a67e8ca76af94e27b8f6145c9ff7943bb3d94e2dc3c60c61f12328fc"
     },
     "voice/ch1/objective/openLetter": {
       "transcript": "ch1/objective/openLetter.json",
       "audio": "voice/ch1/objective/openLetter.mp3",
       "bytes": 26375,
-      "sha256": "1fdefacc0188e97b23448e21be5b1423e6170209f6af1af1b5e790e8ad6a5676"
+      "sha256": "2038262c62ca308542b1516f87bc98f25902c9866d25c820d26ca9ff7ae805ac"
     },
     "voice/ch1/objective/returnToGuide": {
       "transcript": "ch1/objective/returnToGuide.json",
       "audio": "voice/ch1/objective/returnToGuide.mp3",
       "bytes": 30973,
-      "sha256": "a023ff97358f07856e8af86e94330e1a0e74213fd0c2d25f80b0d4b6ba41d1cf"
+      "sha256": "a8b070f470fbcf5576609adf8dbf0f72ec50c96352ebd799538c6cf410d4390b"
     },
     "voice/ch1/objective/useMap": {
       "transcript": "ch1/objective/useMap.json",
       "audio": "voice/ch1/objective/useMap.mp3",
       "bytes": 47273,
-      "sha256": "00dbb8144f64343bc1ff01b20aed4c181b7ba4d61654f4390b30cf6f80a07a16"
+      "sha256": "15934729fc63203b7d527be26c67b90fad48cf30ca8ecd92e80ffe1b236c0410"
     },
     "voice/ch1/recap/choosePet": {
       "transcript": "ch1/recap/choosePet.json",
       "audio": "voice/ch1/recap/choosePet.mp3",
       "bytes": 56886,
-      "sha256": "26c40ec5281c4f55b3ae093f4dea27d474de81ba4f9cb9f8fb8403a1ef713bf1"
+      "sha256": "a8ddad33df194e40f4bc5db7ed4caaaaee99fb65da29260ab021715a93e91b79"
     },
     "voice/ch1/recap/chooseRobes": {
       "transcript": "ch1/recap/chooseRobes.json",
       "audio": "voice/ch1/recap/chooseRobes.mp3",
       "bytes": 61902,
-      "sha256": "2b3cdf06104103f5e4973a55c9e0f97f7ab5843017954900414ab546f9772bc2"
+      "sha256": "767cebcfc2fd42b79704d7cdb7879d79368c6e09cfb3e19510f84055ae51d1fa"
     },
     "voice/ch1/recap/followGuide": {
       "transcript": "ch1/recap/followGuide.json",
       "audio": "voice/ch1/recap/followGuide.mp3",
       "bytes": 43511,
-      "sha256": "5bece9ab42075b2348bcd1ae7805e5873c7f39dd184831275ace732c5336a180"
+      "sha256": "95d8477311e1d4872bd9d5baaa11eb87e115eb5fe6ce68c306f1188c928f81d2"
     },
     "voice/ch1/recap/openLetter": {
       "transcript": "ch1/recap/openLetter.json",
       "audio": "voice/ch1/recap/openLetter.mp3",
       "bytes": 33062,
-      "sha256": "b066f1728e8bb2e5d324f6e32b1ec70e738dafe995d71cb12cef0b162b49bc84"
+      "sha256": "a3dabaf508b23768f9584e38ed5e09bf5c496406bea99a195fbc054a96de5809"
     },
     "voice/ch1/recap/returnToGuide": {
       "transcript": "ch1/recap/returnToGuide.json",
       "audio": "voice/ch1/recap/returnToGuide.mp3",
       "bytes": 44765,
-      "sha256": "bf8254f3661c132da655742340f999e9e0f5541e55a7b0abb73a0ba40c9276d1"
+      "sha256": "d15ed47905cdc032e52189424de093c76789db66b878e4753c644def452fa9b7"
     },
     "voice/ch1/recap/useMap": {
       "transcript": "ch1/recap/useMap.json",
       "audio": "voice/ch1/recap/useMap.mp3",
       "bytes": 56050,
-      "sha256": "f9c733e738d604ed78ae8e4f3f0e7fc4a914e5c93c93196849183b63e7eeebe1"
+      "sha256": "a7330d0f813d4409469c4460ceac8d44afb22155df4739ccadf6def6e2bf7de5"
     },
     "voice/ch1/tailor/done": {
       "transcript": "ch1/tailor/done.json",
       "audio": "voice/ch1/tailor/done.mp3",
       "bytes": 26375,
-      "sha256": "631ab1071f181d149f61b3d4ac036378e11d1410ee140bdd24bc56e076e4597a"
+      "sha256": "250ac31fe29afdc44fddb6c8fc71d57a35fe87731d0fc74427328bbdb4dd56b8"
     },
     "voice/ch1/tailor/welcome": {
       "transcript": "ch1/tailor/welcome.json",
       "audio": "voice/ch1/tailor/welcome.mp3",
       "bytes": 64409,
-      "sha256": "9ac28d2b246cf6e5ea31795254809041316ed6a679f0dcbbf98af77aef91ab60"
+      "sha256": "7032bb69447d8b327c7e15d753e4158f702a78b32a46eca439c1288017f93d84"
     },
     "voice/ch1/violet/broom": {
       "transcript": "ch1/violet/broom.json",
       "audio": "voice/ch1/violet/broom.mp3",
       "bytes": 22613,
-      "sha256": "e9e2f904992277a5eb28d3faabdb54b7ec10e909bd265bc37dafcb9883b64143"
+      "sha256": "9c351c640bd752a87914fc8ff9c23cd5d2384db1ee59491803e377f3b2d52c51"
     },
     "voice/ch1/violet/mirror": {
       "transcript": "ch1/violet/mirror.json",
       "audio": "voice/ch1/violet/mirror.mp3",
       "bytes": 20524,
-      "sha256": "85a9fbefed997e6e55383b99d43b3fc403bd37af6115797de1d865c452e1dd65"
+      "sha256": "313a061b23d66941d75742063006ab1efd3ffef45e48697cc47ea48ade4c36eb"
     },
     "voice/ch1/violet/noSpells": {
       "transcript": "ch1/violet/noSpells.json",
       "audio": "voice/ch1/violet/noSpells.mp3",
       "bytes": 20942,
-      "sha256": "96127b243f216dca177cc4a17cc9905c32fd8353436ca67d344ef86169e0c8f5"
+      "sha256": "6bde7706b73c868d24e643782c5548885c6c812bd7a88e4c0f8faa8253259caa"
     },
     "voice/ch1/violet/wow": {
       "transcript": "ch1/violet/wow.json",
       "audio": "voice/ch1/violet/wow.mp3",
       "bytes": 13000,
-      "sha256": "7438272c26008cb816f357e23b884960d1c73dda8eaaa8a7397d4ac4cefabe37"
+      "sha256": "026b89cc98497a46ad2343f58b40f7d65587225d64b484263f1b03fee9fae25f"
     },
     "voice/ch1/wandmaker/chosen": {
       "transcript": "wandChosen.json",
       "audio": "voice/ch1/wandmaker/chosen.mp3",
       "bytes": 41839,
-      "sha256": "aab5d71c68b7dfaea7402a198058ec8f08b9478708139f397ac7341af7710338"
+      "sha256": "c3a04cc81122e7f22530ea36c00a508799e0f3a57f32593dc0ccc5b2aa4b6289"
     },
     "voice/ch1/wandmaker/welcome": {
       "transcript": "ch1/wandmaker/welcome.json",
       "audio": "voice/ch1/wandmaker/welcome.mp3",
       "bytes": 56886,
-      "sha256": "361f3002ce3f0a15fb06bb8562507a0a932da06efec236e0af6b371384b9aa59"
+      "sha256": "6804fa7ab93f7e86d2c268ed998e1005ad60fc6bddb301dbf38ce4280e09075c"
     },
     "voice/ch1/wandmaker/wrong1": {
       "transcript": "ch1/wandmaker/wrong1.json",
       "audio": "voice/ch1/wandmaker/wrong1.mp3",
       "bytes": 34316,
-      "sha256": "1bd3120b06debf77a198dd827653554d730a3fdf9db4e05760e958e04208cc90"
+      "sha256": "ed3a3515866a36caace6d5c7b0db990b016e98ccf1cf7a71c67f96e01e74c2f1"
     },
     "voice/ch1/wandmaker/wrong2": {
       "transcript": "ch1/wandmaker/wrong2.json",
       "audio": "voice/ch1/wandmaker/wrong2.mp3",
       "bytes": 33062,
-      "sha256": "3127316b01141c8335f1c7db1dd13eadb856522b0d0a4034c7ae8e35c38cf15f"
+      "sha256": "0804060927d5baadbd1593bc07c3030594348538cb212534a3c37fd3c82bf705"
     },
     "voice/ch2/narrator/preview": {
       "transcript": "ch2Preview.json",
       "audio": "voice/ch2/narrator/preview.mp3",
       "bytes": 86561,
-      "sha256": "76b4326aab6b7622ecf504be44a63addb95699f7cd90205ee76d820c3ae41f8b"
+      "sha256": "bb1cd896e291c74004c61f6d67820abc8711f39d9ac5f3380e2c9b188eb617b3"
     }
   }
 }

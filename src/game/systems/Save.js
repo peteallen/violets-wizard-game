@@ -546,7 +546,33 @@ export class Save {
     } catch (error) {
       return { ok: false, status: 'invalid-import', save: null, error };
     }
-    return this.write(value);
+    const flush = this.flush();
+    if (!flush.ok) {
+      return {
+        ...flush,
+        status: 'flush-error',
+      };
+    }
+    const backup = this.backupCurrent();
+    if (!backup.ok) {
+      return {
+        ...backup,
+        status: 'backup-error',
+      };
+    }
+    const result = this.write(value);
+    if (!result.ok) {
+      // The confirmed replacement failed and was rolled back. Do not leave it queued
+      // to arrive unexpectedly during a later autosave retry or page teardown.
+      this.pending = null;
+      return result;
+    }
+    return {
+      ...result,
+      status: 'imported',
+      backupStatus: backup.status,
+      flushStatus: flush.status,
+    };
   }
 
   export(value) {

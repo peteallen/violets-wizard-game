@@ -6,109 +6,109 @@
     {
       "text": "Go",
       "start": 0.059,
-      "end": 0.119,
+      "end": 0.14,
       "type": "word",
-      "logprob": -0.00026842328952625394
+      "logprob": -0.0007223857101053
     },
     {
       "text": " ",
-      "start": 0.119,
+      "start": 0.14,
       "end": 0.199,
       "type": "spacing",
-      "logprob": -3.576278118089249e-7
+      "logprob": -5.960462772236497e-7
     },
     {
       "text": "to",
       "start": 0.199,
       "end": 0.259,
       "type": "word",
-      "logprob": -3.576278118089249e-7
+      "logprob": -5.960462772236497e-7
     },
     {
       "text": " ",
       "start": 0.259,
       "end": 0.319,
       "type": "spacing",
-      "logprob": -0.04310290887951851
+      "logprob": -0.0621245801448822
     },
     {
       "text": "Madam",
       "start": 0.319,
       "end": 0.579,
       "type": "word",
-      "logprob": -0.04310290887951851
+      "logprob": -0.0621245801448822
     },
     {
       "text": " ",
       "start": 0.579,
       "end": 0.639,
       "type": "spacing",
-      "logprob": -0.000506511190906167
+      "logprob": -0.0003292018664069474
     },
     {
       "text": "Malkin's",
       "start": 0.639,
       "end": 1.059,
       "type": "word",
-      "logprob": -0.0015256944425203756
+      "logprob": -0.00255792752431816
     },
     {
       "text": " ",
       "start": 1.059,
       "end": 1.079,
       "type": "spacing",
-      "logprob": -0.000042914423829643056
+      "logprob": -0.00005411955135059543
     },
     {
       "text": "and",
       "start": 1.079,
       "end": 1.199,
       "type": "word",
-      "logprob": -0.000042914423829643056
+      "logprob": -0.00005411955135059543
     },
     {
       "text": " ",
       "start": 1.199,
       "end": 1.22,
       "type": "spacing",
-      "logprob": -0.000016689160474925302
+      "logprob": -0.000013470558769768104
     },
     {
       "text": "choose",
       "start": 1.22,
       "end": 1.439,
       "type": "word",
-      "logprob": -0.000016689160474925302
+      "logprob": -0.000013470558769768104
     },
     {
       "text": " ",
       "start": 1.439,
       "end": 1.5,
       "type": "spacing",
-      "logprob": -3.576278118089249e-7
+      "logprob": -5.960462772236497e-7
     },
     {
       "text": "your",
       "start": 1.5,
       "end": 1.579,
       "type": "word",
-      "logprob": -3.576278118089249e-7
+      "logprob": -5.960462772236497e-7
     },
     {
       "text": " ",
       "start": 1.579,
       "end": 1.699,
       "type": "spacing",
-      "logprob": -0.000003814689989667386
+      "logprob": -0.000003099436753473128
     },
     {
       "text": "robes",
       "start": 1.699,
       "end": 2.239,
       "type": "word",
-      "logprob": -0.000003814689989667386
+      "logprob": -0.000003099436753473128
     }
   ],
-  "transcription_id": "7OLVNVT7Lg8iYN0iS5U6",
+  "transcription_id": "m5MKvYzXairOC7c0xpy3",
   "audio_duration_secs": 2.4613125
 }

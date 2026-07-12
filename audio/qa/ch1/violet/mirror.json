@@ -8,37 +8,37 @@
       "start": 0.059,
       "end": 0.179,
       "type": "word",
-      "logprob": -0.0000033378546504536644
+      "logprob": -0.0000034570634852570947
     },
     {
       "text": " ",
       "start": 0.179,
       "end": 0.199,
       "type": "spacing",
-      "logprob": -0.00000822540732769994
+      "logprob": -0.000007033323527139146
     },
     {
       "text": "look",
       "start": 0.199,
       "end": 0.379,
       "type": "word",
-      "logprob": -0.00000822540732769994
+      "logprob": -0.000007033323527139146
     },
     {
       "text": " ",
       "start": 0.379,
       "end": 0.419,
       "type": "spacing",
-      "logprob": -0.0000029802276912960224
+      "logprob": -0.0000040531076592742465
     },
     {
       "text": "magical",
       "start": 0.419,
       "end": 0.879,
       "type": "word",
-      "logprob": -0.0000029802276912960224
+      "logprob": -0.0000040531076592742465
     }
   ],
-  "transcription_id": "NtQ1NrH9R5XAxbPTrw5X",
+  "transcription_id": "ogtLiJP0Eh5XiN58YV4S",
   "audio_duration_secs": 1.2074375
 }

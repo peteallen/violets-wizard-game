@@ -1,4 +1,4 @@
-const DEFAULT_VOLUMES = Object.freeze({ master: 1, voice: 1, music: 0.55, sfx: 0.8 });
+const DEFAULT_VOLUMES = Object.freeze({ master: 1, voice: 1, music: 1, sfx: 1 });
 
 export class SoundEngine {
   constructor({ resolveAsset = () => null, muted = false, volumes = {} } = {}) {
@@ -161,6 +161,16 @@ export class SoundEngine {
     this.pendingMusic = null;
   }
 
+  stopMusic() {
+    if (this.music) {
+      this.music.pause();
+      this.music.currentTime = 0;
+    }
+    this.music = null;
+    this.musicKey = null;
+    this.pendingMusic = null;
+  }
+
   duckMusic(ducked) {
     if (!this.music) return;
     this.music.volume = this.effectiveVolume('music') * (ducked ? 0.4 : 1);
@@ -179,13 +189,7 @@ export class SoundEngine {
 
   stopAll() {
     this.stopVoice();
-    if (this.music) {
-      this.music.pause();
-      this.music.currentTime = 0;
-    }
-    this.music = null;
-    this.musicKey = null;
-    this.pendingMusic = null;
+    this.stopMusic();
     this.eventLog.length = 0;
   }
 

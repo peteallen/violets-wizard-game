@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { Timeline, TimelineError } from '../src/game/systems/Timeline.js';
+import { SetPieces } from '../src/game/systems/SetPieces.js';
 
 describe('deterministic timeline', () => {
   it('samples declarative channels as pure functions of time', () => {
@@ -76,5 +77,37 @@ describe('deterministic timeline', () => {
     const timeline = new Timeline({ tracks: [] });
     expect(() => timeline.sample(-1)).toThrow(TimelineError);
     expect(() => timeline.advance(2, 1)).toThrow(TimelineError);
+  });
+});
+
+describe('SetPieces timeline cues', () => {
+  it('emits time-zero and crossed audio cues exactly once', () => {
+    const events = [];
+    const setPieces = new SetPieces({
+      emit: (type, payload) => events.push({ type, payload }),
+      descriptors: {
+        'sp.test': {
+          id: 'sp.test',
+          duration: 2,
+          params: {},
+          timeline: { tracks: [
+            { type: 'cue', at: 0, event: 'audio.command', payload: { command: 'sfx', key: 'sfx/start' } },
+            { type: 'cue', at: 1, event: 'audio.command', payload: { command: 'sfx', key: 'sfx/impact' } },
+          ] },
+          onComplete: [],
+        },
+      },
+    });
+
+    setPieces.start('sp.test');
+    expect(events).toContainEqual({ type: 'audio.command', payload: { command: 'sfx', key: 'sfx/start' } });
+
+    events.length = 0;
+    setPieces.update(0.75);
+    expect(events).toEqual([]);
+    setPieces.update(0.5);
+    expect(events).toEqual([{ type: 'audio.command', payload: { command: 'sfx', key: 'sfx/impact' } }]);
+    setPieces.update(0.25);
+    expect(events).toEqual([{ type: 'audio.command', payload: { command: 'sfx', key: 'sfx/impact' } }]);
   });
 });

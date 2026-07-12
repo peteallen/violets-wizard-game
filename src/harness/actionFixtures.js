@@ -3,13 +3,19 @@ import { ImmutableRegistry, assertExactKeys } from './registry.js';
 const SEMANTIC_TARGET_PATTERN = /^[a-z][A-Za-z0-9]*\.[a-z][A-Za-z0-9]*(?:\.[a-z][A-Za-z0-9]*)*$/;
 
 function validateAction(action, index, path) {
-  assertExactKeys(action, ['frame', 'type', 'target'], `${path}.actions[${index}]`);
+  const required = action.type === 'hold'
+    ? ['frame', 'type', 'target', 'durationFrames']
+    : ['frame', 'type', 'target'];
+  assertExactKeys(action, required, `${path}.actions[${index}]`);
   if (!Number.isSafeInteger(action.frame) || action.frame < 0) {
     throw new TypeError(`${path}.actions[${index}].frame must be a non-negative safe integer.`);
   }
-  if (action.type !== 'tap') throw new TypeError(`${path}.actions[${index}].type must be tap.`);
+  if (!['tap', 'hold'].includes(action.type)) throw new TypeError(`${path}.actions[${index}].type must be tap or hold.`);
   if (typeof action.target !== 'string' || !SEMANTIC_TARGET_PATTERN.test(action.target)) {
     throw new TypeError(`${path}.actions[${index}].target must be a namespaced semantic target.`);
+  }
+  if (action.type === 'hold' && (!Number.isSafeInteger(action.durationFrames) || action.durationFrames < 1)) {
+    throw new TypeError(`${path}.actions[${index}].durationFrames must be a positive safe integer.`);
   }
 }
 
@@ -20,13 +26,13 @@ export function validateActionFixture(fixture, path = 'action fixture') {
     throw new TypeError(`${path}.description must be a non-empty string.`);
   }
   if (!Array.isArray(fixture.actions)) throw new TypeError(`${path}.actions must be an array.`);
-  let previousFrame = -1;
+  let previousEndFrame = -1;
   fixture.actions.forEach((action, index) => {
     validateAction(action, index, path);
-    if (action.frame <= previousFrame) {
-      throw new TypeError(`${path}.actions must use strictly increasing frames.`);
+    if (action.frame <= previousEndFrame) {
+      throw new TypeError(`${path}.actions must not overlap and must use strictly increasing frames.`);
     }
-    previousFrame = action.frame;
+    previousEndFrame = action.frame + (action.durationFrames ?? 0);
   });
   return fixture;
 }
@@ -59,6 +65,55 @@ registry
   ))
   .register('ch2-placeholder', createFixture(
     'Hold the Chapter 2 placeholder state before its content is authored.',
+  ))
+  .register('parent-panel', createFixture(
+    'Open the satchel and hold its grown-up gear for the full three-second gate.',
+    [
+      { frame: 30, type: 'tap', target: 'hud.satchel' },
+      { frame: 60, type: 'hold', target: 'satchel.grownups', durationFrames: 180 },
+    ],
+  ))
+  .register('parent-settings', createFixture(
+    'Open the grown-up book and turn to its sound and feel page.',
+    [
+      { frame: 30, type: 'tap', target: 'hud.satchel' },
+      { frame: 60, type: 'hold', target: 'satchel.grownups', durationFrames: 180 },
+      { frame: 260, type: 'tap', target: 'parent.tab.settings' },
+    ],
+  ))
+  .register('parent-save', createFixture(
+    'Open the grown-up book and turn to its save page.',
+    [
+      { frame: 30, type: 'tap', target: 'hud.satchel' },
+      { frame: 60, type: 'hold', target: 'satchel.grownups', durationFrames: 180 },
+      { frame: 260, type: 'tap', target: 'parent.tab.save' },
+    ],
+  ))
+  .register('parent-confirm', createFixture(
+    'Open the guarded Start Over confirmation without accepting it.',
+    [
+      { frame: 30, type: 'tap', target: 'hud.satchel' },
+      { frame: 60, type: 'hold', target: 'satchel.grownups', durationFrames: 180 },
+      { frame: 260, type: 'tap', target: 'parent.tab.save' },
+      { frame: 280, type: 'tap', target: 'parent.save.start' },
+    ],
+  ))
+  .register('parent-yearbook', createFixture(
+    'Open Violet’s yearbook from the grown-up book.',
+    [
+      { frame: 30, type: 'tap', target: 'hud.satchel' },
+      { frame: 60, type: 'hold', target: 'satchel.grownups', durationFrames: 180 },
+      { frame: 260, type: 'tap', target: 'parent.play.yearbook' },
+    ],
+  ))
+  .register('save-transfer', createFixture(
+    'Open the accessible save export dialog from the grown-up book.',
+    [
+      { frame: 30, type: 'tap', target: 'hud.satchel' },
+      { frame: 60, type: 'hold', target: 'satchel.grownups', durationFrames: 180 },
+      { frame: 260, type: 'tap', target: 'parent.tab.save' },
+      { frame: 280, type: 'tap', target: 'parent.save.export' },
+    ],
   ))
   .seal();
 

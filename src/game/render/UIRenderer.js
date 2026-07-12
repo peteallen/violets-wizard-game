@@ -1,4 +1,14 @@
 import { INPUT, PALETTE, WORLD } from '../config.js';
+import {
+  drawHoldGear,
+  drawParchmentAction,
+  drawReplayRibbon,
+  drawRibbonTab,
+  drawStepper,
+  drawStorybookSpread,
+  drawWaxMedallion,
+  traceRoundedRect,
+} from './uiPrimitives.js';
 
 const STORY_GRADIENTS = new WeakMap();
 
@@ -9,6 +19,35 @@ export const UI_RECTS = Object.freeze({
   debugReset: { x: 510, y: 18, width: 260, height: 88 },
   satchelMapTab: { x: 205, y: 86, width: 210, height: 88 },
   satchelCardsTab: { x: 435, y: 86, width: 210, height: 88 },
+  satchelGear: { x: 690, y: 82, width: 96, height: 96 },
+  close: { x: 1046, y: 76, width: 88, height: 88 },
+  replayExit: { x: 430, y: 18, width: 420, height: 88 },
+  parentPlayTab: { x: 175, y: 142, width: 230, height: 88 },
+  parentSettingsTab: { x: 425, y: 142, width: 260, height: 88 },
+  parentSaveTab: { x: 705, y: 142, width: 230, height: 88 },
+  parentReplay: { x: 170, y: 275, width: 430, height: 118 },
+  parentYearbook: { x: 680, y: 275, width: 430, height: 118 },
+  parentMute: { x: 145, y: 465, width: 300, height: 92 },
+  parentReducedMotion: { x: 475, y: 465, width: 390, height: 92 },
+  parentLearningOff: { x: 338, y: 570, width: 190, height: 88 },
+  parentLearningGentle: { x: 548, y: 570, width: 190, height: 88 },
+  parentLearningStretchy: { x: 758, y: 570, width: 190, height: 88 },
+  parentMasterMinus: { x: 140, y: 245, width: 88, height: 88 },
+  parentMasterPlus: { x: 500, y: 245, width: 88, height: 88 },
+  parentVoiceMinus: { x: 690, y: 245, width: 88, height: 88 },
+  parentVoicePlus: { x: 1050, y: 245, width: 88, height: 88 },
+  parentMusicMinus: { x: 140, y: 355, width: 88, height: 88 },
+  parentMusicPlus: { x: 500, y: 355, width: 88, height: 88 },
+  parentSfxMinus: { x: 690, y: 355, width: 88, height: 88 },
+  parentSfxPlus: { x: 1050, y: 355, width: 88, height: 88 },
+  parentExport: { x: 155, y: 265, width: 440, height: 108 },
+  parentImport: { x: 685, y: 265, width: 440, height: 108 },
+  parentRestore: { x: 155, y: 420, width: 440, height: 108 },
+  parentStartOver: { x: 685, y: 420, width: 440, height: 108 },
+  parentCancelConfirm: { x: 215, y: 470, width: 360, height: 108 },
+  parentAcceptConfirm: { x: 705, y: 470, width: 360, height: 108 },
+  yearbookPrevious: { x: 125, y: 565, width: 230, height: 96 },
+  yearbookNext: { x: 925, y: 565, width: 230, height: 96 },
   dialogueAdvance: { x: 0, y: 0, width: WORLD.width, height: WORLD.height },
 });
 
@@ -17,6 +56,7 @@ export class UIRenderer {
     this.resolveAsset = resolveAsset;
     this.images = new Map();
     this.failedImages = new Set();
+    this.yearbookImages = new Map();
   }
 
   drawHud(context, state, time) {
@@ -96,13 +136,18 @@ export class UIRenderer {
     });
   }
 
-  drawSatchel(context, state, cardDefinitions = []) {
+  drawSatchel(context, state, cardDefinitions = [], { parentGateProgress = 0 } = {}) {
     context.fillStyle = 'rgba(20,17,38,0.78)';
     context.fillRect(0, 0, WORLD.width, WORLD.height);
     parchmentPanel(context, 130, 65, 1020, 590, 42);
     const activeTab = state.overlay?.tab === 'cards' ? 'cards' : 'map';
     drawSatchelTab(context, UI_RECTS.satchelMapTab, '⌁', 'Map', activeTab === 'map');
     drawSatchelTab(context, UI_RECTS.satchelCardsTab, '▣', 'Cards', activeTab === 'cards');
+    drawHoldGear(context, UI_RECTS.satchelGear, parentGateProgress);
+    context.fillStyle = '#5d4b3d';
+    context.textAlign = 'center';
+    context.font = '700 17px "Andika", "Trebuchet MS", sans-serif';
+    context.fillText(parentGateProgress > 0 ? 'Keep holding…' : 'Grown-ups', 738, 188);
 
     if (activeTab === 'cards') this.drawCardAlbumContent(context, state, cardDefinitions);
     else this.drawMapContent(context, state);
@@ -117,7 +162,7 @@ export class UIRenderer {
     context.textAlign = 'center';
     context.fillStyle = '#382a24';
     context.font = '700 34px "Andika", "Trebuchet MS", sans-serif';
-    context.fillText('Diagon Alley', 850, 139);
+    context.fillText('Diagon Alley', 900, 139);
 
     const locations = [
       { id: 'ch1.ollivanders', label: 'Wands', icon: '✦', x: 330, y: 375 },
@@ -153,7 +198,7 @@ export class UIRenderer {
     context.textAlign = 'center';
     context.fillStyle = '#382a24';
     context.font = '700 30px "Andika", "Trebuchet MS", sans-serif';
-    context.fillText(`${found} of ${entries.length} cards found`, 870, 139);
+    context.fillText(`${found} of ${entries.length} cards found`, 900, 139);
 
     if (found === 0) {
       context.fillStyle = '#6b5744';
@@ -335,6 +380,210 @@ export class UIRenderer {
     context.fillText('DEV: Reset game', rect.x + rect.width / 2, rect.y + rect.height / 2 + 9);
     context.restore();
   }
+
+  drawReplayExit(context) {
+    drawReplayRibbon(context, UI_RECTS.replayExit);
+  }
+
+  drawParentPanel(context, model) {
+    const page = model.overlay?.page ?? 'play';
+    if (page === 'confirm-start-over' || page === 'confirm-restore') {
+      this.drawParentConfirmation(context, model, page);
+      return;
+    }
+
+    drawStorybookSpread(context, { x: 72, y: 32, width: 1136, height: 652 }, {
+      title: 'The Grown-up Book',
+      subtitle: model.replayMode ? 'Chapter replay — Violet’s saved adventure is safe.' : 'Settings and keepsakes for Violet’s adventure.',
+    });
+    drawRibbonTab(context, UI_RECTS.parentPlayTab, 'Play', { icon: '◆', active: page === 'play' });
+    drawRibbonTab(context, UI_RECTS.parentSettingsTab, 'Sound & feel', { icon: '♫', active: page === 'settings' });
+    drawRibbonTab(context, UI_RECTS.parentSaveTab, 'Save', { icon: '▣', active: page === 'save' });
+
+    if (page === 'settings') this.drawParentSettings(context, model);
+    else if (page === 'save') this.drawParentSave(context, model);
+    else this.drawParentPlay(context, model);
+    drawPanelNotice(context, model.overlay?.notice);
+    drawClose(context);
+  }
+
+  drawParentPlay(context, model) {
+    drawParchmentAction(context, UI_RECTS.parentReplay, {
+      label: model.replayMode ? 'Return to saved game' : 'Replay Chapter One',
+      detail: model.replayMode
+        ? 'Leave this practice adventure'
+        : model.chapter1Completed ? 'Play from the letter again' : 'Unlocks after Chapter One',
+      icon: model.replayMode ? '↩' : '↻',
+      disabled: !model.replayMode && !model.chapter1Completed,
+    });
+    drawParchmentAction(context, UI_RECTS.parentYearbook, {
+      label: 'Violet’s Yearbook',
+      detail: model.yearbookCount === 1 ? '1 magical memory' : `${model.yearbookCount} magical memories`,
+      icon: '★',
+    });
+
+    context.fillStyle = '#685240';
+    context.textAlign = 'center';
+    context.font = '23px "Andika", "Trebuchet MS", sans-serif';
+    context.fillText(
+      model.replayMode
+        ? 'Nothing Violet does in replay changes her real save.'
+        : 'Finished chapters can be enjoyed again without changing Violet’s progress.',
+      WORLD.width / 2,
+      456,
+    );
+  }
+
+  drawParentSettings(context, model) {
+    const volumes = model.settings.volumes;
+    drawStepper(context, {
+      label: 'Everything', valueLabel: `${Math.round(volumes.master * 100)}%`,
+      minusRect: UI_RECTS.parentMasterMinus, plusRect: UI_RECTS.parentMasterPlus,
+    });
+    drawStepper(context, {
+      label: 'Voices', valueLabel: `${Math.round(volumes.voice * 100)}%`,
+      minusRect: UI_RECTS.parentVoiceMinus, plusRect: UI_RECTS.parentVoicePlus,
+    });
+    drawStepper(context, {
+      label: 'Music', valueLabel: `${Math.round(volumes.music * 100)}%`,
+      minusRect: UI_RECTS.parentMusicMinus, plusRect: UI_RECTS.parentMusicPlus,
+    });
+    drawStepper(context, {
+      label: 'Effects', valueLabel: `${Math.round(volumes.sfx * 100)}%`,
+      minusRect: UI_RECTS.parentSfxMinus, plusRect: UI_RECTS.parentSfxPlus,
+    });
+    drawParchmentAction(context, UI_RECTS.parentMute, {
+      label: model.settings.muted ? 'Sound is off' : 'Sound is on',
+      icon: model.settings.muted ? '×' : '♫',
+      selected: model.settings.muted,
+      compact: true,
+    });
+    drawParchmentAction(context, UI_RECTS.parentReducedMotion, {
+      label: model.systemReducedMotion && !model.settings.reducedMotion
+        ? 'Gentler (device)'
+        : model.effectiveReducedMotion ? 'Gentler movement' : 'Full movement',
+      icon: model.effectiveReducedMotion ? '≈' : '✦',
+      selected: model.effectiveReducedMotion,
+      compact: true,
+    });
+
+    context.fillStyle = '#574337';
+    context.textAlign = 'left';
+    context.font = '700 23px "Andika", "Trebuchet MS", sans-serif';
+    context.fillText('Learning magic', 148, 620);
+    for (const [level, label, rect] of [
+      ['off', 'Off', UI_RECTS.parentLearningOff],
+      ['gentle', 'Gentle', UI_RECTS.parentLearningGentle],
+      ['stretchy', 'Stretchy', UI_RECTS.parentLearningStretchy],
+    ]) {
+      drawParchmentAction(context, rect, {
+        label,
+        icon: level === 'off' ? '○' : level === 'gentle' ? '◇' : '✦',
+        selected: model.settings.learning === level,
+        compact: true,
+      });
+    }
+  }
+
+  drawParentSave(context, model) {
+    drawParchmentAction(context, UI_RECTS.parentExport, {
+      label: 'Export Violet’s save', detail: 'Copy it to another device', icon: '↑',
+    });
+    drawParchmentAction(context, UI_RECTS.parentImport, {
+      label: 'Import a save', detail: 'Bring Violet’s adventure here', icon: '↓',
+    });
+    drawParchmentAction(context, UI_RECTS.parentRestore, {
+      label: 'Recover backup', detail: 'Use the safety copy on this device', icon: '↶',
+    });
+    drawParchmentAction(context, UI_RECTS.parentStartOver, {
+      label: 'Start over', detail: 'Keeps sound and learning settings', icon: '×', danger: true,
+    });
+  }
+
+  drawParentConfirmation(context, model, page) {
+    const startOver = page === 'confirm-start-over';
+    drawStorybookSpread(context, { x: 150, y: 82, width: 980, height: 555 }, {
+      title: startOver ? 'Start Violet’s story over?' : 'Recover the backup?',
+      subtitle: startOver
+        ? 'Her current story progress and yearbook will be cleared.'
+        : 'The current adventure will be replaced by the safety copy.',
+    });
+
+    drawWaxMedallion(context, WORLD.width / 2, 335, 62, startOver ? '!' : '↶', { danger: startOver });
+    context.fillStyle = '#5e4939';
+    context.textAlign = 'center';
+    context.font = '25px "Andika", "Trebuchet MS", sans-serif';
+    context.fillText(
+      startOver ? 'Sound, movement, and learning choices will stay the same.' : 'You can cancel and keep the current adventure.',
+      WORLD.width / 2,
+      420,
+    );
+    drawParchmentAction(context, UI_RECTS.parentCancelConfirm, {
+      label: 'No, go back', icon: '↩',
+    });
+    drawParchmentAction(context, UI_RECTS.parentAcceptConfirm, {
+      label: startOver ? 'Yes, start over' : 'Use the backup',
+      icon: startOver ? '×' : '↶',
+      danger: startOver,
+    });
+    drawPanelNotice(context, model.overlay?.notice);
+  }
+
+  drawYearbook(context, entries, index = 0) {
+    drawStorybookSpread(context, { x: 72, y: 32, width: 1136, height: 652 }, {
+      title: 'Violet’s Yearbook',
+      subtitle: entries.length === 1 ? 'One magical memory so far.' : `${entries.length} magical memories so far.`,
+    });
+    drawClose(context);
+
+    if (entries.length === 0) {
+      drawWaxMedallion(context, WORLD.width / 2, 340, 76, '★');
+      context.fillStyle = '#49382e';
+      context.textAlign = 'center';
+      context.font = '700 34px "Andika", "Trebuchet MS", sans-serif';
+      context.fillText('The first picture is still ahead', WORLD.width / 2, 465);
+      context.fillStyle = '#6b5744';
+      context.font = '24px "Andika", "Trebuchet MS", sans-serif';
+      context.fillText('Golden moments will appear here as Violet explores.', WORLD.width / 2, 510);
+      return;
+    }
+
+    const safeIndex = Math.max(0, Math.min(entries.length - 1, index));
+    const entry = entries[safeIndex];
+    const photo = { x: 300, y: 155, width: 680, height: 382 };
+    context.fillStyle = '#5b4231';
+    traceRoundedRect(context, photo.x - 13, photo.y - 13, photo.width + 26, photo.height + 26, 28);
+    context.fill();
+    context.strokeStyle = PALETTE.candle;
+    context.lineWidth = 6;
+    context.stroke();
+    const image = this.yearbookImageFor(entry);
+    if (image?.complete && image.naturalWidth > 0) drawCoverImage(context, image, photo, 18);
+    else drawPortraitLoading(context, photo);
+
+    context.fillStyle = '#382a24';
+    context.textAlign = 'center';
+    context.font = '700 29px "Andika", "Trebuchet MS", sans-serif';
+    context.fillText(entry.caption, WORLD.width / 2, 585);
+    context.fillStyle = '#6b5744';
+    context.font = '21px "Andika", "Trebuchet MS", sans-serif';
+    context.fillText(`${safeIndex + 1} of ${entries.length}`, WORLD.width / 2, 620);
+    if (entries.length > 1) {
+      drawParchmentAction(context, UI_RECTS.yearbookPrevious, { label: 'Previous', icon: '‹', compact: true });
+      drawParchmentAction(context, UI_RECTS.yearbookNext, { label: 'Next', icon: '›', compact: true });
+    }
+  }
+
+  yearbookImageFor(entry) {
+    if (!entry?.id || !entry.dataUrl || typeof Image === 'undefined') return null;
+    const cached = this.yearbookImages.get(entry.id);
+    if (cached?.src === entry.dataUrl) return cached;
+    const image = new Image();
+    image.decoding = 'async';
+    image.src = entry.dataUrl;
+    this.yearbookImages.set(entry.id, image);
+    return image;
+  }
 }
 
 export function buildCardAlbumEntries(cardDefinitions, earnedCardIds) {
@@ -515,6 +764,22 @@ function drawBigButton(context, label, x, y, width, height) {
   context.fillText(label, x + width / 2, y + height / 2 + 12);
 }
 
+function drawPanelNotice(context, notice) {
+  if (!notice) return;
+  context.save();
+  context.fillStyle = notice.kind === 'error' ? '#6b2d3b' : '#3d5b46';
+  traceRoundedRect(context, 340, 604, 600, 58, 22);
+  context.fill();
+  context.strokeStyle = PALETTE.candle;
+  context.lineWidth = 3;
+  context.stroke();
+  context.fillStyle = '#fff8e8';
+  context.textAlign = 'center';
+  context.font = '700 20px "Andika", "Trebuchet MS", sans-serif';
+  fitText(context, notice.text, WORLD.width / 2, 641, 550);
+  context.restore();
+}
+
 function iconGlyph(icon) {
   return ({
     wand: '✦', eyes: '◉', cat: '♛', owl: '◉', toad: '●', replay: '↻', explore: '⌁',
@@ -551,14 +816,7 @@ function wrapText(context, text, x, y, maxWidth, lineHeight, maxLines = 3, align
 }
 
 function roundRect(context, x, y, width, height, radius) {
-  const r = Math.min(radius, width / 2, height / 2);
-  context.beginPath();
-  context.moveTo(x + r, y);
-  context.arcTo(x + width, y, x + width, y + height, r);
-  context.arcTo(x + width, y + height, x, y + height, r);
-  context.arcTo(x, y + height, x, y, r);
-  context.arcTo(x, y, x + width, y, r);
-  context.closePath();
+  traceRoundedRect(context, x, y, width, height, radius);
 }
 
 function storyGradient(context) {

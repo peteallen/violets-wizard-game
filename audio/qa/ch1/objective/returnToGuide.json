@@ -8,21 +8,21 @@
       "start": 0.079,
       "end": 0.14,
       "type": "word",
-      "logprob": -0.002421425189822912
+      "logprob": -0.0007622911944054067
     },
     {
       "text": " ",
       "start": 0.14,
       "end": 0.199,
       "type": "spacing",
-      "logprob": -0.00001156323378381785
+      "logprob": -0.000006198863957251888
     },
     {
       "text": "back",
       "start": 0.199,
       "end": 0.399,
       "type": "word",
-      "logprob": -0.00001156323378381785
+      "logprob": -0.000006198863957251888
     },
     {
       "text": " ",
@@ -43,58 +43,58 @@
       "start": 0.56,
       "end": 0.659,
       "type": "spacing",
-      "logprob": -0.00003671578815556131
+      "logprob": -0.00010513706365600228
     },
     {
       "text": "Hagrid",
       "start": 0.659,
       "end": 1,
       "type": "word",
-      "logprob": -0.000023066638732416322
+      "logprob": -0.00005781371328339446
     },
     {
       "text": " ",
       "start": 1,
-      "end": 1.039,
+      "end": 1.059,
       "type": "spacing",
-      "logprob": -0.0000011920922133867862
+      "logprob": -8.344646857949556e-7
     },
     {
       "text": "on",
-      "start": 1.039,
+      "start": 1.059,
       "end": 1.139,
       "type": "word",
-      "logprob": -0.0000011920922133867862
+      "logprob": -8.344646857949556e-7
     },
     {
       "text": " ",
       "start": 1.139,
       "end": 1.159,
       "type": "spacing",
-      "logprob": -0.000005722029527532868
+      "logprob": -0.000003933898824470816
     },
     {
       "text": "the",
       "start": 1.159,
-      "end": 1.259,
+      "end": 1.219,
       "type": "word",
-      "logprob": -0.000005722029527532868
+      "logprob": -0.000003933898824470816
     },
     {
       "text": " ",
-      "start": 1.259,
+      "start": 1.219,
       "end": 1.279,
       "type": "spacing",
-      "logprob": -0.00008511180931236595
+      "logprob": -0.0000963164638960734
     },
     {
       "text": "street",
       "start": 1.279,
       "end": 1.659,
       "type": "word",
-      "logprob": -0.00008511180931236595
+      "logprob": -0.0000963164638960734
     }
   ],
-  "transcription_id": "oN6NUOuyVh76YN2nUlNw",
+  "transcription_id": "X0FxHgEM7mByltkzr9Gk",
   "audio_duration_secs": 1.857625
 }

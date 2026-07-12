@@ -5,63 +5,63 @@
   "words": [
     {
       "text": "Is",
-      "start": 0.099,
+      "start": 0.079,
       "end": 0.219,
       "type": "word",
-      "logprob": -0.000028490614567999728
+      "logprob": -0.00009655486064730212
     },
     {
       "text": " ",
       "start": 0.219,
-      "end": 0.239,
+      "end": 0.259,
       "type": "spacing",
-      "logprob": -0.000007510157047363464
+      "logprob": -0.000012397689715726301
     },
     {
       "text": "this",
-      "start": 0.239,
-      "end": 0.4,
+      "start": 0.259,
+      "end": 0.419,
       "type": "word",
-      "logprob": -0.000007510157047363464
+      "logprob": -0.000012397689715726301
     },
     {
       "text": " ",
-      "start": 0.4,
+      "start": 0.419,
       "end": 0.439,
       "type": "spacing",
-      "logprob": -0.0000014305104514278355
+      "logprob": -0.0000034570634852570947
     },
     {
       "text": "the",
       "start": 0.439,
-      "end": 0.5,
+      "end": 0.56,
       "type": "word",
-      "logprob": -0.0000014305104514278355
+      "logprob": -0.0000034570634852570947
     },
     {
       "text": " ",
-      "start": 0.5,
+      "start": 0.56,
       "end": 0.579,
       "type": "spacing",
-      "logprob": -0.0000598412734689191
+      "logprob": -0.00007581423415103927
     },
     {
       "text": "friend",
       "start": 0.579,
       "end": 0.839,
       "type": "word",
-      "logprob": -0.0000598412734689191
+      "logprob": -0.00007581423415103927
     },
     {
       "text": " ",
       "start": 0.839,
-      "end": 0.879,
+      "end": 0.859,
       "type": "spacing",
       "logprob": -2.3841855067985307e-7
     },
     {
       "text": "for",
-      "start": 0.879,
+      "start": 0.859,
       "end": 1,
       "type": "word",
       "logprob": -2.3841855067985307e-7
@@ -71,16 +71,16 @@
       "start": 1,
       "end": 1.039,
       "type": "spacing",
-      "logprob": -0.0000014305104514278355
+      "logprob": -0.0000010728830375228426
     },
     {
       "text": "you?",
       "start": 1.039,
       "end": 1.199,
       "type": "word",
-      "logprob": -0.0014860843067765472
+      "logprob": -0.004012177697887864
     }
   ],
-  "transcription_id": "SAApZCIm0eXyglxbMb14",
+  "transcription_id": "GTeqLnJc0hBN0ABxtRXY",
   "audio_duration_secs": 1.5325
 }

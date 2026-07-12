@@ -1,10 +1,12 @@
-import { mkdir, stat, writeFile } from 'node:fs/promises';
+import { mkdir, stat, unlink, writeFile } from 'node:fs/promises';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { masterAudio } from './audio_mastering.mjs';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const API_KEY = process.env.ELEVENLABS_API_KEY;
 const force = process.argv.includes('--force');
+const MUSIC_TARGET_LUFS = -22;
 if (!API_KEY) throw new Error('ELEVENLABS_API_KEY is not set.');
 
 const cues = [
@@ -33,8 +35,19 @@ async function generate([key, lengthMs, prompt]) {
     body: JSON.stringify({ prompt, music_length_ms: lengthMs, force_instrumental: true }),
   });
   if (!response.ok) throw new Error(`${key}: ElevenLabs returned ${response.status} ${await response.text()}`);
-  await writeFile(output, Buffer.from(await response.arrayBuffer()));
-  console.log(`wrote ${key}`);
+  const rawOutput = `${output}.raw-${process.pid}.mp3`;
+  try {
+    await writeFile(rawOutput, Buffer.from(await response.arrayBuffer()));
+    await masterAudio(rawOutput, output, {
+      targetLufs: MUSIC_TARGET_LUFS,
+      truePeakDbtp: -1,
+      loudnessRange: 11,
+      bitrate: '192k',
+    });
+  } finally {
+    await unlink(rawOutput).catch(() => {});
+  }
+  console.log(`wrote ${key} (${MUSIC_TARGET_LUFS} LUFS)`);
 }
 
 async function exists(path) {

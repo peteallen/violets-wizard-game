@@ -8,35 +8,35 @@
       "start": 0.099,
       "end": 0.539,
       "type": "word",
-      "logprob": -0.07807541440997738
+      "logprob": -0.023471672341111117
     },
     {
       "text": " ",
       "start": 0.539,
       "end": 0.739,
       "type": "spacing",
-      "logprob": -5.960462772236497e-7
+      "logprob": -3.576278118089249e-7
     },
     {
       "text": "What",
       "start": 0.739,
       "end": 0.879,
       "type": "word",
-      "logprob": -5.960462772236497e-7
+      "logprob": -3.576278118089249e-7
     },
     {
       "text": " ",
       "start": 0.879,
       "end": 0.919,
       "type": "spacing",
-      "logprob": -0.0001419681793777272
+      "logprob": -0.0011724510695785284
     },
     {
       "text": "shall",
       "start": 0.919,
       "end": 1.039,
       "type": "word",
-      "logprob": -0.0001419681793777272
+      "logprob": -0.0011724510695785284
     },
     {
       "text": " ",
@@ -48,41 +48,41 @@
     {
       "text": "we",
       "start": 1.059,
-      "end": 1.159,
+      "end": 1.179,
       "type": "word",
       "logprob": 0
     },
     {
       "text": " ",
-      "start": 1.159,
-      "end": 1.219,
+      "start": 1.179,
+      "end": 1.199,
       "type": "spacing",
-      "logprob": -1.1920928244535389e-7
+      "logprob": 0
     },
     {
       "text": "call",
-      "start": 1.22,
+      "start": 1.199,
       "end": 1.419,
       "type": "word",
-      "logprob": -1.1920928244535389e-7
+      "logprob": 0
     },
     {
       "text": " ",
       "start": 1.419,
       "end": 1.459,
       "type": "spacing",
-      "logprob": -1.1920928244535389e-7
+      "logprob": 0
     },
     {
       "text": "your",
       "start": 1.459,
-      "end": 1.539,
+      "end": 1.659,
       "type": "word",
-      "logprob": -1.1920928244535389e-7
+      "logprob": 0
     },
     {
       "text": " ",
-      "start": 1.539,
+      "start": 1.659,
       "end": 1.699,
       "type": "spacing",
       "logprob": 0
@@ -97,18 +97,18 @@
     {
       "text": " ",
       "start": 1.879,
-      "end": 1.919,
+      "end": 1.939,
       "type": "spacing",
       "logprob": -1.1920928244535389e-7
     },
     {
       "text": "friend?",
-      "start": 1.919,
+      "start": 1.939,
       "end": 2.339,
       "type": "word",
-      "logprob": -0.00035453115456261585
+      "logprob": -0.0005831215530573022
     }
   ],
-  "transcription_id": "gkH6hOwvvdGCLRqbbYvh",
+  "transcription_id": "HTqxDfkqjdan1vgvHIRS",
   "audio_duration_secs": 2.6470625
 }

@@ -8,26 +8,26 @@
       "start": 0.059,
       "end": 0.219,
       "type": "word",
-      "logprob": -0.000043987249227939174
+      "logprob": -0.00006464895704993978
     },
     {
       "text": " ",
       "start": 0.219,
       "end": 0.599,
       "type": "spacing",
-      "logprob": -0.00007354942499659956
+      "logprob": -0.00008129743218887597
     },
     {
       "text": "Violet,",
       "start": 0.599,
       "end": 1.019,
       "type": "word",
-      "logprob": -0.022959657886531204
+      "logprob": -0.03611494956255358
     },
     {
       "text": " ",
       "start": 1.019,
-      "end": 1.499,
+      "end": 1.5,
       "type": "spacing",
       "logprob": -0.000013112935448589269
     },
@@ -69,13 +69,13 @@
     {
       "text": " ",
       "start": 1.939,
-      "end": 1.999,
+      "end": 1.979,
       "type": "spacing",
       "logprob": -1.1920928244535389e-7
     },
     {
       "text": "which",
-      "start": 2,
+      "start": 1.979,
       "end": 2.159,
       "type": "word",
       "logprob": -1.1920928244535389e-7
@@ -83,44 +83,44 @@
     {
       "text": " ",
       "start": 2.159,
-      "end": 2.239,
+      "end": 2.219,
       "type": "spacing",
-      "logprob": -0.00003683499380713329
+      "logprob": -0.00003194758028257638
     },
     {
       "text": "wand",
-      "start": 2.24,
+      "start": 2.22,
       "end": 2.419,
       "type": "word",
-      "logprob": -0.00003683499380713329
+      "logprob": -0.00003194758028257638
     },
     {
       "text": " ",
       "start": 2.419,
       "end": 2.439,
       "type": "spacing",
-      "logprob": -2.3841855067985307e-7
+      "logprob": -1.1920928244535389e-7
     },
     {
       "text": "has",
       "start": 2.439,
       "end": 2.519,
       "type": "word",
-      "logprob": -2.3841855067985307e-7
+      "logprob": -1.1920928244535389e-7
     },
     {
       "text": " ",
       "start": 2.519,
       "end": 2.559,
       "type": "spacing",
-      "logprob": -0.000001311301275563892
+      "logprob": -0.000009417489309271332
     },
     {
       "text": "been",
       "start": 2.559,
       "end": 2.639,
       "type": "word",
-      "logprob": -0.000001311301275563892
+      "logprob": -0.000009417489309271332
     },
     {
       "text": " ",
@@ -165,6 +165,6 @@
       "logprob": 0
     }
   ],
-  "transcription_id": "fZdmyyuHgdWuD0CcBXDA",
+  "transcription_id": "o0MEagcRWKkGUuLk3la8",
   "audio_duration_secs": 3.483
 }

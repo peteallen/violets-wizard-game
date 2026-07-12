@@ -8,51 +8,51 @@
       "start": 0.219,
       "end": 0.239,
       "type": "word",
-      "logprob": -0.0000069141146923357155
+      "logprob": -0.000007033323527139146
     },
     {
       "text": " ",
       "start": 0.239,
       "end": 0.239,
       "type": "spacing",
-      "logprob": -4.768370445162873e-7
+      "logprob": -3.576278118089249e-7
     },
     {
       "text": "need",
       "start": 0.239,
-      "end": 0.379,
+      "end": 0.359,
       "type": "word",
-      "logprob": -4.768370445162873e-7
+      "logprob": -3.576278118089249e-7
     },
     {
       "text": " ",
-      "start": 0.379,
-      "end": 0.479,
+      "start": 0.359,
+      "end": 0.379,
       "type": "spacing",
       "logprob": 0
     },
     {
       "text": "a",
-      "start": 0.479,
-      "end": 0.5,
+      "start": 0.379,
+      "end": 0.479,
       "type": "word",
       "logprob": 0
     },
     {
       "text": " ",
-      "start": 0.5,
+      "start": 0.479,
       "end": 0.5,
       "type": "spacing",
-      "logprob": -0.0000015497195136049413
+      "logprob": -0.0000040531076592742465
     },
     {
       "text": "spell",
       "start": 0.5,
       "end": 0.859,
       "type": "word",
-      "logprob": -0.0000015497195136049413
+      "logprob": -0.0000040531076592742465
     }
   ],
-  "transcription_id": "AMhvzJGqipo7LXkKY7yS",
+  "transcription_id": "xaovGndL6b9aui2w694N",
   "audio_duration_secs": 1.253875
 }

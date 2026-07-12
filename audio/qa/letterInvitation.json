@@ -1,42 +1,42 @@
 {
   "language_code": "eng",
-  "language_probability": 0.9724549651145935,
-  "text": "Dear Violet, you are invited to Hogwarts School of Witchcraft and Wizardry.",
+  "language_probability": 1,
+  "text": "Dear Violet, you are invited to Hogwarts School of Witchcraft and Wizardry",
   "words": [
     {
       "text": "Dear",
-      "start": 0.099,
+      "start": 0.079,
       "end": 0.259,
       "type": "word",
-      "logprob": -0.004750869236886501
+      "logprob": -0.006845356430858374
     },
     {
       "text": " ",
       "start": 0.259,
       "end": 0.359,
       "type": "spacing",
-      "logprob": -0.0001515035255579278
+      "logprob": -0.00014876213390380144
     },
     {
       "text": "Violet,",
       "start": 0.359,
-      "end": 0.839,
+      "end": 0.859,
       "type": "word",
-      "logprob": -0.00017162839815552746
+      "logprob": -0.0001819956856447139
     },
     {
       "text": " ",
-      "start": 0.839,
+      "start": 0.859,
       "end": 1.359,
       "type": "spacing",
-      "logprob": -0.0017021704697981477
+      "logprob": -0.0019286142196506262
     },
     {
       "text": "you",
       "start": 1.36,
       "end": 1.419,
       "type": "word",
-      "logprob": -0.0017021704697981477
+      "logprob": -0.0019286142196506262
     },
     {
       "text": " ",
@@ -48,23 +48,23 @@
     {
       "text": "are",
       "start": 1.459,
-      "end": 1.559,
+      "end": 1.539,
       "type": "word",
       "logprob": 0
     },
     {
       "text": " ",
-      "start": 1.559,
+      "start": 1.539,
       "end": 1.599,
       "type": "spacing",
-      "logprob": -0.00005745722592109814
+      "logprob": -0.00006353653589030728
     },
     {
       "text": "invited",
       "start": 1.599,
       "end": 2.059,
       "type": "word",
-      "logprob": -0.00005745722592109814
+      "logprob": -0.00006353653589030728
     },
     {
       "text": " ",
@@ -85,28 +85,28 @@
       "start": 2.159,
       "end": 2.259,
       "type": "spacing",
-      "logprob": -0.00007629103492945433
+      "logprob": -0.00004100715523236431
     },
     {
       "text": "Hogwarts",
       "start": 2.259,
       "end": 2.779,
       "type": "word",
-      "logprob": -0.00007629103492945433
+      "logprob": -0.00004100715523236431
     },
     {
       "text": " ",
       "start": 2.779,
       "end": 2.839,
       "type": "spacing",
-      "logprob": -9.536738616588991e-7
+      "logprob": -0.0000010728830375228426
     },
     {
       "text": "School",
       "start": 2.839,
       "end": 3.079,
       "type": "word",
-      "logprob": -9.536738616588991e-7
+      "logprob": -0.0000010728830375228426
     },
     {
       "text": " ",
@@ -118,34 +118,34 @@
     {
       "text": "of",
       "start": 3.119,
-      "end": 3.219,
+      "end": 3.22,
       "type": "word",
       "logprob": -1.1920928244535389e-7
     },
     {
       "text": " ",
-      "start": 3.219,
+      "start": 3.22,
       "end": 3.279,
       "type": "spacing",
-      "logprob": -0.00005435795901576057
+      "logprob": -0.0000623445157543756
     },
     {
       "text": "Witchcraft",
       "start": 3.279,
       "end": 3.819,
       "type": "word",
-      "logprob": -0.000028013443852614728
+      "logprob": -0.000031768303983881196
     },
     {
       "text": " ",
       "start": 3.819,
-      "end": 3.879,
+      "end": 3.859,
       "type": "spacing",
       "logprob": 0
     },
     {
       "text": "and",
-      "start": 3.879,
+      "start": 3.859,
       "end": 3.979,
       "type": "word",
       "logprob": 0
@@ -155,16 +155,16 @@
       "start": 3.979,
       "end": 4.079,
       "type": "spacing",
-      "logprob": -0.00007688703772146255
+      "logprob": -0.00009679325739853084
     },
     {
-      "text": "Wizardry.",
+      "text": "Wizardry",
       "start": 4.079,
-      "end": 4.659,
+      "end": 4.639,
       "type": "word",
-      "logprob": -0.0770745655073218
+      "logprob": -0.00007286316380827884
     }
   ],
-  "transcription_id": "Th4R99prgwJqhHCfDoCl",
+  "transcription_id": "jxVOL4lQCzfZPjQ1DRrJ",
   "audio_duration_secs": 4.922625
 }

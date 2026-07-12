@@ -8,35 +8,35 @@
       "start": 0.079,
       "end": 0.599,
       "type": "word",
-      "logprob": -0.0012587910546812964
+      "logprob": -0.0011259990802159336
     },
     {
       "text": " ",
       "start": 0.599,
       "end": 0.639,
       "type": "spacing",
-      "logprob": -0.0000023841830625315197
+      "logprob": -0.0000040531076592742465
     },
     {
       "text": "likes",
       "start": 0.639,
       "end": 0.959,
       "type": "word",
-      "logprob": -0.0000023841830625315197
+      "logprob": -0.0000040531076592742465
     },
     {
       "text": " ",
       "start": 0.959,
       "end": 0.979,
       "type": "spacing",
-      "logprob": -0.0000017881377516459906
+      "logprob": -0.000003933898824470816
     },
     {
       "text": "clever",
       "start": 0.979,
       "end": 1.279,
       "type": "word",
-      "logprob": -0.0000017881377516459906
+      "logprob": -0.000003933898824470816
     },
     {
       "text": " ",
@@ -57,44 +57,44 @@
       "start": 1.639,
       "end": 1.679,
       "type": "spacing",
-      "logprob": -0.000003099436753473128
+      "logprob": -0.000003933898824470816
     },
     {
       "text": "and",
       "start": 1.679,
       "end": 1.759,
       "type": "word",
-      "logprob": -0.000003099436753473128
+      "logprob": -0.000003933898824470816
     },
     {
       "text": " ",
       "start": 1.759,
       "end": 1.839,
       "type": "spacing",
-      "logprob": -0.00018320789968129247
+      "logprob": -0.00037377048283815384
     },
     {
       "text": "lemon",
       "start": 1.839,
       "end": 2.119,
       "type": "word",
-      "logprob": -0.00018320789968129247
+      "logprob": -0.00037377048283815384
     },
     {
       "text": " ",
       "start": 2.119,
       "end": 2.22,
       "type": "spacing",
-      "logprob": -0.00003838465272565372
+      "logprob": -0.0000601988795096986
     },
     {
       "text": "sweets",
       "start": 2.22,
-      "end": 2.719,
+      "end": 2.72,
       "type": "word",
-      "logprob": -0.00003838465272565372
+      "logprob": -0.0000601988795096986
     }
   ],
-  "transcription_id": "NscaTCdF1T7j8fjGtEPg",
+  "transcription_id": "zNM2g9JXdE3TN4kfsGKO",
   "audio_duration_secs": 2.92575
 }

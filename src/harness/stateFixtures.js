@@ -112,6 +112,19 @@ const completedProfile = Object.freeze({
 
 const registry = new ImmutableRegistry('state', validateStateFixture);
 
+function completedSurfaceFixture(id, description) {
+  return createFixture(
+    description,
+    { chapter: 1, scene: id },
+    createSave({
+      ...completedProfile,
+      scene: 'ch1.freeRoam',
+      room: 'ch1.diagonStreet',
+      spawn: 'west',
+    }),
+  );
+}
+
 registry
   .register('foundation', createFixture(
     'The title screen before Violet begins the story.',
@@ -154,6 +167,30 @@ registry
       room: 'ch2.previewRoom',
       spawn: 'start',
     }),
+  ))
+  .register('parent-panel', completedSurfaceFixture(
+    'parent-panel',
+    'The grown-up book on its safe chapter replay and yearbook page.',
+  ))
+  .register('parent-settings', completedSurfaceFixture(
+    'parent-settings',
+    'The grown-up sound, movement, and learning controls.',
+  ))
+  .register('parent-save', completedSurfaceFixture(
+    'parent-save',
+    'The grown-up save transfer, recovery, and Start Over controls.',
+  ))
+  .register('parent-confirm', completedSurfaceFixture(
+    'parent-confirm',
+    'The deliberate second confirmation guarding Start Over.',
+  ))
+  .register('parent-yearbook', completedSurfaceFixture(
+    'parent-yearbook',
+    'Violet’s yearbook before its first captured golden moment.',
+  ))
+  .register('save-transfer', completedSurfaceFixture(
+    'save-transfer',
+    'The accessible save export transfer dialog over the game.',
   ))
   .seal();
 

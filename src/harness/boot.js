@@ -150,6 +150,7 @@ export async function bootHarness({
       reducedMotion: request.motion === 'reduced',
       saveData: stateFixture.save,
       storage: memoryStorage(),
+      enableSaveTransfer: request.scene === 'save-transfer',
     });
     game.sound.destroy();
     game.sound = harnessSound(eventLog, () => Math.round(game.simTime / FIXED_STEP));
@@ -165,7 +166,12 @@ export async function bootHarness({
     for (const action of appliedActions) {
       game.stepTo(action.frame * FIXED_STEP);
       eventLog.push({ type: 'harness.action', frame: action.frame, action: structuredClone(action) });
-      game.tapSemantic(action.target);
+      if (action.type === 'hold') {
+        game.beginSemanticHold(action.target);
+        const holdEndFrame = Math.min(frame, action.frame + action.durationFrames);
+        game.stepTo(holdEndFrame * FIXED_STEP);
+        if (holdEndFrame === action.frame + action.durationFrames) game.endSemanticHold();
+      } else game.tapSemantic(action.target);
       await settleAsyncAction();
     }
     const targetTime = frame * FIXED_STEP;

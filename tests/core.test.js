@@ -2,6 +2,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { clamp, easeInOutCubic, pointInCircle } from '../src/game/core/math.js';
 import { SeededRandom } from '../src/game/core/rng.js';
 import { SoundEngine } from '../src/game/core/SoundEngine.js';
+import { Game } from '../src/game/Game.js';
 
 afterEach(() => {
   vi.unstubAllGlobals();
@@ -65,5 +66,34 @@ describe('SoundEngine', () => {
     sound.voice.onended();
     expect(sound.voice).toBeNull();
     expect(sound.music.volume).toBe(1);
+
+    sound.stopMusic();
+    expect(sound.music).toBeNull();
+    expect(sound.musicKey).toBeNull();
+  });
+});
+
+describe('Game audio commands', () => {
+  it('routes authored timeline cues into the appropriate sound channel', () => {
+    const game = Object.create(Game.prototype);
+    game.sound = {
+      playSfx: vi.fn(),
+      speak: vi.fn(),
+      stopVoice: vi.fn(),
+      playMusic: vi.fn(),
+      stopMusic: vi.fn(),
+    };
+
+    game.handleAudioCommand({ command: 'sfx', key: 'sfx/ch1/brickClack' });
+    game.handleAudioCommand({ command: 'voice', key: 'voice/ch1/guide/arrival' });
+    game.handleAudioCommand({ command: 'music', key: 'music/ch1/chapterTriumph', mode: 'crossfade' });
+    game.handleAudioCommand({ command: 'music', key: 'music/ch1/chapterTriumph', mode: 'stop' });
+    game.handleAudioCommand({ command: 'stopVoice' });
+
+    expect(game.sound.playSfx).toHaveBeenCalledWith('sfx/ch1/brickClack', 'chime');
+    expect(game.sound.speak).toHaveBeenCalledWith('voice/ch1/guide/arrival');
+    expect(game.sound.playMusic).toHaveBeenCalledWith('music/ch1/chapterTriumph');
+    expect(game.sound.stopMusic).toHaveBeenCalledOnce();
+    expect(game.sound.stopVoice).toHaveBeenCalledOnce();
   });
 });

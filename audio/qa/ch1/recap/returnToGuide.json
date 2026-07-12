@@ -8,49 +8,49 @@
       "start": 0.079,
       "end": 0.159,
       "type": "word",
-      "logprob": -0.0024827865418046713
+      "logprob": -0.0006280356901697814
     },
     {
       "text": " ",
       "start": 0.159,
       "end": 0.239,
       "type": "spacing",
-      "logprob": -3.576278118089249e-7
+      "logprob": -2.3841855067985307e-7
     },
     {
       "text": "new",
       "start": 0.239,
-      "end": 0.359,
+      "end": 0.299,
       "type": "word",
-      "logprob": -3.576278118089249e-7
+      "logprob": -2.3841855067985307e-7
     },
     {
       "text": " ",
-      "start": 0.359,
+      "start": 0.299,
       "end": 0.399,
       "type": "spacing",
-      "logprob": -9.536738616588991e-7
+      "logprob": -0.0000011920922133867862
     },
     {
       "text": "friend",
       "start": 0.399,
       "end": 0.599,
       "type": "word",
-      "logprob": -9.536738616588991e-7
+      "logprob": -0.0000011920922133867862
     },
     {
       "text": " ",
       "start": 0.599,
       "end": 0.639,
       "type": "spacing",
-      "logprob": -2.3841855067985307e-7
+      "logprob": -1.1920928244535389e-7
     },
     {
       "text": "is",
       "start": 0.639,
       "end": 0.759,
       "type": "word",
-      "logprob": -2.3841855067985307e-7
+      "logprob": -1.1920928244535389e-7
     },
     {
       "text": " ",
@@ -64,65 +64,65 @@
       "start": 0.779,
       "end": 1.059,
       "type": "word",
-      "logprob": -0.000032521228623257535
+      "logprob": -0.000027018693515401537
     },
     {
       "text": " ",
       "start": 1.059,
-      "end": 1.419,
+      "end": 1.439,
       "type": "spacing",
-      "logprob": -0.000024437606043647975
+      "logprob": -0.000020146166207268834
     },
     {
       "text": "Hagrid",
-      "start": 1.419,
+      "start": 1.439,
       "end": 1.819,
       "type": "word",
-      "logprob": -0.000014364565686264541
+      "logprob": -0.000011801614846262964
     },
     {
       "text": " ",
       "start": 1.819,
-      "end": 1.839,
+      "end": 1.859,
       "type": "spacing",
-      "logprob": -1.1920928244535389e-7
+      "logprob": 0
     },
     {
       "text": "has",
-      "start": 1.839,
-      "end": 2.019,
+      "start": 1.86,
+      "end": 2,
       "type": "word",
-      "logprob": -1.1920928244535389e-7
+      "logprob": 0
     },
     {
       "text": " ",
-      "start": 2.019,
+      "start": 2,
       "end": 2.059,
       "type": "spacing",
-      "logprob": -2.3841855067985307e-7
+      "logprob": -1.1920928244535389e-7
     },
     {
       "text": "your",
       "start": 2.059,
       "end": 2.22,
       "type": "word",
-      "logprob": -2.3841855067985307e-7
+      "logprob": -1.1920928244535389e-7
     },
     {
       "text": " ",
       "start": 2.22,
       "end": 2.24,
       "type": "spacing",
-      "logprob": -9.536738616588991e-7
+      "logprob": -0.0000017881377516459906
     },
     {
       "text": "ticket.",
       "start": 2.24,
       "end": 2.519,
       "type": "word",
-      "logprob": -0.06773040550056716
+      "logprob": -0.09902358054978322
     }
   ],
-  "transcription_id": "hjYKCcvWuKnPuVQyt7JM",
+  "transcription_id": "6ey25INhHEzkKZe6ASqb",
   "audio_duration_secs": 2.7399375
 }

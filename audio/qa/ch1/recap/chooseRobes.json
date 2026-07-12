@@ -1,28 +1,28 @@
 {
   "language_code": "eng",
   "language_probability": 1,
-  "text": "Your wand chose you. Now choose your robes",
+  "text": "Your wand chose you. Now choose your robes.",
   "words": [
     {
       "text": "Your",
       "start": 0.099,
       "end": 0.199,
       "type": "word",
-      "logprob": -0.00020668754586949944
+      "logprob": -0.0002996472467202693
     },
     {
       "text": " ",
       "start": 0.199,
       "end": 0.28,
       "type": "spacing",
-      "logprob": -0.000022649508537142538
+      "logprob": -0.00002539125671319198
     },
     {
       "text": "wand",
       "start": 0.28,
       "end": 0.659,
       "type": "word",
-      "logprob": -0.000022649508537142538
+      "logprob": -0.00002539125671319198
     },
     {
       "text": " ",
@@ -43,72 +43,72 @@
       "start": 1.1,
       "end": 1.199,
       "type": "spacing",
-      "logprob": -3.576278118089249e-7
+      "logprob": -4.768370445162873e-7
     },
     {
       "text": "you.",
       "start": 1.199,
       "end": 1.539,
       "type": "word",
-      "logprob": -0.001302658580200955
+      "logprob": -0.0007986482231956415
     },
     {
       "text": " ",
       "start": 1.539,
       "end": 2.219,
       "type": "spacing",
-      "logprob": -3.576278118089249e-7
+      "logprob": -0.000001311301275563892
     },
     {
       "text": "Now",
       "start": 2.22,
       "end": 2.399,
       "type": "word",
-      "logprob": -3.576278118089249e-7
+      "logprob": -0.000001311301275563892
     },
     {
       "text": " ",
       "start": 2.399,
       "end": 2.439,
       "type": "spacing",
-      "logprob": -0.000040411134250462055
+      "logprob": -0.000049828242481453344
     },
     {
       "text": "choose",
       "start": 2.44,
       "end": 2.7,
       "type": "word",
-      "logprob": -0.000040411134250462055
+      "logprob": -0.000049828242481453344
     },
     {
       "text": " ",
       "start": 2.7,
       "end": 2.759,
       "type": "spacing",
-      "logprob": 0
+      "logprob": -1.1920928244535389e-7
     },
     {
       "text": "your",
       "start": 2.759,
       "end": 2.859,
       "type": "word",
-      "logprob": 0
+      "logprob": -1.1920928244535389e-7
     },
     {
       "text": " ",
       "start": 2.859,
       "end": 2.98,
       "type": "spacing",
-      "logprob": -0.0000019073468138230965
+      "logprob": -0.000002264974000354414
     },
     {
-      "text": "robes",
+      "text": "robes.",
       "start": 2.98,
-      "end": 3.579,
+      "end": 3.599,
       "type": "word",
-      "logprob": -0.0000019073468138230965
+      "logprob": -0.11552721261769723
     }
   ],
-  "transcription_id": "OyCdBZPZ06QVVXUDwRzh",
+  "transcription_id": "iR4GDFFoYGI5KkjlQsAD",
   "audio_duration_secs": 3.8080625
 }

@@ -8,25 +8,25 @@
       "start": 0.079,
       "end": 0.159,
       "type": "word",
-      "logprob": -0.00001585470999998506
+      "logprob": -0.000025152843591058627
     },
     {
       "text": " ",
       "start": 0.159,
       "end": 0.199,
       "type": "spacing",
-      "logprob": -0.005949762649834156
+      "logprob": -0.0036118291318416595
     },
     {
       "text": "magical",
       "start": 0.199,
-      "end": 0.639,
+      "end": 0.62,
       "type": "word",
-      "logprob": -0.005949762649834156
+      "logprob": -0.0036118291318416595
     },
     {
       "text": " ",
-      "start": 0.639,
+      "start": 0.62,
       "end": 0.759,
       "type": "spacing",
       "logprob": -0.00010990492592100054
@@ -41,13 +41,13 @@
     {
       "text": " ",
       "start": 1.039,
-      "end": 1.099,
+      "end": 1.079,
       "type": "spacing",
       "logprob": 0
     },
     {
       "text": "is",
-      "start": 1.1,
+      "start": 1.079,
       "end": 1.199,
       "type": "word",
       "logprob": 0
@@ -55,44 +55,44 @@
     {
       "text": " ",
       "start": 1.199,
-      "end": 1.279,
+      "end": 1.259,
       "type": "spacing",
-      "logprob": -3.576278118089249e-7
+      "logprob": -2.3841855067985307e-7
     },
     {
       "text": "open.",
-      "start": 1.279,
+      "start": 1.259,
       "end": 1.559,
       "type": "word",
-      "logprob": -0.0002734940032951272
+      "logprob": -0.00013042023635989608
     },
     {
       "text": " ",
       "start": 1.559,
       "end": 1.959,
       "type": "spacing",
-      "logprob": -3.576278118089249e-7
+      "logprob": -7.152555099310121e-7
     },
     {
       "text": "Your",
       "start": 1.959,
-      "end": 2.159,
+      "end": 2.179,
       "type": "word",
-      "logprob": -3.576278118089249e-7
+      "logprob": -7.152555099310121e-7
     },
     {
       "text": " ",
-      "start": 2.159,
+      "start": 2.179,
       "end": 2.219,
       "type": "spacing",
-      "logprob": -0.000021815061700181104
+      "logprob": -0.000017046782886609435
     },
     {
       "text": "wand",
       "start": 2.22,
       "end": 2.539,
       "type": "word",
-      "logprob": -0.000021815061700181104
+      "logprob": -0.000017046782886609435
     },
     {
       "text": " ",
@@ -104,25 +104,25 @@
     {
       "text": "is",
       "start": 2.579,
-      "end": 2.699,
+      "end": 2.74,
       "type": "word",
       "logprob": 0
     },
     {
       "text": " ",
-      "start": 2.699,
+      "start": 2.74,
       "end": 2.759,
       "type": "spacing",
-      "logprob": -0.0000010728830375228426
+      "logprob": -0.0000014305104514278355
     },
     {
       "text": "waiting.",
       "start": 2.759,
       "end": 3.159,
       "type": "word",
-      "logprob": -0.03151831403324934
+      "logprob": -0.02004461176603911
     }
   ],
-  "transcription_id": "H8A74QF6ovVmIU2NDYvd",
+  "transcription_id": "FVeipwsZLN3zUnQcGzoJ",
   "audio_duration_secs": 3.4365625
 }

@@ -1,7 +1,8 @@
 import { cards, cardsById, contentRegistry } from './content/index.js';
 import { chapter1Map, chapter1ResumeRecaps } from './content/chapters/ch1.js';
-import { PALETTE, WORLD } from './config.js';
+import { INPUT, PALETTE, WORLD } from './config.js';
 import { resolveAsset } from './core/assetManifest.js';
+import { SaveTransferDialog } from './core/SaveTransferDialog.js';
 import { SoundEngine } from './core/SoundEngine.js';
 import { clamp, distance } from './core/math.js';
 import { SeededRandom } from './core/rng.js';
@@ -38,11 +39,11 @@ export class Game {
     this.pointer = null;
     this.transitionAlpha = 0;
     this.lastRenderState = null;
+    this.parentGateProgress = 0;
     this.replayMode = false;
     this.canonicalSave = null;
     this.resumeRecap = null;
     this.sessionGeneration = 0;
-    this.reducedMotion = options.reducedMotion ?? matchMedia('(prefers-reduced-motion: reduce)').matches;
 
     const storage = options.storage ?? safeStorage();
     this.saveManager = options.saveManager ?? new Save({ storage, clock: this.clock });
@@ -50,10 +51,13 @@ export class Game {
       ? { ok: true, status: 'provided', save: structuredClone(options.saveData) }
       : this.saveManager.load();
     this.loadStatus = loaded;
-    this.hasStoredSave = Boolean(loaded.ok && loaded.save);
     this.saveData = loaded.ok && loaded.save
       ? loaded.save
       : createSaveV1({ now: this.clock(), appVersion: import.meta.env.VITE_BUILD_SHA ?? 'development', worldSeed: 12072026 });
+    this.hasStoredSave = Boolean(loaded.ok && loaded.save && hasMeaningfulProgress(this.saveData));
+    this.motionQuery = matchMedia('(prefers-reduced-motion: reduce)');
+    this.reducedMotion = options.reducedMotion
+      ?? (this.motionQuery.matches || Boolean(this.saveData.settings.reducedMotion));
 
     this.sound = new SoundEngine({
       resolveAsset,
@@ -67,25 +71,35 @@ export class Game {
     this.particles = new Particles(new SeededRandom(this.saveData.worldSeed).fork('particles'), { reducedMotion: this.reducedMotion });
     this.world = null;
     this.screen = options.startImmediately ? 'playing' : 'title';
+    this.saveTransferDialog = options.saveTransferDialog === null || (this.harness && !options.enableSaveTransfer)
+      ? null
+      : options.saveTransferDialog ?? new SaveTransferDialog({
+        onImport: ({ raw }) => this.importSaveData(raw),
+        onResult: (result) => this.handleSaveTransferResult(result),
+        onClose: () => this.render(),
+      });
 
     this.boundResize = () => this.resize();
     this.boundFrame = (time) => this.frame(time);
     this.boundPointerDown = (event) => this.onPointerDown(event);
+    this.boundPointerMove = (event) => this.onPointerMove(event);
     this.boundPointerUp = (event) => this.onPointerUp(event);
+    this.boundPointerCancel = (event) => this.onPointerCancel(event);
     this.boundKeyDown = (event) => this.onKeyDown(event);
     this.boundVisibility = () => this.onVisibilityChanged();
     this.boundMotionChanged = (event) => {
       this.reducedMotion = event.matches || Boolean(this.saveData.settings.reducedMotion);
       this.particles.reducedMotion = this.reducedMotion;
+      if (this.world?.setPieces) this.world.setPieces.reducedMotion = this.reducedMotion;
     };
-    this.motionQuery = matchMedia('(prefers-reduced-motion: reduce)');
 
     window.addEventListener('resize', this.boundResize);
     document.addEventListener('visibilitychange', this.boundVisibility);
     this.motionQuery.addEventListener?.('change', this.boundMotionChanged);
     canvas.addEventListener('pointerdown', this.boundPointerDown);
+    canvas.addEventListener('pointermove', this.boundPointerMove);
     canvas.addEventListener('pointerup', this.boundPointerUp);
-    canvas.addEventListener('pointercancel', this.boundPointerUp);
+    canvas.addEventListener('pointercancel', this.boundPointerCancel);
     if (this.debug) window.addEventListener('keydown', this.boundKeyDown);
     this.resize(options.width, options.height, options.dpr);
 
@@ -99,15 +113,23 @@ export class Game {
     if (!this.harness) requestAnimationFrame(this.boundFrame);
   }
 
-  createWorld(save = this.saveData) {
+  createWorld(save = this.saveData, { preserveSave = false } = {}) {
     this.saveData = save;
+    const preservedSave = preserveSave ? structuredClone(save) : null;
+    let initializing = true;
     this.world = new World({
       chapters: contentRegistry,
       save,
       seed: save.worldSeed,
       clock: this.clock,
-      onDirty: ({ flush, save: nextSave }) => this.persistSave(nextSave, flush),
+      onDirty: ({ flush, save: nextSave }) => {
+        if (preserveSave && initializing) return { ok: true, status: 'preserved', save: nextSave };
+        return this.persistSave(nextSave, flush);
+      },
     });
+    initializing = false;
+    if (preservedSave) replaceObjectContents(save, preservedSave);
+    this.world.setPieces.reducedMotion = this.reducedMotion;
     this.screen = 'playing';
     this.processWorldEvents();
     this.updateMusic();
@@ -123,7 +145,6 @@ export class Game {
       this.beginResumeRecap(recap);
       return;
     }
-    this.sound.playSfx('sfx/ch1/sealCrack', 'flourish');
     this.particles.emit('sparkle', WORLD.width / 2, WORLD.height / 2, 28);
     this.updateStatus('Violet’s letter is waiting by the window.');
   }
@@ -148,6 +169,7 @@ export class Game {
 
   update(dt) {
     this.simTime += dt;
+    this.updateParentGate(dt);
     this.particles.update(dt);
     this.transitionAlpha = Math.max(0, this.transitionAlpha - dt * 2.8);
     if (this.screen === 'playing' && this.world && !this.resumeRecap) {
@@ -191,15 +213,76 @@ export class Game {
   onPointerDown(event) {
     if (this.pointer !== null) return;
     this.canvas.setPointerCapture?.(event.pointerId);
-    this.pointer = { id: event.pointerId, point: this.toWorld(event) };
+    const point = this.toWorld(event);
+    const holdsParentGear = this.isParentGearAvailable() && pointInUiRect(point, UI_RECTS.satchelGear);
+    this.pointer = {
+      id: event.pointerId,
+      point,
+      latestPoint: point,
+      holdTarget: holdsParentGear ? 'parent-panel' : null,
+      holdTriggered: false,
+      holdCancelled: false,
+    };
+    if (holdsParentGear) {
+      this.parentGateProgress = 0;
+      this.sound.unlock().catch(() => {});
+    }
+  }
+
+  onPointerMove(event) {
+    if (!this.pointer || this.pointer.id !== event.pointerId) return;
+    this.pointer.latestPoint = this.toWorld(event);
+    if (
+      this.pointer.holdTarget === 'parent-panel'
+      && (
+        distance(this.pointer.point, this.pointer.latestPoint) > INPUT.tapSlop
+        || !pointInUiRect(this.pointer.latestPoint, UI_RECTS.satchelGear)
+      )
+    ) {
+      this.pointer.holdCancelled = true;
+      this.parentGateProgress = 0;
+    }
   }
 
   onPointerUp(event) {
     if (!this.pointer || this.pointer.id !== event.pointerId) return;
-    const start = this.pointer.point;
+    const activePointer = this.pointer;
+    const start = activePointer.point;
     const point = this.toWorld(event);
     this.pointer = null;
+    if (activePointer.holdTarget === 'parent-panel') {
+      this.parentGateProgress = 0;
+      return;
+    }
     if (distance(start, point) <= 24) this.handleTap(point);
+  }
+
+  onPointerCancel(event) {
+    if (!this.pointer || this.pointer.id !== event.pointerId) return;
+    this.pointer = null;
+    this.parentGateProgress = 0;
+  }
+
+  updateParentGate(dt) {
+    const pointer = this.pointer;
+    if (
+      !pointer
+      || pointer.holdTarget !== 'parent-panel'
+      || pointer.holdTriggered
+      || pointer.holdCancelled
+      || !this.isParentGearAvailable()
+    ) return;
+
+    this.parentGateProgress = clamp(this.parentGateProgress + dt / INPUT.parentHoldSeconds, 0, 1);
+    if (this.parentGateProgress + 1e-9 < 1) return;
+    this.parentGateProgress = 1;
+    pointer.holdTriggered = true;
+    this.openParentPanel();
+    this.sound.playSfx('sfx/ui/parchment', 'chime');
+  }
+
+  isParentGearAvailable() {
+    return Boolean(this.world?.overlay?.surface === 'satchel');
   }
 
   handleTap(point) {
@@ -208,6 +291,10 @@ export class Game {
       return;
     }
     this.sound.unlock().catch(() => {});
+    if (this.replayMode && this.shouldShowReplayExit() && pointInUiRect(point, UI_RECTS.replayExit)) {
+      this.exitReplay();
+      return;
+    }
     if (this.screen === 'title') {
       this.startAdventure();
       return;
@@ -307,6 +394,11 @@ export class Game {
     return !this.world.overlay;
   }
 
+  shouldShowReplayExit() {
+    if (!this.replayMode || this.screen !== 'playing' || !this.world) return false;
+    return !['parent', 'yearbook'].includes(this.world.overlay?.surface);
+  }
+
   beginResumeRecap(recap) {
     this.resumeRecap = recap;
     this.sound.speak(recap.voice, recap.text);
@@ -324,13 +416,22 @@ export class Game {
   }
 
   handleOverlayTap(point, state) {
-    if (Math.hypot(point.x - 1090, point.y - 120) <= 62) {
-      this.world.closeOverlay();
+    if (pointInUiRect(point, UI_RECTS.close)) {
+      if (state.overlay.surface === 'yearbook') this.openParentPanel('play');
+      else this.world.closeOverlay();
       this.sound.playSfx('sfx/ui/close', 'tap');
       return;
     }
     if (state.overlay.surface === 'objective') {
       this.world.closeOverlay();
+      return;
+    }
+    if (state.overlay.surface === 'parent') {
+      this.handleParentPanelTap(point, state.overlay);
+      return;
+    }
+    if (state.overlay.surface === 'yearbook') {
+      this.handleYearbookTap(point, state.overlay);
       return;
     }
     if (state.overlay.surface === 'satchel') {
@@ -372,6 +473,160 @@ export class Game {
     }
   }
 
+  openParentPanel(page = 'play', notice = null) {
+    if (!this.world) return false;
+    this.parentGateProgress = 0;
+    this.world.overlay = { surface: 'parent', page, notice };
+    this.render();
+    return true;
+  }
+
+  setParentNotice(text, kind = 'success') {
+    if (this.world?.overlay?.surface !== 'parent') return;
+    this.world.overlay = {
+      ...this.world.overlay,
+      notice: text ? { text, kind } : null,
+    };
+    this.updateStatus(text);
+    this.render();
+  }
+
+  handleParentPanelTap(point, overlay) {
+    if (overlay.page === 'confirm-start-over' || overlay.page === 'confirm-restore') {
+      if (pointInUiRect(point, UI_RECTS.parentCancelConfirm)) {
+        this.openParentPanel('save');
+        this.sound.playSfx('sfx/ui/page', 'tap');
+        return;
+      }
+      if (!pointInUiRect(point, UI_RECTS.parentAcceptConfirm)) return;
+      if (overlay.page === 'confirm-start-over') this.startOverPreservingSettings();
+      else this.restoreBackupSave();
+      return;
+    }
+
+    for (const [page, rect] of [
+      ['play', UI_RECTS.parentPlayTab],
+      ['settings', UI_RECTS.parentSettingsTab],
+      ['save', UI_RECTS.parentSaveTab],
+    ]) {
+      if (!pointInUiRect(point, rect)) continue;
+      this.openParentPanel(page);
+      this.sound.playSfx('sfx/ui/page', 'tap');
+      return;
+    }
+
+    if (overlay.page === 'play') {
+      if (pointInUiRect(point, UI_RECTS.parentReplay)) {
+        if (this.replayMode) this.exitReplay();
+        else if (this.saveData.progress.completedChapters.includes('ch1')) this.beginReplay('ch1');
+        else this.setParentNotice('Chapter One unlocks replay when it is complete.', 'error');
+        return;
+      }
+      if (pointInUiRect(point, UI_RECTS.parentYearbook)) {
+        this.world.overlay = { surface: 'yearbook', index: 0 };
+        this.sound.playSfx('sfx/ui/page', 'chime');
+        this.render();
+      }
+      return;
+    }
+
+    if (overlay.page === 'settings') {
+      if (pointInUiRect(point, UI_RECTS.parentMute)) {
+        this.updateDeviceSettings((settings) => { settings.muted = !settings.muted; });
+        return;
+      }
+      if (pointInUiRect(point, UI_RECTS.parentReducedMotion)) {
+        this.updateDeviceSettings((settings) => { settings.reducedMotion = !settings.reducedMotion; });
+        return;
+      }
+      for (const [level, rect] of [
+        ['off', UI_RECTS.parentLearningOff],
+        ['gentle', UI_RECTS.parentLearningGentle],
+        ['stretchy', UI_RECTS.parentLearningStretchy],
+      ]) {
+        if (!pointInUiRect(point, rect)) continue;
+        this.updateDeviceSettings((settings) => { settings.learning = level; });
+        return;
+      }
+      for (const [channel, delta, rect] of [
+        ['master', -0.1, UI_RECTS.parentMasterMinus],
+        ['master', 0.1, UI_RECTS.parentMasterPlus],
+        ['voice', -0.1, UI_RECTS.parentVoiceMinus],
+        ['voice', 0.1, UI_RECTS.parentVoicePlus],
+        ['music', -0.1, UI_RECTS.parentMusicMinus],
+        ['music', 0.1, UI_RECTS.parentMusicPlus],
+        ['sfx', -0.1, UI_RECTS.parentSfxMinus],
+        ['sfx', 0.1, UI_RECTS.parentSfxPlus],
+      ]) {
+        if (!pointInUiRect(point, rect)) continue;
+        this.updateDeviceSettings((settings) => {
+          settings.volumes[channel] = Math.round(clamp(settings.volumes[channel] + delta, 0, 1) * 10) / 10;
+        });
+        return;
+      }
+      return;
+    }
+
+    if (overlay.page === 'save') {
+      if (pointInUiRect(point, UI_RECTS.parentExport)) {
+        this.openSaveExport();
+        return;
+      }
+      if (pointInUiRect(point, UI_RECTS.parentImport)) {
+        this.openSaveImport();
+        return;
+      }
+      if (pointInUiRect(point, UI_RECTS.parentRestore)) {
+        this.openParentPanel('confirm-restore');
+        return;
+      }
+      if (pointInUiRect(point, UI_RECTS.parentStartOver)) this.openParentPanel('confirm-start-over');
+    }
+  }
+
+  handleYearbookTap(point, overlay) {
+    const durableSave = this.replayMode && this.canonicalSave ? this.canonicalSave : this.saveData;
+    const count = durableSave.yearbook.entries.length;
+    if (count < 2) return;
+    if (pointInUiRect(point, UI_RECTS.yearbookPrevious)) {
+      this.world.overlay = { ...overlay, index: (overlay.index - 1 + count) % count };
+      this.sound.playSfx('sfx/ui/page', 'tap');
+      this.render();
+      return;
+    }
+    if (pointInUiRect(point, UI_RECTS.yearbookNext)) {
+      this.world.overlay = { ...overlay, index: (overlay.index + 1) % count };
+      this.sound.playSfx('sfx/ui/page', 'tap');
+      this.render();
+    }
+  }
+
+  updateDeviceSettings(change) {
+    if (typeof change !== 'function') throw new TypeError('Game.updateDeviceSettings requires a change function.');
+    const nextSettings = structuredClone(this.saveData.settings);
+    change(nextSettings);
+    this.saveData.settings = nextSettings;
+    if (this.world) this.world.save.settings = nextSettings;
+    if (this.replayMode && this.canonicalSave) this.canonicalSave.settings = structuredClone(nextSettings);
+    this.applyDeviceSettings(nextSettings);
+
+    const durableSave = this.replayMode && this.canonicalSave ? this.canonicalSave : this.saveData;
+    const result = this.saveManager.write(durableSave);
+    if (result.ok && this.replayMode) this.canonicalSave = result.save;
+    if (!result.ok) this.setParentNotice('This device could not save that setting.', 'error');
+    this.sound.playSfx('sfx/ui/tap', 'tap');
+    this.render();
+    return result;
+  }
+
+  applyDeviceSettings(settings = this.saveData.settings) {
+    this.sound.setMuted(settings.muted);
+    this.sound.setVolumes(settings.volumes);
+    this.reducedMotion = this.motionQuery.matches || Boolean(settings.reducedMotion);
+    this.particles.reducedMotion = this.reducedMotion;
+    if (this.world?.setPieces) this.world.setPieces.reducedMotion = this.reducedMotion;
+  }
+
   processWorldEvents() {
     if (!this.world) return;
     for (const event of this.world.drainEvents()) this.handleWorldEvent(event);
@@ -411,7 +666,10 @@ export class Game {
         this.sound.stopVoice();
         break;
       case 'setPiece.started':
-        this.playSetPieceSound(event.payload.id);
+        if (event.payload.id.includes('previewTicket')) this.sound.playSfx('sfx/ch2/trainWhistle', 'flourish');
+        break;
+      case 'audio.command':
+        this.handleAudioCommand(event.payload);
         break;
       case 'feedback.command':
         this.particles.emit('sparkle', event.payload.x, event.payload.y, 5, { size: 4 });
@@ -441,13 +699,12 @@ export class Game {
     }
   }
 
-  playSetPieceSound(id) {
-    if (id.includes('letter')) this.sound.playSfx('sfx/ch1/owlFlap', 'sparkle');
-    else if (id.includes('brick')) this.sound.playSfx('sfx/ch1/wallRumble', 'rumble');
-    else if (id.includes('wandChaos')) this.sound.playSfx('sfx/ch1/wandPaperWhirl', 'fizzle');
-    else if (id.includes('wandChosen')) this.sound.playSfx('sfx/ch1/wandChosen', 'flourish');
-    else if (id.includes('chapterCard')) this.sound.playSfx('sfx/ch1/chapterTurn', 'flourish');
-    else if (id.includes('previewTicket')) this.sound.playSfx('sfx/ch2/trainWhistle', 'flourish');
+  handleAudioCommand(command) {
+    if (command.command === 'sfx') this.sound.playSfx(command.key, 'chime');
+    else if (command.command === 'voice') this.sound.speak(command.key);
+    else if (command.command === 'stopVoice') this.sound.stopVoice();
+    else if (command.command === 'music' && command.mode === 'stop') this.sound.stopMusic();
+    else if (command.command === 'music') this.sound.playMusic(command.key);
   }
 
   hintTargetPosition(targetId) {
@@ -500,6 +757,118 @@ export class Game {
     return result;
   }
 
+  exportSaveData() {
+    const durableSave = this.replayMode && this.canonicalSave ? this.canonicalSave : this.saveData;
+    return this.saveManager.export(durableSave);
+  }
+
+  importSaveData(raw) {
+    const result = this.saveManager.import(raw);
+    if (!result.ok) return result;
+    this.adoptSave(result.save, { status: 'Imported Violet’s save.', preserveSave: true });
+    return result;
+  }
+
+  openSaveExport() {
+    if (!this.saveTransferDialog) {
+      this.setParentNotice('Save transfer is unavailable in this preview.', 'error');
+      return false;
+    }
+    try {
+      this.saveTransferDialog.openExport(this.exportSaveData());
+      return true;
+    } catch {
+      this.setParentNotice('Violet’s save could not be prepared for export.', 'error');
+      return false;
+    }
+  }
+
+  openSaveImport() {
+    if (!this.saveTransferDialog) {
+      this.setParentNotice('Save transfer is unavailable in this preview.', 'error');
+      return false;
+    }
+    this.saveTransferDialog.openImport();
+    return true;
+  }
+
+  handleSaveTransferResult(result) {
+    if (result?.operation === 'copy' && result.ok) this.setParentNotice('Save copied. Keep it somewhere safe.');
+    else if (result?.operation === 'copy' && !result.ok) this.updateStatus('Copy was blocked. The save text is selected for manual copying.');
+    else if (result?.operation === 'import' && !result.ok) this.updateStatus('That save could not replace Violet’s adventure.');
+  }
+
+  restoreBackupSave() {
+    const result = this.saveManager.restoreBackup();
+    if (!result.ok) {
+      const message = result.status === 'missing-backup'
+        ? 'There is no safety copy on this device yet.'
+        : 'The safety copy could not be restored.';
+      this.openParentPanel('save', { text: message, kind: 'error' });
+      return result;
+    }
+    this.adoptSave(result.save, { status: 'Violet’s safety copy has been restored.', preserveSave: true });
+    return result;
+  }
+
+  startOverPreservingSettings() {
+    const durableSave = this.replayMode && this.canonicalSave ? this.canonicalSave : this.saveData;
+    const settings = structuredClone(durableSave.settings);
+    const cleared = this.saveManager.clear();
+    if (!cleared.ok) {
+      this.openParentPanel('save', { text: 'This device could not safely clear Violet’s current story.', kind: 'error' });
+      return cleared;
+    }
+
+    const fresh = createSaveV1({
+      now: this.clock(),
+      appVersion: import.meta.env.VITE_BUILD_SHA ?? 'development',
+      worldSeed: 12072026,
+      name: durableSave.character.name,
+    });
+    fresh.settings = settings;
+    const saved = this.saveManager.write(fresh);
+    this.adoptSave(saved.ok ? saved.save : fresh, {
+      status: 'Violet is back at the beginning. Her device settings stayed the same.',
+      toTitle: true,
+      hasStoredSave: false,
+    });
+    return saved.ok
+      ? { ...saved, status: 'started-over' }
+      : saved;
+  }
+
+  adoptSave(save, { status, toTitle = false, hasStoredSave = hasMeaningfulProgress(save), preserveSave = false } = {}) {
+    this.sessionGeneration += 1;
+    if (this.pointer && this.canvas.hasPointerCapture?.(this.pointer.id)) {
+      this.canvas.releasePointerCapture?.(this.pointer.id);
+    }
+    this.pointer = null;
+    this.parentGateProgress = 0;
+    this.resumeRecap = null;
+    this.sound.stopAll();
+    this.replayMode = false;
+    this.canonicalSave = null;
+    this.world = null;
+    this.saveData = structuredClone(save);
+    this.hasStoredSave = Boolean(hasStoredSave);
+    this.particles = new Particles(
+      new SeededRandom(this.saveData.worldSeed).fork('particles'),
+      { reducedMotion: this.motionQuery.matches || Boolean(this.saveData.settings.reducedMotion) },
+    );
+    this.applyDeviceSettings(this.saveData.settings);
+    this.accumulator = 0;
+    this.simTime = 0;
+    this.lastFrame = null;
+    this.transitionAlpha = 0;
+    this.lastRenderState = null;
+    if (toTitle) this.screen = 'title';
+    else this.createWorld(this.saveData, { preserveSave });
+    if (status) this.updateStatus(status);
+    this.render();
+    return this.saveData;
+  }
+
   resetGame() {
     if (!this.debug) return { ok: false, status: 'debug-disabled', save: null };
 
@@ -509,41 +878,21 @@ export class Game {
       return result;
     }
 
-    this.sessionGeneration += 1;
-    if (this.pointer && this.canvas.hasPointerCapture?.(this.pointer.id)) {
-      this.canvas.releasePointerCapture?.(this.pointer.id);
-    }
-    this.pointer = null;
-    this.sound.stopAll();
-
-    this.saveData = createSaveV1({
+    const fresh = createSaveV1({
       now: this.clock(),
       appVersion: import.meta.env.VITE_BUILD_SHA ?? 'development',
       worldSeed: 12072026,
     });
-    this.sound.setMuted(this.saveData.settings.muted);
-    this.sound.setVolumes(this.saveData.settings.volumes);
-    this.reducedMotion = this.motionQuery.matches || Boolean(this.saveData.settings.reducedMotion);
-    this.particles = new Particles(new SeededRandom(this.saveData.worldSeed).fork('particles'), { reducedMotion: this.reducedMotion });
-
     this.loadStatus = { ok: true, status: 'reset', save: null };
-    this.hasStoredSave = false;
-    this.world = null;
-    this.screen = 'title';
-    this.replayMode = false;
-    this.canonicalSave = null;
-    this.accumulator = 0;
+    this.adoptSave(fresh, { toTitle: true, hasStoredSave: false });
     this.simTime = 0;
-    this.lastFrame = null;
-    this.transitionAlpha = 0;
-    this.lastRenderState = null;
-    this.resumeRecap = null;
     this.updateStatus('Development reset complete. Violet is back at the beginning.');
     this.render();
     return { ...result, save: structuredClone(this.saveData) };
   }
 
   captureYearbook(moment, caption = 'My wand') {
+    if (this.replayMode) return;
     if (this.saveData.yearbook.entries.some((entry) => entry.id === moment)) return;
     const thumbnail = document.createElement('canvas');
     thumbnail.width = 480;
@@ -574,13 +923,40 @@ export class Game {
     this.persistSave(this.saveData, true);
   }
 
-  beginReplay() {
-    if (!this.replayMode) this.canonicalSave = structuredClone(this.saveData);
-    const replay = createSaveV1({ now: this.clock(), appVersion: this.saveData.appVersion, worldSeed: this.saveData.worldSeed });
-    replay.character = structuredClone(this.saveData.character);
-    replay.settings = structuredClone(this.saveData.settings);
+  beginReplay(chapterId = 'ch1') {
+    if (this.replayMode) return { ok: false, status: 'already-replaying' };
+    if (chapterId !== 'ch1' || !this.saveData.progress.completedChapters.includes(chapterId)) {
+      return { ok: false, status: 'chapter-locked' };
+    }
+    const saved = this.saveManager.write(this.saveData);
+    this.canonicalSave = structuredClone(saved.ok ? saved.save : this.saveData);
+    const replay = createSaveV1({
+      now: this.clock(),
+      appVersion: this.canonicalSave.appVersion,
+      worldSeed: this.canonicalSave.worldSeed,
+      name: this.canonicalSave.character.name,
+    });
+    replay.settings = structuredClone(this.canonicalSave.settings);
     this.replayMode = true;
     this.createWorld(replay);
+    this.updateStatus('Chapter One replay. Violet’s saved adventure is safe.');
+    this.render();
+    return { ok: true, status: 'replay-started', save: replay };
+  }
+
+  exitReplay() {
+    if (!this.replayMode || !this.canonicalSave) return { ok: false, status: 'not-replaying' };
+    const canonical = structuredClone(this.canonicalSave);
+    this.replayMode = false;
+    this.canonicalSave = null;
+    this.sound.stopVoice();
+    this.saveData = canonical;
+    this.applyDeviceSettings(canonical.settings);
+    this.createWorld(canonical, { preserveSave: true });
+    this.hasStoredSave = hasMeaningfulProgress(canonical);
+    this.updateStatus('Back to Violet’s saved adventure.');
+    this.render();
+    return { ok: true, status: 'replay-exited', save: canonical };
   }
 
   render() {
@@ -620,14 +996,35 @@ export class Game {
     if (this.resumeRecap) this.uiRenderer.drawResumeRecap(context, this.resumeRecap, this.simTime, this.saveData.settings.muted);
     else {
       if (state.dialogue) this.uiRenderer.drawDialogue(context, state.dialogue, this.simTime, this.saveData.settings.muted);
-      if (state.overlay?.surface === 'satchel') this.uiRenderer.drawSatchel(context, state, cards);
+      if (state.overlay?.surface === 'satchel') {
+        this.uiRenderer.drawSatchel(context, state, cards, { parentGateProgress: this.parentGateProgress });
+      }
       if (state.overlay?.surface === 'objective') this.uiRenderer.drawObjective(context, state.objective);
+      if (state.overlay?.surface === 'parent') this.uiRenderer.drawParentPanel(context, this.parentPanelModel(state.overlay));
+      if (state.overlay?.surface === 'yearbook') {
+        const durableSave = this.replayMode && this.canonicalSave ? this.canonicalSave : this.saveData;
+        this.uiRenderer.drawYearbook(context, durableSave.yearbook.entries, state.overlay.index ?? 0);
+      }
     }
 
     if (this.transitionAlpha > 0) {
       context.fillStyle = `rgba(20,17,38,${this.transitionAlpha})`;
       context.fillRect(0, 0, WORLD.width, WORLD.height);
     }
+    if (this.shouldShowReplayExit()) this.uiRenderer.drawReplayExit(context);
+  }
+
+  parentPanelModel(overlay = this.world?.overlay) {
+    const durableSave = this.replayMode && this.canonicalSave ? this.canonicalSave : this.saveData;
+    return {
+      overlay,
+      settings: this.saveData.settings,
+      replayMode: this.replayMode,
+      chapter1Completed: durableSave.progress.completedChapters.includes('ch1'),
+      yearbookCount: durableSave.yearbook.entries.length,
+      effectiveReducedMotion: this.reducedMotion,
+      systemReducedMotion: this.motionQuery.matches,
+    };
   }
 
   drawWorldTargets(context, state) {
@@ -724,6 +1121,7 @@ export class Game {
       { id: 'hud.satchel', x: 82, y: 638 },
       { id: 'hud.wand', x: 1198, y: 638 },
     );
+    if (this.shouldShowReplayExit()) targets.push(semanticRect('replay.exit', UI_RECTS.replayExit));
     for (const choice of state.dialogue?.choices ?? []) {
       if (choice.__rect) targets.push({ id: `dialogue.${choice.id}`, x: choice.__rect.x + choice.__rect.width / 2, y: choice.__rect.y + choice.__rect.height / 2 });
     }
@@ -731,9 +1129,65 @@ export class Game {
       targets.push(
         { id: 'satchel.map', x: UI_RECTS.satchelMapTab.x + UI_RECTS.satchelMapTab.width / 2, y: UI_RECTS.satchelMapTab.y + UI_RECTS.satchelMapTab.height / 2 },
         { id: 'satchel.cards', x: UI_RECTS.satchelCardsTab.x + UI_RECTS.satchelCardsTab.width / 2, y: UI_RECTS.satchelCardsTab.y + UI_RECTS.satchelCardsTab.height / 2 },
+        semanticRect('satchel.grownups', UI_RECTS.satchelGear),
       );
       for (const slot of state.__cardSlots ?? []) {
         targets.push({ id: `satchel.card.${slot.id}`, x: slot.__rect.x + slot.__rect.width / 2, y: slot.__rect.y + slot.__rect.height / 2 });
+      }
+    }
+    if (state.overlay?.surface === 'parent') {
+      targets.push(semanticRect('overlay.close', UI_RECTS.close));
+      const page = state.overlay.page ?? 'play';
+      if (!page.startsWith('confirm-')) {
+        targets.push(
+          semanticRect('parent.tab.play', UI_RECTS.parentPlayTab),
+          semanticRect('parent.tab.settings', UI_RECTS.parentSettingsTab),
+          semanticRect('parent.tab.save', UI_RECTS.parentSaveTab),
+        );
+      }
+      if (page === 'play') {
+        targets.push(
+          semanticRect('parent.play.replay', UI_RECTS.parentReplay),
+          semanticRect('parent.play.yearbook', UI_RECTS.parentYearbook),
+        );
+      } else if (page === 'settings') {
+        for (const [id, rect] of [
+          ['parent.settings.master.minus', UI_RECTS.parentMasterMinus],
+          ['parent.settings.master.plus', UI_RECTS.parentMasterPlus],
+          ['parent.settings.voice.minus', UI_RECTS.parentVoiceMinus],
+          ['parent.settings.voice.plus', UI_RECTS.parentVoicePlus],
+          ['parent.settings.music.minus', UI_RECTS.parentMusicMinus],
+          ['parent.settings.music.plus', UI_RECTS.parentMusicPlus],
+          ['parent.settings.sfx.minus', UI_RECTS.parentSfxMinus],
+          ['parent.settings.sfx.plus', UI_RECTS.parentSfxPlus],
+          ['parent.settings.mute', UI_RECTS.parentMute],
+          ['parent.settings.motion', UI_RECTS.parentReducedMotion],
+          ['parent.settings.learning.off', UI_RECTS.parentLearningOff],
+          ['parent.settings.learning.gentle', UI_RECTS.parentLearningGentle],
+          ['parent.settings.learning.stretchy', UI_RECTS.parentLearningStretchy],
+        ]) targets.push(semanticRect(id, rect));
+      } else if (page === 'save') {
+        targets.push(
+          semanticRect('parent.save.export', UI_RECTS.parentExport),
+          semanticRect('parent.save.import', UI_RECTS.parentImport),
+          semanticRect('parent.save.restore', UI_RECTS.parentRestore),
+          semanticRect('parent.save.start', UI_RECTS.parentStartOver),
+        );
+      } else if (page.startsWith('confirm-')) {
+        targets.push(
+          semanticRect('parent.confirm.cancel', UI_RECTS.parentCancelConfirm),
+          semanticRect('parent.confirm.accept', UI_RECTS.parentAcceptConfirm),
+        );
+      }
+    }
+    if (state.overlay?.surface === 'yearbook') {
+      targets.push(semanticRect('overlay.close', UI_RECTS.close));
+      const durableSave = this.replayMode && this.canonicalSave ? this.canonicalSave : this.saveData;
+      if (durableSave.yearbook.entries.length > 1) {
+        targets.push(
+          semanticRect('yearbook.previous', UI_RECTS.yearbookPrevious),
+          semanticRect('yearbook.next', UI_RECTS.yearbookNext),
+        );
       }
     }
     targets.push(...debugTargets);
@@ -750,6 +1204,38 @@ export class Game {
     const target = this.semanticTargets().find((candidate) => candidate.id === resolved);
     if (!target) throw new Error(`Semantic target ${id} is not available.`);
     this.handleTap({ x: target.x, y: target.y });
+  }
+
+  holdSemantic(id, seconds = INPUT.parentHoldSeconds) {
+    this.beginSemanticHold(id);
+    const frames = Math.max(0, Math.round(seconds / WORLD.step));
+    for (let index = 0; index < frames; index += 1) this.update(WORLD.step);
+    return this.endSemanticHold();
+  }
+
+  beginSemanticHold(id) {
+    const target = this.semanticTargets().find((candidate) => candidate.id === id);
+    if (!target) throw new Error(`Semantic target ${id} is not available.`);
+    if (id !== 'satchel.grownups') throw new Error(`Semantic target ${id} does not support holding.`);
+    const point = { x: target.x, y: target.y };
+    this.pointer = {
+      id: -1,
+      point,
+      latestPoint: point,
+      holdTarget: 'parent-panel',
+      holdTriggered: false,
+      holdCancelled: false,
+    };
+    this.parentGateProgress = 0;
+    return true;
+  }
+
+  endSemanticHold() {
+    const triggered = Boolean(this.pointer?.holdTriggered);
+    this.pointer = null;
+    this.parentGateProgress = 0;
+    this.render();
+    return triggered;
   }
 
   updateStatus(text) {
@@ -771,12 +1257,14 @@ export class Game {
     this.sessionGeneration += 1;
     this.saveManager.destroy();
     this.sound.destroy();
+    this.saveTransferDialog?.destroy?.();
     window.removeEventListener('resize', this.boundResize);
     document.removeEventListener('visibilitychange', this.boundVisibility);
     this.motionQuery.removeEventListener?.('change', this.boundMotionChanged);
     this.canvas.removeEventListener('pointerdown', this.boundPointerDown);
+    this.canvas.removeEventListener('pointermove', this.boundPointerMove);
     this.canvas.removeEventListener('pointerup', this.boundPointerUp);
-    this.canvas.removeEventListener('pointercancel', this.boundPointerUp);
+    this.canvas.removeEventListener('pointercancel', this.boundPointerCancel);
     if (this.debug) window.removeEventListener('keydown', this.boundKeyDown);
   }
 }
@@ -799,6 +1287,27 @@ function dataUrlBytes(dataUrl) {
   const encoded = dataUrl.slice(dataUrl.indexOf(',') + 1);
   const padding = encoded.endsWith('==') ? 2 : encoded.endsWith('=') ? 1 : 0;
   return encoded.length * 3 / 4 - padding;
+}
+
+function semanticRect(id, rect) {
+  return { id, x: rect.x + rect.width / 2, y: rect.y + rect.height / 2 };
+}
+
+function replaceObjectContents(target, source) {
+  for (const key of Object.keys(target)) delete target[key];
+  Object.assign(target, structuredClone(source));
+  return target;
+}
+
+function hasMeaningfulProgress(save) {
+  if (!save) return false;
+  if (Object.keys(save.progress?.questFlags ?? {}).length > 0) return true;
+  if ((save.progress?.completedChapters ?? []).length > 0) return true;
+  if ((save.collections?.cards ?? []).length > 0 || (save.collections?.treasures ?? []).length > 0) return true;
+  if ((save.yearbook?.entries ?? []).length > 0) return true;
+  if (save.character?.wandId || save.character?.pet?.type || save.character?.appearance?.robeTrim) return true;
+  if (save.resume?.chapter !== 'ch1' || save.resume?.room !== 'ch1.bedroom') return true;
+  return !['ch1.letter', 'ch1.letterScene'].includes(save.resume?.scene);
 }
 
 export function selectChapter1ResumeRecap(save, recaps = chapter1ResumeRecaps) {

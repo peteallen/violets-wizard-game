@@ -5,82 +5,82 @@
   "words": [
     {
       "text": "Morgana,",
-      "start": 0.079,
+      "start": 0.099,
       "end": 0.659,
       "type": "word",
-      "logprob": -0.0019336105033005424
+      "logprob": -0.0026613303489213536
     },
     {
       "text": " ",
       "start": 0.659,
       "end": 1.279,
       "type": "spacing",
-      "logprob": -0.00020358874462544918
+      "logprob": -0.00010895135346800089
     },
     {
       "text": "a",
       "start": 1.279,
       "end": 1.36,
       "type": "word",
-      "logprob": -0.00020358874462544918
+      "logprob": -0.00010895135346800089
     },
     {
       "text": " ",
       "start": 1.36,
-      "end": 1.399,
+      "end": 1.379,
       "type": "spacing",
-      "logprob": -0.00030048147891648114
+      "logprob": -0.00029762129997834563
     },
     {
       "text": "witch",
-      "start": 1.399,
+      "start": 1.379,
       "end": 1.599,
       "type": "word",
-      "logprob": -0.00030048147891648114
+      "logprob": -0.00029762129997834563
     },
     {
       "text": " ",
       "start": 1.599,
       "end": 1.659,
       "type": "spacing",
-      "logprob": -1.1920928244535389e-7
+      "logprob": 0
     },
     {
       "text": "of",
       "start": 1.659,
       "end": 1.799,
       "type": "word",
-      "logprob": -1.1920928244535389e-7
+      "logprob": 0
     },
     {
       "text": " ",
       "start": 1.799,
-      "end": 1.859,
+      "end": 1.879,
       "type": "spacing",
-      "logprob": -0.00002658331868587993
+      "logprob": -0.00002109982233378105
     },
     {
       "text": "magnificent",
-      "start": 1.86,
+      "start": 1.879,
       "end": 2.579,
       "type": "word",
-      "logprob": -0.00002658331868587993
+      "logprob": -0.00002109982233378105
     },
     {
       "text": " ",
       "start": 2.579,
       "end": 2.639,
       "type": "spacing",
-      "logprob": -0.00001549708758830093
+      "logprob": -0.000011444026313256472
     },
     {
       "text": "mysteries",
       "start": 2.639,
       "end": 3.279,
       "type": "word",
-      "logprob": -0.00001549708758830093
+      "logprob": -0.000011444026313256472
     }
   ],
-  "transcription_id": "O4PDnmQNpZQatCXbKIn1",
+  "transcription_id": "vnkAZpizDy4u4AaABVDW",
   "audio_duration_secs": 3.5294375
 }

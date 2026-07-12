@@ -5,82 +5,82 @@
   "words": [
     {
       "text": "Tap",
-      "start": 0.059,
+      "start": 0.079,
       "end": 0.259,
       "type": "word",
-      "logprob": -0.004619640298187733
+      "logprob": -0.0022479044273495674
     },
     {
       "text": " ",
       "start": 0.259,
       "end": 0.299,
       "type": "spacing",
-      "logprob": -0.00014983485743869096
+      "logprob": -0.00005340433563105762
     },
     {
       "text": "the",
       "start": 0.299,
       "end": 0.399,
       "type": "word",
-      "logprob": -0.00014983485743869096
+      "logprob": -0.00005340433563105762
     },
     {
       "text": " ",
       "start": 0.399,
       "end": 0.419,
       "type": "spacing",
-      "logprob": -0.0008085080771706998
+      "logprob": -0.0004949536523781717
     },
     {
       "text": "owl",
       "start": 0.419,
       "end": 0.659,
       "type": "word",
-      "logprob": -0.0008085080771706998
+      "logprob": -0.0004949536523781717
     },
     {
       "text": " ",
       "start": 0.659,
       "end": 0.68,
       "type": "spacing",
-      "logprob": -5.960462772236497e-7
+      "logprob": -7.152555099310121e-7
     },
     {
       "text": "at",
       "start": 0.68,
       "end": 0.779,
       "type": "word",
-      "logprob": -5.960462772236497e-7
+      "logprob": -7.152555099310121e-7
     },
     {
       "text": " ",
       "start": 0.779,
       "end": 0.799,
       "type": "spacing",
-      "logprob": -5.960462772236497e-7
+      "logprob": -8.344646857949556e-7
     },
     {
       "text": "the",
       "start": 0.799,
       "end": 0.839,
       "type": "word",
-      "logprob": -5.960462772236497e-7
+      "logprob": -8.344646857949556e-7
     },
     {
       "text": " ",
       "start": 0.839,
       "end": 0.899,
       "type": "spacing",
-      "logprob": -0.0000010728830375228426
+      "logprob": -9.536738616588991e-7
     },
     {
       "text": "window",
       "start": 0.899,
       "end": 1.319,
       "type": "word",
-      "logprob": -0.0000010728830375228426
+      "logprob": -9.536738616588991e-7
     }
   ],
-  "transcription_id": "NnSbh2tqKOipKhGy1eLb",
+  "transcription_id": "GOImIYq3Pk0GmDM6biTV",
   "audio_duration_secs": 1.5789375
 }
