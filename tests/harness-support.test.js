@@ -22,6 +22,12 @@ import {
   environmentIdentityId,
   validateEnvironmentIdentity,
 } from '../src/harness/environment.js';
+import {
+  actionsThroughFrame,
+  parseHarnessRequest,
+  resolveHarnessScenario,
+} from '../src/harness/boot.js';
+import { validateSaveV1 } from '../src/game/systems/Save.js';
 
 describe('ImmutableRegistry', () => {
   it('freezes registered values, clones them for consumers, and rejects duplicate ids', () => {
@@ -64,25 +70,32 @@ describe('state fixtures', () => {
     for (const id of STATE_FIXTURE_IDS) {
       const fixture = getStateFixture(id);
       expect(validateStateFixture(fixture)).toBe(fixture);
+      expect(validateSaveV1(fixture.save)).toBe(fixture.save);
       expect(Object.isFrozen(fixture)).toBe(true);
-      expect(Object.isFrozen(fixture.save.questFlags)).toBe(true);
+      expect(Object.isFrozen(fixture.save.progress.questFlags)).toBe(true);
+      expect(fixture.save).toHaveProperty('resume.room');
+      expect(fixture.save).toHaveProperty('character.appearance.robeTrim');
+      expect(fixture.save).toHaveProperty('spellbook.stats');
+      expect(fixture.save).toHaveProperty('collections.cards');
+      expect(fixture.save).toHaveProperty('yearbook.entries');
+      expect(fixture.save).toHaveProperty('settings.volumes.voice');
     }
   });
 
   it('returns an isolated mutable state for a harness run', () => {
     const clone = cloneStateFixture('ch1-wand-chosen');
-    clone.save.questFlags['ch1.wandChosen'] = false;
-    expect(getStateFixture('ch1-wand-chosen').save.questFlags['ch1.wandChosen']).toBe(true);
+    clone.save.progress.questFlags['ch1.wandChosen'] = false;
+    expect(getStateFixture('ch1-wand-chosen').save.progress.questFlags['ch1.wandChosen']).toBe(true);
   });
 
   it('rejects invalid settings and malformed progression flags', () => {
     const badLearning = cloneStateFixture('ch1-start');
     badLearning.save.settings.learning = 'hard';
-    expect(() => validateStateFixture(badLearning)).toThrow(/off, gentle, or stretchy/);
+    expect(() => validateStateFixture(badLearning)).toThrow(/off, gentle, stretchy/);
 
     const badFlag = cloneStateFixture('ch1-start');
-    badFlag.save.questFlags.notNamespaced = true;
-    expect(() => validateStateFixture(badFlag)).toThrow(/invalid namespaced flag/);
+    badFlag.save.progress.questFlags.notNamespaced = true;
+    expect(() => validateStateFixture(badFlag)).toThrow(/chapter-namespaced flag/);
   });
 });
 
@@ -98,7 +111,9 @@ describe('action fixtures', () => {
       'letter.owl',
       'letter.envelope',
       'letter.seal',
+      'letter.seal',
     ]);
+    expect(getActionFixture('ch1-start').actions.map((action) => action.frame)).toEqual([30, 480, 520, 540]);
   });
 
   it('rejects coordinate-like targets and non-monotonic scripts', () => {
@@ -109,6 +124,50 @@ describe('action fixtures', () => {
     const unordered = cloneActionFixture('ch1-start');
     unordered.actions[1].frame = unordered.actions[0].frame;
     expect(() => validateActionFixture(unordered)).toThrow(/strictly increasing/);
+  });
+});
+
+describe('registered harness scenarios', () => {
+  it('defaults manual scene URLs to matching immutable state and action fixtures', () => {
+    expect(parseHarnessRequest('?scene=ch1-start&frame=120&seed=1337')).toEqual({
+      scene: 'ch1-start',
+      state: 'ch1-start',
+      actions: 'ch1-start',
+      frame: 120,
+      seed: 1337,
+      width: 640,
+      height: 360,
+      dpr: 1,
+      motion: 'full',
+      learning: 'gentle',
+    });
+  });
+
+  it('clones registered saves and applies only capture-profile overrides', () => {
+    const request = parseHarnessRequest(
+      '?scene=ch1-wand-chosen&state=ch1-wand-chosen&actions=ch1-wand-chosen&seed=99&motion=reduced&learning=off',
+    );
+    const scenario = resolveHarnessScenario(request);
+    expect(scenario.stateFixture.save.worldSeed).toBe(99);
+    expect(scenario.stateFixture.save.settings).toMatchObject({ reducedMotion: true, learning: 'off' });
+    expect(scenario.stateFixture.save.resume).toEqual({
+      chapter: 'ch1', scene: 'ch1.wandShopping', room: 'ch1.ollivanders', spawn: 'entry',
+    });
+    expect(getStateFixture('ch1-wand-chosen').save.worldSeed).toBe(42);
+    expect(getStateFixture('ch1-wand-chosen').save.settings.reducedMotion).toBe(false);
+  });
+
+  it('selects semantic actions deterministically through an exact frame', () => {
+    const fixture = cloneActionFixture('ch1-start');
+    expect(actionsThroughFrame(fixture, 519).map((action) => action.target)).toEqual([
+      'letter.owl', 'letter.envelope',
+    ]);
+    expect(actionsThroughFrame(fixture, 540)).toEqual(fixture.actions);
+  });
+
+  it('rejects unknown registry selectors and off-grid times', () => {
+    expect(() => resolveHarnessScenario(parseHarnessRequest('?state=missing'))).toThrow(/Available fixtures/);
+    expect(() => parseHarnessRequest('?t=0.06')).toThrow(/60 fps simulation grid/);
   });
 });
 

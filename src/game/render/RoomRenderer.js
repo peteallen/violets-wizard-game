@@ -15,6 +15,7 @@ export class RoomRenderer {
     this.resolveAsset = resolveAsset;
     this.images = new Map();
     this.failed = new Set();
+    this.gradients = new WeakMap();
   }
 
   async preload(keys = []) {
@@ -61,11 +62,20 @@ export class RoomRenderer {
   drawProcedural(context, roomId, variant, time, cameraX = 0) {
     const [sky, light, floor] = ROOM_MOODS[roomId] ?? ROOM_MOODS['ch1.bedroom'];
     const dusk = variant === 'dusk';
-    const gradient = context.createLinearGradient(0, 0, 0, WORLD.height);
-    gradient.addColorStop(0, dusk ? '#2c3152' : sky);
-    gradient.addColorStop(0.63, dusk ? '#584653' : light);
-    gradient.addColorStop(1, floor);
-    context.fillStyle = gradient;
+    const key = `${roomId}:${variant}`;
+    let gradients = this.gradients.get(context);
+    if (!gradients) {
+      gradients = new Map();
+      this.gradients.set(context, gradients);
+    }
+    if (!gradients.has(key)) {
+      const gradient = context.createLinearGradient(0, 0, 0, WORLD.height);
+      gradient.addColorStop(0, dusk ? '#2c3152' : sky);
+      gradient.addColorStop(0.63, dusk ? '#584653' : light);
+      gradient.addColorStop(1, floor);
+      gradients.set(key, gradient);
+    }
+    context.fillStyle = gradients.get(key);
     context.fillRect(0, 0, WORLD.width, WORLD.height);
 
     context.save();

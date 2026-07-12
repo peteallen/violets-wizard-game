@@ -1,14 +1,24 @@
 import { INPUT, PALETTE, WORLD } from '../config.js';
 
+const STORY_GRADIENTS = new WeakMap();
+
 export const UI_RECTS = Object.freeze({
   quest: { x: 28, y: 28, width: 104, height: 104 },
   satchel: { x: 28, y: 584, width: 108, height: 108 },
   wand: { x: 1144, y: 584, width: 108, height: 108 },
   debugReset: { x: 510, y: 18, width: 260, height: 88 },
+  satchelMapTab: { x: 205, y: 86, width: 210, height: 88 },
+  satchelCardsTab: { x: 435, y: 86, width: 210, height: 88 },
   dialogueAdvance: { x: 0, y: 0, width: WORLD.width, height: WORLD.height },
 });
 
 export class UIRenderer {
+  constructor({ resolveAsset = () => null } = {}) {
+    this.resolveAsset = resolveAsset;
+    this.images = new Map();
+    this.failedImages = new Set();
+  }
+
   drawHud(context, state, time) {
     if (state.overlay || state.dialogue || state.screen !== 'playing') return;
     drawQuestButton(context, UI_RECTS.quest, time, Boolean(state.newObjective));
@@ -32,14 +42,14 @@ export class UIRenderer {
     context.stroke();
     context.fillStyle = PALETTE.parchment;
     context.textAlign = 'center';
-    context.font = '700 25px "Trebuchet MS", sans-serif';
+    context.font = '700 25px "Andika", "Trebuchet MS", sans-serif';
     fitText(context, dialogue.speakerLabel ?? 'Friend', 244, 578, 110);
 
     context.textAlign = 'left';
     context.fillStyle = '#382a24';
-    context.font = '700 28px "Trebuchet MS", sans-serif';
+    context.font = '700 28px "Andika", "Trebuchet MS", sans-serif';
     context.fillText(dialogue.caption ?? '', 335, 535);
-    context.font = '25px "Trebuchet MS", sans-serif';
+    context.font = '25px "Andika", "Trebuchet MS", sans-serif';
     const shownText = muted ? dialogue.text : dialogue.text;
     wrapText(context, shownText ?? '', 335, 580, 690, 32, 2);
 
@@ -70,27 +80,41 @@ export class UIRenderer {
       parchmentPanel(context, rect.x, rect.y, rect.width, rect.height, 28);
       context.fillStyle = PALETTE.violet;
       context.textAlign = 'center';
-      context.font = '50px "Trebuchet MS", sans-serif';
+      context.font = '50px "Andika", "Trebuchet MS", sans-serif';
       context.fillText(iconGlyph(choice.icon), rect.x + width / 2, rect.y + 67);
       context.fillStyle = '#382a24';
-      context.font = '700 29px "Trebuchet MS", sans-serif';
+      context.font = '700 29px "Andika", "Trebuchet MS", sans-serif';
       context.fillText(choice.caption, rect.x + width / 2, rect.y + 118);
     });
   }
 
-  drawMap(context, state) {
+  drawSatchel(context, state, cardDefinitions = []) {
     context.fillStyle = 'rgba(20,17,38,0.78)';
     context.fillRect(0, 0, WORLD.width, WORLD.height);
     parchmentPanel(context, 130, 65, 1020, 590, 42);
+    const activeTab = state.overlay?.tab === 'cards' ? 'cards' : 'map';
+    drawSatchelTab(context, UI_RECTS.satchelMapTab, '⌁', 'Map', activeTab === 'map');
+    drawSatchelTab(context, UI_RECTS.satchelCardsTab, '▣', 'Cards', activeTab === 'cards');
+
+    if (activeTab === 'cards') this.drawCardAlbumContent(context, state, cardDefinitions);
+    else this.drawMapContent(context, state);
+    drawClose(context);
+  }
+
+  drawMap(context, state) {
+    this.drawSatchel(context, state, []);
+  }
+
+  drawMapContent(context, state) {
     context.textAlign = 'center';
     context.fillStyle = '#382a24';
-    context.font = '700 46px "Trebuchet MS", sans-serif';
-    context.fillText('Diagon Alley Map', WORLD.width / 2, 135);
+    context.font = '700 34px "Andika", "Trebuchet MS", sans-serif';
+    context.fillText('Diagon Alley', 850, 139);
 
     const locations = [
-      { id: 'ch1.ollivanders', label: 'Wands', icon: '✦', x: 330, y: 340 },
-      { id: 'ch1.malkins', label: 'Robes', icon: '♢', x: 640, y: 270 },
-      { id: 'ch1.menagerie', label: 'Pets', icon: '♥', x: 950, y: 390 },
+      { id: 'ch1.ollivanders', label: 'Wands', icon: '✦', x: 330, y: 375 },
+      { id: 'ch1.malkins', label: 'Robes', icon: '♢', x: 640, y: 300 },
+      { id: 'ch1.menagerie', label: 'Pets', icon: '♥', x: 950, y: 415 },
     ];
     for (const location of locations) {
       const unlocked = state.unlockedRooms?.includes(location.id);
@@ -105,14 +129,81 @@ export class UIRenderer {
       context.lineWidth = current ? 8 : 4;
       context.stroke();
       context.fillStyle = PALETTE.parchment;
-      context.font = '54px "Trebuchet MS", sans-serif';
+      context.font = '54px "Andika", "Trebuchet MS", sans-serif';
       context.fillText(location.icon, location.x, location.y - 10);
-      context.font = '700 28px "Trebuchet MS", sans-serif';
+      context.font = '700 28px "Andika", "Trebuchet MS", sans-serif';
       context.fillText(location.label, location.x, location.y + 48);
       context.globalAlpha = 1;
     }
     state.__mapLocations = locations;
-    drawClose(context);
+    state.__cardSlots = [];
+  }
+
+  drawCardAlbumContent(context, state, cardDefinitions) {
+    const entries = buildCardAlbumEntries(cardDefinitions, state.cards ?? []);
+    const found = entries.filter((entry) => entry.earned).length;
+    context.textAlign = 'center';
+    context.fillStyle = '#382a24';
+    context.font = '700 30px "Andika", "Trebuchet MS", sans-serif';
+    context.fillText(`${found} of ${entries.length} cards found`, 870, 139);
+
+    if (found === 0) {
+      context.fillStyle = '#6b5744';
+      context.font = '700 28px "Andika", "Trebuchet MS", sans-serif';
+      context.fillText('No cards yet', WORLD.width / 2, 207);
+      context.font = '24px "Andika", "Trebuchet MS", sans-serif';
+      context.fillText('Look for sparkles!', WORLD.width / 2, 240);
+    }
+
+    for (const entry of entries) this.drawAlbumCard(context, entry);
+    state.__cardSlots = entries;
+    state.__mapLocations = [];
+  }
+
+  drawAlbumCard(context, entry) {
+    const rect = entry.__rect;
+    context.save();
+    context.fillStyle = entry.earned ? '#5e4634' : '#665c6e';
+    roundRect(context, rect.x, rect.y, rect.width, rect.height, 30);
+    context.fill();
+    context.strokeStyle = entry.earned ? PALETTE.candle : '#9a8fa2';
+    context.lineWidth = 7;
+    context.stroke();
+
+    const portrait = { x: rect.x + 38, y: rect.y + 28, width: rect.width - 76, height: 250 };
+    if (entry.earned) {
+      const image = this.imageFor(entry.portraitAsset);
+      if (image?.complete && image.naturalWidth > 0) drawCoverImage(context, image, portrait, 20);
+      else drawPortraitLoading(context, portrait);
+    } else drawLockedPortrait(context, portrait);
+
+    context.textAlign = 'center';
+    context.fillStyle = PALETTE.parchment;
+    context.font = '700 31px "Andika", "Trebuchet MS", sans-serif';
+    context.fillText(entry.earned ? entry.name : 'Not found', rect.x + rect.width / 2, rect.y + 327);
+    context.fillStyle = entry.earned ? PALETTE.interactive : '#b9aebe';
+    context.font = '27px "Andika", "Trebuchet MS", sans-serif';
+    context.fillText(entry.earned ? 'Tap to listen' : '?', rect.x + rect.width / 2, rect.y + 365);
+    context.restore();
+  }
+
+  imageFor(key) {
+    if (!key || this.failedImages.has(key) || typeof Image === 'undefined') return null;
+    if (this.images.has(key)) return this.images.get(key);
+    const path = this.resolveAsset(key);
+    if (!path) {
+      this.failedImages.add(key);
+      return null;
+    }
+    const image = new Image();
+    image.decoding = 'async';
+    image.onerror = () => {
+      this.images.delete(key);
+      this.failedImages.add(key);
+    };
+    this.images.set(key, image);
+    image.src = path;
+    return image;
   }
 
   drawSelection(context, selection) {
@@ -121,10 +212,10 @@ export class UIRenderer {
     parchmentPanel(context, 150, 85, 980, 550, 42);
     context.textAlign = 'center';
     context.fillStyle = '#382a24';
-    context.font = '700 48px "Trebuchet MS", sans-serif';
+    context.font = '700 48px "Andika", "Trebuchet MS", sans-serif';
     context.fillText(selection.title, WORLD.width / 2, 170);
     if (selection.subtitle) {
-      context.font = '26px "Trebuchet MS", sans-serif';
+      context.font = '26px "Andika", "Trebuchet MS", sans-serif';
       context.fillText(selection.subtitle, WORLD.width / 2, 212);
     }
     const count = selection.options.length;
@@ -141,9 +232,9 @@ export class UIRenderer {
       context.lineWidth = 5;
       context.stroke();
       context.fillStyle = PALETTE.parchment;
-      context.font = '64px "Trebuchet MS", sans-serif';
+      context.font = '64px "Andika", "Trebuchet MS", sans-serif';
       context.fillText(iconGlyph(option.icon), rect.x + width / 2, rect.y + 92);
-      context.font = '700 29px "Trebuchet MS", sans-serif';
+      context.font = '700 29px "Andika", "Trebuchet MS", sans-serif';
       fitText(context, option.label, rect.x + width / 2, rect.y + 159, width - 22);
     });
     drawClose(context);
@@ -155,23 +246,19 @@ export class UIRenderer {
     parchmentPanel(context, 250, 190, 780, 340, 45);
     context.textAlign = 'center';
     context.fillStyle = PALETTE.candle;
-    context.font = '70px "Trebuchet MS", sans-serif';
+    context.font = '70px "Andika", "Trebuchet MS", sans-serif';
     context.fillText('★', WORLD.width / 2, 300);
     context.fillStyle = '#382a24';
-    context.font = '700 42px "Trebuchet MS", sans-serif';
+    context.font = '700 42px "Andika", "Trebuchet MS", sans-serif';
     context.fillText(objective?.caption ?? 'Explore!', WORLD.width / 2, 380);
-    context.font = '28px "Trebuchet MS", sans-serif';
+    context.font = '28px "Andika", "Trebuchet MS", sans-serif';
     wrapText(context, objective?.text ?? '', 360, 432, 560, 34, 2, 'center');
     drawClose(context);
   }
 
   drawChapterCard(context, card, time, { paintedBackground = false } = {}) {
     if (!paintedBackground) {
-      const gradient = context.createLinearGradient(0, 0, 0, WORLD.height);
-      gradient.addColorStop(0, '#1b2a4a');
-      gradient.addColorStop(0.55, '#3a2d5e');
-      gradient.addColorStop(1, '#141126');
-      context.fillStyle = gradient;
+      context.fillStyle = storyGradient(context);
       context.fillRect(0, 0, WORLD.width, WORLD.height);
     } else {
       context.fillStyle = 'rgba(20,17,38,0.36)';
@@ -187,22 +274,18 @@ export class UIRenderer {
     context.strokeRect(170, 105, 940, 510);
     context.textAlign = 'center';
     context.fillStyle = PALETTE.parchment;
-    context.font = '700 36px "Trebuchet MS", sans-serif';
+    context.font = '700 36px "Andika", "Trebuchet MS", sans-serif';
     context.fillText(card?.eyebrow ?? 'Chapter One Complete', WORLD.width / 2, 190);
-    context.font = '700 64px "Trebuchet MS", sans-serif';
+    context.font = '700 64px "Andika", "Trebuchet MS", sans-serif';
     wrapText(context, card?.title ?? 'Platform Nine and Three-Quarters', 250, 300, 780, 76, 2, 'center');
     context.fillStyle = PALETTE.honey;
-    context.font = '31px "Trebuchet MS", sans-serif';
+    context.font = '31px "Andika", "Trebuchet MS", sans-serif';
     context.fillText(card?.subtitle ?? 'Next time: the Hogwarts Express!', WORLD.width / 2, 475);
     drawBigButton(context, card?.buttonLabel ?? 'See what is next', 440, 525, 400, 90);
   }
 
   drawTitle(context, time, hasSave) {
-    const gradient = context.createLinearGradient(0, 0, 0, WORLD.height);
-    gradient.addColorStop(0, PALETTE.night);
-    gradient.addColorStop(0.68, PALETTE.twilight);
-    gradient.addColorStop(1, PALETTE.ink);
-    context.fillStyle = gradient;
+    context.fillStyle = storyGradient(context);
     context.fillRect(0, 0, WORLD.width, WORLD.height);
     context.fillStyle = PALETTE.interactive;
     for (let index = 0; index < 28; index += 1) {
@@ -217,14 +300,14 @@ export class UIRenderer {
     context.globalAlpha = 1;
     context.textAlign = 'center';
     context.fillStyle = PALETTE.parchment;
-    context.font = '700 76px "Trebuchet MS", sans-serif';
+    context.font = '700 76px "Andika", "Trebuchet MS", sans-serif';
     context.fillText("Violet's Wizard Game", WORLD.width / 2, 255);
     context.fillStyle = PALETTE.honey;
-    context.font = '34px "Trebuchet MS", sans-serif';
+    context.font = '34px "Andika", "Trebuchet MS", sans-serif';
     context.fillText('Your letter is waiting.', WORLD.width / 2, 320);
     drawBigButton(context, hasSave ? 'Continue' : 'Open the letter', 420, 405, 440, 105);
     context.fillStyle = 'rgba(240,227,200,0.78)';
-    context.font = '24px "Trebuchet MS", sans-serif';
+    context.font = '24px "Andika", "Trebuchet MS", sans-serif';
     context.fillText('Best with sound on', WORLD.width / 2, 565);
   }
 
@@ -240,10 +323,89 @@ export class UIRenderer {
     context.stroke();
     context.fillStyle = '#fff8e8';
     context.textAlign = 'center';
-    context.font = '700 26px "Trebuchet MS", sans-serif';
+    context.font = '700 26px "Andika", "Trebuchet MS", sans-serif';
     context.fillText('DEV: Reset game', rect.x + rect.width / 2, rect.y + rect.height / 2 + 9);
     context.restore();
   }
+}
+
+export function buildCardAlbumEntries(cardDefinitions, earnedCardIds) {
+  const earned = new Set(earnedCardIds);
+  const slotWidth = 330;
+  const slotHeight = 375;
+  const gap = 50;
+  const columns = Math.max(1, Math.min(2, cardDefinitions.length));
+  const startX = (WORLD.width - (columns * slotWidth + (columns - 1) * gap)) / 2;
+  return cardDefinitions.map((card, index) => ({
+    ...card,
+    earned: earned.has(card.id),
+    __rect: {
+      x: startX + (index % columns) * (slotWidth + gap),
+      y: 250 + Math.floor(index / columns) * (slotHeight + 28),
+      width: slotWidth,
+      height: slotHeight,
+    },
+  }));
+}
+
+function drawSatchelTab(context, rect, icon, label, active) {
+  context.fillStyle = active ? PALETTE.oak : '#a38b69';
+  roundRect(context, rect.x, rect.y, rect.width, rect.height, 24);
+  context.fill();
+  context.strokeStyle = active ? PALETTE.interactive : '#7b684d';
+  context.lineWidth = active ? 6 : 4;
+  context.stroke();
+  context.fillStyle = active ? PALETTE.parchment : '#3f3328';
+  context.textAlign = 'center';
+  context.font = '36px "Andika", "Trebuchet MS", sans-serif';
+  context.fillText(icon, rect.x + 45, rect.y + 57);
+  context.font = '700 29px "Andika", "Trebuchet MS", sans-serif';
+  context.fillText(label, rect.x + 130, rect.y + 56);
+}
+
+function drawCoverImage(context, image, rect, radius) {
+  const imageRatio = image.naturalWidth / image.naturalHeight;
+  const rectRatio = rect.width / rect.height;
+  let sourceX = 0;
+  let sourceY = 0;
+  let sourceWidth = image.naturalWidth;
+  let sourceHeight = image.naturalHeight;
+  if (imageRatio > rectRatio) {
+    sourceWidth = image.naturalHeight * rectRatio;
+    sourceX = (image.naturalWidth - sourceWidth) / 2;
+  } else {
+    sourceHeight = image.naturalWidth / rectRatio;
+    sourceY = (image.naturalHeight - sourceHeight) / 2;
+  }
+  context.save();
+  roundRect(context, rect.x, rect.y, rect.width, rect.height, radius);
+  context.clip();
+  context.drawImage(image, sourceX, sourceY, sourceWidth, sourceHeight, rect.x, rect.y, rect.width, rect.height);
+  context.restore();
+}
+
+function drawPortraitLoading(context, rect) {
+  context.fillStyle = '#3d3347';
+  roundRect(context, rect.x, rect.y, rect.width, rect.height, 20);
+  context.fill();
+  context.fillStyle = PALETTE.candle;
+  context.textAlign = 'center';
+  context.font = '64px "Andika", "Trebuchet MS", sans-serif';
+  context.fillText('✦', rect.x + rect.width / 2, rect.y + rect.height / 2 + 22);
+}
+
+function drawLockedPortrait(context, rect) {
+  context.fillStyle = '#403949';
+  roundRect(context, rect.x, rect.y, rect.width, rect.height, 20);
+  context.fill();
+  context.strokeStyle = '#82768c';
+  context.lineWidth = 5;
+  roundRect(context, rect.x + 15, rect.y + 15, rect.width - 30, rect.height - 30, 14);
+  context.stroke();
+  context.fillStyle = '#a99daf';
+  context.textAlign = 'center';
+  context.font = '700 88px "Andika", "Trebuchet MS", sans-serif';
+  context.fillText('?', rect.x + rect.width / 2, rect.y + rect.height / 2 + 30);
 }
 
 function drawQuestButton(context, rect, time, pulse) {
@@ -260,7 +422,7 @@ function drawQuestButton(context, rect, time, pulse) {
   context.stroke();
   context.fillStyle = PALETTE.interactive;
   context.textAlign = 'center';
-  context.font = '54px "Trebuchet MS", sans-serif';
+  context.font = '54px "Andika", "Trebuchet MS", sans-serif';
   context.fillText('★', 0, 19);
   context.restore();
 }
@@ -341,12 +503,17 @@ function drawBigButton(context, label, x, y, width, height) {
   context.stroke();
   context.fillStyle = PALETTE.parchment;
   context.textAlign = 'center';
-  context.font = '700 34px "Trebuchet MS", sans-serif';
+  context.font = '700 34px "Andika", "Trebuchet MS", sans-serif';
   context.fillText(label, x + width / 2, y + height / 2 + 12);
 }
 
 function iconGlyph(icon) {
-  return ({ wand: '✦', eyes: '◉', cat: '♛', owl: '◉', toad: '●', replay: '↻', explore: '⌁', purple: '◆', rose: '♥', teal: '●', gold: '★' })[icon] ?? '✦';
+  return ({
+    wand: '✦', eyes: '◉', cat: '♛', owl: '◉', toad: '●', replay: '↻', explore: '⌁',
+    purple: '◆', rose: '♥', teal: '●', gold: '★', 'pet-cat': '♛', 'pet-owl': '◉',
+    'pet-toad': '●', 'name-biscuit': '●', 'name-pip': '✦', 'name-star': '★',
+    'name-custom': '✎', 'wax-check': '✓',
+  })[icon] ?? '✦';
 }
 
 function fitText(context, text, x, y, maxWidth) {
@@ -384,6 +551,16 @@ function roundRect(context, x, y, width, height, radius) {
   context.arcTo(x, y + height, x, y, r);
   context.arcTo(x, y, x + width, y, r);
   context.closePath();
+}
+
+function storyGradient(context) {
+  if (STORY_GRADIENTS.has(context)) return STORY_GRADIENTS.get(context);
+  const gradient = context.createLinearGradient(0, 0, 0, WORLD.height);
+  gradient.addColorStop(0, PALETTE.night);
+  gradient.addColorStop(0.68, PALETTE.twilight);
+  gradient.addColorStop(1, PALETTE.ink);
+  STORY_GRADIENTS.set(context, gradient);
+  return gradient;
 }
 
 export function pointInUiRect(point, rect) {

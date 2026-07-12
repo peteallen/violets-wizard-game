@@ -118,6 +118,11 @@ describe('chapter content contracts', () => {
     expect(dialogue.advance('nameBiscuit').caption).toBe('New friend!');
     expect(actions).toContainEqual({ type: 'character.set', field: 'pet.type', value: 'owl' });
     expect(actions).toContainEqual({ type: 'character.set', field: 'pet.name', value: 'Biscuit' });
+    expect(chapter1.dialogues['ch1.keeper.petAndName'].nodes.name.choices).toContainEqual(expect.objectContaining({
+      id: 'nameCustom',
+      caption: 'My own',
+      actions: [{ type: 'choice.record', id: 'ch1.petNameMode', value: 'custom' }],
+    }));
   });
 
   it('gives the placeholder only safe Explore and replay-mode choices', () => {

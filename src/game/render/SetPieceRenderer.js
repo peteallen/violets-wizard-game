@@ -41,7 +41,7 @@ export class SetPieceRenderer {
     context.fill();
     context.fillStyle = PALETTE.candle;
     context.textAlign = 'center';
-    context.font = '700 52px "Trebuchet MS", sans-serif';
+    context.font = '700 52px "Andika", "Trebuchet MS", sans-serif';
     context.fillText('VIOLET', 0, -25);
     context.restore();
   }
@@ -154,9 +154,9 @@ export class SetPieceRenderer {
     context.stroke();
     context.fillStyle = '#4e3428';
     context.textAlign = 'center';
-    context.font = '700 38px "Trebuchet MS", sans-serif';
+    context.font = '700 38px "Andika", "Trebuchet MS", sans-serif';
     context.fillText('HOGWARTS EXPRESS', 0, -32);
-    context.font = '700 58px "Trebuchet MS", sans-serif';
+    context.font = '700 58px "Andika", "Trebuchet MS", sans-serif';
     context.fillText('9 ¾', 0, 55);
     context.restore();
   }

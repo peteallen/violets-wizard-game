@@ -454,6 +454,12 @@ export class Save {
     validateSaveV1(nextSave);
     const serialized = serializeSave(nextSave);
 
+    if (this.timer !== null) {
+      this.clearTimer(this.timer);
+      this.timer = null;
+    }
+    this.pending = nextSave;
+
     let previous;
     try {
       previous = this.storage.getItem(this.key);
@@ -473,6 +479,7 @@ export class Save {
       }
       return storageError(error, rollbackError);
     }
+    this.pending = null;
     return { ok: true, status: 'saved', save: nextSave };
   }
 
@@ -499,9 +506,7 @@ export class Save {
       this.clearTimer(this.timer);
       this.timer = null;
     }
-    const result = this.write(this.pending);
-    if (result.ok) this.pending = null;
-    return result;
+    return this.write(this.pending);
   }
 
   backupCurrent() {

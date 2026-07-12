@@ -1,0 +1,170 @@
+{
+  "language_code": "eng",
+  "language_probability": 0.9621167182922363,
+  "text": "The magical street is behind this wall. Give those bricks a tap",
+  "words": [
+    {
+      "text": "The",
+      "start": 0.079,
+      "end": 0.179,
+      "type": "word",
+      "logprob": -0.001321276999078691
+    },
+    {
+      "text": " ",
+      "start": 0.179,
+      "end": 0.259,
+      "type": "spacing",
+      "logprob": -0.005982231814414263
+    },
+    {
+      "text": "magical",
+      "start": 0.259,
+      "end": 0.68,
+      "type": "word",
+      "logprob": -0.005982231814414263
+    },
+    {
+      "text": " ",
+      "start": 0.68,
+      "end": 0.74,
+      "type": "spacing",
+      "logprob": -0.0008057684754021466
+    },
+    {
+      "text": "street",
+      "start": 0.74,
+      "end": 1.039,
+      "type": "word",
+      "logprob": -0.0008057684754021466
+    },
+    {
+      "text": " ",
+      "start": 1.039,
+      "end": 1.099,
+      "type": "spacing",
+      "logprob": -0.000001311301275563892
+    },
+    {
+      "text": "is",
+      "start": 1.1,
+      "end": 1.22,
+      "type": "word",
+      "logprob": -0.000001311301275563892
+    },
+    {
+      "text": " ",
+      "start": 1.22,
+      "end": 1.24,
+      "type": "spacing",
+      "logprob": -0.0000016689286894688848
+    },
+    {
+      "text": "behind",
+      "start": 1.24,
+      "end": 1.559,
+      "type": "word",
+      "logprob": -0.0000016689286894688848
+    },
+    {
+      "text": " ",
+      "start": 1.559,
+      "end": 1.579,
+      "type": "spacing",
+      "logprob": -1.1920928244535389e-7
+    },
+    {
+      "text": "this",
+      "start": 1.579,
+      "end": 1.74,
+      "type": "word",
+      "logprob": -1.1920928244535389e-7
+    },
+    {
+      "text": " ",
+      "start": 1.74,
+      "end": 1.819,
+      "type": "spacing",
+      "logprob": -5.960462772236497e-7
+    },
+    {
+      "text": "wall.",
+      "start": 1.819,
+      "end": 2.039,
+      "type": "word",
+      "logprob": -0.000004124608176425682
+    },
+    {
+      "text": " ",
+      "start": 2.039,
+      "end": 2.619,
+      "type": "spacing",
+      "logprob": -0.0000029802276912960224
+    },
+    {
+      "text": "Give",
+      "start": 2.619,
+      "end": 2.759,
+      "type": "word",
+      "logprob": -0.0000029802276912960224
+    },
+    {
+      "text": " ",
+      "start": 2.759,
+      "end": 2.799,
+      "type": "spacing",
+      "logprob": 0
+    },
+    {
+      "text": "those",
+      "start": 2.799,
+      "end": 2.959,
+      "type": "word",
+      "logprob": 0
+    },
+    {
+      "text": " ",
+      "start": 2.959,
+      "end": 3.039,
+      "type": "spacing",
+      "logprob": -0.000001311301275563892
+    },
+    {
+      "text": "bricks",
+      "start": 3.039,
+      "end": 3.279,
+      "type": "word",
+      "logprob": -0.000001311301275563892
+    },
+    {
+      "text": " ",
+      "start": 3.279,
+      "end": 3.319,
+      "type": "spacing",
+      "logprob": -3.576278118089249e-7
+    },
+    {
+      "text": "a",
+      "start": 3.319,
+      "end": 3.359,
+      "type": "word",
+      "logprob": -3.576278118089249e-7
+    },
+    {
+      "text": " ",
+      "start": 3.359,
+      "end": 3.419,
+      "type": "spacing",
+      "logprob": -9.536738616588991e-7
+    },
+    {
+      "text": "tap",
+      "start": 3.419,
+      "end": 3.72,
+      "type": "word",
+      "logprob": -9.536738616588991e-7
+    }
+  ],
+  "transcription_id": "4eFpoiFmx70aoP246OS8",
+  "audio_duration_secs": 3.9938125
+}

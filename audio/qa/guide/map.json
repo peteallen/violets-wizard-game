@@ -1,0 +1,212 @@
+{
+  "language_code": "eng",
+  "language_probability": 0.8344282507896423,
+  "text": "This map always knows where to go. Open your satchel and tap the golden star.",
+  "words": [
+    {
+      "text": "This",
+      "start": 0.119,
+      "end": 0.28,
+      "type": "word",
+      "logprob": -0.004676357842981815
+    },
+    {
+      "text": " ",
+      "start": 0.28,
+      "end": 0.319,
+      "type": "spacing",
+      "logprob": -0.00024291902082040906
+    },
+    {
+      "text": "map",
+      "start": 0.319,
+      "end": 0.579,
+      "type": "word",
+      "logprob": -0.00024291902082040906
+    },
+    {
+      "text": " ",
+      "start": 0.579,
+      "end": 0.659,
+      "type": "spacing",
+      "logprob": -0.000028729025871143676
+    },
+    {
+      "text": "always",
+      "start": 0.659,
+      "end": 0.899,
+      "type": "word",
+      "logprob": -0.000028729025871143676
+    },
+    {
+      "text": " ",
+      "start": 0.899,
+      "end": 0.959,
+      "type": "spacing",
+      "logprob": -0.0000011920922133867862
+    },
+    {
+      "text": "knows",
+      "start": 0.959,
+      "end": 1.199,
+      "type": "word",
+      "logprob": -0.0000011920922133867862
+    },
+    {
+      "text": " ",
+      "start": 1.199,
+      "end": 1.259,
+      "type": "spacing",
+      "logprob": -4.768370445162873e-7
+    },
+    {
+      "text": "where",
+      "start": 1.259,
+      "end": 1.419,
+      "type": "word",
+      "logprob": -4.768370445162873e-7
+    },
+    {
+      "text": " ",
+      "start": 1.419,
+      "end": 1.5,
+      "type": "spacing",
+      "logprob": -1.1920928244535389e-7
+    },
+    {
+      "text": "to",
+      "start": 1.5,
+      "end": 1.599,
+      "type": "word",
+      "logprob": -1.1920928244535389e-7
+    },
+    {
+      "text": " ",
+      "start": 1.599,
+      "end": 1.639,
+      "type": "spacing",
+      "logprob": -2.3841855067985307e-7
+    },
+    {
+      "text": "go.",
+      "start": 1.639,
+      "end": 1.839,
+      "type": "word",
+      "logprob": -0.014430207510770288
+    },
+    {
+      "text": " ",
+      "start": 1.839,
+      "end": 2.539,
+      "type": "spacing",
+      "logprob": -0.00002407998726994265
+    },
+    {
+      "text": "Open",
+      "start": 2.539,
+      "end": 2.779,
+      "type": "word",
+      "logprob": -0.00002407998726994265
+    },
+    {
+      "text": " ",
+      "start": 2.779,
+      "end": 2.839,
+      "type": "spacing",
+      "logprob": -0.0000010728830375228426
+    },
+    {
+      "text": "your",
+      "start": 2.839,
+      "end": 2.96,
+      "type": "word",
+      "logprob": -0.0000010728830375228426
+    },
+    {
+      "text": " ",
+      "start": 2.96,
+      "end": 3,
+      "type": "spacing",
+      "logprob": -0.0009170140838250518
+    },
+    {
+      "text": "satchel",
+      "start": 3,
+      "end": 3.399,
+      "type": "word",
+      "logprob": -0.0004009759728173127
+    },
+    {
+      "text": " ",
+      "start": 3.399,
+      "end": 3.439,
+      "type": "spacing",
+      "logprob": -0.00010263393050990999
+    },
+    {
+      "text": "and",
+      "start": 3.439,
+      "end": 3.519,
+      "type": "word",
+      "logprob": -0.00010263393050990999
+    },
+    {
+      "text": " ",
+      "start": 3.519,
+      "end": 3.619,
+      "type": "spacing",
+      "logprob": -0.000009059865078597795
+    },
+    {
+      "text": "tap",
+      "start": 3.619,
+      "end": 3.859,
+      "type": "word",
+      "logprob": -0.000009059865078597795
+    },
+    {
+      "text": " ",
+      "start": 3.859,
+      "end": 3.899,
+      "type": "spacing",
+      "logprob": -0.000001311301275563892
+    },
+    {
+      "text": "the",
+      "start": 3.899,
+      "end": 3.98,
+      "type": "word",
+      "logprob": -0.000001311301275563892
+    },
+    {
+      "text": " ",
+      "start": 3.98,
+      "end": 4.039,
+      "type": "spacing",
+      "logprob": -0.007069573272019625
+    },
+    {
+      "text": "golden",
+      "start": 4.039,
+      "end": 4.38,
+      "type": "word",
+      "logprob": -0.007069573272019625
+    },
+    {
+      "text": " ",
+      "start": 4.38,
+      "end": 4.48,
+      "type": "spacing",
+      "logprob": -0.000015020257706055418
+    },
+    {
+      "text": "star.",
+      "start": 4.48,
+      "end": 4.819,
+      "type": "word",
+      "logprob": -0.13865141859569122
+    }
+  ],
+  "transcription_id": "mk4WUjrYW92iZPsOwPzm",
+  "audio_duration_secs": 5.108375
+}

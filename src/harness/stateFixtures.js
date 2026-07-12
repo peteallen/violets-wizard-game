@@ -1,12 +1,9 @@
-import { ImmutableRegistry, assertExactKeys, assertPlainObject } from './registry.js';
+import { createSaveV1, validateSaveV1 } from '../game/systems/Save.js';
+import { ImmutableRegistry, assertExactKeys } from './registry.js';
 
-const ISO_INSTANT_PATTERN = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/;
 const CONTENT_ID_PATTERN = /^[a-z][A-Za-z0-9]*(?:[.-][A-Za-z0-9]+)*$/;
-const FLAG_ID_PATTERN = /^[a-z][A-Za-z0-9]*(?:\.[a-z][A-Za-z0-9]*)+$/;
-const LEARNING_SETTINGS = new Set(['off', 'gentle', 'stretchy']);
-const HOUSES = new Set(['gryffindor', 'hufflepuff', 'ravenclaw', 'slytherin']);
-const PET_TYPES = new Set(['owl', 'cat', 'toad']);
 const FIXED_INSTANT = '2000-01-01T00:00:00.000Z';
+const FIXED_SEED = 42;
 
 function assertIntegerInRange(value, min, max, path) {
   if (!Number.isInteger(value) || value < min || value > max) {
@@ -20,71 +17,6 @@ function assertContentId(value, path) {
   }
 }
 
-function assertUniqueContentIds(values, path) {
-  if (!Array.isArray(values)) throw new TypeError(`${path} must be an array.`);
-  const seen = new Set();
-  values.forEach((value, index) => {
-    assertContentId(value, `${path}[${index}]`);
-    if (seen.has(value)) throw new TypeError(`${path} contains duplicate id "${value}".`);
-    seen.add(value);
-  });
-}
-
-function validateQuestFlags(flags, path) {
-  assertPlainObject(flags, path);
-  for (const [id, value] of Object.entries(flags)) {
-    if (!FLAG_ID_PATTERN.test(id)) throw new TypeError(`${path} has invalid namespaced flag "${id}".`);
-    if (typeof value !== 'boolean') throw new TypeError(`${path}.${id} must be boolean.`);
-  }
-}
-
-function validatePet(pet, path) {
-  if (pet === null) return;
-  assertExactKeys(pet, ['type', 'name'], path);
-  if (!PET_TYPES.has(pet.type)) throw new TypeError(`${path}.type must be owl, cat, or toad.`);
-  if (typeof pet.name !== 'string' || pet.name.trim() === '') throw new TypeError(`${path}.name must be a non-empty string.`);
-}
-
-function validateSave(save, path) {
-  assertExactKeys(save, [
-    'schemaVersion',
-    'createdAt',
-    'updatedAt',
-    'chapter',
-    'scene',
-    'questFlags',
-    'spells',
-    'house',
-    'pet',
-    'cards',
-    'housePoints',
-    'learning',
-    'settings',
-  ], path);
-  if (save.schemaVersion !== 1) throw new TypeError(`${path}.schemaVersion must be 1.`);
-  if (!ISO_INSTANT_PATTERN.test(save.createdAt)) throw new TypeError(`${path}.createdAt must be a fixed ISO instant.`);
-  if (!ISO_INSTANT_PATTERN.test(save.updatedAt)) throw new TypeError(`${path}.updatedAt must be a fixed ISO instant.`);
-  if (save.updatedAt < save.createdAt) throw new TypeError(`${path}.updatedAt cannot precede createdAt.`);
-  assertIntegerInRange(save.chapter, 1, 8, `${path}.chapter`);
-  assertContentId(save.scene, `${path}.scene`);
-  validateQuestFlags(save.questFlags, `${path}.questFlags`);
-  assertUniqueContentIds(save.spells, `${path}.spells`);
-  if (save.house !== null && !HOUSES.has(save.house)) throw new TypeError(`${path}.house must be null or a known house id.`);
-  validatePet(save.pet, `${path}.pet`);
-  assertUniqueContentIds(save.cards, `${path}.cards`);
-  if (!Number.isInteger(save.housePoints) || save.housePoints < 0) throw new TypeError(`${path}.housePoints must be a non-negative integer.`);
-  assertExactKeys(save.learning, ['letterSkill'], `${path}.learning`);
-  if (!Number.isInteger(save.learning.letterSkill) || save.learning.letterSkill < 0) {
-    throw new TypeError(`${path}.learning.letterSkill must be a non-negative integer.`);
-  }
-  assertExactKeys(save.settings, ['muted', 'reducedMotion', 'learning'], `${path}.settings`);
-  if (typeof save.settings.muted !== 'boolean') throw new TypeError(`${path}.settings.muted must be boolean.`);
-  if (typeof save.settings.reducedMotion !== 'boolean') throw new TypeError(`${path}.settings.reducedMotion must be boolean.`);
-  if (!LEARNING_SETTINGS.has(save.settings.learning)) {
-    throw new TypeError(`${path}.settings.learning must be off, gentle, or stretchy.`);
-  }
-}
-
 export function validateStateFixture(fixture, path = 'state fixture') {
   assertExactKeys(fixture, ['fixtureVersion', 'description', 'entry', 'save'], path);
   if (fixture.fixtureVersion !== 1) throw new TypeError(`${path}.fixtureVersion must be 1.`);
@@ -94,89 +26,133 @@ export function validateStateFixture(fixture, path = 'state fixture') {
   assertExactKeys(fixture.entry, ['chapter', 'scene'], `${path}.entry`);
   assertIntegerInRange(fixture.entry.chapter, 0, 8, `${path}.entry.chapter`);
   assertContentId(fixture.entry.scene, `${path}.entry.scene`);
-  validateSave(fixture.save, `${path}.save`);
+  validateSaveV1(fixture.save, `${path}.save`);
   return fixture;
 }
 
-function createSave({ chapter = 1, scene, questFlags = {}, pet = null }) {
-  return {
-    schemaVersion: 1,
-    createdAt: FIXED_INSTANT,
-    updatedAt: FIXED_INSTANT,
-    chapter,
-    scene,
-    questFlags,
-    spells: [],
-    house: null,
-    pet,
-    cards: [],
-    housePoints: 0,
-    learning: { letterSkill: 0 },
-    settings: { muted: false, reducedMotion: false, learning: 'gentle' },
-  };
+function createSave({
+  chapter = 'ch1',
+  scene = 'ch1.letter',
+  room = 'ch1.bedroom',
+  spawn = 'start',
+  highestUnlockedChapter = 1,
+  completedChapters = [],
+  questFlags = {},
+  storyChoices = {},
+  wandId = null,
+  robeTrim = null,
+  pet = null,
+  cards = [],
+  treasures = [],
+  housePoints = 0,
+} = {}) {
+  const save = createSaveV1({
+    now: FIXED_INSTANT,
+    appVersion: 'harness-fixture-v1',
+    worldSeed: FIXED_SEED,
+  });
+  save.resume = { chapter, scene, room, spawn };
+  save.progress.highestUnlockedChapter = highestUnlockedChapter;
+  save.progress.completedChapters = [...completedChapters];
+  save.progress.questFlags = { ...questFlags };
+  save.progress.storyChoices = structuredClone(storyChoices);
+  save.character.wandId = wandId;
+  save.character.appearance.robeTrim = robeTrim;
+  if (pet) save.character.pet = { ...pet };
+  save.collections.cards = [...cards];
+  save.collections.treasures = [...treasures];
+  save.collections.housePoints = housePoints;
+  validateSaveV1(save);
+  return save;
 }
 
 function createFixture(description, entry, save) {
   return { fixtureVersion: 1, description, entry, save };
 }
 
+const throughWandFlags = Object.freeze({
+  'ch1.owlTapped': true,
+  'ch1.letterOpened': true,
+  'ch1.letterRead': true,
+  'ch1.guideMet': true,
+  'ch1.leakyReached': true,
+  'ch1.courtyardReached': true,
+  'ch1.wallOpened': true,
+  'ch1.diagonReached': true,
+  'ch1.satchelReceived': true,
+  'ch1.mapUsed': true,
+  'ch1.wandTry1': true,
+  'ch1.wandTry2': true,
+  'ch1.wandChosen': true,
+});
+
+const completeChapterFlags = Object.freeze({
+  ...throughWandFlags,
+  'ch1.trimChosen': true,
+  'ch1.petChosen': true,
+  'ch1.petNamed': true,
+  'ch1.shoppingComplete': true,
+  'ch1.ticketReceived': true,
+  'ch1.chapterCardSeen': true,
+  'ch1.complete': true,
+});
+
+const completedProfile = Object.freeze({
+  highestUnlockedChapter: 2,
+  completedChapters: ['ch1'],
+  questFlags: completeChapterFlags,
+  storyChoices: {},
+  wandId: 'violet-first-wand',
+  robeTrim: 'purple',
+  pet: { type: 'cat', name: 'Biscuit' },
+  cards: ['morgana', 'dumbledore'],
+  treasures: [],
+  housePoints: 0,
+});
+
 const registry = new ImmutableRegistry('state', validateStateFixture);
 
 registry
   .register('foundation', createFixture(
-    'The deterministic foundation screen before story content exists.',
+    'The title screen before Violet begins the story.',
     { chapter: 0, scene: 'foundation' },
-    createSave({ scene: 'foundation' }),
+    createSave(),
   ))
   .register('ch1-start', createFixture(
     'Chapter 1 at the bedroom letter scene before Violet has acted.',
-    { chapter: 1, scene: 'bedroomMorning' },
-    createSave({ scene: 'bedroomMorning' }),
+    { chapter: 1, scene: 'ch1.letter' },
+    createSave(),
   ))
   .register('ch1-wand-chosen', createFixture(
     'Chapter 1 in Ollivanders immediately after the third wand chooses Violet.',
-    { chapter: 1, scene: 'ollivanders' },
+    { chapter: 1, scene: 'ch1.wandShopping' },
     createSave({
-      scene: 'ollivanders',
-      questFlags: {
-        'ch1.letterOpened': true,
-        'ch1.enteredDiagonAlley': true,
-        'ch1.wandChosen': true,
-      },
+      scene: 'ch1.wandShopping',
+      room: 'ch1.ollivanders',
+      spawn: 'entry',
+      questFlags: throughWandFlags,
+      wandId: 'violet-first-wand',
     }),
   ))
   .register('ch1-complete', createFixture(
-    'The completed Chapter 1 state with Chapter 2 unlocked.',
-    { chapter: 1, scene: 'diagonStreetDusk' },
+    'The completed Chapter 1 free-roam state with Chapter 2 unlocked.',
+    { chapter: 1, scene: 'ch1.freeRoam' },
     createSave({
-      chapter: 2,
-      scene: 'kingsCross',
-      pet: { type: 'owl', name: 'Owl' },
-      questFlags: {
-        'ch1.letterOpened': true,
-        'ch1.enteredDiagonAlley': true,
-        'ch1.wandChosen': true,
-        'ch1.robesChosen': true,
-        'ch1.petChosen': true,
-        'ch1.complete': true,
-      },
+      ...completedProfile,
+      scene: 'ch1.freeRoam',
+      room: 'ch1.diagonStreet',
+      spawn: 'west',
     }),
   ))
   .register('ch2-placeholder', createFixture(
-    'The placeholder Chapter 2 entry state after Chapter 1 completion.',
-    { chapter: 2, scene: 'kingsCross' },
+    'The intentional Chapter 2 preview after Chapter 1 completion.',
+    { chapter: 2, scene: 'ch2.placeholder' },
     createSave({
-      chapter: 2,
-      scene: 'kingsCross',
-      pet: { type: 'owl', name: 'Owl' },
-      questFlags: {
-        'ch1.letterOpened': true,
-        'ch1.enteredDiagonAlley': true,
-        'ch1.wandChosen': true,
-        'ch1.robesChosen': true,
-        'ch1.petChosen': true,
-        'ch1.complete': true,
-      },
+      ...completedProfile,
+      chapter: 'ch2',
+      scene: 'ch2.placeholder',
+      room: 'ch2.previewRoom',
+      spawn: 'start',
     }),
   ))
   .seal();

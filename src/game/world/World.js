@@ -296,6 +296,13 @@ export class World {
     return true;
   }
 
+  setPetName(name) {
+    if (typeof name !== 'string' || name.trim().length === 0 || name.length > 80) return false;
+    if (!this.pendingPetType && !this.save.character.pet?.type) return false;
+    this.runAction({ type: 'character.set', field: 'pet.name', value: name.trim() });
+    return true;
+  }
+
   advanceDialogue(choiceId = null) {
     return this.dialogue.advance(choiceId);
   }

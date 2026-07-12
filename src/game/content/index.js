@@ -38,4 +38,4 @@ export function isChapterPlayable(idOrNumber) {
   return chapter ? chapterAvailability[chapter.id] === 'playable' : false;
 }
 
-export { cards };
+export { cards, cardsById };

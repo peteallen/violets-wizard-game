@@ -1,0 +1,14 @@
+{
+  "method": "ffmpeg loudnorm analysis, I=-16, TP=-1, LRA=7",
+  "masteringTargetLufs": -16,
+  "truePeakCeilingDbtp": -1,
+  "previousArrivalLufs": -24.09,
+  "lines": {
+    "arrival": { "integratedLufs": -16.22, "truePeakDbtp": -1.42 },
+    "leaky": { "integratedLufs": -15.96, "truePeakDbtp": -1.27 },
+    "wall": { "integratedLufs": -15.71, "truePeakDbtp": -1.36 },
+    "map": { "integratedLufs": -15.77, "truePeakDbtp": -1.43 },
+    "ticket": { "integratedLufs": -15.74, "truePeakDbtp": -1.41 },
+    "platform": { "integratedLufs": -16.04, "truePeakDbtp": -1.27 }
+  }
+}

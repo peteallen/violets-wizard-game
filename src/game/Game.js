@@ -1,4 +1,4 @@
-import { contentRegistry } from './content/index.js';
+import { cards, cardsById, contentRegistry } from './content/index.js';
 import { chapter1Map } from './content/chapters/ch1.js';
 import { PALETTE, WORLD } from './config.js';
 import { resolveAsset } from './core/assetManifest.js';
@@ -24,6 +24,7 @@ export class Game {
 
     this.harness = Boolean(options.harness);
     this.debug = Boolean(options.debug);
+    this.promptForText = options.promptForText ?? ((message, initialValue = '') => globalThis.prompt?.(message, initialValue) ?? null);
     this.clock = options.clock ?? (() => this.harness ? FIXED_HARNESS_TIME : new Date().toISOString());
     this.running = false;
     this.destroyed = false;
@@ -60,7 +61,7 @@ export class Game {
     });
     this.roomRenderer = new RoomRenderer({ resolveAsset });
     this.characterRenderer = new CharacterRenderer();
-    this.uiRenderer = new UIRenderer();
+    this.uiRenderer = new UIRenderer({ resolveAsset });
     this.setPieceRenderer = new SetPieceRenderer();
     this.particles = new Particles(new SeededRandom(this.saveData.worldSeed).fork('particles'), { reducedMotion: this.reducedMotion });
     this.world = null;
@@ -196,7 +197,7 @@ export class Game {
   }
 
   handleTap(point) {
-    if (this.debug && pointInUiRect(point, UI_RECTS.debugReset)) {
+    if (this.shouldShowDebugReset() && pointInUiRect(point, UI_RECTS.debugReset)) {
       this.resetGame();
       return;
     }
@@ -217,6 +218,11 @@ export class Game {
       if (state.dialogue.type === 'choice') {
         const choice = state.dialogue.choices.find((candidate) => candidate.__rect && pointInUiRect(point, candidate.__rect));
         if (!choice) return;
+        if (choice.id === 'nameCustom') {
+          const customName = this.requestCustomPetName();
+          if (!customName) return;
+          this.world.setPetName(customName);
+        }
         this.sound.playSfx('sfx/ui/choice', 'chime');
         this.world.advanceDialogue(choice.id);
       } else {
@@ -263,6 +269,34 @@ export class Game {
     this.resetGame();
   }
 
+  requestCustomPetName() {
+    let response;
+    try {
+      response = this.promptForText('Dad can type a name for Violet’s pet:', '');
+    } catch {
+      this.updateStatus('The name keyboard could not open. Choose one of the name cards instead.');
+      return null;
+    }
+    if (response === null || response === undefined) return null;
+    const name = String(response)
+      .replace(/[\u0000-\u001f\u007f]/g, '')
+      .replace(/\s+/g, ' ')
+      .trim()
+      .slice(0, 24)
+      .trim();
+    if (!name) {
+      this.updateStatus('Type a name, or choose one of the name cards.');
+      return null;
+    }
+    return name;
+  }
+
+  shouldShowDebugReset() {
+    if (!this.debug) return false;
+    if (this.screen === 'title' || !this.world) return true;
+    return !this.world.overlay;
+  }
+
   handleOverlayTap(point, state) {
     if (Math.hypot(point.x - 1090, point.y - 120) <= 62) {
       this.world.closeOverlay();
@@ -274,6 +308,29 @@ export class Game {
       return;
     }
     if (state.overlay.surface === 'satchel') {
+      if (pointInUiRect(point, UI_RECTS.satchelMapTab)) {
+        this.world.overlay = { surface: 'satchel', tab: 'map' };
+        this.sound.playSfx('sfx/ui/parchment', 'tap');
+        return;
+      }
+      if (pointInUiRect(point, UI_RECTS.satchelCardsTab)) {
+        this.world.overlay = { surface: 'satchel', tab: 'cards' };
+        this.sound.playSfx('sfx/ui/parchment', 'tap');
+        return;
+      }
+      if (state.overlay.tab === 'cards') {
+        const slot = state.__cardSlots?.find((candidate) => candidate.__rect && pointInUiRect(point, candidate.__rect));
+        if (!slot) return;
+        if (!slot.earned) {
+          this.sound.playSfx('sfx/ui/locked', 'fizzle');
+          return;
+        }
+        const card = cardsById[slot.id];
+        if (!card) return;
+        this.sound.speak(card.voice, card.text);
+        this.updateStatus(card.text);
+        return;
+      }
       const location = state.__mapLocations?.find((candidate) => candidate.__rect && pointInUiRect(point, candidate.__rect));
       if (!location) return;
       if (!state.unlockedRooms.includes(location.id)) {
@@ -452,7 +509,7 @@ export class Game {
       if (this.screen === 'title' || !this.world) {
         this.uiRenderer.drawTitle(ctx, this.simTime, this.hasStoredSave);
       } else this.renderWorld(ctx);
-      if (this.debug) this.uiRenderer.drawDebugReset(ctx);
+      if (this.shouldShowDebugReset()) this.uiRenderer.drawDebugReset(ctx);
     });
   }
 
@@ -477,7 +534,7 @@ export class Game {
     this.setPieceRenderer.draw(context, state.setPiece, state);
     this.uiRenderer.drawHud(context, state, this.simTime);
     if (state.dialogue) this.uiRenderer.drawDialogue(context, state.dialogue, this.simTime, this.saveData.settings.muted);
-    if (state.overlay?.surface === 'satchel') this.uiRenderer.drawMap(context, state);
+    if (state.overlay?.surface === 'satchel') this.uiRenderer.drawSatchel(context, state, cards);
     if (state.overlay?.surface === 'objective') this.uiRenderer.drawObjective(context, state.objective);
 
     if (this.transitionAlpha > 0) {
@@ -509,7 +566,7 @@ export class Game {
       context.fill();
       context.fillStyle = PALETTE.violet;
       context.textAlign = 'center';
-      context.font = '700 24px "Trebuchet MS", sans-serif';
+      context.font = '700 24px "Andika", "Trebuchet MS", sans-serif';
       context.fillText(target.kind === 'exit' ? '→' : '✦', x, y - radius - 16);
       context.restore();
     }
@@ -563,7 +620,7 @@ export class Game {
   }
 
   semanticTargets() {
-    const debugTargets = this.debug
+    const debugTargets = this.shouldShowDebugReset()
       ? [{ id: 'debug.reset', x: UI_RECTS.debugReset.x + UI_RECTS.debugReset.width / 2, y: UI_RECTS.debugReset.y + UI_RECTS.debugReset.height / 2 }]
       : [];
     if (this.screen === 'title') return [{ id: 'foundation.start', x: 640, y: 460 }, ...debugTargets];
@@ -581,6 +638,15 @@ export class Game {
     );
     for (const choice of state.dialogue?.choices ?? []) {
       if (choice.__rect) targets.push({ id: `dialogue.${choice.id}`, x: choice.__rect.x + choice.__rect.width / 2, y: choice.__rect.y + choice.__rect.height / 2 });
+    }
+    if (state.overlay?.surface === 'satchel') {
+      targets.push(
+        { id: 'satchel.map', x: UI_RECTS.satchelMapTab.x + UI_RECTS.satchelMapTab.width / 2, y: UI_RECTS.satchelMapTab.y + UI_RECTS.satchelMapTab.height / 2 },
+        { id: 'satchel.cards', x: UI_RECTS.satchelCardsTab.x + UI_RECTS.satchelCardsTab.width / 2, y: UI_RECTS.satchelCardsTab.y + UI_RECTS.satchelCardsTab.height / 2 },
+      );
+      for (const slot of state.__cardSlots ?? []) {
+        targets.push({ id: `satchel.card.${slot.id}`, x: slot.__rect.x + slot.__rect.width / 2, y: slot.__rect.y + slot.__rect.height / 2 });
+      }
     }
     targets.push(...debugTargets);
     return targets;

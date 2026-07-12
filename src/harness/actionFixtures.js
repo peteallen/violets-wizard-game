@@ -46,8 +46,9 @@ registry
     'Open the Chapter 1 letter using the real semantic interaction targets.',
     [
       { frame: 30, type: 'tap', target: 'letter.owl' },
-      { frame: 120, type: 'tap', target: 'letter.envelope' },
-      { frame: 180, type: 'tap', target: 'letter.seal' },
+      { frame: 480, type: 'tap', target: 'letter.envelope' },
+      { frame: 520, type: 'tap', target: 'letter.seal' },
+      { frame: 540, type: 'tap', target: 'letter.seal' },
     ],
   ))
   .register('ch1-wand-chosen', createFixture(

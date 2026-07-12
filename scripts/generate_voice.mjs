@@ -1,6 +1,8 @@
-import { mkdir, stat, writeFile } from 'node:fs/promises';
+import { execFile } from 'node:child_process';
+import { mkdir, stat, unlink, writeFile } from 'node:fs/promises';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { promisify } from 'node:util';
 import { cards } from '../src/game/content/cards.js';
 import { chapter1, chapter1ResumeRecaps } from '../src/game/content/chapters/ch1.js';
 import { chapter2 } from '../src/game/content/chapters/ch2.js';
@@ -8,18 +10,26 @@ import { chapter2 } from '../src/game/content/chapters/ch2.js';
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const API_KEY = process.env.ELEVENLABS_API_KEY;
 const force = process.argv.includes('--force');
+const roleFilter = argumentValue('--role');
+const run = promisify(execFile);
+const VOICE_TARGET_LUFS = -16;
+const SHORT_CLIP_NORMALIZER_TARGET_LUFS = -14;
 if (!API_KEY) throw new Error('ELEVENLABS_API_KEY is not set.');
 
 const VOICES = Object.freeze({
   narrator: 'BNgbHR0DNeZixGQVzloa',
-  guide: 'NFG5qt843uXKj4pFvR7C',
+  guide: 'YIn3yKpQSeXNJMF5CIuj',
   wandmaker: 'j9jfwdrw7BRfcR43Qohk',
   tailor: 'pFZP5JQG7iQjIQuC4Bku',
   keeper: 'Xb7hH8MSUJpSbSDYk0k2',
   violet: 'pFZP5JQG7iQjIQuC4Bku',
 });
 
-const lines = collectLines();
+if (roleFilter && !Object.hasOwn(VOICES, roleFilter)) {
+  throw new Error(`Unknown voice role ${roleFilter}. Choose one of: ${Object.keys(VOICES).join(', ')}.`);
+}
+
+const lines = collectLines().filter((line) => !roleFilter || line.role === roleFilter);
 for (const line of lines) await generate(line);
 console.log(`Voice generation complete: ${lines.length} lines.`);
 
@@ -60,6 +70,7 @@ async function generate(line) {
     return;
   }
   await mkdir(dirname(output), { recursive: true });
+  const settings = voiceSettings(line.role);
   const response = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${VOICES[line.role]}?output_format=mp3_44100_128`, {
     method: 'POST',
     headers: {
@@ -70,17 +81,57 @@ async function generate(line) {
     body: JSON.stringify({
       text: line.text,
       model_id: 'eleven_multilingual_v2',
-      voice_settings: {
-        stability: line.role === 'violet' ? 0.45 : 0.58,
-        similarity_boost: 0.76,
-        style: line.role === 'guide' ? 0.34 : 0.22,
-        use_speaker_boost: true,
-      },
+      voice_settings: settings,
     }),
   });
   if (!response.ok) throw new Error(`${line.key}: ElevenLabs returned ${response.status} ${await response.text()}`);
-  await writeFile(output, Buffer.from(await response.arrayBuffer()));
-  console.log(`wrote ${line.key}`);
+  const rawOutput = `${output}.raw-${process.pid}.mp3`;
+  try {
+    await writeFile(rawOutput, Buffer.from(await response.arrayBuffer()));
+    await normalizeVoice(rawOutput, output);
+  } finally {
+    await unlink(rawOutput).catch(() => {});
+  }
+  console.log(`wrote ${line.key} (${VOICE_TARGET_LUFS} LUFS)`);
+}
+
+function voiceSettings(role) {
+  if (role === 'guide') {
+    return {
+      stability: 0.48,
+      similarity_boost: 0.78,
+      style: 0.42,
+      use_speaker_boost: true,
+    };
+  }
+  return {
+    stability: role === 'violet' ? 0.45 : 0.58,
+    similarity_boost: 0.76,
+    style: 0.22,
+    use_speaker_boost: true,
+  };
+}
+
+async function normalizeVoice(input, output) {
+  await run('ffmpeg', [
+    '-hide_banner', '-loglevel', 'error', '-y',
+    '-i', input,
+    '-af', [
+      'highpass=f=65',
+      'acompressor=threshold=-20dB:ratio=2.5:attack=15:release=140:makeup=3dB',
+      `loudnorm=I=${SHORT_CLIP_NORMALIZER_TARGET_LUFS}:TP=-1.0:LRA=7`,
+    ].join(','),
+    '-ar', '44100', '-ac', '1',
+    '-codec:a', 'libmp3lame', '-b:a', '128k',
+    output,
+  ]);
+}
+
+function argumentValue(name) {
+  const directIndex = process.argv.indexOf(name);
+  if (directIndex >= 0) return process.argv[directIndex + 1] ?? null;
+  const prefix = `${name}=`;
+  return process.argv.find((argument) => argument.startsWith(prefix))?.slice(prefix.length) ?? null;
 }
 
 async function exists(path) {
