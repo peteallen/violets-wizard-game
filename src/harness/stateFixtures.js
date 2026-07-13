@@ -211,6 +211,42 @@ registry
       questFlags: { 'ch1.owlTapped': true },
     }),
   ))
+  .register('transition-ink-review', createFixture(
+    'A live room change from the Leaky Cauldron into the courtyard, staged for the organic ink reveal.',
+    { chapter: 1, scene: 'transition-ink-review' },
+    createSave({
+      scene: 'ch1.leakyArrival',
+      room: 'ch1.leaky',
+      spawn: 'guide',
+      questFlags: {
+        'ch1.owlTapped': true,
+        'ch1.letterOpened': true,
+        'ch1.letterRead': true,
+        'ch1.guideMet': true,
+        'ch1.leakyReached': true,
+      },
+    }),
+  ))
+  .register('transition-sparkle-review', createFixture(
+    'Map travel from Diagon Alley to Ollivanders, staged for the sparkle-cover ink reveal.',
+    { chapter: 1, scene: 'transition-sparkle-review' },
+    createSave({
+      scene: 'ch1.diagonArrival',
+      room: 'ch1.diagonStreet',
+      spawn: 'west',
+      questFlags: {
+        'ch1.owlTapped': true,
+        'ch1.letterOpened': true,
+        'ch1.letterRead': true,
+        'ch1.guideMet': true,
+        'ch1.leakyReached': true,
+        'ch1.courtyardReached': true,
+        'ch1.wallOpened': true,
+        'ch1.diagonReached': true,
+        'ch1.satchelReceived': true,
+      },
+    }),
+  ))
   .register('sp-brick-wall-review', createFixture(
     'The courtyard wall staged for its real ten-by-eight center-out reveal.',
     { chapter: 1, scene: 'sp-brick-wall-review' },

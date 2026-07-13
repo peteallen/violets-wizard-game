@@ -1,4 +1,5 @@
 const DEFAULT_VOLUMES = Object.freeze({ master: 1, voice: 1, music: 1, sfx: 1 });
+const MUSIC_FADE_TICK_MS = 50;
 
 export class SoundEngine {
   constructor({ resolveAsset = () => null, muted = false, volumes = {} } = {}) {
@@ -11,6 +12,14 @@ export class SoundEngine {
     this.music = null;
     this.musicKey = null;
     this.pendingMusic = null;
+    this.pendingMusicOptions = null;
+    this.outgoingMusic = null;
+    this.musicFade = null;
+    this.musicFadeTimer = null;
+    this.musicDucked = false;
+    this.paused = false;
+    this.musicRequestId = 0;
+    this.playbackGeneration = 0;
     this.eventLog = [];
   }
 
@@ -33,12 +42,14 @@ export class SoundEngine {
   setMuted(muted) {
     this.muted = Boolean(muted);
     if (this.music) this.music.muted = this.muted;
+    if (this.outgoingMusic) this.outgoingMusic.muted = this.muted;
     if (this.voice) this.voice.muted = this.muted;
+    this.applyMusicMix();
   }
 
   setVolumes(volumes) {
     this.volumes = { ...this.volumes, ...volumes };
-    if (this.music) this.music.volume = this.effectiveVolume('music');
+    this.applyMusicMix();
     if (this.voice) this.voice.volume = this.effectiveVolume('voice');
   }
 
@@ -141,50 +152,249 @@ export class SoundEngine {
     this.duckMusic(false);
   }
 
-  async playMusic(key) {
-    if (this.musicKey === key) return;
+  async playMusic(key, options = {}) {
+    if (this.musicKey === key) {
+      this.musicRequestId += 1;
+      this.pendingMusic = null;
+      this.pendingMusicOptions = null;
+      return;
+    }
     const path = this.resolveAsset(key);
     if (!path || typeof Audio === 'undefined') return;
+    const requestId = ++this.musicRequestId;
+    const mode = options?.mode ?? 'replace';
+    const requestedFadeSeconds = Number(options?.fadeSeconds);
+    const fadeSeconds = Number.isFinite(requestedFadeSeconds) ? Math.max(0, requestedFadeSeconds) : 0;
     const next = new Audio(path);
     next.loop = true;
     next.preload = 'auto';
-    next.volume = this.effectiveVolume('music');
+    next.muted = this.muted;
+    const shouldCrossfade = mode === 'crossfade' && fadeSeconds > 0 && Boolean(this.music);
+    next.volume = shouldCrossfade ? 0 : this.musicTargetVolume();
     try {
       await next.play();
     } catch {
-      this.pendingMusic = key;
+      this.releaseAudio(next);
+      if (requestId === this.musicRequestId) {
+        this.pendingMusic = key;
+        this.pendingMusicOptions = { ...options };
+      }
       return;
     }
-    this.music?.pause();
+
+    if (requestId !== this.musicRequestId) {
+      this.releaseAudio(next);
+      return;
+    }
+
+    const previous = this.music;
+    this.cancelMusicFade();
     this.music = next;
     this.musicKey = key;
     this.pendingMusic = null;
+    this.pendingMusicOptions = null;
+
+    if (shouldCrossfade && previous) {
+      this.startMusicFade(previous, next, fadeSeconds * 1000);
+    } else {
+      this.releaseAudio(previous);
+      this.applyMusicMix();
+    }
+
+    if (this.paused) {
+      this.pauseAudio(next);
+      this.pauseMusicFade();
+    }
   }
 
   stopMusic() {
-    if (this.music) {
-      this.music.pause();
-      this.music.currentTime = 0;
-    }
+    this.musicRequestId += 1;
+    this.playbackGeneration += 1;
+    this.cancelMusicFade();
+    this.releaseAudio(this.music);
     this.music = null;
     this.musicKey = null;
     this.pendingMusic = null;
+    this.pendingMusicOptions = null;
   }
 
   duckMusic(ducked) {
-    if (!this.music) return;
-    this.music.volume = this.effectiveVolume('music') * (ducked ? 0.4 : 1);
+    this.musicDucked = Boolean(ducked);
+    this.applyMusicMix();
   }
 
   pause() {
+    this.paused = true;
+    this.playbackGeneration += 1;
+    this.pauseMusicFade();
     this.music?.pause();
+    this.outgoingMusic?.pause();
     this.voice?.pause();
   }
 
   async resume() {
-    if (this.context && this.context.state !== 'running') await this.context.resume();
-    if (this.music) await this.music.play().catch(() => {});
-    else if (this.pendingMusic) await this.playMusic(this.pendingMusic);
+    const generation = ++this.playbackGeneration;
+    this.paused = false;
+    if (this.context && this.context.state !== 'running') {
+      try {
+        await this.context.resume();
+      } catch {
+        // A later user gesture can retry the context without disrupting HTML audio.
+      }
+      if (!this.resumeIsCurrent(generation)) {
+        this.settleStaleResume();
+        return;
+      }
+    }
+
+    const outgoing = this.outgoingMusic;
+    if (outgoing) {
+      await this.tryPlayAudio(outgoing);
+      if (!this.resumeIsCurrent(generation)) {
+        this.settleStaleResume(outgoing);
+        return;
+      }
+    }
+
+    const current = this.music;
+    if (current) {
+      await this.tryPlayAudio(current);
+      if (!this.resumeIsCurrent(generation)) {
+        this.settleStaleResume(current);
+        return;
+      }
+    }
+
+    if (this.pendingMusic) {
+      await this.playMusic(this.pendingMusic, this.pendingMusicOptions ?? {});
+      if (!this.resumeIsCurrent(generation)) {
+        this.settleStaleResume(this.music);
+        return;
+      }
+    }
+    this.resumeMusicFade();
+  }
+
+  resumeIsCurrent(generation) {
+    return generation === this.playbackGeneration && !this.paused;
+  }
+
+  settleStaleResume(completedAudio = null) {
+    const completedIsTracked = completedAudio === this.music || completedAudio === this.outgoingMusic;
+    if (this.paused) {
+      this.pauseMusicFade();
+      this.pauseAudio(this.music);
+      this.pauseAudio(this.outgoingMusic);
+    }
+    if (completedAudio && !completedIsTracked) this.pauseAudio(completedAudio);
+  }
+
+  async tryPlayAudio(audio) {
+    try {
+      await audio.play();
+    } catch {
+      // The next visibility change or user gesture can retry playback.
+    }
+  }
+
+  musicTargetVolume() {
+    return this.effectiveVolume('music') * (this.musicDucked ? 0.4 : 1);
+  }
+
+  applyMusicMix() {
+    const targetVolume = this.musicTargetVolume();
+    if (this.musicFade) {
+      const progress = this.musicFade.progress;
+      this.musicFade.incoming.volume = targetVolume * progress;
+      this.musicFade.outgoing.volume = targetVolume * (1 - progress);
+      return;
+    }
+    if (this.music) this.music.volume = targetVolume;
+  }
+
+  startMusicFade(outgoing, incoming, durationMs) {
+    this.outgoingMusic = outgoing;
+    outgoing.muted = this.muted;
+    this.musicFade = {
+      outgoing,
+      incoming,
+      durationMs,
+      elapsedMs: 0,
+      startedAt: Date.now(),
+      progress: 0,
+    };
+    this.applyMusicMix();
+    this.scheduleMusicFadeTick();
+  }
+
+  scheduleMusicFadeTick() {
+    if (!this.musicFade || this.musicFade.startedAt === null || this.musicFadeTimer !== null) return;
+    const elapsed = this.musicFade.elapsedMs + (Date.now() - this.musicFade.startedAt);
+    const remaining = Math.max(0, this.musicFade.durationMs - elapsed);
+    this.musicFadeTimer = setTimeout(() => {
+      this.musicFadeTimer = null;
+      if (this.syncMusicFade()) this.finishMusicFade();
+      else this.scheduleMusicFadeTick();
+    }, Math.min(MUSIC_FADE_TICK_MS, remaining));
+  }
+
+  syncMusicFade() {
+    if (!this.musicFade) return false;
+    const runningMs = this.musicFade.startedAt === null ? 0 : Date.now() - this.musicFade.startedAt;
+    const elapsed = Math.max(0, this.musicFade.elapsedMs + runningMs);
+    this.musicFade.progress = Math.min(1, elapsed / this.musicFade.durationMs);
+    this.applyMusicMix();
+    return this.musicFade.progress >= 1;
+  }
+
+  pauseMusicFade() {
+    if (!this.musicFade || this.musicFade.startedAt === null) return;
+    if (this.syncMusicFade()) {
+      this.finishMusicFade();
+      return;
+    }
+    this.musicFade.elapsedMs += Math.max(0, Date.now() - this.musicFade.startedAt);
+    this.musicFade.startedAt = null;
+    this.clearMusicFadeTimer();
+  }
+
+  resumeMusicFade() {
+    if (!this.musicFade || this.musicFade.startedAt !== null) return;
+    this.musicFade.startedAt = Date.now();
+    this.scheduleMusicFadeTick();
+  }
+
+  finishMusicFade() {
+    if (!this.musicFade) return;
+    const outgoing = this.musicFade.outgoing;
+    this.clearMusicFadeTimer();
+    this.musicFade = null;
+    this.outgoingMusic = null;
+    this.releaseAudio(outgoing);
+    this.applyMusicMix();
+  }
+
+  cancelMusicFade() {
+    this.clearMusicFadeTimer();
+    if (this.outgoingMusic) this.releaseAudio(this.outgoingMusic);
+    this.outgoingMusic = null;
+    this.musicFade = null;
+  }
+
+  clearMusicFadeTimer() {
+    if (this.musicFadeTimer === null) return;
+    clearTimeout(this.musicFadeTimer);
+    this.musicFadeTimer = null;
+  }
+
+  pauseAudio(audio) {
+    audio?.pause();
+  }
+
+  releaseAudio(audio) {
+    if (!audio) return;
+    this.pauseAudio(audio);
+    audio.currentTime = 0;
   }
 
   stopAll() {

@@ -69,6 +69,8 @@ describe('state fixtures', () => {
       'ch1-complete',
       'ch2-placeholder',
       'sp-letter-open-review',
+      'transition-ink-review',
+      'transition-sparkle-review',
       'sp-brick-wall-review',
       'sp-wand-vase-review',
       'sp-wand-chosen-review',

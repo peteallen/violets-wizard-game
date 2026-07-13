@@ -5,7 +5,7 @@ import { resolveAsset } from './core/assetManifest.js';
 import { cleanPetName, PetNameDialog } from './core/PetNameDialog.js';
 import { SaveTransferDialog } from './core/SaveTransferDialog.js';
 import { SoundEngine } from './core/SoundEngine.js';
-import { clamp, distance } from './core/math.js';
+import { clamp, distance, easeInOutCubic } from './core/math.js';
 import { SeededRandom } from './core/rng.js';
 import { CharacterRenderer } from './render/CharacterRenderer.js';
 import { Particles } from './render/Particles.js';
@@ -17,6 +17,7 @@ import { Save, YEARBOOK_MAX_BYTES, createSaveV1 } from './systems/Save.js';
 import { World } from './world/World.js';
 
 const FIXED_HARNESS_TIME = '2000-01-01T00:00:00.000Z';
+const ROOM_TRANSITION_READY_TIMEOUT_MS = 2500;
 
 export class Game {
   constructor(canvas, options = {}) {
@@ -41,6 +42,10 @@ export class Game {
     this.dpr = 1;
     this.pointer = null;
     this.transitionAlpha = 0;
+    this.roomTransition = null;
+    this.lastTapPoint = { x: WORLD.width / 2, y: WORLD.height / 2 };
+    this.nextTransitionEffect = null;
+    this.deferredTransitionAudio = [];
     this.lastRenderState = null;
     this.parentGateProgress = 0;
     this.replayMode = false;
@@ -183,8 +188,12 @@ export class Game {
     this.simTime += dt;
     this.updateParentGate(dt);
     this.particles.update(dt);
-    this.transitionAlpha = Math.max(0, this.transitionAlpha - dt * 2.8);
-    if (this.screen === 'playing' && this.world && !this.resumeRecap) {
+    if (!this.roomTransition || this.roomTransition.ready) {
+      this.transitionAlpha = Math.max(0, this.transitionAlpha - dt * 2.8);
+    }
+    const transitionWasActive = Boolean(this.roomTransition);
+    this.updateRoomTransition(dt);
+    if (!transitionWasActive && this.screen === 'playing' && this.world && !this.resumeRecap) {
       this.world.update(dt);
       this.processWorldEvents();
     }
@@ -202,6 +211,7 @@ export class Game {
   }
 
   resize(forcedWidth, forcedHeight, forcedDpr) {
+    const transition = this.roomTransition;
     const cssWidth = forcedWidth ?? this.canvas.clientWidth ?? window.innerWidth;
     const cssHeight = forcedHeight ?? this.canvas.clientHeight ?? window.innerHeight;
     this.dpr = clamp(forcedDpr ?? window.devicePixelRatio ?? 1, 1, WORLD.maxDpr);
@@ -211,6 +221,11 @@ export class Game {
     this.scale = fit;
     this.offsetX = (cssWidth - WORLD.width * fit) / 2;
     this.offsetY = (cssHeight - WORLD.height * fit) / 2;
+    const renderScale = this.dpr * this.scale;
+    if (transition && Math.abs((transition.preparedScale ?? renderScale) - renderScale) > 1e-6) {
+      this.roomRenderer?.clear?.();
+      this.prepareRoomTransitionDestination(transition);
+    }
     this.render();
   }
 
@@ -223,7 +238,7 @@ export class Game {
   }
 
   onPointerDown(event) {
-    if (this.pointer !== null) return;
+    if (this.pointer !== null || this.roomTransition) return;
     this.canvas.setPointerCapture?.(event.pointerId);
     const point = this.toWorld(event);
     const holdsParentGear = this.isParentGearAvailable() && pointInUiRect(point, UI_RECTS.satchelGear);
@@ -298,6 +313,7 @@ export class Game {
   }
 
   handleTap(point) {
+    this.lastTapPoint = { x: point.x, y: point.y };
     if (this.shouldShowDebugReset() && pointInUiRect(point, UI_RECTS.debugReset)) {
       this.resetGame();
       return;
@@ -323,6 +339,11 @@ export class Game {
     }
     if (!this.world) return;
     const state = this.lastRenderState ?? this.world.snapshot();
+
+    if (this.roomTransition) {
+      this.sound.playSfx('sfx/ui/tap', 'tap');
+      return;
+    }
 
     if (state.setPiece) {
       this.sound.playSfx('sfx/ui/tap', 'tap');
@@ -504,6 +525,7 @@ export class Game {
       const contentLocation = chapter1Map.locations.find((candidate) => candidate.id.endsWith(location.id.split('.').at(-1)));
       if (!contentLocation) return;
       this.world.closeOverlay();
+      this.nextTransitionEffect = 'sparkle';
       this.world.runActions(contentLocation.onSelect);
       this.sound.playSfx('sfx/ui/travel', 'flourish');
       this.processWorldEvents();
@@ -673,7 +695,7 @@ export class Game {
     switch (event.type) {
       case 'dialogue.lineChanged': {
         const line = this.world.dialoguePresentation;
-        if (line?.voice) this.sound.speak(line.voice, line.text);
+        if (line?.voice) this.playOrDeferTransitionAudio({ type: 'voice', key: line.voice, text: line.text });
         this.updateStatus(line?.text ?? '');
         break;
       }
@@ -685,7 +707,11 @@ export class Game {
         this.updateStatus(this.world.objective?.text ?? '');
         break;
       case 'hint.voiceRequested':
-        this.sound.speak(event.payload.voice, event.payload.text);
+        this.playOrDeferTransitionAudio({
+          type: 'voice',
+          key: event.payload.voice,
+          text: event.payload.text,
+        });
         this.updateStatus(event.payload.text);
         break;
       case 'hint.trailRequested':
@@ -703,10 +729,17 @@ export class Game {
         this.sound.stopVoice();
         break;
       case 'setPiece.started':
-        if (event.payload.id.includes('previewTicket')) this.sound.playSfx('sfx/ch2/trainWhistle', 'flourish');
+        if (event.payload.id.includes('previewTicket')) {
+          this.playOrDeferTransitionAudio({
+            type: 'sfx',
+            key: 'sfx/ch2/trainWhistle',
+            fallback: 'flourish',
+          });
+        }
         break;
       case 'audio.command':
-        this.handleAudioCommand(event.payload);
+        if (event.payload.command === 'music') this.handleAudioCommand(event.payload);
+        else this.playOrDeferTransitionAudio({ type: 'command', command: { ...event.payload } });
         break;
       case 'feedback.command':
         this.particles.emit('sparkle', event.payload.x, event.payload.y, 5, { size: 4 });
@@ -719,9 +752,12 @@ export class Game {
       case 'yearbook.captureRequested':
         this.captureYearbook(event.payload.moment, event.payload.caption);
         break;
+      case 'room.transitionRequested':
+        this.beginRoomTransition(this.nextTransitionEffect ?? event.payload.effect);
+        this.nextTransitionEffect = null;
+        break;
       case 'room.entered':
         this.particles.clear();
-        this.transitionAlpha = this.reducedMotion ? 0.35 : 1;
         this.updateMusic();
         if (event.payload.room === 'ch1.courtyard') void this.setPieceRenderer.preloadBrickWall();
         break;
@@ -732,8 +768,10 @@ export class Game {
         }
         break;
       case 'chapter.completed':
-        this.world.changeChapter(event.payload.nextChapter ?? 'ch2');
-        this.processWorldEvents();
+        if (this.world.chapter.id !== (event.payload.nextChapter ?? 'ch2')) {
+          this.world.changeChapter(event.payload.nextChapter ?? 'ch2');
+          this.processWorldEvents();
+        }
         break;
       default:
         break;
@@ -745,7 +783,11 @@ export class Game {
     else if (command.command === 'voice') this.sound.speak(command.key);
     else if (command.command === 'stopVoice') this.sound.stopVoice();
     else if (command.command === 'music' && command.mode === 'stop') this.sound.stopMusic();
-    else if (command.command === 'music') this.sound.playMusic(command.key);
+    else if (command.command === 'music') {
+      const options = { mode: command.mode };
+      if (command.fadeSeconds !== undefined) options.fadeSeconds = command.fadeSeconds;
+      this.sound.playMusic(command.key, options);
+    }
   }
 
   hintTargetPosition(targetId) {
@@ -788,7 +830,248 @@ export class Game {
     const key = this.world.roomId === 'ch1.diagonStreet'
       ? 'music/ch1/diagonAlley'
       : 'music/ch1/violetTheme';
-    this.sound.playMusic(key);
+    this.sound.playMusic(key, { mode: 'crossfade', fadeSeconds: 0.8 });
+  }
+
+  beginRoomTransition(effect = 'ink') {
+    this.releaseRoomTransition();
+    if (effect === 'none') return false;
+    this.cancelPointerInteraction();
+    const source = this.captureRoomTransitionSource();
+    if (!source) {
+      this.transitionAlpha = 0;
+      const transition = {
+        effect: 'crossfade',
+        elapsed: 0,
+        origin: { ...this.lastTapPoint },
+        source: null,
+        fallback: true,
+        ready: false,
+        readiness: null,
+        readinessAttempt: 0,
+        readinessTimer: null,
+        cancelReadiness: null,
+        preparedScale: null,
+      };
+      this.roomTransition = transition;
+      this.prepareRoomTransitionDestination(transition);
+      return false;
+    }
+    const transition = {
+      effect,
+      elapsed: 0,
+      origin: { ...this.lastTapPoint },
+      source,
+      ready: false,
+      readiness: null,
+      readinessAttempt: 0,
+      readinessTimer: null,
+      cancelReadiness: null,
+      preparedScale: null,
+    };
+    this.roomTransition = transition;
+    this.prepareRoomTransitionDestination(transition);
+    return true;
+  }
+
+  prepareRoomTransitionDestination(transition = this.roomTransition) {
+    if (!transition) return Promise.resolve(null);
+    this.cancelRoomTransitionReadiness(transition);
+    const attempt = (transition.readinessAttempt ?? 0) + 1;
+    transition.readinessAttempt = attempt;
+    transition.ready = false;
+    transition.elapsed = 0;
+    transition.preparedScale = this.dpr * this.scale;
+    if (!this.world || typeof this.roomRenderer?.preloadRoom !== 'function') {
+      transition.ready = true;
+      transition.readiness = Promise.resolve(null);
+      return transition.readiness;
+    }
+
+    let preparation;
+    try {
+      preparation = this.roomRenderer.preloadRoom(
+        this.world.room,
+        this.world.snapshot(),
+        { scale: this.dpr * this.scale },
+      );
+    } catch (error) {
+      this.roomRenderer?.logger?.warn?.('Destination room preparation failed; revealing the safe fallback.', error);
+      transition.ready = true;
+      transition.readiness = Promise.resolve(null);
+      return transition.readiness;
+    }
+
+    const prepared = Promise.resolve(preparation)
+      .catch((error) => {
+        this.roomRenderer?.logger?.warn?.('Destination room preparation failed; revealing the safe fallback.', error);
+        return null;
+      })
+      .then((result) => ({ result, timedOut: false, cancelled: false }));
+    let readinessTimer = null;
+    const deadline = new Promise((resolve) => {
+      readinessTimer = setTimeout(() => {
+        if (transition.readinessTimer === readinessTimer) transition.readinessTimer = null;
+        resolve({ result: null, timedOut: true, cancelled: false });
+      }, ROOM_TRANSITION_READY_TIMEOUT_MS);
+      transition.readinessTimer = readinessTimer;
+    });
+    let cancelReadiness = null;
+    const cancellation = new Promise((resolve) => {
+      cancelReadiness = () => resolve({ result: null, timedOut: false, cancelled: true });
+      transition.cancelReadiness = cancelReadiness;
+    });
+
+    transition.readiness = Promise.race([prepared, deadline, cancellation])
+      .then((outcome) => {
+        if (readinessTimer !== null) clearTimeout(readinessTimer);
+        if (transition.readinessTimer === readinessTimer) transition.readinessTimer = null;
+        if (transition.cancelReadiness === cancelReadiness) transition.cancelReadiness = null;
+        if (outcome.cancelled) return null;
+        if (this.roomTransition === transition && transition.readinessAttempt === attempt) {
+          if (outcome.timedOut) {
+            this.roomRenderer?.logger?.warn?.('Destination room preparation timed out; revealing the procedural fallback.');
+          }
+          transition.ready = true;
+        }
+        return outcome.result;
+      });
+    return transition.readiness;
+  }
+
+  cancelRoomTransitionReadiness(transition = this.roomTransition) {
+    if (!transition) return;
+    if (transition.readinessTimer !== null) clearTimeout(transition.readinessTimer);
+    transition.readinessTimer = null;
+    const cancel = transition.cancelReadiness;
+    transition.cancelReadiness = null;
+    cancel?.();
+  }
+
+  waitForRoomTransitionReady() {
+    return this.roomTransition?.readiness ?? Promise.resolve(null);
+  }
+
+  captureRoomTransitionSource(retry = true) {
+    if (!this.canvas || typeof document === 'undefined') return null;
+    const source = worldViewportSourceRect(this);
+    let canvas = null;
+    try {
+      canvas = document.createElement('canvas');
+      canvas.width = WORLD.width;
+      canvas.height = WORLD.height;
+      const context = canvas.getContext('2d', { alpha: false });
+      if (!context) throw new Error('Transition scratch canvas returned no 2D context.');
+      context.drawImage(
+        this.canvas,
+        source.x,
+        source.y,
+        source.width,
+        source.height,
+        0,
+        0,
+        WORLD.width,
+        WORLD.height,
+      );
+      return canvas;
+    } catch (error) {
+      if (canvas) {
+        canvas.width = 1;
+        canvas.height = 1;
+      }
+      const logger = this.roomRenderer?.logger ?? globalThis.console;
+      if (retry) {
+        logger?.warn?.('Transition scratch canvas failed; evicting room caches before one retry.', error);
+        this.roomRenderer?.emergencyEvict?.('transition-scratch');
+        return this.captureRoomTransitionSource(false);
+      }
+      logger?.warn?.('Transition scratch canvas retry failed; using the safe fade fallback.', error);
+      return null;
+    }
+  }
+
+  updateRoomTransition(dt) {
+    if (!this.roomTransition?.ready) return;
+    this.roomTransition.elapsed += dt;
+    const state = roomTransitionState(this.roomTransition.elapsed, {
+      effect: this.roomTransition.effect,
+      origin: this.roomTransition.origin,
+      reducedMotion: this.reducedMotion,
+    });
+    if (state.linearProgress >= 1) this.finishRoomTransition();
+  }
+
+  drawRoomTransition(context) {
+    const transition = this.roomTransition;
+    if (!transition) return;
+    const state = roomTransitionState(transition.elapsed, {
+      effect: transition.effect,
+      origin: transition.origin,
+      reducedMotion: this.reducedMotion,
+    });
+    if (transition.fallback) {
+      const alpha = transition.ready ? 1 - state.progress : 1;
+      context.fillStyle = `rgba(20,17,38,${alpha})`;
+      context.fillRect(0, 0, WORLD.width, WORLD.height);
+      return;
+    }
+    if (!transition.source) return;
+    context.save();
+    if (state.kind === 'crossfade') {
+      context.globalAlpha = 1 - state.progress;
+      context.drawImage(transition.source, 0, 0, WORLD.width, WORLD.height);
+      context.restore();
+      return;
+    }
+
+    context.beginPath();
+    context.rect(0, 0, WORLD.width, WORLD.height);
+    appendOrganicBlob(context, state.points);
+    context.clip('evenodd');
+    context.drawImage(transition.source, 0, 0, WORLD.width, WORLD.height);
+    context.restore();
+
+    if (state.kind === 'sparkle') drawTransitionSparkles(context, state);
+  }
+
+  releaseRoomTransition() {
+    this.cancelRoomTransitionReadiness();
+    if (this.roomTransition?.source) {
+      this.roomTransition.source.width = 1;
+      this.roomTransition.source.height = 1;
+    }
+    this.roomTransition = null;
+    this.deferredTransitionAudio = [];
+  }
+
+  finishRoomTransition() {
+    const deferred = [...this.deferredTransitionAudio];
+    this.releaseRoomTransition();
+    if (this.destroyed) return;
+    for (const entry of deferred) this.playTransitionAudio(entry);
+  }
+
+  playOrDeferTransitionAudio(entry) {
+    if (this.roomTransition) {
+      this.deferredTransitionAudio.push(entry);
+      return false;
+    }
+    this.playTransitionAudio(entry);
+    return true;
+  }
+
+  playTransitionAudio(entry) {
+    if (entry.type === 'voice') this.sound.speak(entry.key, entry.text ?? '');
+    else if (entry.type === 'sfx') this.sound.playSfx(entry.key, entry.fallback ?? 'chime');
+    else if (entry.type === 'command') this.handleAudioCommand(entry.command);
+  }
+
+  cancelPointerInteraction() {
+    if (this.pointer && this.canvas.hasPointerCapture?.(this.pointer.id)) {
+      this.canvas.releasePointerCapture?.(this.pointer.id);
+    }
+    this.pointer = null;
+    this.parentGateProgress = 0;
   }
 
   persistSave(save, flush = false) {
@@ -882,11 +1165,7 @@ export class Game {
   adoptSave(save, { status, toTitle = false, hasStoredSave = hasMeaningfulProgress(save), preserveSave = false } = {}) {
     this.sessionGeneration += 1;
     this.petNameDialog?.close?.(null, 'game-changed');
-    if (this.pointer && this.canvas.hasPointerCapture?.(this.pointer.id)) {
-      this.canvas.releasePointerCapture?.(this.pointer.id);
-    }
-    this.pointer = null;
-    this.parentGateProgress = 0;
+    this.cancelPointerInteraction();
     this.resumeRecap = null;
     this.sound.stopAll();
     this.replayMode = false;
@@ -903,6 +1182,8 @@ export class Game {
     this.simTime = 0;
     this.lastFrame = null;
     this.transitionAlpha = 0;
+    this.releaseRoomTransition();
+    this.nextTransitionEffect = null;
     this.lastRenderState = null;
     if (toTitle) this.screen = 'title';
     else this.createWorld(this.saveData, { preserveSave });
@@ -1109,6 +1390,7 @@ export class Game {
       }
     }
 
+    if (this.roomTransition) this.drawRoomTransition(context);
     if (this.transitionAlpha > 0) {
       context.fillStyle = `rgba(20,17,38,${this.transitionAlpha})`;
       context.fillRect(0, 0, WORLD.width, WORLD.height);
@@ -1264,6 +1546,13 @@ export class Game {
       for (const slot of state.__cardSlots ?? []) {
         targets.push({ id: `satchel.card.${slot.id}`, x: slot.__rect.x + slot.__rect.width / 2, y: slot.__rect.y + slot.__rect.height / 2 });
       }
+      for (const location of state.__mapLocations ?? []) {
+        targets.push({
+          id: `satchel.map.${location.id}`,
+          x: location.__rect.x + location.__rect.width / 2,
+          y: location.__rect.y + location.__rect.height / 2,
+        });
+      }
     }
     if (state.overlay?.surface === 'letter-reading') {
       targets.push(semanticRect('letter.hear', UI_RECTS.letterContinue));
@@ -1392,6 +1681,7 @@ export class Game {
     this.sound.destroy();
     this.roomRenderer.destroy?.();
     this.setPieceRenderer.destroy?.();
+    this.releaseRoomTransition();
     this.saveTransferDialog?.destroy?.();
     this.petNameDialog?.destroy?.();
     window.removeEventListener('resize', this.boundResize);
@@ -1403,6 +1693,82 @@ export class Game {
     this.canvas.removeEventListener('pointercancel', this.boundPointerCancel);
     if (this.debug) window.removeEventListener('keydown', this.boundKeyDown);
   }
+}
+
+export function roomTransitionState(elapsed, {
+  effect = 'ink',
+  origin = { x: WORLD.width / 2, y: WORLD.height / 2 },
+  reducedMotion = false,
+} = {}) {
+  const duration = reducedMotion ? 0.25 : effect === 'sparkle' ? 0.55 : 0.6;
+  const linearProgress = clamp(elapsed / duration, 0, 1);
+  const progress = easeInOutCubic(linearProgress);
+  if (reducedMotion || effect === 'crossfade') {
+    return Object.freeze({ kind: 'crossfade', duration, linearProgress, progress, origin: { ...origin }, points: [] });
+  }
+  const corners = [[0, 0], [WORLD.width, 0], [WORLD.width, WORLD.height], [0, WORLD.height]];
+  const farthest = Math.max(...corners.map(([x, y]) => Math.hypot(x - origin.x, y - origin.y)));
+  const coverageRadius = (farthest + 180) * progress;
+  const points = [];
+  for (let index = 0; index < 8; index += 1) {
+    const angle = (index / 8) * Math.PI * 2;
+    const irregularity = 0.04 + (1 - progress) * 0.09;
+    const radius = coverageRadius * (1 + Math.sin(index * 2.37 + progress * 3.1) * irregularity);
+    points.push({
+      x: origin.x + Math.cos(angle) * radius,
+      y: origin.y + Math.sin(angle) * radius,
+    });
+  }
+  return Object.freeze({
+    kind: effect === 'sparkle' ? 'sparkle' : 'ink',
+    duration,
+    linearProgress,
+    progress,
+    coverageRadius,
+    origin: { ...origin },
+    points: Object.freeze(points.map((point) => Object.freeze(point))),
+  });
+}
+
+function appendOrganicBlob(context, points) {
+  if (!points.length) return;
+  const midpoint = (a, b) => ({ x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 });
+  const first = midpoint(points.at(-1), points[0]);
+  context.moveTo(first.x, first.y);
+  for (let index = 0; index < points.length; index += 1) {
+    const point = points[index];
+    const next = points[(index + 1) % points.length];
+    const middle = midpoint(point, next);
+    context.quadraticCurveTo(point.x, point.y, middle.x, middle.y);
+  }
+  context.closePath();
+}
+
+function drawTransitionSparkles(context, state) {
+  const alpha = Math.sin(state.progress * Math.PI);
+  if (alpha <= 0.01) return;
+  context.save();
+  context.globalAlpha = alpha;
+  for (let index = 0; index < 10; index += 1) {
+    const angle = (index / 10) * Math.PI * 2 + state.progress * 0.35;
+    const radius = state.coverageRadius * (0.9 + (index % 3) * 0.035);
+    const x = state.origin.x + Math.cos(angle) * radius;
+    const y = state.origin.y + Math.sin(angle) * radius;
+    const size = 5 + (index % 3) * 2;
+    context.fillStyle = index % 2 ? '#fff2a8' : '#d5a8ff';
+    context.beginPath();
+    context.moveTo(x, y - size);
+    context.lineTo(x + size * 0.36, y - size * 0.36);
+    context.lineTo(x + size, y);
+    context.lineTo(x + size * 0.36, y + size * 0.36);
+    context.lineTo(x, y + size);
+    context.lineTo(x - size * 0.36, y + size * 0.36);
+    context.lineTo(x - size, y);
+    context.lineTo(x - size * 0.36, y - size * 0.36);
+    context.closePath();
+    context.fill();
+  }
+  context.restore();
 }
 
 export function worldViewportSourceRect(game) {

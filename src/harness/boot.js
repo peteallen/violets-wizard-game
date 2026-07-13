@@ -203,6 +203,8 @@ export async function bootHarness({
     }
     game.start();
     if (request.scene === 'pet-name-dialog') void game.petNameDialog?.open('Moonbeam');
+    await preloadVisibleRoom(game);
+    game.render();
 
     const appliedActions = actionsThroughFrame(actionFixture, frame);
     for (const action of appliedActions) {
@@ -215,6 +217,7 @@ export async function bootHarness({
         if (holdEndFrame === action.frame + action.durationFrames) game.endSemanticHold();
       } else game.tapSemantic(action.target);
       await settleAsyncAction();
+      await game.waitForRoomTransitionReady();
     }
     const targetTime = frame * FIXED_STEP;
     if (targetTime > game.simTime + 1e-9) game.stepTo(targetTime);

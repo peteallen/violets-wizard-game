@@ -70,6 +70,17 @@ registry
   .register('sp-letter-open-review', createFixture(
     'Hold the letter-open choreography on its deterministic timeline.',
   ))
+  .register('transition-ink-review', createFixture(
+    'Tap the courtyard door once so the destination is revealed through the authored ink bloom.',
+    [{ frame: 30, type: 'tap', target: 'leaky.courtyardDoor' }],
+  ))
+  .register('transition-sparkle-review', createFixture(
+    'Open the satchel and travel to Ollivanders so map sparkles ride the reveal edge.',
+    [
+      { frame: 15, type: 'tap', target: 'hud.satchel' },
+      { frame: 30, type: 'tap', target: 'satchel.map.ch1.ollivanders' },
+    ],
+  ))
   .register('sp-brick-wall-review', createFixture(
     'Hold the ten-by-eight wall reveal on its deterministic timeline.',
   ))
