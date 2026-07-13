@@ -356,16 +356,6 @@ export class SetPieceRenderer {
 
     drawChosenWand(context, state);
     drawGoldenRibbons(context, state);
-
-    if (state.crescendo > 0.15) {
-      context.save();
-      context.textAlign = 'center';
-      context.globalAlpha = Math.min(1, state.crescendo * 1.3) * (1 - state.settle * 0.45);
-      context.fillStyle = '#fff2b0';
-      context.font = '700 24px "Andika", "Trebuchet MS", sans-serif';
-      context.fillText('THE WAND CHOOSES VIOLET', 640, 116);
-      context.restore();
-    }
   }
 
   drawTicket(context, active, { reducedMotion = false } = {}) {
@@ -415,9 +405,6 @@ export class SetPieceRenderer {
     context.fillText('PLATFORM 9 ¾', 45, 39);
     context.font = '700 18px "Andika", "Trebuchet MS", sans-serif';
     context.fillText('1 SEPTEMBER · ELEVEN O’CLOCK', 45, 76);
-    context.fillStyle = '#70425c';
-    context.font = '700 16px "Andika", "Trebuchet MS", sans-serif';
-    context.fillText('A PREVIEW OF CHAPTER TWO', 45, 105);
     context.restore();
   }
 }

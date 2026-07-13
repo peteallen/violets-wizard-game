@@ -149,7 +149,7 @@ export function drawStepper(context, { label, valueLabel, minusRect, plusRect })
   context.restore();
 }
 
-export function drawReplayRibbon(context, rect, label = 'Return to saved game') {
+export function drawReplayRibbon(context, rect, label = 'Return') {
   const { x, y, width, height } = rect;
   context.save();
   context.fillStyle = '#35233f';
