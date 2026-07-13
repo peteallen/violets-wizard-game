@@ -1,5 +1,6 @@
 import { HINTS, OBJECTIVE, WORLD } from '../config.js';
 import { conditionMatches, writePath } from '../core/conditions.js';
+import { normalizeRobeTrim, robeTrimColor, robeTrimOption } from '../core/RobeTrims.js';
 import { SeededRandom } from '../core/rng.js';
 import { Dialogue } from '../systems/Dialogue.js';
 import { Quests } from '../systems/Quests.js';
@@ -67,7 +68,8 @@ export class World {
       facing: spawn.facing ?? 'right',
       walking: false,
       wand: Boolean(save.character?.wandId),
-      robeTrim: trimColor(save.character?.appearance?.robeTrim),
+      outfit: save.character?.appearance?.robeTrim ? 'robes' : 'casual',
+      robeTrim: robeTrimColor(save.character?.appearance?.robeTrim),
     };
 
     this.currentSceneId = save.resume?.scene ?? this.chapter.start.scene;
@@ -381,6 +383,9 @@ export class World {
         break;
       case 'ui.open':
         this.overlay = { surface: action.surface, tab: action.tab ?? null };
+        if (action.surface === 'robe-picker') {
+          this.overlay.selectedTrim = normalizeRobeTrim(this.save.character.appearance?.robeTrim);
+        }
         this.emit('ui.openRequested', this.overlay);
         break;
       case 'ui.close':
@@ -441,6 +446,24 @@ export class World {
     this.noteMeaningfulInput();
     this.overlay = null;
     this.updateAffordanceActivations();
+  }
+
+  selectRobeTrim(trimId) {
+    const option = robeTrimOption(trimId);
+    if (this.overlay?.surface !== 'robe-picker' || !option) return false;
+    this.overlay = { ...this.overlay, selectedTrim: option.id };
+    this.runAction({ type: 'character.set', field: 'appearance.robeTrim', value: option.id });
+    return true;
+  }
+
+  confirmRobeTrim() {
+    if (this.overlay?.surface !== 'robe-picker') return false;
+    const selectedTrim = normalizeRobeTrim(this.overlay.selectedTrim);
+    this.runAction({ type: 'character.set', field: 'appearance.robeTrim', value: selectedTrim });
+    this.closeOverlay();
+    this.setFlag('ch1.trimChosen', true);
+    this.runAction({ type: 'dialogue.start', script: 'ch1.tailor.done' });
+    return true;
   }
 
   setFlag(flag, value = true) {
@@ -637,7 +660,8 @@ export class World {
 
   syncPlayerProfile() {
     this.player.wand = Boolean(this.save.character.wandId);
-    this.player.robeTrim = trimColor(this.save.character.appearance?.robeTrim);
+    this.player.outfit = this.save.character.appearance?.robeTrim ? 'robes' : 'casual';
+    this.player.robeTrim = robeTrimColor(this.save.character.appearance?.robeTrim);
   }
 
   bindSystems() {
@@ -894,10 +918,6 @@ function smoothstepRange(value, start, end) {
   if (end <= start) return value >= end ? 1 : 0;
   const progress = Math.max(0, Math.min(1, (value - start) / (end - start)));
   return progress * progress * (3 - 2 * progress);
-}
-
-function trimColor(trim) {
-  return ({ purple: '#7a4fc9', rose: '#b95873', teal: '#3f8c88', gold: '#d4a944' })[trim] ?? '#7a4fc9';
 }
 
 function resolveSpawn(room, spawnId) {

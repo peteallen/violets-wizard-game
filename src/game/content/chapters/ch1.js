@@ -259,36 +259,17 @@ const dialogueGraphs = [
         next: 'trim',
       }),
       trim: {
-        type: 'choice',
-        choices: [
-          {
-            id: 'trimPurple',
-            icon: 'trim-purple',
-            caption: 'Purple',
-            actions: [{ type: 'character.set', field: 'appearance.robeTrim', value: 'purple' }],
-            next: 'record',
-          },
-          {
-            id: 'trimTeal',
-            icon: 'trim-teal',
-            caption: 'Teal',
-            actions: [{ type: 'character.set', field: 'appearance.robeTrim', value: 'teal' }],
-            next: 'record',
-          },
-          {
-            id: 'trimGold',
-            icon: 'trim-gold',
-            caption: 'Gold',
-            actions: [{ type: 'character.set', field: 'appearance.robeTrim', value: 'gold' }],
-            next: 'record',
-          },
-        ],
+        type: 'end',
+        actions: [uiOpen('robe-picker')],
       },
-      record: {
-        type: 'action',
-        actions: [flagSet('ch1.trimChosen')],
-        next: 'done',
-      },
+    },
+  },
+  {
+    id: 'ch1.tailor.done',
+    start: 'done',
+    resumePolicy: 'restart-current-node',
+    replayable: true,
+    nodes: {
       done: voiceLine({
         speaker: 'npc.tailor',
         voice: 'voice/ch1/tailor/done',

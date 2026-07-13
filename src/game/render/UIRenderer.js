@@ -1,6 +1,7 @@
 import { INPUT, PALETTE, WORLD } from '../config.js';
 import { chapter1Map } from '../content/chapters/ch1.js';
 import { buildMapState } from '../core/MapState.js';
+import { ROBE_TRIMS, normalizeRobeTrim, robeTrimColor } from '../core/RobeTrims.js';
 import { CharacterRenderer } from './CharacterRenderer.js';
 import {
   drawParchmentAction,
@@ -62,6 +63,7 @@ export const UI_RECTS = Object.freeze({
   dialogueReplay: { x: 985, y: 557, width: 88, height: 96 },
   letterHear: { x: 238, y: 594, width: 374, height: 96 },
   letterContinue: { x: 668, y: 594, width: 374, height: 96 },
+  robeConfirm: { x: 742, y: 548, width: 338, height: 102 },
   debugReset: { x: 510, y: 18, width: 260, height: 88 },
   satchelMapTab: { x: 205, y: 145, width: 210, height: 88 },
   satchelCardsTab: { x: 435, y: 145, width: 210, height: 88 },
@@ -117,20 +119,26 @@ function childFacingUiText(text, role) {
 
 export function dialogueSceneContext(state, dialogue = state?.dialogue) {
   const night = state?.roomVariant === 'dusk' || state?.roomVariant === 'night';
+  const violetOutfit = state?.player?.outfit ?? 'robes';
+  const violetRobeTrim = state?.player?.robeTrim ?? PALETTE.violet;
   const speaker = dialogue?.speaker;
-  if (!speaker || speaker === 'npc.narrator') return { night, speakerPosition: null, speakerBounds: null };
+  if (!speaker || speaker === 'npc.narrator') {
+    return { night, speakerPosition: null, speakerBounds: null, violetOutfit, violetRobeTrim };
+  }
 
   const cameraX = state?.cameraX ?? 0;
   let actor = null;
   if (speaker === 'npc.violet' && state?.player) actor = state.player;
   else if (speaker.startsWith('npc.pet.') && state?.pet) actor = state.pet;
   else actor = state?.occupants?.find((occupant) => occupant.npc === speaker) ?? null;
-  if (!actor) return { night, speakerPosition: null, speakerBounds: null };
+  if (!actor) return { night, speakerPosition: null, speakerBounds: null, violetOutfit, violetRobeTrim };
 
   const position = { x: actor.x - cameraX, y: actor.y };
   const dimensions = speakerDimensions(speaker);
   return {
     night,
+    violetOutfit,
+    violetRobeTrim,
     speakerPosition: position,
     speakerBounds: {
       left: position.x - dimensions.width / 2,
@@ -195,6 +203,30 @@ export function dialogueScrollLayout({ speakerBounds = null } = {}) {
     advanceRect,
     rotation: side === 'left' ? 0.006 : side === 'right' ? -0.006 : -0.004,
   };
+}
+
+export function robePickerLayout(selectedTrim = 'purple') {
+  const selected = normalizeRobeTrim(selectedTrim);
+  const swatches = ROBE_TRIMS.map((trim, index) => {
+    const column = index % 6;
+    const row = Math.floor(index / 6);
+    return Object.freeze({
+      ...trim,
+      selected: trim.id === selected,
+      rect: Object.freeze({
+        x: 602 + column * 100,
+        y: 190 + row * 148,
+        width: 88,
+        height: 116,
+      }),
+    });
+  });
+  return Object.freeze({
+    selectedTrim: selected,
+    preview: Object.freeze({ x: 96, y: 84, width: 438, height: 548 }),
+    swatches: Object.freeze(swatches),
+    confirm: UI_RECTS.robeConfirm,
+  });
 }
 
 function speakerDimensions(speaker) {
@@ -380,6 +412,8 @@ export class UIRenderer {
         x: portrait.x,
         y: portrait.y,
         scale: portrait.scale,
+        outfit: dialogue.speaker === 'npc.violet' ? scene.violetOutfit : undefined,
+        robeTrim: dialogue.speaker === 'npc.violet' ? scene.violetRobeTrim : undefined,
       }, time);
     } else {
       const radius = 49;
@@ -435,6 +469,46 @@ export class UIRenderer {
       icon: vectorControlIcon('check'),
       selected: true,
     });
+  }
+
+  drawRobePicker(context, state, time = 0, reducedMotion = false) {
+    const layout = robePickerLayout(state?.overlay?.selectedTrim);
+    const animationTime = reducedMotion ? 0 : time;
+    context.fillStyle = 'rgba(20,17,38,0.78)';
+    context.fillRect(0, 0, WORLD.width, WORLD.height);
+    drawDeckledParchment(context, { x: 48, y: 28, width: 1184, height: 664 }, {
+      fill: '#e5d0a6',
+      edge: '#7b5536',
+      ornament: false,
+    });
+    drawDressingMirror(context, layout.preview, animationTime, reducedMotion);
+    this.characterRenderer.draw(context, {
+      kind: 'violet',
+      x: 315,
+      y: 650,
+      scale: 1.68,
+      facing: 'right',
+      pose: 'wonder',
+      outfit: 'robes',
+      walking: false,
+      wand: false,
+      robeTrim: robeTrimColor(layout.selectedTrim),
+    }, animationTime);
+
+    context.fillStyle = '#382a24';
+    context.textAlign = 'center';
+    context.font = '700 38px "Andika", "Trebuchet MS", sans-serif';
+    context.fillText(childFacingUiText('Choose a colour', 'caption'), 888, 124);
+
+    for (let index = 0; index < layout.swatches.length; index += 1) {
+      drawFabricSwatch(context, layout.swatches[index], index);
+    }
+    drawParchmentAction(context, layout.confirm, {
+      label: childFacingUiText('That one!', 'action'),
+      icon: vectorControlIcon('check'),
+      selected: true,
+    });
+    return layout;
   }
 
   drawResumeRecap(context, recap, time, muted = false, reducedMotion = false, scene = {}) {
@@ -1349,6 +1423,250 @@ function drawTitleStar(context, x, y, radius) {
   context.lineTo(x - radius * 0.28, y - radius * 0.28);
   context.closePath();
   context.fill();
+}
+
+function drawDressingMirror(context, rect, time, reducedMotion) {
+  context.save();
+  context.fillStyle = 'rgba(40,27,31,0.44)';
+  traceDressingMirror(context, { ...rect, x: rect.x + 10, y: rect.y + 13 }, 0.71);
+  context.fill();
+
+  context.fillStyle = '#6a4935';
+  traceDressingMirror(context, rect, 0.35);
+  context.fill();
+  context.strokeStyle = '#3a2d22';
+  context.lineWidth = 6;
+  context.stroke();
+
+  const glass = {
+    x: rect.x + 25,
+    y: rect.y + 27,
+    width: rect.width - 50,
+    height: rect.height - 59,
+  };
+  context.fillStyle = '#34445d';
+  traceDressingMirror(context, glass, 1.27);
+  context.fill();
+  context.strokeStyle = '#c49a4c';
+  context.lineWidth = 4;
+  context.stroke();
+
+  context.fillStyle = 'rgba(28,31,50,0.42)';
+  traceMirrorShade(context, glass);
+  context.fill();
+  context.fillStyle = 'rgba(218,222,207,0.19)';
+  traceMirrorLight(context, glass, reducedMotion ? 0 : Math.sin(time * 0.38) * 3);
+  context.fill();
+
+  context.fillStyle = '#4c392f';
+  traceMirrorPedestal(context, rect.x + 78, rect.y + rect.height - 21, rect.width - 156, 42, 2.1);
+  context.fill();
+  context.strokeStyle = '#3a2d22';
+  context.lineWidth = 4;
+  context.stroke();
+  context.fillStyle = 'rgba(229,182,102,0.28)';
+  traceMirrorPedestal(context, rect.x + 92, rect.y + rect.height - 25, rect.width - 190, 15, 3.4);
+  context.fill();
+  context.restore();
+}
+
+function drawFabricSwatch(context, swatch, index) {
+  const { rect } = swatch;
+  const fabric = { x: rect.x + 4, y: rect.y + 2, width: rect.width - 8, height: 76 };
+  const phase = index * 0.73 + 0.41;
+  context.save();
+
+  context.fillStyle = 'rgba(55,37,39,0.34)';
+  traceFabricSwatch(context, { ...fabric, x: fabric.x + 4, y: fabric.y + 6 }, phase + 0.3);
+  context.fill();
+
+  context.fillStyle = swatch.color;
+  traceFabricSwatch(context, fabric, phase);
+  context.fill();
+  context.strokeStyle = swatch.selected ? PALETTE.interactive : '#513b31';
+  context.lineWidth = swatch.selected ? 6 : 3.5;
+  context.stroke();
+
+  context.fillStyle = 'rgba(37,27,38,0.24)';
+  traceFabricFold(context, fabric, phase);
+  context.fill();
+  context.fillStyle = 'rgba(255,231,177,0.24)';
+  traceFabricHighlight(context, fabric, phase);
+  context.fill();
+
+  context.strokeStyle = 'rgba(245,226,183,0.36)';
+  context.lineWidth = 1.6;
+  context.beginPath();
+  context.moveTo(fabric.x + 12, fabric.y + fabric.height * 0.55);
+  context.bezierCurveTo(
+    fabric.x + fabric.width * 0.33,
+    fabric.y + fabric.height * (0.48 + Math.sin(phase) * 0.04),
+    fabric.x + fabric.width * 0.67,
+    fabric.y + fabric.height * (0.61 + Math.cos(phase) * 0.04),
+    fabric.x + fabric.width - 11,
+    fabric.y + fabric.height * 0.52,
+  );
+  context.stroke();
+
+  if (swatch.selected) {
+    drawVectorIcon(context, 'check', fabric.x + fabric.width - 14, fabric.y + 16, 29, {
+      color: '#f8e8ba',
+      secondary: '#5b422d',
+    });
+  }
+  context.fillStyle = '#382a24';
+  context.textAlign = 'center';
+  context.font = '700 18px "Andika", "Trebuchet MS", sans-serif';
+  context.fillText(childFacingUiText(swatch.label, 'caption'), rect.x + rect.width / 2, rect.y + 104);
+  context.restore();
+}
+
+function traceDressingMirror(context, rect, phase) {
+  const wobble = Math.sin(phase * 5.3) * 3;
+  context.beginPath();
+  context.moveTo(rect.x + 31, rect.y + rect.height - 3);
+  context.bezierCurveTo(
+    rect.x + 13 + wobble,
+    rect.y + rect.height * 0.77,
+    rect.x + 17 - wobble,
+    rect.y + rect.height * 0.27,
+    rect.x + rect.width * 0.27,
+    rect.y + 24,
+  );
+  context.bezierCurveTo(
+    rect.x + rect.width * 0.43,
+    rect.y - 7 + wobble,
+    rect.x + rect.width * 0.65,
+    rect.y - 1 - wobble,
+    rect.x + rect.width * 0.77,
+    rect.y + 25,
+  );
+  context.bezierCurveTo(
+    rect.x + rect.width - 13,
+    rect.y + rect.height * 0.29,
+    rect.x + rect.width - 19 + wobble,
+    rect.y + rect.height * 0.76,
+    rect.x + rect.width - 29,
+    rect.y + rect.height - 2,
+  );
+  context.bezierCurveTo(
+    rect.x + rect.width * 0.72,
+    rect.y + rect.height + 5,
+    rect.x + rect.width * 0.29,
+    rect.y + rect.height - 5,
+    rect.x + 31,
+    rect.y + rect.height - 3,
+  );
+  context.closePath();
+}
+
+function traceMirrorShade(context, rect) {
+  context.beginPath();
+  context.moveTo(rect.x + rect.width * 0.58, rect.y + 8);
+  context.bezierCurveTo(
+    rect.x + rect.width * 0.88,
+    rect.y + rect.height * 0.18,
+    rect.x + rect.width * 0.93,
+    rect.y + rect.height * 0.72,
+    rect.x + rect.width * 0.76,
+    rect.y + rect.height - 7,
+  );
+  context.bezierCurveTo(
+    rect.x + rect.width * 0.64,
+    rect.y + rect.height * 0.72,
+    rect.x + rect.width * 0.51,
+    rect.y + rect.height * 0.25,
+    rect.x + rect.width * 0.58,
+    rect.y + 8,
+  );
+  context.closePath();
+}
+
+function traceMirrorLight(context, rect, drift) {
+  context.beginPath();
+  context.moveTo(rect.x + rect.width * 0.18 + drift, rect.y + rect.height * 0.13);
+  context.bezierCurveTo(
+    rect.x + rect.width * 0.31 + drift,
+    rect.y + rect.height * 0.04,
+    rect.x + rect.width * 0.45 + drift,
+    rect.y + rect.height * 0.11,
+    rect.x + rect.width * 0.4 + drift,
+    rect.y + rect.height * 0.23,
+  );
+  context.bezierCurveTo(
+    rect.x + rect.width * 0.31 + drift,
+    rect.y + rect.height * 0.41,
+    rect.x + rect.width * 0.2 + drift,
+    rect.y + rect.height * 0.3,
+    rect.x + rect.width * 0.18 + drift,
+    rect.y + rect.height * 0.13,
+  );
+  context.closePath();
+}
+
+function traceMirrorPedestal(context, x, y, width, height, phase) {
+  context.beginPath();
+  context.moveTo(x + 8, y + Math.sin(phase) * 2);
+  context.bezierCurveTo(x + width * 0.31, y - 4, x + width * 0.72, y + 5, x + width - 7, y + 1);
+  context.bezierCurveTo(x + width + 4, y + height * 0.38, x + width - 2, y + height * 0.75, x + width - 14, y + height);
+  context.bezierCurveTo(x + width * 0.7, y + height - 3, x + width * 0.28, y + height + 4, x + 11, y + height - 1);
+  context.bezierCurveTo(x - 2, y + height * 0.72, x + 1, y + height * 0.31, x + 8, y + Math.sin(phase) * 2);
+  context.closePath();
+}
+
+function traceFabricSwatch(context, rect, phase) {
+  const wobble = Math.sin(phase * 2.7) * 2.2;
+  context.beginPath();
+  context.moveTo(rect.x + 9, rect.y + 1);
+  context.bezierCurveTo(rect.x + rect.width * 0.31, rect.y - 3 + wobble, rect.x + rect.width * 0.73, rect.y + 4 - wobble, rect.x + rect.width - 7, rect.y + 2);
+  context.bezierCurveTo(rect.x + rect.width + 3, rect.y + rect.height * 0.3, rect.x + rect.width - 4, rect.y + rect.height * 0.71, rect.x + rect.width - 9, rect.y + rect.height - 2);
+  context.bezierCurveTo(rect.x + rect.width * 0.7, rect.y + rect.height + 4 - wobble, rect.x + rect.width * 0.27, rect.y + rect.height - 3 + wobble, rect.x + 8, rect.y + rect.height);
+  context.bezierCurveTo(rect.x - 3, rect.y + rect.height * 0.74, rect.x + 4, rect.y + rect.height * 0.28, rect.x + 9, rect.y + 1);
+  context.closePath();
+}
+
+function traceFabricFold(context, rect, phase) {
+  context.beginPath();
+  context.moveTo(rect.x + rect.width * 0.47, rect.y + 3);
+  context.bezierCurveTo(
+    rect.x + rect.width * (0.63 + Math.sin(phase) * 0.04),
+    rect.y + rect.height * 0.24,
+    rect.x + rect.width * 0.58,
+    rect.y + rect.height * 0.71,
+    rect.x + rect.width * 0.83,
+    rect.y + rect.height - 3,
+  );
+  context.bezierCurveTo(
+    rect.x + rect.width * 0.67,
+    rect.y + rect.height * 0.83,
+    rect.x + rect.width * 0.42,
+    rect.y + rect.height * 0.35,
+    rect.x + rect.width * 0.47,
+    rect.y + 3,
+  );
+  context.closePath();
+}
+
+function traceFabricHighlight(context, rect, phase) {
+  context.beginPath();
+  context.moveTo(rect.x + 9, rect.y + rect.height * 0.17);
+  context.bezierCurveTo(
+    rect.x + rect.width * 0.22,
+    rect.y + Math.sin(phase) * 2,
+    rect.x + rect.width * 0.47,
+    rect.y + rect.height * 0.06,
+    rect.x + rect.width * 0.53,
+    rect.y + rect.height * 0.19,
+  );
+  context.bezierCurveTo(
+    rect.x + rect.width * 0.39,
+    rect.y + rect.height * 0.24,
+    rect.x + rect.width * 0.22,
+    rect.y + rect.height * 0.31,
+    rect.x + 9,
+    rect.y + rect.height * 0.17,
+  );
+  context.closePath();
 }
 
 function drawPanelNotice(context, notice) {

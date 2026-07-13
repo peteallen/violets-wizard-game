@@ -18,6 +18,7 @@ import {
   dialogueSceneContext,
   dialogueScrollLayout,
   pointInUiRect,
+  robePickerLayout,
 } from './render/UIRenderer.js';
 import { WorldAffordanceRenderer } from './render/WorldAffordanceRenderer.js';
 import { WorldPropRenderer } from './render/WorldPropRenderer.js';
@@ -554,6 +555,22 @@ export class Game {
       this.sound.playSfx('sfx/ui/page', 'tap');
       this.world.setFlag('ch1.letterRead', true);
       this.processWorldEvents();
+      return;
+    }
+    if (state.overlay.surface === 'robe-picker') {
+      const layout = robePickerLayout(state.overlay.selectedTrim);
+      const swatch = layout.swatches.find((candidate) => pointInUiRect(point, candidate.rect));
+      if (swatch) {
+        if (this.world.selectRobeTrim(swatch.id)) {
+          this.sound.playSfx('sfx/ui/choice', 'chime');
+          this.processWorldEvents();
+        }
+        return;
+      }
+      if (pointInUiRect(point, layout.confirm) && this.world.confirmRobeTrim()) {
+        this.sound.playSfx('sfx/ui/page', 'tap');
+        this.processWorldEvents();
+      }
       return;
     }
     if (pointInUiRect(point, UI_RECTS.close)) {
@@ -1476,6 +1493,9 @@ export class Game {
         });
       }
       if (state.overlay?.surface === 'letter-reading') this.uiRenderer.drawLetterReading(context);
+      if (state.overlay?.surface === 'robe-picker') {
+        this.uiRenderer.drawRobePicker(context, state, this.simTime, this.reducedMotion);
+      }
       if (state.overlay?.surface === 'objective') {
         this.uiRenderer.drawObjective(context, state.objective, this.simTime, { reducedMotion: this.reducedMotion });
       }
@@ -1654,6 +1674,13 @@ export class Game {
         semanticRect('letter.hear', UI_RECTS.letterHear),
         semanticRect('letter.continue', UI_RECTS.letterContinue),
       );
+    }
+    if (state.overlay?.surface === 'robe-picker') {
+      const layout = robePickerLayout(state.overlay.selectedTrim);
+      for (const swatch of layout.swatches) {
+        targets.push(semanticRect(`robe.trim.${swatch.id}`, swatch.rect));
+      }
+      targets.push(semanticRect('robe.confirm', layout.confirm));
     }
     if (state.overlay?.surface === 'parent') {
       targets.push(semanticRect('overlay.close', UI_RECTS.close));

@@ -66,10 +66,14 @@ describe('adaptive dialogue scroll', () => {
     expect(guide.night).toBe(false);
 
     const violetState = dialogueState({ speaker: 'npc.violet', playerX: 1030, roomVariant: 'dusk' });
+    violetState.player.outfit = 'casual';
+    violetState.player.robeTrim = '#a779c8';
     const violet = dialogueSceneContext(violetState);
     expect(violet.speakerPosition).toEqual({ x: 1030, y: 620 });
     expect(violet.speakerBounds).toMatchObject({ left: 956, right: 1104 });
     expect(violet.night).toBe(true);
+    expect(violet.violetOutfit).toBe('casual');
+    expect(violet.violetRobeTrim).toBe('#a779c8');
 
     expect(dialogueSceneContext(dialogueState({ speaker: 'npc.narrator' })).speakerBounds).toBeNull();
   });
@@ -198,5 +202,28 @@ describe('adaptive dialogue scroll', () => {
     expect(first.texts).not.toContain(dialogue.text);
     expect(first.texts.some((text) => text.includes('Tap the page'))).toBe(false);
     expect(first.calls).toEqual(second.calls);
+  });
+
+  it('keeps Violet’s current outfit in her dialogue portrait', () => {
+    const drawPortrait = vi.fn();
+    const renderer = new UIRenderer({ characterRenderer: { drawPortrait } });
+    const state = dialogueState({ speaker: 'npc.violet' });
+    state.player.outfit = 'casual';
+    state.player.robeTrim = '#7a4fc9';
+
+    renderer.drawDialogue(
+      recordingDialogueContext(),
+      state.dialogue,
+      0,
+      true,
+      true,
+      dialogueSceneContext(state),
+    );
+
+    expect(drawPortrait).toHaveBeenCalledWith(
+      expect.anything(),
+      expect.objectContaining({ speaker: 'npc.violet', outfit: 'casual', robeTrim: '#7a4fc9' }),
+      0,
+    );
   });
 });

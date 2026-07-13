@@ -237,7 +237,8 @@ describe('chapter content contracts', () => {
     interact('street.malkinsDoor');
     interact('malkins.stool');
     world.advanceDialogue();
-    world.advanceDialogue('trimPurple');
+    world.selectRobeTrim('purple');
+    world.confirmRobeTrim();
     finishLines();
     interact('malkins.exit');
     interact('street.menagerieDoor');

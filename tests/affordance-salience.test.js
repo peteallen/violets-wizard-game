@@ -320,7 +320,8 @@ describe('D31 golden-thread lifecycle', () => {
     interact('street.malkinsDoor');
     interact('malkins.stool');
     world.advanceDialogue();
-    world.advanceDialogue('trimPurple');
+    world.selectRobeTrim('purple');
+    world.confirmRobeTrim();
     finishDialogueLines(world);
     waitForRoomGlint('ch1.malkins');
 

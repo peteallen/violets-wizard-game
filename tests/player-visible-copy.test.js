@@ -1,6 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import { chapter1LetterLines } from '../src/game/content/chapters/ch1-letter.js';
+import { ROBE_TRIMS } from '../src/game/core/RobeTrims.js';
 import {
   UIRenderer,
   drawYearbookPageDots,
@@ -85,7 +86,7 @@ describe('player-visible copy', () => {
   });
 
   it('keeps each child-facing Canvas surface to captions, actions, names, and story text', () => {
-    const renderer = new UIRenderer({ characterRenderer: {} });
+    const renderer = new UIRenderer({ characterRenderer: { draw: () => {} } });
     const surfaces = [
       {
         name: 'title',
@@ -103,6 +104,20 @@ describe('player-visible copy', () => {
         roles: {
           storyObjects: [...chapter1LetterLines],
           actions: ['Hear the letter', 'Let’s go!'],
+        },
+      },
+      {
+        name: 'robe picker',
+        draw: (context) => renderer.drawRobePicker(context, {
+          overlay: { surface: 'robe-picker', selectedTrim: 'purple' },
+        }, 0, true),
+        expected: [
+          'Choose a colour',
+          ...ROBE_TRIMS.map(({ label }) => label),
+          'That one!',
+        ],
+        roles: {
+          actions: ['That one!'],
         },
       },
       {
