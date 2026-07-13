@@ -182,8 +182,19 @@ describe('code-only illustrated map renderer foundation', () => {
     expect(first.every((mark) => Object.values(mark).every(Number.isFinite))).toBe(true);
     expect(sanitized.every((mark) => Object.values(mark).every(Number.isFinite))).toBe(true);
     expect(sampleQuillRouteMarks([], 0.4)).toEqual([]);
+    expect(sampleQuillRouteMarks([{ x: 40, y: 40 }, { x: 40, y: 40 }], 0.4)).toEqual([]);
     expect(new Set(first.map(({ length }) => length)).size).toBeGreaterThan(6);
     expect(new Set(first.map(({ width }) => width)).size).toBeGreaterThan(6);
+
+    const veryShort = sampleQuillRouteMarks([{ x: 0, y: 0 }, { x: 2, y: 0 }], 0.2);
+    expect(veryShort).toHaveLength(1);
+    expect(veryShort[0].length).toBeLessThan(2.5);
+
+    const halfPoints = points.map(({ x, y }) => ({ x: x * 0.5, y: y * 0.5 }));
+    const halfScale = sampleQuillRouteMarks(halfPoints, 0.37, { scale: 0.5 });
+    expect(Math.abs(halfScale.length - first.length)).toBeLessThanOrEqual(1);
+    expect(halfScale[0].length).toBeCloseTo(first[0].length * 0.5);
+    expect(halfScale[0].width).toBeCloseTo(first[0].width * 0.5);
   });
 
   it('draws organic multi-tone vignettes, dotted quill routes, and warm fog without geometry badges', () => {
@@ -232,6 +243,9 @@ describe('code-only illustrated map renderer foundation', () => {
     const inset = createIllustratedMapPresentation(model, worldSnapshot(), 1, {
       frame: { x: 64, y: 36, width: 640, height: 360 },
     });
+
+    expect(full.routes.every(({ markScale }) => markScale === 1)).toBe(true);
+    expect(inset.routes.every(({ markScale }) => markScale === 0.5)).toBe(true);
 
     for (let index = 0; index < full.hitTargets.length; index += 1) {
       const original = full.hitTargets[index];

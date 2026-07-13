@@ -117,6 +117,7 @@ function routePresentation(route, transform) {
     unlocked: route.unlocked,
     fogState: route.fogState,
     phase: stablePhase(route.id),
+    markScale: Math.min(transform.scaleX, transform.scaleY),
     points: Object.freeze(route.points.map((point) => Object.freeze(transformPoint(point, transform)))),
   });
 }
@@ -252,50 +253,77 @@ function drawQuillRoute(context, route) {
   if (route.points.length < 2) return;
   context.save();
   context.globalAlpha = route.fogState === MAP_FOG_STATES.soft ? 0.36 : 0.78;
-  for (const mark of sampleQuillRouteMarks(route.points, route.phase)) {
+  for (const mark of sampleQuillRouteMarks(route.points, route.phase, { scale: route.markScale })) {
     drawQuillMark(context, mark);
   }
   context.restore();
 }
 
-export function sampleQuillRouteMarks(points, phase = 0) {
+export function sampleQuillRouteMarks(points, phase = 0, { scale = 1 } = {}) {
   if (!Array.isArray(points) || points.length < 2) return Object.freeze([]);
   const safePhase = Number.isFinite(phase) ? phase : 0;
-  const marks = [];
+  const safeScale = Number.isFinite(scale) && scale > 0 ? scale : 1;
+  const samples = [];
   for (let index = 1; index < points.length; index += 1) {
     const previous = points[index - 1];
     const point = points[index];
     const dx = point.x - previous.x;
     const dy = point.y - previous.y;
-    const length = Math.max(1, Math.hypot(dx, dy));
-    const wobble = Math.sin(safePhase * 31 + index * 2.17) * Math.min(9, length * 0.065);
+    const length = Math.hypot(dx, dy);
+    if (length <= 1e-6) continue;
+    const wobble = Math.sin(safePhase * 31 + index * 2.17)
+      * Math.min(9 * safeScale, length * 0.065);
     const controlX = (previous.x + point.x) / 2 - dy / length * wobble;
     const controlY = (previous.y + point.y) / 2 + dx / length * wobble;
     const curveLength = Math.hypot(controlX - previous.x, controlY - previous.y)
       + Math.hypot(point.x - controlX, point.y - controlY);
-    const markCount = Math.max(2, Math.round(curveLength / 24));
-    for (let markIndex = 0; markIndex < markCount; markIndex += 1) {
-      const t = (markIndex + 0.5) / markCount;
+    const sampleCount = Math.max(4, Math.ceil(curveLength / Math.max(0.5, 6 * safeScale)));
+    if (samples.length === 0) samples.push(Object.freeze({ x: previous.x, y: previous.y }));
+    for (let sampleIndex = 1; sampleIndex <= sampleCount; sampleIndex += 1) {
+      const t = sampleIndex / sampleCount;
       const inverse = 1 - t;
-      const curveX = inverse * inverse * previous.x
-        + 2 * inverse * t * controlX
-        + t * t * point.x;
-      const curveY = inverse * inverse * previous.y
-        + 2 * inverse * t * controlY
-        + t * t * point.y;
-      const tangentX = 2 * inverse * (controlX - previous.x) + 2 * t * (point.x - controlX);
-      const tangentY = 2 * inverse * (controlY - previous.y) + 2 * t * (point.y - controlY);
-      const tangentLength = Math.max(1, Math.hypot(tangentX, tangentY));
-      const rhythm = safePhase * 43 + index * 5.17 + markIndex * 1.91;
-      const offset = Math.sin(rhythm) * 1.15;
-      marks.push(Object.freeze({
-        x: curveX - tangentY / tangentLength * offset,
-        y: curveY + tangentX / tangentLength * offset,
-        angle: Math.atan2(tangentY, tangentX) + Math.sin(rhythm * 0.71) * 0.045,
-        length: 9.2 + (Math.sin(rhythm * 1.13) + 1) * 1.25,
-        width: 4.1 + (Math.cos(rhythm * 0.83) + 1) * 0.55,
+      samples.push(Object.freeze({
+        x: inverse * inverse * previous.x + 2 * inverse * t * controlX + t * t * point.x,
+        y: inverse * inverse * previous.y + 2 * inverse * t * controlY + t * t * point.y,
       }));
     }
+  }
+
+  const segments = [];
+  let totalLength = 0;
+  for (let index = 1; index < samples.length; index += 1) {
+    const from = samples[index - 1];
+    const to = samples[index];
+    const length = Math.hypot(to.x - from.x, to.y - from.y);
+    if (length <= 1e-6) continue;
+    segments.push(Object.freeze({ from, to, start: totalLength, length }));
+    totalLength += length;
+  }
+  if (totalLength <= 1e-6) return Object.freeze([]);
+
+  const spacing = 24 * safeScale;
+  const firstDistance = Math.min(spacing / 2, totalLength / 2);
+  const markScale = Math.min(safeScale, totalLength / 12);
+  const marks = [];
+  let segmentIndex = 0;
+  for (let distance = firstDistance; distance < totalLength; distance += spacing) {
+    while (
+      segmentIndex < segments.length - 1
+      && distance > segments[segmentIndex].start + segments[segmentIndex].length
+    ) segmentIndex += 1;
+    const segment = segments[segmentIndex];
+    const progress = Math.min(1, Math.max(0, (distance - segment.start) / segment.length));
+    const tangentX = segment.to.x - segment.from.x;
+    const tangentY = segment.to.y - segment.from.y;
+    const rhythm = safePhase * 43 + marks.length * 1.91;
+    const offset = Math.sin(rhythm) * 1.15 * markScale;
+    marks.push(Object.freeze({
+      x: segment.from.x + tangentX * progress - tangentY / segment.length * offset,
+      y: segment.from.y + tangentY * progress + tangentX / segment.length * offset,
+      angle: Math.atan2(tangentY, tangentX) + Math.sin(rhythm * 0.71) * 0.045,
+      length: (9.2 + (Math.sin(rhythm * 1.13) + 1) * 1.25) * markScale,
+      width: (4.1 + (Math.cos(rhythm * 0.83) + 1) * 0.55) * markScale,
+    }));
   }
   return Object.freeze(marks);
 }
