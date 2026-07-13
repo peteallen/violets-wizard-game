@@ -3,9 +3,14 @@ import {
   createStorybookTitlePresentation,
   drawStorybookTitlePresentation,
   STORYBOOK_TITLE_MAJOR_REGIONS,
+  STORYBOOK_TITLE_PAINTED_ASSET_STATUS,
   STORYBOOK_TITLE_RENDERER_STATUS,
   StorybookTitleRenderer,
 } from '../src/game/render/StorybookTitleRenderer.js';
+import {
+  titleForegroundLayout,
+  UIRenderer,
+} from '../src/game/render/UIRenderer.js';
 
 function recordingContext() {
   const calls = [];
@@ -32,6 +37,9 @@ function recordingContext() {
             addColorStop: (...stopArgs) => calls.push(['addColorStop', ...stopArgs]),
           };
         };
+      }
+      if (property === 'measureText') {
+        return (value) => ({ width: String(value).length * 10 });
       }
       if (methods.has(property)) {
         return (...args) => {
@@ -73,14 +81,16 @@ function overlaps(first, second) {
     && first.y + first.height > second.y;
 }
 
-describe('code-only storybook title illustration foundation', () => {
+describe('code-only storybook title illustration', () => {
   it('publishes a deterministic frozen scene with clear masthead and envelope regions', () => {
     const first = createStorybookTitlePresentation(3.75);
     const replayed = createStorybookTitlePresentation(3.75);
 
-    expect(STORYBOOK_TITLE_RENDERER_STATUS).toBe('code-only-foundation');
+    expect(STORYBOOK_TITLE_RENDERER_STATUS).toBe('code-only-integrated');
+    expect(STORYBOOK_TITLE_PAINTED_ASSET_STATUS).toBe('paused-for-pete-review');
     expect(first).toEqual(replayed);
-    expect(first.kind).toBe('code-only-foundation');
+    expect(first.kind).toBe('code-only-integrated');
+    expect(first.paintedAssetStatus).toBe('paused-for-pete-review');
     expect(Object.isFrozen(first)).toBe(true);
     expect(Object.isFrozen(first.stars)).toBe(true);
     expect(first.stars.every(Object.isFrozen)).toBe(true);
@@ -200,5 +210,61 @@ describe('code-only storybook title illustration foundation', () => {
     expect(() => drawStorybookTitlePresentation(context, { kind: 'other' })).toThrow(TypeError);
     expect(context.calls).toEqual([]);
     expect(context.depth).toBe(0);
+  });
+
+  it('integrates the illustration with safe-area foregrounds and deterministic reduced motion', () => {
+    const presentation = Object.freeze({
+      safeAreas: Object.freeze({
+        masthead: Object.freeze({ x: 100, y: 20, width: 325, height: 122 }),
+        envelope: Object.freeze({ x: 200, y: 300, width: 275, height: 98 }),
+      }),
+    });
+    const titleDraws = [];
+    const titleRenderer = {
+      draw: (_context, time, options) => {
+        titleDraws.push({ time, options });
+        return presentation;
+      },
+    };
+    const renderer = new UIRenderer({
+      characterRenderer: { draw: () => {} },
+      titleRenderer,
+    });
+    const first = recordingContext();
+    const replayed = recordingContext();
+
+    expect(renderer.drawTitle(first, 17, false, true)).toBe(presentation);
+    expect(renderer.drawTitle(replayed, 0, false, true)).toBe(presentation);
+
+    expect(titleDraws).toEqual([
+      { time: 0, options: { reducedMotion: true } },
+      { time: 0, options: { reducedMotion: true } },
+    ]);
+    expect(first.calls).toEqual(replayed.calls);
+    expect(first.assignments).toEqual(replayed.assignments);
+    expect(first.assignments.some(([property]) => property === 'shadowBlur' || property === 'filter')).toBe(false);
+    expect(titleForegroundLayout(presentation)).toEqual({
+      masthead: presentation.safeAreas.masthead,
+      action: { x: 212, y: 314.5, width: 246, height: 71 },
+    });
+
+    const visibleText = [...new Set(first.calls
+      .filter(([name]) => name === 'fillText')
+      .map(([, value]) => value))];
+    expect(visibleText).toEqual(['Violet', 'at Hogwarts', 'Open Violet’s letter']);
+    expect(first.calls).toContainEqual(['fillText', 'Violet', 262.5, 85.5]);
+    expect(first.calls).toContainEqual(['fillText', 'at Hogwarts', 262.5, 123]);
+    expect(first.calls).toContainEqual(['fillText', 'Open Violet’s letter', 365, 355]);
+
+    const storedSave = recordingContext();
+    renderer.drawTitle(storedSave, 28, true, true);
+    expect([...new Set(storedSave.calls
+      .filter(([name]) => name === 'fillText')
+      .map(([, value]) => value))]).toEqual([
+      'Violet',
+      'at Hogwarts',
+      'Return to Hogwarts',
+    ]);
+    expect(titleDraws.at(-1)).toEqual({ time: 0, options: { reducedMotion: true } });
   });
 });

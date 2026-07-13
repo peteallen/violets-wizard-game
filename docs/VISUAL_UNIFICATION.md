@@ -78,6 +78,8 @@ Kill list from the current build: "Tap the page to continue" (the pulsing arrow 
 
 The in-flight redesign is a real step up (keep: Almendra masthead, composition, owl placement) but it's typography-forward. v3 goes **illustration-forward**: a painted hero night scene — the castle across the lake with warm windows (generated once, and it *is* the Chapter 2 lake-vista painting, so the asset does double duty) — Violet-and-owl vignette, masthead, and **one glowing envelope to tap**. Text: title + button label, nothing else. Absorbs and supersedes the uncommitted title work; the owl blink fix lands here.
 
+The deterministic code-only castle, reflective lake, mist, shore, Violet, and owl composition is now integrated into the live title with the Almendra masthead and one envelope action. The shared generated painted lake-vista asset remains paused for Pete’s review, so the painted-asset portion of VU-06 is not complete and this integration does not claim otherwise.
+
 ## Workstream 6 — Clarity bug batch (VU-08)
 
 The "doesn't make sense" list, fixed in one sweep (all engine/content, parallel-safe with art work):

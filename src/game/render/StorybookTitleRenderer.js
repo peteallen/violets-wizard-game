@@ -6,10 +6,11 @@ const ARTBOARD = Object.freeze({ x: 0, y: 0, width: WORLD.width, height: WORLD.h
 const TAU = Math.PI * 2;
 const OUTLINE = '#3a2d22';
 
-// This is the deterministic, code-only portion of VU-06. The painted lake
-// vista remains paused for Pete's review, so this renderer deliberately does
-// not claim completion of the final title painting.
-export const STORYBOOK_TITLE_RENDERER_STATUS = 'code-only-foundation';
+// The deterministic VU-06 composition is integrated into the live title. The
+// shared painted lake-vista asset remains paused for Pete's review, so this
+// status describes the code-only title rather than claiming that painting.
+export const STORYBOOK_TITLE_RENDERER_STATUS = 'code-only-integrated';
+export const STORYBOOK_TITLE_PAINTED_ASSET_STATUS = 'paused-for-pete-review';
 
 export const STORYBOOK_TITLE_MAJOR_REGIONS = Object.freeze([
   region('sky', '#191a35', '#111126', '#354767'),
@@ -124,6 +125,7 @@ export function createStorybookTitlePresentation(
 
   return Object.freeze({
     kind: STORYBOOK_TITLE_RENDERER_STATUS,
+    paintedAssetStatus: STORYBOOK_TITLE_PAINTED_ASSET_STATUS,
     frame: normalizedFrame,
     sceneTime,
     reducedMotion: Boolean(reducedMotion),

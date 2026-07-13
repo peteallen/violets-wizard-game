@@ -145,12 +145,12 @@ function characterReviewFixture(id, description) {
 
 registry
   .register('foundation', createFixture(
-    'The title screen before Violet begins the story.',
+    'The integrated code-only storybook title before Violet begins, with the castle and lake illustration, Violet and her owl, and the new-player envelope.',
     { chapter: 0, scene: 'foundation' },
     createSave(),
   ))
   .register('foundation-saved-review', createFixture(
-    'The title screen with meaningful progress, showing the returning-player invitation.',
+    'The integrated code-only storybook title with meaningful progress, showing the returning-player envelope over the castle and lake illustration.',
     { chapter: 0, scene: 'foundation-saved-review' },
     createSave({ questFlags: { 'ch1.owlTapped': true } }),
   ))

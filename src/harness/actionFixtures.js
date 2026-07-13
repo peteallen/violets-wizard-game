@@ -45,11 +45,11 @@ const registry = new ImmutableRegistry('action', validateActionFixture);
 
 registry
   .register('foundation', createFixture(
-    'Tap the foundation call to action after its initial animation settles.',
+    'Tap the integrated storybook title’s new-player envelope after its initial animation settles.',
     [{ frame: 30, type: 'tap', target: 'foundation.start' }],
   ))
   .register('foundation-saved-review', createFixture(
-    'Hold the returning-player title for deterministic visual review.',
+    'Hold the integrated storybook title and its returning-player envelope for deterministic visual review.',
   ))
   .register('ch1-start', createFixture(
     'Open the Chapter 1 letter and hold its player-paced reading surface.',

@@ -91,9 +91,9 @@ describe('player-visible copy', () => {
       {
         name: 'title',
         draw: (context) => renderer.drawTitle(context, 0, false, true),
-        expected: ['Violet', 'at Hogwarts', 'V', 'Open Violet’s letter'],
+        expected: ['Violet', 'at Hogwarts', 'Open Violet’s letter'],
         roles: {
-          properNames: ['Violet', 'at Hogwarts', 'V'],
+          properNames: ['Violet', 'at Hogwarts'],
           actions: ['Open Violet’s letter'],
         },
       },

@@ -106,7 +106,10 @@ export class Game {
     this.characterRenderer = new CharacterRenderer();
     this.chapterPreviewRenderer = options.chapterPreviewRenderer ?? new ChapterPreviewRenderer();
     this.guideFootprintRenderer = new GuideFootprintRenderer();
-    this.uiRenderer = new UIRenderer({ resolveAsset });
+    this.uiRenderer = new UIRenderer({
+      resolveAsset,
+      characterRenderer: this.characterRenderer,
+    });
     this.setPieceRenderer = new SetPieceRenderer({ resolveAsset });
     this.worldAffordanceRenderer = new WorldAffordanceRenderer();
     this.particles = new Particles(new SeededRandom(this.saveData.worldSeed).fork('particles'), { reducedMotion: this.reducedMotion });

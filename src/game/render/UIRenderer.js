@@ -24,8 +24,8 @@ import {
   drawVectorIcon,
   drawWaxIcon,
 } from './uiIllustrations.js';
-import { drawVectorOwl } from './OwlRenderer.js';
 import { drawReadableInvitation } from './SetPieceRenderer.js';
+import { StorybookTitleRenderer } from './StorybookTitleRenderer.js';
 import {
   drawAffordancePresentation,
   worldAffordanceState,
@@ -37,11 +37,6 @@ import {
 
 const STORY_GRADIENTS = new WeakMap();
 const NIGHT_DIALOGUE_GRADIENTS = new WeakMap();
-const TITLE_STARS = Object.freeze([
-  [76, 82, 2.2], [166, 137, 3.2], [286, 91, 1.8], [372, 338, 2.4],
-  [468, 67, 2], [598, 112, 3.1], [728, 74, 1.8], [848, 330, 2.3],
-  [916, 68, 2.7], [1194, 96, 2.1], [1168, 360, 1.8], [104, 402, 2.4],
-]);
 
 export const UI_REVIEW_SCENES = Object.freeze([
   'ui-dialogue-review',
@@ -240,6 +235,23 @@ export function robePickerLayout(selectedTrim = 'purple') {
   });
 }
 
+export function titleForegroundLayout(presentation) {
+  const masthead = presentation?.safeAreas?.masthead;
+  const envelope = presentation?.safeAreas?.envelope;
+  if (!masthead || !envelope) {
+    throw new TypeError('titleForegroundLayout requires the storybook title safe areas.');
+  }
+  return Object.freeze({
+    masthead,
+    action: Object.freeze({
+      x: envelope.x + envelope.width * (24 / 550),
+      y: envelope.y + envelope.height * (29 / 196),
+      width: envelope.width * (492 / 550),
+      height: envelope.height * (142 / 196),
+    }),
+  });
+}
+
 function speakerDimensions(speaker) {
   if (speaker === 'npc.guide') return { width: 244, height: 340, ground: 35 };
   if (speaker === 'npc.violet') return { width: 148, height: 228, ground: 32 };
@@ -253,10 +265,12 @@ export class UIRenderer {
     resolveAsset = () => null,
     characterRenderer = new CharacterRenderer(),
     mapRenderer = new IllustratedMapRenderer(),
+    titleRenderer = null,
   } = {}) {
     this.resolveAsset = resolveAsset;
     this.characterRenderer = characterRenderer;
     this.mapRenderer = mapRenderer;
+    this.titleRenderer = titleRenderer ?? new StorybookTitleRenderer({ characterRenderer });
     this.images = new Map();
     this.failedImages = new Set();
     this.yearbookImages = new Map();
@@ -752,62 +766,17 @@ export class UIRenderer {
 
   drawTitle(context, time, hasSave, reducedMotion = false) {
     const animationTime = reducedMotion ? 0 : time;
-    context.fillStyle = storyGradient(context);
-    context.fillRect(0, 0, WORLD.width, WORLD.height);
-    drawTitleNight(context, animationTime, reducedMotion);
-    const moonX = 1082 + Math.sin(animationTime * 0.22) * (reducedMotion ? 0 : 2.5);
-    context.fillStyle = 'rgba(244,213,141,0.1)';
-    context.beginPath();
-    context.arc(moonX, 137, 105, 0, Math.PI * 2);
-    context.fill();
-    context.fillStyle = '#ecd59c';
-    context.beginPath();
-    context.arc(moonX, 137, 78, 0, Math.PI * 2);
-    context.fill();
-    context.fillStyle = 'rgba(110,82,58,0.15)';
-    for (const [dx, dy, radius] of [[-25, -17, 10], [18, 13, 14], [8, -33, 7]]) {
-      context.beginPath();
-      context.arc(moonX + dx, 137 + dy, radius, 0, Math.PI * 2);
-      context.fill();
-    }
-    const titleOwlX = moonX - 2 + Math.sin(animationTime * 0.45) * (reducedMotion ? 0 : 3);
-    const titleOwlLookX = -0.58 + Math.sin(animationTime * 0.55) * (reducedMotion ? 0 : 0.1);
-    const titleOwlLookY = 0.18 + Math.sin(animationTime * 0.4 + 0.7) * (reducedMotion ? 0 : 0.07);
-    context.strokeStyle = '#8f673e';
-    context.lineWidth = 5;
-    context.beginPath();
-    context.moveTo(moonX - 66, 200);
-    context.quadraticCurveTo(moonX - 5, 210, moonX + 69, 197);
-    context.stroke();
-    context.strokeStyle = 'rgba(255,240,194,0.42)';
-    context.lineWidth = 1.4;
-    context.beginPath();
-    context.moveTo(moonX - 57, 198);
-    context.quadraticCurveTo(moonX - 4, 204, moonX + 58, 195);
-    context.stroke();
-    drawVectorOwl(context, {
-      variant: 'post',
-      pose: 'perch',
-      x: titleOwlX,
-      y: 202,
-      scale: 0.94,
-      phase: 4.9,
-      lookX: titleOwlLookX,
-      lookY: titleOwlLookY,
-      reducedMotion,
-    }, animationTime);
-
-    drawTitleMasthead(context);
+    const presentation = this.titleRenderer.draw(context, animationTime, { reducedMotion });
+    const layout = titleForegroundLayout(presentation);
+    drawTitleMasthead(context, layout.masthead);
     drawInvitationButton(context, childFacingUiText(
       hasSave ? 'Return to Hogwarts' : 'Open Violet’s letter',
       'action',
-    ), {
-      x: 394, y: 379, width: 492, height: 142,
-    }, {
+    ), layout.action, {
       largeSeal: true,
       time: animationTime,
-      reducedMotion,
     });
+    return presentation;
   }
 
   drawDebugReset(context) {
@@ -1255,80 +1224,23 @@ function drawInvitationButton(context, label, rect, { largeSeal = false, time = 
   context.restore();
 }
 
-function drawTitleNight(context, time, reducedMotion) {
-  context.save();
-  context.fillStyle = '#d8b965';
-  for (let index = 0; index < TITLE_STARS.length; index += 1) {
-    const [x, y, radius] = TITLE_STARS[index];
-    const shimmer = reducedMotion ? 0.48 : 0.38 + (Math.sin(time * 1.35 + index * 1.71) + 1) * 0.14;
-    context.globalAlpha = shimmer;
-    drawTitleStar(context, x, y, radius);
-  }
-  context.globalAlpha = 1;
-
-  context.fillStyle = 'rgba(15,12,32,0.18)';
-  context.beginPath();
-  context.moveTo(0, 625);
-  context.bezierCurveTo(180, 570, 335, 608, 510, 584);
-  context.bezierCurveTo(720, 552, 880, 606, 1280, 548);
-  context.lineTo(1280, 720);
-  context.lineTo(0, 720);
-  context.closePath();
-  context.fill();
-
-  drawTitleCastle(context);
-  context.restore();
-}
-
-function drawTitleCastle(context) {
-  context.save();
-  context.fillStyle = 'rgba(15,12,29,0.48)';
-  context.beginPath();
-  context.moveTo(0, 720);
-  context.lineTo(0, 660);
-  context.lineTo(85, 660);
-  context.lineTo(85, 626);
-  context.lineTo(112, 626);
-  context.lineTo(126, 574);
-  context.lineTo(140, 626);
-  context.lineTo(168, 626);
-  context.lineTo(168, 650);
-  context.lineTo(236, 650);
-  context.lineTo(236, 618);
-  context.lineTo(265, 618);
-  context.lineTo(279, 555);
-  context.lineTo(294, 618);
-  context.lineTo(326, 618);
-  context.lineTo(326, 671);
-  context.lineTo(913, 671);
-  context.lineTo(913, 634);
-  context.lineTo(944, 634);
-  context.lineTo(960, 577);
-  context.lineTo(976, 634);
-  context.lineTo(1009, 634);
-  context.lineTo(1009, 656);
-  context.lineTo(1094, 656);
-  context.lineTo(1094, 610);
-  context.lineTo(1124, 610);
-  context.lineTo(1141, 536);
-  context.lineTo(1157, 610);
-  context.lineTo(1188, 610);
-  context.lineTo(1188, 660);
-  context.lineTo(1280, 660);
-  context.lineTo(1280, 720);
-  context.closePath();
-  context.fill();
-
-  context.fillStyle = 'rgba(236,197,104,0.34)';
-  for (const [x, y] of [[111, 641], [137, 642], [257, 637], [284, 639], [936, 652], [963, 651], [1117, 633], [1147, 632], [1170, 642]]) {
-    context.fillRect(x, y, 6, 10);
-  }
-  context.restore();
-}
-
-function drawTitleMasthead(context) {
-  drawDisplayTitle(context, childFacingUiText('Violet', 'proper-name'), 485, 183, 101);
-  drawDisplayTitle(context, childFacingUiText('at Hogwarts', 'proper-name'), 505, 258, 67);
+function drawTitleMasthead(context, safeArea) {
+  const scale = Math.min(safeArea.width / 650, safeArea.height / 244);
+  const centerX = safeArea.x + safeArea.width / 2;
+  drawDisplayTitle(
+    context,
+    childFacingUiText('Violet', 'proper-name'),
+    centerX,
+    safeArea.y + safeArea.height * (131 / 244),
+    101 * scale,
+  );
+  drawDisplayTitle(
+    context,
+    childFacingUiText('at Hogwarts', 'proper-name'),
+    centerX,
+    safeArea.y + safeArea.height * (206 / 244),
+    67 * scale,
+  );
 }
 
 function drawDisplayTitle(context, text, x, y, size) {
@@ -1353,49 +1265,83 @@ function drawDisplayTitle(context, text, x, y, size) {
 
 function drawTitleLetter(context, label, rect, { time = 0 } = {}) {
   const { x, y, width, height } = rect;
+  const scale = Math.min(width / 492, height / 142);
   const pulse = 1 + Math.sin(time * 2.1) * 0.018;
   context.save();
   context.translate(x + width / 2, y + height / 2);
   context.scale(pulse, pulse);
   context.translate(-(x + width / 2), -(y + height / 2));
 
+  context.save();
+  for (const [spread, fill] of [
+    [18, 'rgba(232,185,83,0.045)'],
+    [11, 'rgba(232,185,83,0.075)'],
+    [5, 'rgba(244,213,141,0.14)'],
+  ]) {
+    const inset = spread * scale;
+    context.fillStyle = fill;
+    traceTitleLetter(context, x - inset, y - inset, width + inset * 2, height + inset * 2);
+    context.fill();
+  }
+  context.restore();
+
   context.fillStyle = 'rgba(13,10,24,0.48)';
-  traceTitleLetter(context, x + 9, y + 12, width, height);
+  traceTitleLetter(context, x + 9 * scale, y + 12 * scale, width, height);
   context.fill();
   context.fillStyle = '#ead7ad';
   traceTitleLetter(context, x, y, width, height);
   context.fill();
   context.strokeStyle = '#c89a43';
-  context.lineWidth = 5;
+  context.lineWidth = 5 * scale;
   context.stroke();
   context.strokeStyle = 'rgba(255,244,207,0.64)';
-  context.lineWidth = 1.5;
-  traceTitleLetter(context, x + 8, y + 7, width - 16, height - 14);
+  context.lineWidth = 1.5 * scale;
+  traceTitleLetter(
+    context,
+    x + 8 * scale,
+    y + 7 * scale,
+    width - 16 * scale,
+    height - 14 * scale,
+  );
   context.stroke();
 
   context.strokeStyle = 'rgba(112,78,48,0.56)';
-  context.lineWidth = 2.4;
+  context.lineWidth = 2.4 * scale;
   context.beginPath();
-  context.moveTo(x + 12, y + 12);
+  context.moveTo(x + 12 * scale, y + 12 * scale);
   context.lineTo(x + width / 2, y + height * 0.58);
-  context.lineTo(x + width - 12, y + 12);
-  context.moveTo(x + 14, y + height - 13);
+  context.lineTo(x + width - 12 * scale, y + 12 * scale);
+  context.moveTo(x + 14 * scale, y + height - 13 * scale);
   context.lineTo(x + width * 0.4, y + height * 0.5);
-  context.moveTo(x + width - 14, y + height - 13);
+  context.moveTo(x + width - 14 * scale, y + height - 13 * scale);
   context.lineTo(x + width * 0.6, y + height * 0.5);
   context.stroke();
 
-  drawWaxMedallion(context, x + 73, y + height / 2, 44, (sealContext, sealX, sealY) => {
-    sealContext.fillStyle = '#fff1c6';
-    sealContext.textAlign = 'center';
-    sealContext.font = '700 49px "Almendra", Georgia, serif';
-    sealContext.fillText('V', sealX, sealY + 16);
-  });
+  drawWaxMedallion(
+    context,
+    x + width * (73 / 492),
+    y + height / 2,
+    44 * scale,
+    (sealContext, sealX, sealY, sealSize) => drawVectorIcon(
+      sealContext,
+      'owl',
+      sealX,
+      sealY,
+      sealSize * 0.88,
+      { color: '#fff1c6', secondary: '#e5be6a' },
+    ),
+  );
 
   context.fillStyle = '#33241f';
   context.textAlign = 'center';
-  context.font = '700 31px "Andika", "Trebuchet MS", sans-serif';
-  fitText(context, label, x + 306, y + height / 2 + 10, width - 160);
+  context.font = `700 ${31 * scale}px "Andika", "Trebuchet MS", sans-serif`;
+  fitText(
+    context,
+    label,
+    x + width * (306 / 492),
+    y + height / 2 + 10 * scale,
+    width * (332 / 492),
+  );
   context.restore();
 }
 
@@ -1411,20 +1357,6 @@ function traceTitleLetter(context, x, y, width, height) {
   context.lineTo(x + 1, y + 18);
   context.quadraticCurveTo(x + 3, y + 3, x + 18, y);
   context.closePath();
-}
-
-function drawTitleStar(context, x, y, radius) {
-  context.beginPath();
-  context.moveTo(x, y - radius);
-  context.lineTo(x + radius * 0.28, y - radius * 0.28);
-  context.lineTo(x + radius, y);
-  context.lineTo(x + radius * 0.28, y + radius * 0.28);
-  context.lineTo(x, y + radius);
-  context.lineTo(x - radius * 0.28, y + radius * 0.28);
-  context.lineTo(x - radius, y);
-  context.lineTo(x - radius * 0.28, y - radius * 0.28);
-  context.closePath();
-  context.fill();
 }
 
 function drawDressingMirror(context, rect, time, reducedMotion) {
