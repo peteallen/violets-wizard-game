@@ -60,7 +60,7 @@ export const UI_RECTS = Object.freeze({
   quest: { x: 28, y: 28, width: 104, height: 104 },
   satchel: { x: 28, y: 584, width: 108, height: 108 },
   wand: { x: 1144, y: 584, width: 108, height: 108 },
-  dialogueReplay: { x: 985, y: 557, width: 88, height: 96 },
+  dialogueReplay: { x: 998, y: 522, width: 88, height: 88 },
   letterHear: { x: 238, y: 594, width: 374, height: 96 },
   letterContinue: { x: 668, y: 594, width: 374, height: 96 },
   robeConfirm: { x: 742, y: 548, width: 338, height: 102 },
@@ -96,10 +96,17 @@ export const UI_RECTS = Object.freeze({
   parentAcceptConfirm: { x: 705, y: 470, width: 360, height: 108 },
   yearbookPrevious: { x: 125, y: 565, width: 230, height: 96 },
   yearbookNext: { x: 925, y: 565, width: 230, height: 96 },
-  dialogueAdvance: { x: 986, y: 656, width: 86, height: 43 },
+  dialogueAdvance: { x: 998, y: 612, width: 88, height: 88 },
 });
 
-const DIALOGUE_FRAME = Object.freeze({ y: 548, height: 155, maximumWidth: 900, margin: 32, speakerGap: 38 });
+const DIALOGUE_FRAME = Object.freeze({
+  y: 520,
+  height: 182,
+  maximumWidth: 900,
+  margin: 32,
+  speakerGap: 30,
+  portraitOverhang: 62,
+});
 const VISIBLE_UI_WORD = /[\p{L}\p{N}]+(?:[’'-][\p{L}\p{N}]+)*/gu;
 
 export function isAllowedChildFacingUiText(text, role) {
@@ -162,8 +169,9 @@ export function dialogueScrollLayout({ speakerBounds = null } = {}) {
     && speakerBounds.top <= frame.y + frame.height + 8;
 
   if (overlapsDialogueBand) {
-    const leftSpace = Math.max(0, speakerBounds.left - DIALOGUE_FRAME.speakerGap - DIALOGUE_FRAME.margin);
-    const rightEdge = speakerBounds.right + DIALOGUE_FRAME.speakerGap;
+    const leftEdge = speakerBounds.left - DIALOGUE_FRAME.speakerGap - DIALOGUE_FRAME.portraitOverhang;
+    const leftSpace = Math.max(0, leftEdge - DIALOGUE_FRAME.margin);
+    const rightEdge = speakerBounds.right + DIALOGUE_FRAME.speakerGap + DIALOGUE_FRAME.portraitOverhang;
     const rightSpace = Math.max(0, WORLD.width - DIALOGUE_FRAME.margin - rightEdge);
     if (rightSpace >= leftSpace) {
       side = 'right';
@@ -171,37 +179,40 @@ export function dialogueScrollLayout({ speakerBounds = null } = {}) {
       frame.width = Math.min(DIALOGUE_FRAME.maximumWidth, rightSpace);
     } else {
       side = 'left';
-      frame.x = DIALOGUE_FRAME.margin;
       frame.width = Math.min(DIALOGUE_FRAME.maximumWidth, leftSpace);
+      frame.x = leftEdge - frame.width;
     }
   }
 
-  const portraitOnLeft = side !== 'left';
+  const portraitSide = side === 'left' ? 'right' : 'left';
+  const controlsSide = portraitSide === 'left' ? 'right' : 'left';
   const portrait = {
-    x: portraitOnLeft ? frame.x + 76 : frame.x + frame.width - 76,
-    y: frame.y + 77,
-    scale: 0.9,
+    x: portraitSide === 'left' ? frame.x : frame.x + frame.width,
+    y: frame.y + frame.height / 2,
+    scale: 1,
   };
-  const controlX = portraitOnLeft ? frame.x + frame.width - 61 : frame.x + 61;
-  const captionLeft = portraitOnLeft ? frame.x + 143 : frame.x + 111;
-  const captionRight = portraitOnLeft ? frame.x + frame.width - 111 : frame.x + frame.width - 143;
-  const replayRect = { x: controlX - 44, y: frame.y + 9, width: 88, height: 96 };
-  const advanceRect = { x: controlX - 43, y: frame.y + 108, width: 86, height: 43 };
+  const controlX = controlsSide === 'right' ? frame.x + frame.width - 48 : frame.x + 48;
+  const replayRect = { x: controlX - 44, y: frame.y + 2, width: 88, height: 88 };
+  const advanceRect = { x: controlX - 44, y: frame.y + 92, width: 88, height: 88 };
+  const captionLeft = portraitSide === 'left' ? frame.x + 64 : replayRect.x + replayRect.width + 18;
+  const captionRight = portraitSide === 'left' ? replayRect.x - 18 : frame.x + frame.width - 64;
 
   return {
     side,
+    portraitSide,
+    controlsSide,
     frame,
     portrait,
     captionRect: {
       x: captionLeft,
-      y: frame.y + 27,
+      y: frame.y + 18,
       width: Math.max(1, captionRight - captionLeft),
-      height: 93,
+      height: frame.height - 36,
     },
     controlX,
     replayRect,
     advanceRect,
-    rotation: side === 'left' ? 0.006 : side === 'right' ? -0.006 : -0.004,
+    rotation: 0,
   };
 }
 
@@ -395,14 +406,13 @@ export class UIRenderer {
       return null;
     }
     const layout = dialogueScrollLayout(scene);
-    const { frame, portrait, captionRect, controlX } = layout;
-    const centerX = frame.x + frame.width / 2;
-    const centerY = frame.y + frame.height / 2;
+    const { frame, portrait, captionRect, replayRect, advanceRect } = layout;
+    const animationTime = reducedMotion ? 0 : time;
     context.save();
-    context.translate(centerX, centerY);
-    context.rotate(layout.rotation);
-    context.translate(-centerX, -centerY);
-    drawDialogueScroll(context, frame, { night: Boolean(scene.night) });
+    drawDialogueScroll(context, frame, {
+      night: Boolean(scene.night),
+      portraitSide: layout.portraitSide,
+    });
 
     const portraitDrawn = typeof this.characterRenderer?.drawPortrait === 'function';
     if (portraitDrawn) {
@@ -414,7 +424,7 @@ export class UIRenderer {
         scale: portrait.scale,
         outfit: dialogue.speaker === 'npc.violet' ? scene.violetOutfit : undefined,
         robeTrim: dialogue.speaker === 'npc.violet' ? scene.violetRobeTrim : undefined,
-      }, time);
+      }, animationTime);
     } else {
       const radius = 49;
       drawBrassCameoFrame(context, portrait.x, portrait.y, radius);
@@ -438,17 +448,9 @@ export class UIRenderer {
       Boolean(scene.night),
     );
 
-    drawWaxIcon(context, controlX, frame.y + 47, 31, 'speaker', {
-      iconColor: scene.night ? '#f8e4b4' : '#fff8e8',
-    });
-    context.fillStyle = scene.night ? '#f2d89f' : '#513b2f';
-    context.textAlign = 'center';
-    context.font = '700 18px "Andika", "Trebuchet MS", sans-serif';
-    context.fillText(childFacingUiText('Again', 'action'), controlX, frame.y + 95);
-
-    const animationTime = reducedMotion ? 0 : time;
     const pulse = reducedMotion ? 1 : 1 + Math.sin(animationTime * 4) * 0.08;
-    drawDialogueNextArrow(context, controlX, frame.y + 129, pulse, Boolean(scene.night));
+    drawDialogueReplayControl(context, replayRect, Boolean(scene.night));
+    drawDialogueAdvanceControl(context, advanceRect, pulse, Boolean(scene.night));
     context.restore();
 
     if (dialogue.choices?.length) this.drawChoices(context, dialogue.choices);
@@ -1693,60 +1695,6 @@ function vectorControlIcon(icon) {
 }
 
 function drawDialogueCaption(context, rect, caption, night) {
-  const colors = night
-    ? { base: '#372a31', light: '#48343a', shadow: '#261f29' }
-    : { base: '#f0d8aa', light: '#fff0c9', shadow: '#d8b982' };
-  context.fillStyle = colors.base;
-  traceDialogueCaption(context, rect);
-  context.fill();
-  context.save();
-  traceDialogueCaption(context, rect);
-  context.clip();
-  context.fillStyle = colors.light;
-  context.beginPath();
-  context.moveTo(rect.x, rect.y);
-  context.lineTo(rect.x + rect.width, rect.y);
-  context.lineTo(rect.x + rect.width, rect.y + rect.height * 0.38);
-  context.bezierCurveTo(
-    rect.x + rect.width * 0.7,
-    rect.y + rect.height * 0.46,
-    rect.x + rect.width * 0.28,
-    rect.y + rect.height * 0.3,
-    rect.x,
-    rect.y + rect.height * 0.42,
-  );
-  context.closePath();
-  context.fill();
-  context.fillStyle = colors.shadow;
-  context.beginPath();
-  context.moveTo(rect.x, rect.y + rect.height * 0.77);
-  context.bezierCurveTo(
-    rect.x + rect.width * 0.32,
-    rect.y + rect.height * 0.68,
-    rect.x + rect.width * 0.71,
-    rect.y + rect.height * 0.86,
-    rect.x + rect.width,
-    rect.y + rect.height * 0.73,
-  );
-  context.lineTo(rect.x + rect.width, rect.y + rect.height);
-  context.lineTo(rect.x, rect.y + rect.height);
-  context.closePath();
-  context.fill();
-  context.restore();
-  context.strokeStyle = night ? '#d2a95b' : '#91633b';
-  context.lineWidth = 3.4;
-  traceDialogueCaption(context, rect);
-  context.stroke();
-  context.strokeStyle = night ? 'rgba(249,223,162,0.34)' : 'rgba(255,248,219,0.72)';
-  context.lineWidth = 1.4;
-  traceDialogueCaption(context, {
-    x: rect.x + 7,
-    y: rect.y + 6,
-    width: rect.width - 14,
-    height: rect.height - 13,
-  });
-  context.stroke();
-
   const words = String(caption).trim().split(/\s+/u).filter(Boolean).slice(0, 3);
   const text = words.join(' ') || 'Listen';
   context.fillStyle = night ? '#f8e6ba' : '#382a24';
@@ -1769,6 +1717,56 @@ function drawDialogueCaption(context, rect, caption, night) {
   }
 }
 
+function drawDialogueReplayControl(context, rect, night) {
+  context.save();
+  context.fillStyle = night ? 'rgba(37,27,34,0.72)' : 'rgba(198,166,111,0.54)';
+  traceDialogueControl(context, rect, 0.42);
+  context.fill();
+  context.strokeStyle = night ? '#d2a95b' : '#805632';
+  context.lineWidth = 2.6;
+  context.stroke();
+  drawWaxIcon(context, rect.x + rect.width / 2, rect.y + 31, 23, 'speaker', {
+    iconColor: night ? '#f8e4b4' : '#fff8e8',
+  });
+  context.fillStyle = night ? '#f2d89f' : '#513b2f';
+  context.textAlign = 'center';
+  context.textBaseline = 'alphabetic';
+  context.font = '700 18px "Andika", "Trebuchet MS", sans-serif';
+  context.fillText(
+    childFacingUiText('Again', 'action'),
+    rect.x + rect.width / 2,
+    rect.y + rect.height - 8,
+  );
+  context.restore();
+}
+
+function drawDialogueAdvanceControl(context, rect, pulse, night) {
+  const centerX = rect.x + rect.width / 2;
+  const centerY = rect.y + rect.height / 2;
+  const radius = Math.min(rect.width, rect.height) * 0.39;
+  context.save();
+  context.fillStyle = 'rgba(42,29,31,0.36)';
+  traceDialogueMedallion(context, centerX + 4, centerY + 5, radius, 0.61);
+  context.fill();
+  context.fillStyle = night ? '#8f6633' : '#a97935';
+  traceDialogueMedallion(context, centerX, centerY, radius, 0.23);
+  context.fill();
+  context.strokeStyle = '#3a2d22';
+  context.lineWidth = 3.5;
+  context.stroke();
+  context.fillStyle = night ? '#d8ae58' : '#d4a84e';
+  traceDialogueMedallion(context, centerX - 1, centerY - 2, radius * 0.79, 1.4);
+  context.fill();
+  context.strokeStyle = night ? '#f3d68b' : '#f4d58d';
+  context.lineWidth = 2;
+  context.stroke();
+  context.fillStyle = 'rgba(255,237,183,0.36)';
+  traceDialogueMedallionHighlight(context, centerX, centerY, radius);
+  context.fill();
+  drawDialogueNextArrow(context, centerX, centerY, pulse, night);
+  context.restore();
+}
+
 function balancedCaptionLines(context, words, maxWidth) {
   if (words.length < 2) return [words.join(' ') || 'Listen'];
   const oneLine = words.join(' ');
@@ -1782,18 +1780,62 @@ function balancedCaptionLines(context, words, maxWidth) {
   return best?.lines ?? [oneLine];
 }
 
-function traceDialogueCaption(context, rect) {
+function traceDialogueControl(context, rect, phase) {
   const { x, y, width, height } = rect;
+  const wobble = Math.sin(phase * 7) * 1.7;
   context.beginPath();
-  context.moveTo(x + 19, y + 1);
-  context.bezierCurveTo(x + width * 0.3, y - 2, x + width * 0.69, y + 3, x + width - 17, y + 1);
-  context.quadraticCurveTo(x + width + 2, y + 8, x + width - 1, y + 23);
-  context.lineTo(x + width - 4, y + height - 19);
-  context.quadraticCurveTo(x + width - 2, y + height - 2, x + width - 21, y + height);
-  context.bezierCurveTo(x + width * 0.68, y + height + 2, x + width * 0.31, y + height - 3, x + 17, y + height);
-  context.quadraticCurveTo(x + 1, y + height - 5, x + 3, y + height - 23);
-  context.lineTo(x, y + 20);
-  context.quadraticCurveTo(x + 2, y + 4, x + 19, y + 1);
+  context.moveTo(x + 13, y + 2);
+  context.bezierCurveTo(x + width * 0.34, y - 2 + wobble, x + width * 0.71, y + 3 - wobble, x + width - 10, y + 2);
+  context.bezierCurveTo(x + width + 1, y + height * 0.29, x + width - 3, y + height * 0.74, x + width - 12, y + height - 1);
+  context.bezierCurveTo(x + width * 0.7, y + height + 3 + wobble, x + width * 0.29, y + height - 2 - wobble, x + 10, y + height);
+  context.bezierCurveTo(x - 2, y + height * 0.7, x + 3, y + height * 0.3, x + 13, y + 2);
+  context.closePath();
+}
+
+function traceDialogueMedallion(context, centerX, centerY, radius, phase) {
+  const points = [];
+  for (let index = 0; index < 14; index += 1) {
+    const angle = index * Math.PI * 2 / 14;
+    const variance = 1 + Math.sin(phase + index * 1.73) * 0.055;
+    points.push([
+      centerX + Math.cos(angle) * radius * variance,
+      centerY + Math.sin(angle) * radius * variance,
+    ]);
+  }
+  context.beginPath();
+  context.moveTo((points[0][0] + points[1][0]) / 2, (points[0][1] + points[1][1]) / 2);
+  for (let index = 1; index <= points.length; index += 1) {
+    const point = points[index % points.length];
+    const next = points[(index + 1) % points.length];
+    context.quadraticCurveTo(
+      point[0],
+      point[1],
+      (point[0] + next[0]) / 2,
+      (point[1] + next[1]) / 2,
+    );
+  }
+  context.closePath();
+}
+
+function traceDialogueMedallionHighlight(context, centerX, centerY, radius) {
+  context.beginPath();
+  context.moveTo(centerX - radius * 0.62, centerY - radius * 0.18);
+  context.bezierCurveTo(
+    centerX - radius * 0.45,
+    centerY - radius * 0.72,
+    centerX + radius * 0.23,
+    centerY - radius * 0.8,
+    centerX + radius * 0.53,
+    centerY - radius * 0.36,
+  );
+  context.bezierCurveTo(
+    centerX + radius * 0.08,
+    centerY - radius * 0.48,
+    centerX - radius * 0.27,
+    centerY - radius * 0.21,
+    centerX - radius * 0.62,
+    centerY - radius * 0.18,
+  );
   context.closePath();
 }
 

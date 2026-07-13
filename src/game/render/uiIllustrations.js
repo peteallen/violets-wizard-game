@@ -68,57 +68,56 @@ export function drawDeckledParchment(context, rect, {
   context.restore();
 }
 
-export function drawDialogueScroll(context, rect, { night = false } = {}) {
+export function drawDialogueScroll(context, rect, { night = false, portraitSide = 'left' } = {}) {
   const { x, y, width, height } = rect;
+  const attachedSide = portraitSide === 'right' ? 'right' : 'left';
   const colors = night
     ? {
         top: '#806447', middle: '#69503d', bottom: '#4d392f', edge: '#d4aa5b', ink: '#2f2422',
         highlight: 'rgba(250,221,154,0.2)', grain: 'rgba(244,210,139,0.13)', shadow: 'rgba(15,10,22,0.58)',
-        rollLight: '#9a794f', rollMiddle: '#765b42', rollDark: '#47332b',
       }
     : {
         top: '#f7e9c8', middle: '#e6ce9f', bottom: '#c9a978', edge: '#9a6938', ink: '#49352a',
         highlight: 'rgba(255,246,210,0.48)', grain: 'rgba(112,75,43,0.13)', shadow: 'rgba(28,18,27,0.46)',
-        rollLight: '#f3dfb8', rollMiddle: '#e4c999', rollDark: '#b58f60',
       };
 
   context.save();
   context.fillStyle = colors.shadow;
-  traceDeckledRect(context, x + 8, y + 11, width, height, 11);
+  traceDialogueCard(context, x + 8, y + 11, width, height, attachedSide, 0.74);
   context.fill();
 
   context.fillStyle = colors.middle;
-  traceDeckledRect(context, x, y, width, height, 11);
+  traceDialogueCard(context, x, y, width, height, attachedSide, 0.31);
   context.fill();
   context.strokeStyle = colors.ink;
   context.lineWidth = 6;
   context.stroke();
   context.strokeStyle = colors.edge;
   context.lineWidth = 3;
-  traceDeckledRect(context, x + 4, y + 3, width - 8, height - 7, 8);
+  traceDialogueCard(context, x + 4, y + 3, width - 8, height - 7, attachedSide, 0.53);
   context.stroke();
 
   context.save();
-  traceDeckledRect(context, x + 7, y + 7, width - 14, height - 14, 7);
+  traceDialogueCard(context, x + 7, y + 7, width - 14, height - 14, attachedSide, 0.88);
   context.clip();
   context.fillStyle = colors.top;
   context.beginPath();
-  context.moveTo(x, y);
-  context.lineTo(x + width, y);
-  context.lineTo(x + width, y + height * 0.34);
+  context.moveTo(x - 8, y - 5);
+  context.bezierCurveTo(x + width * 0.28, y + 3, x + width * 0.72, y - 3, x + width + 8, y + 2);
   context.bezierCurveTo(
-    x + width * 0.73,
-    y + height * 0.43,
-    x + width * 0.34,
+    x + width * 0.82,
     y + height * 0.3,
-    x,
+    x + width * 0.58,
+    y + height * 0.43,
+    x - 8,
     y + height * 0.4,
   );
+  context.bezierCurveTo(x - 2, y + height * 0.21, x - 5, y + height * 0.08, x - 8, y - 5);
   context.closePath();
   context.fill();
   context.fillStyle = colors.bottom;
   context.beginPath();
-  context.moveTo(x, y + height * 0.75);
+  context.moveTo(x - 6, y + height * 0.75);
   context.bezierCurveTo(
     x + width * 0.31,
     y + height * 0.68,
@@ -127,13 +126,30 @@ export function drawDialogueScroll(context, rect, { night = false } = {}) {
     x + width,
     y + height * 0.72,
   );
-  context.lineTo(x + width, y + height);
-  context.lineTo(x, y + height);
+  context.bezierCurveTo(x + width * 0.77, y + height * 1.04, x + width * 0.26, y + height * 0.96, x - 6, y + height + 4);
+  context.bezierCurveTo(x - 2, y + height * 0.91, x - 5, y + height * 0.83, x - 6, y + height * 0.75);
   context.closePath();
   context.fill();
   context.fillStyle = colors.highlight;
   context.beginPath();
-  context.ellipse(x + width * 0.21, y + height * 0.19, width * 0.24, height * 0.16, -0.05, 0, Math.PI * 2);
+  context.moveTo(x + width * 0.08, y + height * 0.13);
+  context.bezierCurveTo(
+    x + width * 0.19,
+    y + height * 0.01,
+    x + width * 0.43,
+    y + height * 0.04,
+    x + width * 0.49,
+    y + height * 0.17,
+  );
+  context.bezierCurveTo(
+    x + width * 0.37,
+    y + height * 0.22,
+    x + width * 0.17,
+    y + height * 0.31,
+    x + width * 0.08,
+    y + height * 0.13,
+  );
+  context.closePath();
   context.fill();
 
   context.strokeStyle = colors.grain;
@@ -170,47 +186,54 @@ export function drawDialogueScroll(context, rect, { night = false } = {}) {
     context.stroke();
   }
   context.restore();
-
-  drawScrollRoll(context, x + 20, y + height / 2, height, -1, colors);
-  drawScrollRoll(context, x + width - 20, y + height / 2, height, 1, colors);
+  context.strokeStyle = colors.grain;
+  context.lineWidth = 1.2;
+  traceDialogueCard(context, x + 12, y + 11, width - 24, height - 22, attachedSide, 1.17);
+  context.stroke();
   context.restore();
 }
 
-function drawScrollRoll(context, x, y, height, direction, colors) {
-  const halfHeight = height * 0.42;
-  const outerX = x + direction * 16;
-  const innerX = x - direction * 14;
-  context.fillStyle = colors.rollMiddle;
+function traceDialogueCard(context, x, y, width, height, portraitSide, phase) {
+  const portraitOnLeft = portraitSide === 'left';
+  const leftWaist = portraitOnLeft ? 17 : -2;
+  const rightWaist = portraitOnLeft ? 2 : -17;
+  const points = [
+    [x + 18, y + 1],
+    [x + width * 0.18, y - 2 + Math.sin(phase) * 2],
+    [x + width * 0.39, y + 2],
+    [x + width * 0.63, y - 1],
+    [x + width * 0.83, y + 3 - Math.cos(phase) * 2],
+    [x + width - 14, y + 1],
+    [x + width + 1, y + height * 0.16],
+    [x + width + rightWaist, y + height * 0.39],
+    [x + width + (portraitOnLeft ? 1 : -10), y + height * 0.52],
+    [x + width + rightWaist, y + height * 0.68],
+    [x + width - 2, y + height * 0.86],
+    [x + width - 17, y + height - 1],
+    [x + width * 0.8, y + height + 2],
+    [x + width * 0.58, y + height - 2],
+    [x + width * 0.34, y + height + 3],
+    [x + width * 0.14, y + height - 1],
+    [x + 13, y + height + 1],
+    [x - 2, y + height * 0.84],
+    [x - leftWaist, y + height * 0.66],
+    [x + (portraitOnLeft ? 10 : -1), y + height * 0.51],
+    [x - leftWaist, y + height * 0.36],
+    [x + 1, y + height * 0.15],
+  ];
   context.beginPath();
-  context.moveTo(innerX, y - halfHeight + 4);
-  context.bezierCurveTo(outerX, y - halfHeight - 3, outerX + direction * 4, y - halfHeight * 0.34, outerX, y);
-  context.bezierCurveTo(outerX + direction * 5, y + halfHeight * 0.36, outerX, y + halfHeight + 2, innerX, y + halfHeight - 4);
-  context.quadraticCurveTo(x - direction * 3, y + halfHeight * 0.24, innerX, y - halfHeight + 4);
+  context.moveTo((points[0][0] + points[1][0]) / 2, (points[0][1] + points[1][1]) / 2);
+  for (let index = 1; index <= points.length; index += 1) {
+    const point = points[index % points.length];
+    const next = points[(index + 1) % points.length];
+    context.quadraticCurveTo(
+      point[0],
+      point[1],
+      (point[0] + next[0]) / 2,
+      (point[1] + next[1]) / 2,
+    );
+  }
   context.closePath();
-  context.fill();
-  context.strokeStyle = colors.ink;
-  context.lineWidth = 3.4;
-  context.stroke();
-  context.fillStyle = colors.rollDark;
-  context.beginPath();
-  context.moveTo(innerX, y - halfHeight + 5);
-  context.quadraticCurveTo(x - direction * 4, y, innerX, y + halfHeight - 5);
-  context.quadraticCurveTo(x + direction * 2, y + halfHeight * 0.31, x + direction * 2, y - halfHeight * 0.28);
-  context.closePath();
-  context.fill();
-  context.fillStyle = colors.rollLight;
-  context.beginPath();
-  context.moveTo(outerX - direction * 5, y - halfHeight * 0.72);
-  context.quadraticCurveTo(outerX + direction * 2, y - halfHeight * 0.08, outerX - direction * 4, y + halfHeight * 0.5);
-  context.quadraticCurveTo(outerX - direction * 8, y, outerX - direction * 5, y - halfHeight * 0.72);
-  context.closePath();
-  context.fill();
-  context.strokeStyle = colors.edge;
-  context.lineWidth = 1.8;
-  context.beginPath();
-  context.moveTo(outerX - direction * 3, y - halfHeight * 0.75);
-  context.quadraticCurveTo(outerX + direction * 3, y, outerX - direction * 2, y + halfHeight * 0.72);
-  context.stroke();
 }
 
 export function drawBrassCameoFrame(context, x, y, radius, { active = true } = {}) {

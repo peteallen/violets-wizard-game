@@ -17,6 +17,13 @@ function overlaps(first, second) {
     && first.y + first.height > second.top;
 }
 
+function rectsOverlap(first, second) {
+  return first.x < second.x + second.width
+    && first.x + first.width > second.x
+    && first.y < second.y + second.height
+    && first.y + first.height > second.y;
+}
+
 function dialogueState({ speaker = 'npc.guide', playerX = 1040, roomVariant = 'base' } = {}) {
   return {
     cameraX: 0,
@@ -37,7 +44,8 @@ function recordingDialogueContext() {
     'arc', 'beginPath', 'bezierCurveTo', 'clip', 'closePath', 'ellipse', 'fill', 'fillRect',
     'lineTo', 'moveTo', 'quadraticCurveTo', 'restore', 'rotate', 'save', 'scale', 'stroke', 'translate',
   ]);
-  const target = { calls, texts, font: '700 42px "Andika"', globalAlpha: 1 };
+  const assignments = [];
+  const target = { assignments, calls, texts, font: '700 42px "Andika"', globalAlpha: 1 };
   return new Proxy(target, {
     get(object, property) {
       if (property === 'measureText') return (text) => ({ width: String(text).length * 18 });
@@ -51,13 +59,14 @@ function recordingDialogueContext() {
       return object[property];
     },
     set(object, property, value) {
+      assignments.push([property, value]);
       object[property] = value;
       return true;
     },
   });
 }
 
-describe('adaptive dialogue scroll', () => {
+describe('adaptive dialogue card', () => {
   it('derives the visible active speaker from deterministic world state', () => {
     const guideState = dialogueState();
     const guide = dialogueSceneContext(guideState);
@@ -122,7 +131,7 @@ describe('adaptive dialogue scroll', () => {
     expect(dialogueSceneContext(shop).night).toBe(false);
   });
 
-  it('places and narrows the scroll opposite every speaker without covering the puppet', () => {
+  it('places one stable card opposite every speaker with the portrait attached toward them', () => {
     const cases = [
       { left: 95, right: 355, top: 280, bottom: 680, expectedSide: 'right' },
       { left: 925, right: 1165, top: 300, bottom: 680, expectedSide: 'left' },
@@ -133,16 +142,44 @@ describe('adaptive dialogue scroll', () => {
       const layout = dialogueScrollLayout({ speakerBounds });
       expect(layout.side).toBe(speakerBounds.expectedSide);
       expect(overlaps(layout.frame, speakerBounds)).toBe(false);
-      expect(layout.frame.y).toBeGreaterThanOrEqual(WORLD.height * 0.75);
-      expect(layout.frame.height / WORLD.height).toBeCloseTo(0.22, 1);
-      expect(layout.captionRect.width).toBeGreaterThan(180);
+      expect(layout.frame.y + layout.frame.height).toBeLessThan(WORLD.height);
+      expect(layout.frame.height).toBe(182);
+      expect(layout.rotation).toBe(0);
+      expect(layout.captionRect.width).toBeGreaterThanOrEqual(210);
       expect(layout.replayRect.width).toBeGreaterThanOrEqual(88);
-      expect(layout.advanceRect.width).toBeGreaterThanOrEqual(86);
+      expect(layout.replayRect.height).toBeGreaterThanOrEqual(88);
+      expect(layout.advanceRect.width).toBeGreaterThanOrEqual(88);
+      expect(layout.advanceRect.height).toBeGreaterThanOrEqual(88);
+      expect(rectsOverlap(layout.replayRect, layout.advanceRect)).toBe(false);
+
+      const portraitRadius = 55 * layout.portrait.scale;
+      const portraitBounds = {
+        x: layout.portrait.x - portraitRadius,
+        y: layout.portrait.y - portraitRadius,
+        width: portraitRadius * 2,
+        height: portraitRadius * 2,
+      };
+      expect(overlaps(portraitBounds, speakerBounds)).toBe(false);
+      if (layout.side === 'right') {
+        expect(layout.portraitSide).toBe('left');
+        expect(layout.portrait.x).toBe(layout.frame.x);
+        expect(layout.controlsSide).toBe('right');
+        expect(layout.replayRect.x).toBeGreaterThan(layout.captionRect.x);
+      } else {
+        expect(layout.portraitSide).toBe('right');
+        expect(layout.portrait.x).toBe(layout.frame.x + layout.frame.width);
+        expect(layout.controlsSide).toBe('left');
+        expect(layout.replayRect.x).toBeLessThan(layout.captionRect.x);
+      }
     }
   });
 
   it('keeps a centered scroll when the speaker is absent or entirely above the dialogue band', () => {
-    expect(dialogueScrollLayout().side).toBe('center');
+    const centered = dialogueScrollLayout();
+    expect(centered.side).toBe('center');
+    expect(centered.portraitSide).toBe('left');
+    expect(centered.captionRect.width).toBeGreaterThanOrEqual(210);
+    expect(centered.rotation).toBe(0);
     expect(dialogueScrollLayout({
       speakerBounds: { left: 560, right: 720, top: 40, bottom: 300 },
     }).side).toBe('center');
@@ -202,6 +239,28 @@ describe('adaptive dialogue scroll', () => {
     expect(first.texts).not.toContain(dialogue.text);
     expect(first.texts.some((text) => text.includes('Tap the page'))).toBe(false);
     expect(first.calls).toEqual(second.calls);
+    expect(first.assignments).toEqual(second.assignments);
+    expect(first.calls.filter(([name]) => name === 'clip')).toHaveLength(1);
+    expect(first.calls.some(([name]) => name === 'rotate')).toBe(false);
+  });
+
+  it('keeps day and night materials distinct while full motion only animates the advance medallion', () => {
+    const renderer = new UIRenderer({ characterRenderer: { drawPortrait: vi.fn() } });
+    const dialogue = {
+      type: 'line', speaker: 'npc.guide', caption: 'This way!', text: 'Come along.',
+    };
+    const day = recordingDialogueContext();
+    const night = recordingDialogueContext();
+    const later = recordingDialogueContext();
+
+    renderer.drawDialogue(day, dialogue, 0, true, false, { night: false });
+    renderer.drawDialogue(night, dialogue, 0, true, false, { night: true });
+    renderer.drawDialogue(later, dialogue, 0.31, true, false, { night: false });
+
+    expect(day.assignments).not.toEqual(night.assignments);
+    expect(day.calls).not.toEqual(later.calls);
+    expect(day.texts).toEqual(['This way!', 'Again']);
+    expect(night.texts).toEqual(['This way!', 'Again']);
   });
 
   it('keeps Violet’s current outfit in her dialogue portrait', () => {
