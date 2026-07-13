@@ -1,6 +1,14 @@
 import { easeInOutCubic, easeOutBack, easeOutCubic, lerp } from '../core/math.js';
 import { PALETTE, WORLD } from '../config.js';
 import { chapter1LetterLines } from '../content/chapters/ch1-letter.js';
+import {
+  LETTER_ENVELOPE_POSE,
+  LETTER_READING_POSE,
+  drawClosedLetterEnvelope,
+  drawLetterEnvelopeBack,
+  drawLetterEnvelopeFront,
+  envelopeWorldBounds,
+} from './LetterRenderer.js';
 import { drawVectorOwl, sampleOwlDelivery } from './OwlRenderer.js';
 
 export const BRICK_GRID = Object.freeze({
@@ -122,9 +130,8 @@ export class SetPieceRenderer {
 
   drawLetterDelivery(context, active, { reducedMotion = false } = {}) {
     const t = active.time;
-    const progress = t / active.descriptor.duration;
     const delivery = sampleOwlDelivery(t, { reducedMotion });
-    context.fillStyle = 'rgba(20,17,38,0.24)';
+    context.fillStyle = 'rgba(20,17,38,0.16)';
     context.fillRect(0, 0, WORLD.width, WORLD.height);
 
     if (delivery.owl.opacity > 0) {
@@ -138,45 +145,42 @@ export class SetPieceRenderer {
       }, t);
     }
 
-    const focus = easeOutBack(clamp01((t - 2.18) / 1.25));
-    const scale = delivery.letter.scale * (1 + focus * 0.34);
     context.save();
     context.translate(delivery.letter.x, delivery.letter.y);
     context.rotate(delivery.letter.rotation);
-    context.scale(scale, scale);
-    drawDeliveryEnvelope(context, progress, { reducedMotion });
+    context.scale(delivery.letter.scale, delivery.letter.scale);
+    drawClosedLetterEnvelope(context, { time: t, reducedMotion });
     context.restore();
   }
 
   drawLetterOpen(context, active, { reducedMotion = false } = {}) {
     const state = letterOpenState(active.time, { reducedMotion });
-    context.fillStyle = `rgba(20,17,38,${0.34 + state.push * 0.12})`;
+    context.fillStyle = `rgba(20,17,38,${0.2 + state.push * 0.18})`;
     context.fillRect(0, 0, WORLD.width, WORLD.height);
 
-    if (state.closedOpacity > 0.01) {
+    if (state.showEnvelope) {
       context.save();
-      context.globalAlpha = state.closedOpacity;
-      context.translate(640, 376);
-      context.scale(0.92, 0.92);
-      drawOpeningEnvelopeBack(context, state);
+      context.translate(state.envelopeX, state.envelopeY);
+      context.rotate(state.envelopeRotation);
+      context.scale(state.envelopeScale, state.envelopeScale);
+      drawLetterEnvelopeBack(context, state);
       context.restore();
     }
 
-    if (state.paperOpacity > 0.01) {
+    if (state.paperRise > 0.001) {
       context.save();
-      context.globalAlpha = state.paperOpacity;
-      context.translate(640, 340 + (1 - state.paperRise) * 92);
-      context.scale(state.scale, state.scale);
+      context.translate(state.paperX, state.paperY);
+      context.scale(state.paperScale, state.paperScale);
       drawInvitation(context, state);
       context.restore();
     }
 
-    if (state.closedOpacity > 0.01) {
+    if (state.showEnvelope && state.frontInFront) {
       context.save();
-      context.globalAlpha = state.closedOpacity;
-      context.translate(640, 376);
-      context.scale(0.92, 0.92);
-      drawOpeningEnvelopeFront(context, state);
+      context.translate(state.envelopeX, state.envelopeY);
+      context.rotate(state.envelopeRotation);
+      context.scale(state.envelopeScale, state.envelopeScale);
+      drawLetterEnvelopeFront(context, state);
       context.restore();
     }
   }
@@ -412,28 +416,35 @@ export class SetPieceRenderer {
 export function letterOpenState(time, { reducedMotion = false } = {}) {
   const t = Math.max(0, time);
   if (reducedMotion) {
-    const invitation = easeInOutCubic(clamp01((t - 0.35) / 0.8));
+    const invitation = t >= 0.48;
     return Object.freeze({
       sealCrack: t >= 0.2 ? 1 : 0,
       sealPart: 0,
       flap: 0,
-      paperRise: 1,
-      foldTop: 1,
-      foldBottom: 1,
+      paperRise: invitation ? 1 : 0,
+      foldTop: invitation ? 1 : 0,
+      foldBottom: invitation ? 1 : 0,
       push: 0,
-      scale: 1.03,
-      closedOpacity: 1 - invitation,
-      paperOpacity: invitation,
+      envelopeX: LETTER_ENVELOPE_POSE.x,
+      envelopeY: LETTER_ENVELOPE_POSE.y,
+      envelopeScale: LETTER_ENVELOPE_POSE.scale,
+      envelopeRotation: LETTER_ENVELOPE_POSE.rotation,
+      paperX: LETTER_READING_POSE.x,
+      paperY: LETTER_READING_POSE.y,
+      paperScale: LETTER_READING_POSE.scale,
+      showEnvelope: !invitation,
+      frontInFront: !invitation,
       reducedMotion: true,
     });
   }
-  const sealCrack = easeOutCubic(clamp01((t - 0.18) / 0.34));
-  const sealPart = easeOutCubic(clamp01((t - 0.52) / 0.42));
-  const flap = easeInOutCubic(clamp01((t - 0.76) / 0.58));
-  const paperRise = easeOutBack(clamp01((t - 1.08) / 0.82));
-  const foldTop = easeInOutCubic(clamp01((t - 1.62) / 0.72));
-  const foldBottom = easeInOutCubic(clamp01((t - 2.12) / 0.78));
-  const push = easeInOutCubic(clamp01((t - 2.9) / 1.25));
+  const lift = easeInOutCubic(clamp01(t / 0.34));
+  const sealCrack = easeOutCubic(clamp01((t - 0.28) / 0.34));
+  const sealPart = easeOutCubic(clamp01((t - 0.62) / 0.34));
+  const flap = easeInOutCubic(clamp01((t - 0.86) / 0.56));
+  const paperRise = easeOutBack(clamp01((t - 1.16) / 0.7));
+  const foldTop = easeInOutCubic(clamp01((t - 1.62) / 0.68));
+  const foldBottom = easeInOutCubic(clamp01((t - 2.04) / 0.72));
+  const push = easeInOutCubic(clamp01((t - 2.72) / 1.08));
   return Object.freeze({
     sealCrack,
     sealPart,
@@ -442,11 +453,38 @@ export function letterOpenState(time, { reducedMotion = false } = {}) {
     foldTop,
     foldBottom,
     push,
-    scale: lerp(0.7, 1.03, push),
-    closedOpacity: 1 - easeInOutCubic(clamp01((t - 2.28) / 0.92)),
-    paperOpacity: easeInOutCubic(clamp01((t - 1.04) / 0.32)),
+    envelopeX: LETTER_ENVELOPE_POSE.x,
+    envelopeY: lerp(LETTER_ENVELOPE_POSE.y, 220, lift),
+    envelopeScale: lerp(LETTER_ENVELOPE_POSE.scale, 0.76, lift),
+    envelopeRotation: lerp(LETTER_ENVELOPE_POSE.rotation, -0.01, lift),
+    paperX: lerp(LETTER_ENVELOPE_POSE.x, LETTER_READING_POSE.x, push),
+    paperY: lerp(404, LETTER_READING_POSE.y, paperRise),
+    paperScale: lerp(0.56, LETTER_READING_POSE.scale, push),
+    showEnvelope: t < 2.5,
+    frontInFront: paperRise < 0.88,
     reducedMotion: false,
   });
+}
+
+export function letterOpeningBounds(state) {
+  const envelope = state.showEnvelope
+    ? envelopeWorldBounds({
+        x: state.envelopeX,
+        y: state.envelopeY,
+        scale: state.envelopeScale,
+        rotation: state.envelopeRotation,
+      })
+    : null;
+  const paperHeight = 150 + 138 * state.foldTop + 142 * state.foldBottom;
+  const paper = state.paperRise > 0
+    ? Object.freeze({
+        x: state.paperX - 325 * state.paperScale,
+        y: state.paperY - paperHeight * state.paperScale / 2,
+        width: 650 * state.paperScale,
+        height: paperHeight * state.paperScale,
+      })
+    : null;
+  return Object.freeze({ envelope, paper });
 }
 
 export function brickTileState(row, column, time) {
@@ -566,87 +604,6 @@ export function ticketPresentationState(time, duration = 4, { reducedMotion = fa
   });
 }
 
-function drawOpeningEnvelopeBack(context, state) {
-  context.fillStyle = '#f2dfb6';
-  context.strokeStyle = '#6c4b36';
-  context.lineWidth = 6;
-  roundRect(context, -190, -105, 380, 210, 18);
-  context.fill();
-  context.stroke();
-
-  const flapTipY = lerp(-4, -176, state.flap);
-  context.fillStyle = '#ead5ab';
-  context.beginPath();
-  context.moveTo(-184, -98);
-  context.lineTo(184, -98);
-  context.lineTo(0, flapTipY);
-  context.closePath();
-  context.fill();
-  context.stroke();
-}
-
-function drawOpeningEnvelopeFront(context, state) {
-  context.fillStyle = '#dfc696';
-  context.strokeStyle = '#6c4b36';
-  context.lineWidth = 6;
-  context.beginPath();
-  context.moveTo(-184, 98);
-  context.lineTo(-184, -12);
-  context.lineTo(0, 38);
-  context.lineTo(184, -12);
-  context.lineTo(184, 98);
-  context.closePath();
-  context.fill();
-  context.stroke();
-
-  context.strokeStyle = 'rgba(108,75,54,0.42)';
-  context.lineWidth = 3;
-  context.beginPath();
-  context.moveTo(-178, 92);
-  context.lineTo(0, -8);
-  context.lineTo(178, 92);
-  context.stroke();
-
-  const sealSeparation = state.sealPart * 34;
-  context.save();
-  context.translate(-sealSeparation, 30 - state.sealPart * 13);
-  drawSealHalf(context, 'left', state.sealCrack);
-  context.restore();
-  context.save();
-  context.translate(sealSeparation, 30 + state.sealPart * 10);
-  drawSealHalf(context, 'right', state.sealCrack);
-  context.restore();
-
-  if (state.sealPart > 0 && !state.reducedMotion) {
-    for (let index = 0; index < 12; index += 1) {
-      const angle = index * Math.PI / 6 + 0.2;
-      const radius = state.sealPart * (34 + (index % 3) * 13);
-      drawStar(context, Math.cos(angle) * radius, 30 + Math.sin(angle) * radius, 4 + (index % 2) * 2, '#ffd76a', 1 - state.sealPart * 0.55);
-    }
-  }
-}
-
-function drawSealHalf(context, side, crack) {
-  context.fillStyle = '#8d2f47';
-  context.strokeStyle = '#542237';
-  context.lineWidth = 3;
-  context.beginPath();
-  if (side === 'left') {
-    context.arc(0, 0, 34, Math.PI / 2, Math.PI * 1.5);
-    context.lineTo(2 + crack * 8, -13);
-    context.lineTo(-4 - crack * 4, -2);
-    context.lineTo(4 + crack * 7, 10);
-  } else {
-    context.arc(0, 0, 34, -Math.PI / 2, Math.PI / 2);
-    context.lineTo(-2 - crack * 8, 13);
-    context.lineTo(4 + crack * 4, 2);
-    context.lineTo(-4 - crack * 7, -10);
-  }
-  context.closePath();
-  context.fill();
-  context.stroke();
-}
-
 function drawInvitation(context, state) {
   const width = 650;
   const centerHeight = 150;
@@ -687,9 +644,10 @@ function drawInvitation(context, state) {
     context.fillStyle = `rgba(118,78,48,${(1 - state.foldTop) * 0.18})`;
     context.beginPath();
     context.moveTo(-width / 2, -centerHeight / 2);
-    context.lineTo(-width / 2 + topInset, top);
-    context.lineTo(width / 2 - topInset, top);
-    context.lineTo(width / 2, -centerHeight / 2);
+    context.bezierCurveTo(-width / 2 + 4, top + 20, -width / 2 + topInset - 7, top + 4, -width / 2 + topInset, top);
+    context.bezierCurveTo(-90, top - 3, 92, top + 3, width / 2 - topInset, top);
+    context.bezierCurveTo(width / 2 - topInset + 8, top + 5, width / 2 - 4, -centerHeight / 2 - 18, width / 2, -centerHeight / 2);
+    context.bezierCurveTo(108, -centerHeight / 2 + 4, -109, -centerHeight / 2 - 4, -width / 2, -centerHeight / 2);
     context.closePath();
     context.fill();
   }
@@ -697,9 +655,10 @@ function drawInvitation(context, state) {
     context.fillStyle = `rgba(255,252,226,${(1 - state.foldBottom) * 0.28})`;
     context.beginPath();
     context.moveTo(-width / 2, centerHeight / 2);
-    context.lineTo(width / 2, centerHeight / 2);
-    context.lineTo(width / 2 - bottomInset, centerHeight / 2 + bottomHeight);
-    context.lineTo(-width / 2 + bottomInset, centerHeight / 2 + bottomHeight);
+    context.bezierCurveTo(-110, centerHeight / 2 - 4, 112, centerHeight / 2 + 4, width / 2, centerHeight / 2);
+    context.bezierCurveTo(width / 2 - 3, centerHeight / 2 + bottomHeight - 18, width / 2 - bottomInset + 8, centerHeight / 2 + bottomHeight - 5, width / 2 - bottomInset, centerHeight / 2 + bottomHeight);
+    context.bezierCurveTo(98, centerHeight / 2 + bottomHeight + 3, -100, centerHeight / 2 + bottomHeight - 3, -width / 2 + bottomInset, centerHeight / 2 + bottomHeight);
+    context.bezierCurveTo(-width / 2 + bottomInset - 8, centerHeight / 2 + bottomHeight - 5, -width / 2 + 3, centerHeight / 2 + 18, -width / 2, centerHeight / 2);
     context.closePath();
     context.fill();
   }
@@ -709,11 +668,11 @@ function drawInvitation(context, state) {
   context.beginPath();
   if (state.foldTop > 0.02) {
     context.moveTo(-306, -75);
-    context.lineTo(306, -75);
+    context.bezierCurveTo(-102, -78, 103, -72, 306, -75);
   }
   if (state.foldBottom > 0.02) {
     context.moveTo(-306, 75);
-    context.lineTo(306, 75);
+    context.bezierCurveTo(-104, 72, 101, 78, 306, 75);
   }
   context.stroke();
 
@@ -751,34 +710,32 @@ function drawInvitation(context, state) {
 function traceInvitation(context, width, centerHeight, topHeight, bottomHeight, topInset, bottomInset, xOffset = 0, yOffset = 0) {
   const halfWidth = width / 2;
   const halfCenter = centerHeight / 2;
-  const cut = 7;
+  const left = -halfWidth + xOffset;
+  const right = halfWidth + xOffset;
+  const topY = -halfCenter - topHeight + yOffset;
+  const bottomY = halfCenter + bottomHeight + yOffset;
+  const topLeft = left + (topHeight > 0.5 ? topInset : 7);
+  const topRight = right - (topHeight > 0.5 ? topInset : 7);
+  const bottomLeft = left + (bottomHeight > 0.5 ? bottomInset : 7);
+  const bottomRight = right - (bottomHeight > 0.5 ? bottomInset : 7);
   context.beginPath();
-  context.moveTo(-halfWidth + xOffset, -halfCenter + cut + yOffset);
-  if (topHeight > 0.5) {
-    context.lineTo(-halfWidth + topInset + xOffset, -halfCenter - topHeight + cut + yOffset);
-    context.lineTo(-halfWidth + topInset + cut + xOffset, -halfCenter - topHeight + yOffset);
-    context.lineTo(halfWidth - topInset - cut + xOffset, -halfCenter - topHeight + yOffset);
-    context.lineTo(halfWidth - topInset + xOffset, -halfCenter - topHeight + cut + yOffset);
-  } else {
-    context.lineTo(-halfWidth + cut + xOffset, -halfCenter + yOffset);
-    context.lineTo(halfWidth - cut + xOffset, -halfCenter + yOffset);
-  }
-  context.lineTo(halfWidth + xOffset, -halfCenter + cut + yOffset);
-  context.lineTo(halfWidth + xOffset, halfCenter + yOffset);
-  if (bottomHeight > 0.5) {
-    context.lineTo(halfWidth - bottomInset + xOffset, halfCenter + bottomHeight - cut + yOffset);
-    context.lineTo(halfWidth - bottomInset - cut + xOffset, halfCenter + bottomHeight + yOffset);
-    context.lineTo(-halfWidth + bottomInset + cut + xOffset, halfCenter + bottomHeight + yOffset);
-    context.lineTo(-halfWidth + bottomInset + xOffset, halfCenter + bottomHeight - cut + yOffset);
-  } else {
-    context.lineTo(halfWidth - cut + xOffset, halfCenter + yOffset);
-    context.lineTo(-halfWidth + cut + xOffset, halfCenter + yOffset);
-  }
-  context.lineTo(-halfWidth + xOffset, halfCenter - cut + yOffset);
+  context.moveTo(left, -halfCenter + 8 + yOffset);
+  context.bezierCurveTo(left - 3, -halfCenter - 17 + yOffset, topLeft - 8, topY + 10, topLeft, topY + 5);
+  context.bezierCurveTo(topLeft + width * 0.24, topY - 4, topRight - width * 0.24, topY + 4, topRight, topY + 2);
+  context.bezierCurveTo(topRight + 8, topY + 8, right + 3, -halfCenter - 13 + yOffset, right, -halfCenter + 9 + yOffset);
+  context.bezierCurveTo(right + 4, -halfCenter * 0.2 + yOffset, right - 3, halfCenter * 0.35 + yOffset, right, halfCenter + yOffset);
+  context.bezierCurveTo(right + 2, halfCenter + 18 + yOffset, bottomRight + 8, bottomY - 10, bottomRight, bottomY - 4);
+  context.bezierCurveTo(bottomRight - width * 0.23, bottomY + 4, bottomLeft + width * 0.23, bottomY - 4, bottomLeft, bottomY);
+  context.bezierCurveTo(bottomLeft - 8, bottomY - 8, left - 2, halfCenter + 15 + yOffset, left, halfCenter - 6 + yOffset);
+  context.bezierCurveTo(left - 4, halfCenter * 0.34 + yOffset, left + 3, -halfCenter * 0.24 + yOffset, left, -halfCenter + 8 + yOffset);
   context.closePath();
 }
 
-export function drawReadableInvitation(context, { x = 640, y = 340, scale = 1.03 } = {}) {
+export function drawReadableInvitation(context, {
+  x = LETTER_READING_POSE.x,
+  y = LETTER_READING_POSE.y,
+  scale = LETTER_READING_POSE.scale,
+} = {}) {
   context.save();
   context.translate(x, y);
   context.scale(scale, scale);
@@ -1116,60 +1073,6 @@ function drawTicketOwl(context, x, y) {
   context.closePath();
   context.fill();
   context.restore();
-}
-
-function drawDeliveryEnvelope(context, progress, { reducedMotion = false } = {}) {
-  context.fillStyle = PALETTE.parchment;
-  context.strokeStyle = '#72543b';
-  context.lineWidth = 6;
-  roundRect(context, -180, -105, 360, 210, 18);
-  context.fill();
-  context.stroke();
-
-  context.fillStyle = 'rgba(205,169,105,0.2)';
-  context.beginPath();
-  context.moveTo(-174, 95);
-  context.lineTo(0, -8);
-  context.lineTo(174, 95);
-  context.closePath();
-  context.fill();
-
-  context.strokeStyle = '#8e704c';
-  context.lineWidth = 4;
-  context.beginPath();
-  context.moveTo(-175, -98);
-  context.lineTo(0, 25);
-  context.lineTo(175, -98);
-  context.moveTo(-174, 96);
-  context.lineTo(-34, 15);
-  context.moveTo(174, 96);
-  context.lineTo(34, 15);
-  context.stroke();
-
-  context.fillStyle = '#7a2940';
-  context.beginPath();
-  for (let index = 0; index < 16; index += 1) {
-    const angle = index * Math.PI / 8;
-    const radius = index % 2 === 0 ? 35 : 30;
-    const x = Math.cos(angle) * radius;
-    const y = 34 + Math.sin(angle) * radius;
-    if (index === 0) context.moveTo(x, y);
-    else context.lineTo(x, y);
-  }
-  context.closePath();
-  context.fill();
-  context.strokeStyle = '#4e2630';
-  context.lineWidth = 3;
-  context.stroke();
-  context.fillStyle = PALETTE.candle;
-  context.textAlign = 'center';
-  context.font = '700 52px "Andika", "Trebuchet MS", sans-serif';
-  context.globalAlpha = deliveryLetteringAlpha(progress, { reducedMotion });
-  context.fillText('VIOLET', 0, -25);
-  context.globalAlpha = 1;
-  context.fillStyle = '#f1d898';
-  context.font = '700 29px "Andika", "Trebuchet MS", sans-serif';
-  context.fillText('✦', 0, 44);
 }
 
 export function deliveryLetteringAlpha(progress, { reducedMotion = false } = {}) {

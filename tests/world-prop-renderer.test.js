@@ -6,7 +6,7 @@ function recordingContext() {
   let depth = 0;
   const gradient = { addColorStop: (...args) => calls.push(['addColorStop', ...args]) };
   const methods = new Set([
-    'arc', 'beginPath', 'closePath', 'fill', 'fillText', 'lineTo', 'moveTo',
+    'arc', 'beginPath', 'bezierCurveTo', 'clip', 'closePath', 'fill', 'fillText', 'lineTo', 'moveTo',
     'quadraticCurveTo', 'restore', 'rotate', 'save', 'scale', 'stroke', 'strokeText', 'translate',
   ]);
   const target = { calls, globalAlpha: 1, get depth() { return depth; } };

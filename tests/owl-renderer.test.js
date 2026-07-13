@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { sampleOwlDelivery, sampleOwlMotion } from '../src/game/render/OwlRenderer.js';
+import { LETTER_ENVELOPE_POSE } from '../src/game/render/LetterRenderer.js';
 
 describe('vector owl motion', () => {
   it('is deterministic and keeps sampled transforms finite and bounded', () => {
@@ -49,11 +50,14 @@ describe('owl delivery choreography', () => {
 
     expect(perch.owl).toMatchObject({ x: 1060, y: 290, pose: 'takeoff', opacity: 1 });
     expect(flight.owl.pose).toBe('delivery');
-    expect(flight.letter.scale).toBe(0.38);
-    expect(release.letter.scale).toBeGreaterThan(0.38);
+    expect(flight.letter.scale).toBe(0.3);
+    expect(release.letter.scale).toBeGreaterThan(0.3);
     expect(release.letter.x).toBeLessThan(flight.letter.x);
     expect(exit.owl.opacity).toBe(0);
-    expect(exit.letter.x).toBeCloseTo(650);
+    expect(exit.letter.x).toBeCloseTo(LETTER_ENVELOPE_POSE.x, 3);
+    expect(exit.letter.y).toBeCloseTo(LETTER_ENVELOPE_POSE.y, 3);
+    expect(exit.letter.scale).toBeCloseTo(LETTER_ENVELOPE_POSE.scale, 3);
+    expect(exit.letter.rotation).toBeCloseTo(LETTER_ENVELOPE_POSE.rotation, 3);
     expect(sampleOwlDelivery(1.5)).toEqual(release);
   });
 
@@ -65,6 +69,6 @@ describe('owl delivery choreography', () => {
 
     expect(reducedDisplacement).toBeLessThan(fullDisplacement);
     expect(reduced.owl.pose).toBe('settle');
-    expect(reduced.letter.scale).toBeGreaterThan(0.48);
+    expect(reduced.letter.scale).toBeGreaterThan(0.34);
   });
 });

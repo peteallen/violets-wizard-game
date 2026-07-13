@@ -1,4 +1,5 @@
 import { clamp, easeInOutCubic, easeOutCubic, lerp } from '../core/math.js';
+import { LETTER_ENVELOPE_POSE } from './LetterRenderer.js';
 
 const OUTLINE = '#30251f';
 
@@ -110,10 +111,10 @@ export function sampleOwlDelivery(time, { reducedMotion = false } = {}) {
         pose: t < 0.35 ? 'takeoff' : 'settle',
       }),
       letter: Object.freeze({
-        x: lerp(925, 650, easeInOutCubic(clamp((t - 0.35) / 1.45, 0, 1))),
-        y: lerp(310, 350, easeOutCubic(clamp((t - 0.35) / 1.45, 0, 1))),
-        rotation: lerp(-0.04, 0, clamp(t / 1.8, 0, 1)),
-        scale: lerp(0.48, 1, easeOutCubic(clamp((t - 0.35) / 1.45, 0, 1))),
+        x: lerp(925, LETTER_ENVELOPE_POSE.x, easeInOutCubic(clamp((t - 0.35) / 1.45, 0, 1))),
+        y: lerp(310, LETTER_ENVELOPE_POSE.y, easeOutCubic(clamp((t - 0.35) / 1.45, 0, 1))),
+        rotation: lerp(-0.04, LETTER_ENVELOPE_POSE.rotation, clamp(t / 1.8, 0, 1)),
+        scale: lerp(0.34, LETTER_ENVELOPE_POSE.scale, easeOutCubic(clamp((t - 0.35) / 1.45, 0, 1))),
       }),
     });
   }
@@ -148,13 +149,13 @@ export function sampleOwlDelivery(time, { reducedMotion = false } = {}) {
     letterX = owlX - 4;
     letterY = owlY + 45;
     letterRotation = owlRotation * 0.35;
-    letterScale = 0.38;
+    letterScale = 0.3;
   } else {
     const p = easeOutCubic(clamp((t - releaseAt) / 1.05, 0, 1));
-    letterX = lerp(776, 650, p) + Math.sin(p * Math.PI * 2) * (1 - p) * 18;
-    letterY = cubicBezier(320, 305, 330, 350, p);
-    letterRotation = Math.sin(p * Math.PI * 2.4) * (1 - p) * 0.12;
-    letterScale = lerp(0.38, 1, p);
+    letterX = lerp(776, LETTER_ENVELOPE_POSE.x, p) + Math.sin(p * Math.PI * 2) * (1 - p) * 18;
+    letterY = cubicBezier(320, 300, 270, LETTER_ENVELOPE_POSE.y, p);
+    letterRotation = LETTER_ENVELOPE_POSE.rotation + Math.sin(p * Math.PI * 2.4) * (1 - p) * 0.12;
+    letterScale = lerp(0.3, LETTER_ENVELOPE_POSE.scale, p);
   }
 
   return Object.freeze({

@@ -1125,7 +1125,7 @@ export const chapter1 = {
       reducedMotion: 'reduced.letterDeliveryFade',
       params: { specification: 'SP-01' },
       timeline: { tracks: [sfxCue(0.25, 'sfx/ch1/owlFlap'), sfxCue(0.95, 'sfx/ch1/paperSlide')] },
-      verification: { keyframes: [0, 2, 3.2, 4.8], checklist: ['Violet is legible on the envelope.', 'The letter folds do not intersect.', 'No painting edge is exposed.'] },
+      verification: { keyframes: [0, 2, 3.2, 4.8], checklist: ['Violet is legible on the envelope.', 'Delivery ends on the canonical resting-envelope pose.', 'No painting edge is exposed.'] },
       onComplete: [],
     },
     'sp.letterOpen': {
@@ -1142,7 +1142,7 @@ export const chapter1 = {
       timeline: { tracks: [sfxCue(0.2, 'sfx/ch1/sealCrack'), sfxCue(1.05, 'sfx/ch1/paperSlide')] },
       verification: {
         keyframes: [0, 0.35, 0.9, 1.55, 2.25, 3.1, 4.6],
-        checklist: ['The owl seal visibly cracks before it parts.', 'The flap, paper rise, and two folds each have a distinct readable beat.', 'No intermediate frame becomes a large blank rectangle.', 'The invitation settles into the exact reading-surface position.'],
+        checklist: ['Opening frame zero matches the delivered envelope exactly.', 'The closed envelope stays above Violet’s protected head region.', 'The irregular owl seal visibly cracks before restrained wax pieces part.', 'The flap, paper rise, and two folds each have a distinct readable beat.', 'No opaque material layers ghost through one another.', 'No intermediate frame becomes a large blank rectangle.', 'The invitation settles into the exact reading-surface position.'],
       },
       onComplete: [],
     },
@@ -1173,7 +1173,7 @@ export const chapter1 = {
       reducedMotion: null,
       params: { specification: 'SP-01', variant: 'reduced-open' },
       timeline: { tracks: [sfxCue(0.2, 'sfx/ch1/sealCrack'), sfxCue(0.45, 'sfx/ch1/paperSlide')] },
-      verification: { keyframes: [0, 0.5, 1.3], checklist: ['The sealed envelope crossfades to the fully readable invitation without unfolding motion.', 'The reading action appears without a static input lock.'] },
+      verification: { keyframes: [0, 0.5, 1.3], checklist: ['The canonical sealed envelope cuts cleanly to the fully readable invitation without overlapping material.', 'The reading actions appear without a static input lock.'] },
       onComplete: [],
     },
     'sp.brickWall': {

@@ -7,6 +7,7 @@ import {
   brickTileSourceRect,
   deliveryLetteringAlpha,
   drawReadableInvitation,
+  letterOpeningBounds,
   letterOpenState,
   ticketPresentationState,
   vaseShardPose,
@@ -47,14 +48,28 @@ describe('SetPieceRenderer dispatch', () => {
     expect(topFold.foldTop).toBeGreaterThan(topFold.foldBottom);
     expect(readable.foldTop).toBeGreaterThanOrEqual(0.99);
     expect(readable.foldBottom).toBeGreaterThanOrEqual(0.99);
-    expect(pushed.scale).toBeGreaterThan(readable.scale);
-    expect(pushed.scale).toBeLessThanOrEqual(1.03);
+    expect(pushed.paperScale).toBeGreaterThan(readable.paperScale);
+    expect(pushed.paperScale).toBeLessThanOrEqual(0.87);
 
     const reduced = letterOpenState(2, { reducedMotion: true });
     expect(reduced.push).toBe(0);
-    expect(reduced.scale).toBe(1.03);
+    expect(reduced.paperScale).toBe(0.87);
     expect(reduced.foldTop).toBe(1);
     expect(reduced.foldBottom).toBe(1);
+  });
+
+  it('keeps the sealed envelope above Violet’s protected head region at every authored keyframe', () => {
+    const violetHead = { x: 710, y: 388, width: 100, height: 118 };
+    for (const time of [0, 0.35, 0.9, 1.55, 2.25, 3.1, 4.6]) {
+      const envelope = letterOpeningBounds(letterOpenState(time)).envelope;
+      if (!envelope) continue;
+      const intersects = envelope.x < violetHead.x + violetHead.width
+        && envelope.x + envelope.width > violetHead.x
+        && envelope.y < violetHead.y + violetHead.height
+        && envelope.y + envelope.height > violetHead.y;
+      expect(intersects, `envelope intersects Violet at t=${time}`).toBe(false);
+      expect(envelope.y + envelope.height).toBeLessThan(352);
+    }
   });
 
   it('renders only the canonical narrated wording on the open letter', () => {
