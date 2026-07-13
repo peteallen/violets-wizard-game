@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { validateChapter } from '../src/game/contracts.js';
+import { validateChapter, validateMap } from '../src/game/contracts.js';
 import { Dialogue } from '../src/game/systems/Dialogue.js';
 import { createSaveV1 } from '../src/game/systems/Save.js';
 import { World } from '../src/game/world/World.js';
@@ -19,8 +19,10 @@ import { chapter2, chapter2AssetKeys } from '../src/game/content/chapters/ch2.js
 import {
   chapterAvailability,
   contentRegistry,
+  getMap,
   getChapter,
   isChapterPlayable,
+  maps,
 } from '../src/game/content/index.js';
 import { isSupportedCaption } from '../src/game/content/vocabulary.js';
 
@@ -53,7 +55,11 @@ describe('chapter content contracts', () => {
   it('validates the playable Chapter 1 and intentional Chapter 2 placeholder', () => {
     expect(validateChapter(chapter1)).toBe(chapter1);
     expect(validateChapter(chapter2)).toBe(chapter2);
+    expect(validateMap(chapter1Map)).toBe(chapter1Map);
     expect(contentRegistry).toEqual({ ch1: chapter1, ch2: chapter2 });
+    expect(maps).toEqual({ [chapter1Map.id]: chapter1Map });
+    expect(getMap(chapter1Map.id)).toBe(chapter1Map);
+    expect(getMap('map.ch8.missing')).toBeNull();
     expect(getChapter(1)).toBe(chapter1);
     expect(getChapter('ch2')).toBe(chapter2);
     expect(chapterAvailability).toEqual({ ch1: 'playable', ch2: 'placeholder' });
@@ -101,6 +107,32 @@ describe('chapter content contracts', () => {
     expect(chapter1Flags).toContain('ch1.complete');
     expect(chapter1.rooms['ch1.ollivanders'].hotspots.find((hotspot) => hotspot.id === 'ollivanders.cardMorgana')).toBeTruthy();
     expect(chapter1.rooms['ch1.menagerie'].hotspots.find((hotspot) => hotspot.id === 'menagerie.cardDumbledore')).toBeTruthy();
+  });
+
+  it('makes map travel, objective markers, vignettes, and routes authoritative content', () => {
+    const locationIds = new Set(chapter1Map.locations.map((location) => location.id));
+    const objectiveTargets = new Set(chapter1Map.locations.map((location) => (
+      `${location.objectiveTarget.room}:${location.objectiveTarget.hotspot}`
+    )));
+    const chapterObjectiveTargets = Object.values(chapter1.quests)
+      .flatMap((quest) => Object.values(quest.steps))
+      .map((step) => step.objective.mapStar)
+      .filter(Boolean)
+      .map((target) => `${target.room}:${target.hotspot}`);
+
+    for (const location of chapter1Map.locations) {
+      const travelActions = location.onSelect.filter((action) => action.type === 'travel.request');
+      expect(travelActions).toEqual([{ type: 'travel.request', ...location.to }]);
+      expect(location.onSelect.at(-1)).toEqual(travelActions[0]);
+      expect(location.vignette.width).toBeGreaterThanOrEqual(88);
+      expect(location.vignette.height).toBeGreaterThanOrEqual(88);
+    }
+    for (const target of chapterObjectiveTargets) expect(objectiveTargets).toContain(target);
+    for (const route of chapter1Map.routes) {
+      expect(locationIds).toContain(route.from);
+      expect(locationIds).toContain(route.to);
+      expect(route.points.length).toBeGreaterThanOrEqual(2);
+    }
   });
 
   it('draws exactly the same original letter wording that the narrator reads', () => {

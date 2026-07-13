@@ -862,6 +862,87 @@ function validateIdMap(value, path, validate) {
   });
 }
 
+function validateMapLocation(value, path) {
+  exactObject(value, path, [
+    'id', 'icon', 'caption', 'alwaysUnlocked', 'to', 'objectiveTarget',
+    'vignette', 'onSelect',
+  ]);
+  id(value.id, `${path}.id`);
+  ref(value.icon, `${path}.icon`);
+  caption(value.caption, `${path}.caption`, 3);
+  boolean(value.alwaysUnlocked, `${path}.alwaysUnlocked`);
+  exactObject(value.to, `${path}.to`, ['room', 'spawn']);
+  id(value.to.room, `${path}.to.room`);
+  localId(value.to.spawn, `${path}.to.spawn`);
+  if (value.objectiveTarget !== null) {
+    exactObject(value.objectiveTarget, `${path}.objectiveTarget`, ['room', 'hotspot']);
+    id(value.objectiveTarget.room, `${path}.objectiveTarget.room`);
+    id(value.objectiveTarget.hotspot, `${path}.objectiveTarget.hotspot`);
+  }
+  exactObject(value.vignette, `${path}.vignette`, ['x', 'y', 'width', 'height']);
+  number(value.vignette.x, `${path}.vignette.x`, { min: 0 });
+  number(value.vignette.y, `${path}.vignette.y`, { min: 0 });
+  number(value.vignette.width, `${path}.vignette.width`, { min: 88 });
+  number(value.vignette.height, `${path}.vignette.height`, { min: 88 });
+  validateActions(value.onSelect, `${path}.onSelect`, { min: 1 });
+
+  const travelActions = value.onSelect
+    .map((action, index) => ({ action, index }))
+    .filter(({ action }) => action.type === 'travel.request');
+  if (travelActions.length !== 1) fail(`${path}.onSelect`, 'must contain exactly one travel.request action');
+  const [{ action: travelAction, index: travelIndex }] = travelActions;
+  if (travelAction.room !== value.to.room || travelAction.spawn !== value.to.spawn) {
+    fail(`${path}.onSelect[${travelIndex}]`, 'travel destination must exactly match to');
+  }
+  if (travelIndex !== value.onSelect.length - 1) {
+    fail(`${path}.onSelect[${travelIndex}]`, 'travel.request must be the final action');
+  }
+}
+
+function validateMapRoute(value, path) {
+  exactObject(value, path, ['id', 'from', 'to', 'points']);
+  id(value.id, `${path}.id`);
+  id(value.from, `${path}.from`);
+  id(value.to, `${path}.to`);
+  if (value.from === value.to) fail(`${path}.to`, 'must differ from from');
+  array(value.points, `${path}.points`, (point, pointPath) => {
+    exactObject(point, pointPath, ['x', 'y']);
+    number(point.x, `${pointPath}.x`, { min: 0 });
+    number(point.y, `${pointPath}.y`, { min: 0 });
+  }, { min: 2, max: 12 });
+}
+
+export function validateMap(value, path = 'map') {
+  exactObject(value, path, ['contractVersion', 'id', 'asset', 'locations', 'routes']);
+  if (value.contractVersion !== CONTRACT_VERSION) fail(`${path}.contractVersion`, `must be ${CONTRACT_VERSION}`);
+  id(value.id, `${path}.id`);
+  ref(value.asset, `${path}.asset`);
+  array(value.locations, `${path}.locations`, validateMapLocation, { min: 1, max: 64 });
+  array(value.routes, `${path}.routes`, validateMapRoute, { min: 1, max: 128 });
+
+  const locationIds = new Set();
+  const objectiveTargets = new Set();
+  value.locations.forEach((location, index) => {
+    if (locationIds.has(location.id)) fail(`${path}.locations[${index}].id`, 'must be unique');
+    locationIds.add(location.id);
+    if (location.objectiveTarget === null) return;
+    const targetKey = `${location.objectiveTarget.room}:${location.objectiveTarget.hotspot}`;
+    if (objectiveTargets.has(targetKey)) {
+      fail(`${path}.locations[${index}].objectiveTarget`, 'must identify a unique objective target');
+    }
+    objectiveTargets.add(targetKey);
+  });
+
+  const routeIds = new Set();
+  value.routes.forEach((route, index) => {
+    if (routeIds.has(route.id)) fail(`${path}.routes[${index}].id`, 'must be unique');
+    routeIds.add(route.id);
+    if (!locationIds.has(route.from)) fail(`${path}.routes[${index}].from`, 'must reference a map location');
+    if (!locationIds.has(route.to)) fail(`${path}.routes[${index}].to`, 'must reference a map location');
+  });
+  return value;
+}
+
 export function validateChapter(value, path = 'chapter') {
   exactObject(value, path, [
     'contractVersion', 'id', 'number', 'title', 'season', 'start', 'scenes',

@@ -3,10 +3,50 @@ import {
   ContractValidationError,
   PARTICLE_LIMITS,
   validateChapter,
+  validateMap,
   validateWorldEvent,
 } from '../src/game/contracts.js';
 
 const condition = () => ({ allFlags: [], anyFlags: [], noFlags: [] });
+
+function mapFixture() {
+  return {
+    contractVersion: 1,
+    id: 'map.ch1.test',
+    asset: 'maps/ch1/test',
+    locations: [
+      {
+        id: 'map.ch1.street',
+        icon: 'street',
+        caption: 'Explore',
+        alwaysUnlocked: true,
+        to: { room: 'ch1.street', spawn: 'west' },
+        objectiveTarget: { room: 'ch1.street', hotspot: 'street.guide' },
+        vignette: { x: 100, y: 200, width: 180, height: 140 },
+        onSelect: [{ type: 'travel.request', room: 'ch1.street', spawn: 'west' }],
+      },
+      {
+        id: 'map.ch1.shop',
+        icon: 'shop',
+        caption: 'Shop',
+        alwaysUnlocked: false,
+        to: { room: 'ch1.shop', spawn: 'entry' },
+        objectiveTarget: { room: 'ch1.street', hotspot: 'street.shopDoor' },
+        vignette: { x: 400, y: 180, width: 180, height: 140 },
+        onSelect: [
+          { type: 'flag.set', flag: 'ch1.mapUsed', value: true },
+          { type: 'travel.request', room: 'ch1.shop', spawn: 'entry' },
+        ],
+      },
+    ],
+    routes: [{
+      id: 'route.ch1.streetToShop',
+      from: 'map.ch1.street',
+      to: 'map.ch1.shop',
+      points: [{ x: 190, y: 270 }, { x: 400, y: 250 }],
+    }],
+  };
+}
 
 function chapterFixture() {
   return {
@@ -204,6 +244,25 @@ describe('content contracts', () => {
     const chapter = chapterFixture();
     chapter.quests['ch1.shopping'].steps.visitShop.next = 'visitShop';
     expect(() => validateChapter(chapter)).toThrow(/creates a cycle/);
+  });
+});
+
+describe('map content contract', () => {
+  it('accepts one authoritative destination and stable layout per location', () => {
+    const map = mapFixture();
+    expect(validateMap(map)).toBe(map);
+  });
+
+  it.each([
+    ['unknown fields', (map) => { map.previewPainting = true; }],
+    ['travel actions that drift from their destination', (map) => { map.locations[1].onSelect[1].room = 'ch1.street'; }],
+    ['travel actions before later side effects', (map) => { map.locations[1].onSelect.reverse(); }],
+    ['routes to missing locations', (map) => { map.routes[0].to = 'map.ch1.missing'; }],
+    ['duplicate objective targets', (map) => { map.locations[1].objectiveTarget = { ...map.locations[0].objectiveTarget }; }],
+  ])('rejects %s', (_label, mutate) => {
+    const map = mapFixture();
+    mutate(map);
+    expect(() => validateMap(map)).toThrow(ContractValidationError);
   });
 });
 
