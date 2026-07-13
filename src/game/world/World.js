@@ -1,4 +1,4 @@
-import { HINTS, WORLD } from '../config.js';
+import { HINTS, OBJECTIVE, WORLD } from '../config.js';
 import { conditionMatches, writePath } from '../core/conditions.js';
 import { SeededRandom } from '../core/rng.js';
 import { Dialogue } from '../systems/Dialogue.js';
@@ -43,7 +43,7 @@ export class World {
     this.overlay = null;
     this.selection = null;
     this.pendingPetType = null;
-    this.newObjective = true;
+    this.objectiveEmphasisUntil = 0;
     this.glintActivations = new GlintActivationLedger();
     this.dialogueSourceTarget = null;
 
@@ -169,7 +169,7 @@ export class World {
     this.player.targetX = Math.max(55, Math.min((this.room.size?.width ?? WORLD.width) - 55, worldPoint.x));
     this.player.y = Math.max(band.top, Math.min(band.bottom, worldPoint.y));
     this.cancelPendingInteraction({ stopWalking: false });
-    this.recordFailedAttempt();
+    this.idleTime = 0;
     this.emit('feedback.command', { kind: 'emptyTap', x: point.x, y: point.y });
     return { kind: 'walk', x: this.player.targetX };
   }
@@ -540,7 +540,9 @@ export class World {
     this.resetHintLadder('progress');
   }
 
-  recordFailedAttempt() {
+  // Puzzle controllers call this only after an interaction has been evaluated
+  // against the active puzzle. Ordinary room movement never routes through it.
+  recordPuzzleFailure() {
     const active = this.syncHintObjective();
     if (!active || this.blocked) return false;
 
@@ -642,7 +644,12 @@ export class World {
     this.quests = new Quests({
       quests: this.chapter.quests,
       save: this.save,
-      emit: (type, payload) => this.emit(type, payload),
+      emit: (type, payload) => {
+        if (type === 'quest.objectiveChanged') {
+          this.objectiveEmphasisUntil = this.time + OBJECTIVE.emphasisSeconds;
+        }
+        this.emit(type, payload);
+      },
     });
     this.setPieces = new SetPieces({
       descriptors: this.chapter.setPieces,
@@ -752,7 +759,7 @@ export class World {
       cards: [...this.save.collections.cards],
       unlockedRooms: this.unlockedRooms(),
       objectiveRoom: this.objective?.mapStar?.room ?? null,
-      newObjective: this.newObjective,
+      newObjective: Boolean(this.objective) && this.time < this.objectiveEmphasisUntil,
       screen: 'playing',
     };
   }

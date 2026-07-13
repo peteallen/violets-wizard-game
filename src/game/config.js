@@ -32,6 +32,10 @@ export const HINTS = Object.freeze({
   autoCompleteFailures: 5,
 });
 
+export const OBJECTIVE = Object.freeze({
+  emphasisSeconds: 8,
+});
+
 export const EFFECTS = Object.freeze({
   particleCap: 300,
   celebrationParticleCap: 400,

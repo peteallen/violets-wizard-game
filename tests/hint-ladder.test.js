@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 import { Game } from '../src/game/Game.js';
-import { HINTS } from '../src/game/config.js';
+import { HINTS, OBJECTIVE, WORLD } from '../src/game/config.js';
 import { contentRegistry } from '../src/game/content/index.js';
 import { validateWorldEvent } from '../src/game/contracts.js';
 import { createSaveV1 } from '../src/game/systems/Save.js';
@@ -59,15 +59,15 @@ describe('World hint ladder', () => {
     expect(hintEvents(world)).toEqual([]);
   });
 
-  it('escalates failed attempts to a trail and then the authored safe assist', () => {
+  it('escalates explicit active-puzzle failures to a trail and then the authored safe assist', () => {
     const world = createWorld();
 
     for (let attempt = 1; attempt < HINTS.sparkleFailures; attempt += 1) {
-      expect(world.recordFailedAttempt()).toBe(true);
+      expect(world.recordPuzzleFailure()).toBe(true);
       expect(hintEvents(world)).toEqual([]);
     }
 
-    expect(world.recordFailedAttempt()).toBe(true);
+    expect(world.recordPuzzleFailure()).toBe(true);
     expect(hintEvents(world)).toEqual([expect.objectContaining({
       type: 'hint.trailRequested',
       payload: {
@@ -78,11 +78,11 @@ describe('World hint ladder', () => {
     })]);
 
     for (let attempt = HINTS.sparkleFailures + 1; attempt < HINTS.autoCompleteFailures; attempt += 1) {
-      expect(world.recordFailedAttempt()).toBe(true);
+      expect(world.recordPuzzleFailure()).toBe(true);
       expect(hintEvents(world)).toEqual([]);
     }
 
-    expect(world.recordFailedAttempt()).toBe(true);
+    expect(world.recordPuzzleFailure()).toBe(true);
     const assistEvents = world.drainEvents();
     expect(assistEvents).toContainEqual(expect.objectContaining({
       type: 'hint.assistTriggered',
@@ -97,37 +97,55 @@ describe('World hint ladder', () => {
       payload: { surface: 'letter-reading', tab: null },
     }));
     expect(world.overlay).toEqual({ surface: 'letter-reading', tab: null });
-    expect(world.recordFailedAttempt()).toBe(false);
+    expect(world.recordPuzzleFailure()).toBe(false);
   });
 
-  it('reaches the failure rungs through real empty world taps', () => {
+  it('keeps ordinary walking taps out of the puzzle-failure ladder', () => {
     const world = createWorld();
     const emptyPoint = { x: 500, y: 610 };
 
-    for (let attempt = 1; attempt < HINTS.sparkleFailures; attempt += 1) {
+    for (let attempt = 0; attempt < HINTS.autoCompleteFailures; attempt += 1) {
       expect(world.tap(emptyPoint)).toEqual({ kind: 'walk', x: emptyPoint.x });
-      expect(hintEvents(world)).toEqual([]);
     }
 
-    world.tap(emptyPoint);
-    expect(world.failedAttempts).toBe(HINTS.sparkleFailures);
-    expect(hintEvents(world)).toEqual([expect.objectContaining({
-      type: 'hint.trailRequested',
-      payload: expect.objectContaining({ target: 'bedroom.owl' }),
-    })]);
-
-    for (let attempt = HINTS.sparkleFailures + 1; attempt < HINTS.autoCompleteFailures; attempt += 1) {
-      world.tap(emptyPoint);
-      expect(hintEvents(world)).toEqual([]);
-    }
-
-    world.tap(emptyPoint);
     expect(world.failedAttempts).toBe(0);
-    expect(hintEvents(world)).toContainEqual(expect.objectContaining({
-      type: 'hint.assistTriggered',
-      payload: expect.objectContaining({ target: 'bedroom.owl' }),
-    }));
-    expect(world.overlay).toEqual({ surface: 'letter-reading', tab: null });
+    expect(hintEvents(world)).toEqual([]);
+    expect(world.overlay).toBeNull();
+    expect(world.flags['ch1.letterRead']).not.toBe(true);
+  });
+
+  it('limits new-objective emphasis to eight deterministic simulation seconds', () => {
+    const world = createWorld();
+
+    expect(world.snapshot().newObjective).toBe(true);
+    world.update(OBJECTIVE.emphasisSeconds - WORLD.step);
+    expect(world.snapshot().newObjective).toBe(true);
+    world.update(WORLD.step);
+    expect(world.snapshot().newObjective).toBe(false);
+
+    world.setFlag('ch1.letterRead', true);
+    world.update(0);
+    expect(world.objective.caption).toBe('Follow Hagrid!');
+    expect(world.snapshot().newObjective).toBe(true);
+
+    world.update(OBJECTIVE.emphasisSeconds);
+    expect(world.snapshot().newObjective).toBe(false);
+  });
+
+  it('restarts the transient objective reminder when a saved world is resumed', () => {
+    const original = createWorld();
+    original.update(OBJECTIVE.emphasisSeconds);
+    expect(original.snapshot().newObjective).toBe(false);
+
+    const resumed = new World({
+      chapters: contentRegistry,
+      save: structuredClone(original.save),
+      seed: original.save.worldSeed,
+    });
+
+    expect(resumed.snapshot().newObjective).toBe(true);
+    resumed.update(OBJECTIVE.emphasisSeconds);
+    expect(resumed.snapshot().newObjective).toBe(false);
   });
 
   it('resets elapsed time and failed attempts after meaningful input and quest progress', () => {
@@ -135,8 +153,8 @@ describe('World hint ladder', () => {
 
     world.update(HINTS.petLookSeconds);
     hintEvents(world);
-    world.recordFailedAttempt();
-    world.recordFailedAttempt();
+    world.recordPuzzleFailure();
+    world.recordPuzzleFailure();
     world.interactSemantic('bedroom.owl');
 
     expect(world.idleTime).toBe(0);
