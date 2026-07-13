@@ -75,6 +75,33 @@ export const WANDMAKER_STYLE = Object.freeze({
   rim: 'rgba(255, 225, 164, 0.48)',
 });
 
+export const TAILOR_STYLE = Object.freeze({
+  dressBase: '#75445f',
+  dressMid: '#925b78',
+  dressShadow: '#4c2d43',
+  dressLight: 'rgba(229, 196, 202, 0.22)',
+  apronBase: '#b7838d',
+  apronMid: '#c99aa0',
+  apronShadow: '#795461',
+  apronLight: 'rgba(249, 218, 202, 0.27)',
+  tape: '#d9c27f',
+  tapeLight: '#f0dfa6',
+  tapeMark: '#765c48',
+  cushion: '#a64765',
+  cushionShadow: '#70314a',
+  hairBase: '#c8c4c1',
+  hairMid: '#a6a2a4',
+  hairShadow: '#77747a',
+  hairLight: '#eee5da',
+  skin: '#c98e70',
+  skinShadow: '#9f6258',
+  skinLight: 'rgba(255, 222, 180, 0.3)',
+  cheek: 'rgba(177, 76, 82, 0.23)',
+  iris: '#5b4638',
+  shoe: '#4b3541',
+  rim: 'rgba(255, 222, 156, 0.48)',
+});
+
 export const CHARACTER_REVIEW_SCENES = Object.freeze([
   'character-cast-review',
   'character-pets-review',
@@ -102,7 +129,13 @@ const CHARACTER_COLORS = Object.freeze({
     cheek: WANDMAKER_STYLE.skinShadow,
   },
   tailor: {
-    robe: '#81486f', robeShadow: '#58324e', accent: '#efbd78', hair: '#3c2923', hairLight: '#6a4536', skin: '#b97657', cheek: '#a95859',
+    robe: TAILOR_STYLE.dressBase,
+    robeShadow: TAILOR_STYLE.dressShadow,
+    accent: TAILOR_STYLE.tape,
+    hair: TAILOR_STYLE.hairBase,
+    hairLight: TAILOR_STYLE.hairLight,
+    skin: TAILOR_STYLE.skin,
+    cheek: TAILOR_STYLE.cheek,
   },
   keeper: {
     robe: '#496653', robeShadow: '#32483d', accent: '#d5bd68', hair: '#9a6038', hairLight: '#c38250', skin: '#cc916c', cheek: '#b76561',
@@ -186,13 +219,16 @@ export class CharacterRenderer {
     drawNpcArms(context, kind, palette, time + phase, character.pose, {
       reducedMotion: Boolean(character.reducedMotion),
     });
-    drawNpcHead(context, kind, palette, blinking, time + phase, character.pose);
+    drawNpcHead(context, kind, palette, blinking, time + phase, character.pose, {
+      reducedMotion: Boolean(character.reducedMotion),
+    });
     drawNpcAccessory(context, kind, palette, time + phase, character.pose, {
       reducedMotion: Boolean(character.reducedMotion),
     });
     if (kind === 'guide') drawGuideMouth(context, character.pose, time + phase);
     if (kind === 'guide') drawGuideWarmRim(context);
     else if (kind === 'wandmaker') drawWandmakerWarmRim(context);
+    else if (kind === 'tailor') drawTailorWarmRim(context, direction);
     else drawUpperLeftRim(context, [[-39, -132], [-34, -164], [-13, -182], [14, -180], [35, -160]], 1.25);
 
     context.restore();
@@ -377,6 +413,28 @@ export function sampleVioletMotion({
       : speaking ? talkWave * 0.65 : quietBreath * 0.38) * energy,
     robeSwing: (walking ? walkWave * 2.7 : quietBreath * 0.45) * energy,
     talkWave: talkWave * energy,
+  });
+}
+
+export function sampleTailorMotion({
+  time = 0,
+  pose = 'idle',
+  reducedMotion = false,
+} = {}) {
+  const safeTime = Number.isFinite(time) ? time : 0;
+  const energy = reducedMotion ? 0.3 : 1;
+  const speaking = pose === 'speaking' || pose === 'talk';
+  const breath = Math.sin(safeTime * 1.65 + 0.4);
+  const briskBeat = speaking ? Math.sin(safeTime * 5.1 + 0.7) : Math.sin(safeTime * 1.25 + 0.2) * 0.24;
+  return Object.freeze({
+    breath: breath * energy,
+    handLift: (speaking ? 13 + briskBeat * 4.2 : 2 + briskBeat * 1.8) * energy,
+    handTurn: (speaking ? briskBeat * 0.11 : briskBeat * 0.04) * energy,
+    headTilt: (speaking ? briskBeat * 0.018 : breath * 0.006) * energy,
+    browLift: (speaking ? 1.5 + briskBeat * 0.75 : 0.45 + breath * 0.2) * energy,
+    tapeSway: (briskBeat * 1.8 + breath * 0.35) * energy,
+    hairSway: (briskBeat * 0.55 + breath * 0.3) * energy,
+    mouthOpen: speaking ? 2.8 + Math.abs(Math.sin(safeTime * 8.2 + 0.3)) * 3.1 : 0,
   });
 }
 
@@ -1566,6 +1624,10 @@ function drawNpcLegs(context, kind, palette, pose = 'idle', time = 0) {
     drawWandmakerLegs(context, pose, time);
     return;
   }
+  if (kind === 'tailor') {
+    drawTailorLegs(context, pose, time);
+    return;
+  }
   const broad = kind === 'guide';
   const stride = pose === 'walking' ? Math.sin(time * 7.6) * 6 : 0;
   for (const side of [-1, 1]) {
@@ -1639,6 +1701,10 @@ function drawWandmakerLegs(context, pose, time) {
 }
 
 function drawNpcBackDetails(context, kind, palette) {
+  if (kind === 'tailor') {
+    drawTailorBackHair(context);
+    return;
+  }
   if (kind === 'wandmaker') {
     context.fillStyle = WANDMAKER_STYLE.hairShadow;
     context.beginPath();
@@ -1749,6 +1815,10 @@ function drawNpcBackDetails(context, kind, palette) {
 function drawNpcBody(context, kind, palette) {
   if (kind === 'wandmaker') {
     drawWandmakerBody(context);
+    return;
+  }
+  if (kind === 'tailor') {
+    drawTailorBody(context);
     return;
   }
   const broad = kind === 'guide';
@@ -2183,6 +2253,10 @@ function drawNpcArms(context, kind, palette, time, pose = 'idle', { reducedMotio
     drawWandmakerArms(context, time, pose, { reducedMotion });
     return;
   }
+  if (kind === 'tailor') {
+    drawTailorArms(context, time, pose, { reducedMotion });
+    return;
+  }
   const broad = kind === 'guide';
   const shoulderX = broad ? 49 : 32;
   const cuffX = broad ? 61 : 43;
@@ -2544,13 +2618,25 @@ function drawGuideMouth(context, pose, time) {
   context.stroke();
 }
 
-function drawNpcHead(context, kind, palette, blinking, time, pose = 'idle') {
+function drawNpcHead(
+  context,
+  kind,
+  palette,
+  blinking,
+  time,
+  pose = 'idle',
+  { reducedMotion = false } = {},
+) {
   if (kind === 'guide') {
     drawGuideHead(context, palette, blinking, time);
     return;
   }
   if (kind === 'wandmaker') {
     drawWandmakerHead(context, blinking, time, pose);
+    return;
+  }
+  if (kind === 'tailor') {
+    drawTailorHead(context, blinking, time, pose, { reducedMotion });
     return;
   }
   const broad = kind === 'guide';
@@ -3095,6 +3181,10 @@ function drawNpcAccessory(
   pose = 'idle',
   { reducedMotion = false } = {},
 ) {
+  if (kind === 'tailor') {
+    drawTailorAccessories(context, time, pose, { reducedMotion });
+    return;
+  }
   if (kind === 'guide') {
     context.fillStyle = HAGRID_STYLE.hairBase;
     context.beginPath();
@@ -3279,6 +3369,668 @@ function drawNpcAccessory(
     context.quadraticCurveTo(handX + 9.5, -77, handX + 11, -78);
     context.stroke();
   }
+}
+
+function drawTailorLegs(context, pose, time) {
+  const stride = pose === 'walking' ? Math.sin(time * 7.3) * 4.5 : 0;
+  for (const side of [-1, 1]) {
+    const hipX = side * 17;
+    const ankleX = hipX + side * stride;
+    context.fillStyle = side < 0 ? TAILOR_STYLE.apronShadow : TAILOR_STYLE.dressShadow;
+    context.beginPath();
+    context.moveTo(hipX - 5, -8);
+    context.bezierCurveTo(hipX - 6, 2, ankleX - 6, 12, ankleX - 5, 21);
+    context.bezierCurveTo(ankleX - 1, 24, ankleX + 5, 23, ankleX + 6, 19);
+    context.bezierCurveTo(ankleX + 5, 10, hipX + 6, 1, hipX + 5, -8);
+    context.closePath();
+    fillStroke(context, 1.65);
+
+    context.fillStyle = TAILOR_STYLE.shoe;
+    context.beginPath();
+    context.moveTo(ankleX - 7, 16);
+    context.bezierCurveTo(ankleX - 1, 14, ankleX + side * 8, 16, ankleX + side * 16, 21);
+    context.bezierCurveTo(ankleX + side * 20, 25, ankleX + side * 15, 30, ankleX + side * 7, 30);
+    context.bezierCurveTo(ankleX - side * 6, 31, ankleX - side * 10, 26, ankleX - 7, 16);
+    context.closePath();
+    fillStroke(context, 2);
+    context.strokeStyle = 'rgba(231, 201, 194, 0.34)';
+    context.lineWidth = 1.1;
+    context.beginPath();
+    context.moveTo(ankleX - side * 2, 22);
+    context.bezierCurveTo(ankleX + side * 6, 20, ankleX + side * 12, 22, ankleX + side * 16, 24);
+    context.stroke();
+  }
+}
+
+function drawTailorBackHair(context) {
+  context.fillStyle = TAILOR_STYLE.hairShadow;
+  context.beginPath();
+  context.moveTo(13, -181);
+  context.bezierCurveTo(29, -187, 44, -176, 45, -161);
+  context.bezierCurveTo(47, -146, 34, -135, 21, -139);
+  context.bezierCurveTo(10, -144, 6, -169, 13, -181);
+  context.closePath();
+  fillStroke(context, 1.85);
+
+  context.fillStyle = TAILOR_STYLE.hairMid;
+  context.beginPath();
+  context.moveTo(18, -179);
+  context.bezierCurveTo(31, -183, 40, -174, 40, -162);
+  context.bezierCurveTo(42, -151, 34, -142, 24, -143);
+  context.bezierCurveTo(16, -149, 13, -169, 18, -179);
+  context.closePath();
+  context.fill();
+
+  context.fillStyle = TAILOR_STYLE.hairLight;
+  context.globalAlpha = 0.46;
+  context.beginPath();
+  context.moveTo(19, -176);
+  context.bezierCurveTo(27, -181, 35, -176, 36, -168);
+  context.bezierCurveTo(33, -166, 28, -162, 24, -156);
+  context.bezierCurveTo(19, -161, 16, -169, 19, -176);
+  context.closePath();
+  context.fill();
+  context.globalAlpha = 1;
+
+  context.strokeStyle = TAILOR_STYLE.hairLight;
+  context.lineWidth = 1.05;
+  context.beginPath();
+  context.moveTo(18, -177);
+  context.bezierCurveTo(31, -181, 41, -170, 38, -158);
+  context.moveTo(15, -171);
+  context.bezierCurveTo(28, -175, 38, -164, 34, -150);
+  context.moveTo(17, -160);
+  context.bezierCurveTo(25, -166, 34, -158, 30, -145);
+  context.stroke();
+}
+
+function drawTailorBody(context) {
+  context.fillStyle = TAILOR_STYLE.dressBase;
+  context.beginPath();
+  context.moveTo(-32, -103);
+  context.bezierCurveTo(-44, -99, -47, -84, -43, -69);
+  context.bezierCurveTo(-47, -46, -57, -17, -62, 1);
+  context.bezierCurveTo(-39, 9, -18, 12, 1, 7);
+  context.bezierCurveTo(22, 13, 43, 9, 61, -1);
+  context.bezierCurveTo(56, -21, 47, -48, 43, -70);
+  context.bezierCurveTo(46, -86, 42, -99, 31, -104);
+  context.bezierCurveTo(14, -111, -14, -110, -32, -103);
+  context.closePath();
+  fillStroke(context, 2.05);
+
+  context.fillStyle = TAILOR_STYLE.dressShadow;
+  context.beginPath();
+  context.moveTo(5, -106);
+  context.bezierCurveTo(27, -106, 42, -92, 41, -71);
+  context.bezierCurveTo(47, -47, 55, -20, 60, -1);
+  context.bezierCurveTo(42, 9, 24, 11, 5, 7);
+  context.bezierCurveTo(13, -24, 12, -72, 5, -106);
+  context.closePath();
+  context.fill();
+
+  context.fillStyle = TAILOR_STYLE.dressMid;
+  context.beginPath();
+  context.moveTo(-30, -99);
+  context.bezierCurveTo(-40, -83, -39, -61, -39, -48);
+  context.bezierCurveTo(-44, -28, -51, -9, -54, -2);
+  context.bezierCurveTo(-42, 4, -31, 7, -21, 7);
+  context.bezierCurveTo(-25, -27, -18, -74, -11, -98);
+  context.bezierCurveTo(-17, -104, -25, -103, -30, -99);
+  context.closePath();
+  context.fill();
+
+  context.fillStyle = TAILOR_STYLE.dressLight;
+  context.beginPath();
+  context.moveTo(-31, -96);
+  context.bezierCurveTo(-39, -79, -35, -57, -39, -39);
+  context.bezierCurveTo(-43, -23, -47, -10, -49, -3);
+  context.bezierCurveTo(-42, 0, -35, 3, -30, 3);
+  context.bezierCurveTo(-32, -27, -24, -70, -31, -96);
+  context.closePath();
+  context.fill();
+
+  context.fillStyle = TAILOR_STYLE.apronBase;
+  context.beginPath();
+  context.moveTo(-24, -83);
+  context.bezierCurveTo(-30, -67, -29, -45, -32, -27);
+  context.bezierCurveTo(-36, -15, -39, -6, -41, 0);
+  context.bezierCurveTo(-25, 6, -8, 8, 2, 5);
+  context.bezierCurveTo(15, 9, 29, 5, 40, 0);
+  context.bezierCurveTo(36, -17, 31, -38, 29, -55);
+  context.bezierCurveTo(29, -68, 25, -79, 22, -84);
+  context.bezierCurveTo(8, -90, -10, -89, -24, -83);
+  context.closePath();
+  fillStroke(context, 1.35);
+
+  context.fillStyle = TAILOR_STYLE.apronShadow;
+  context.beginPath();
+  context.moveTo(3, -87);
+  context.bezierCurveTo(19, -86, 27, -76, 27, -57);
+  context.bezierCurveTo(30, -38, 36, -16, 40, 0);
+  context.bezierCurveTo(28, 5, 15, 8, 3, 5);
+  context.bezierCurveTo(8, -21, 8, -59, 3, -87);
+  context.closePath();
+  context.fill();
+
+  context.fillStyle = TAILOR_STYLE.apronMid;
+  context.beginPath();
+  context.moveTo(-22, -80);
+  context.bezierCurveTo(-28, -64, -26, -43, -29, -27);
+  context.bezierCurveTo(-32, -15, -35, -6, -36, -1);
+  context.bezierCurveTo(-28, 3, -20, 5, -13, 5);
+  context.bezierCurveTo(-16, -19, -12, -57, -7, -83);
+  context.bezierCurveTo(-13, -85, -18, -84, -22, -80);
+  context.closePath();
+  context.fill();
+
+  context.fillStyle = TAILOR_STYLE.apronLight;
+  context.beginPath();
+  context.moveTo(-22, -76);
+  context.bezierCurveTo(-27, -61, -24, -43, -27, -31);
+  context.bezierCurveTo(-29, -20, -33, -9, -34, -4);
+  context.bezierCurveTo(-29, -1, -24, 1, -20, 1);
+  context.bezierCurveTo(-21, -25, -16, -57, -22, -76);
+  context.closePath();
+  context.fill();
+
+  context.strokeStyle = TAILOR_STYLE.apronShadow;
+  context.lineWidth = 5.4;
+  context.beginPath();
+  context.moveTo(-31, -61);
+  context.bezierCurveTo(-14, -56, 12, -56, 32, -62);
+  context.stroke();
+  context.strokeStyle = TAILOR_STYLE.apronLight;
+  context.lineWidth = 1.1;
+  context.beginPath();
+  context.moveTo(-29, -63);
+  context.bezierCurveTo(-12, -59, 11, -59, 29, -64);
+  context.stroke();
+
+  context.strokeStyle = 'rgba(245, 217, 205, 0.32)';
+  context.lineWidth = 1.2;
+  context.beginPath();
+  context.moveTo(-17, -52);
+  context.bezierCurveTo(-22, -35, -21, -15, -25, 2);
+  context.moveTo(0, -55);
+  context.bezierCurveTo(-3, -35, -2, -15, -4, 5);
+  context.moveTo(17, -53);
+  context.bezierCurveTo(22, -34, 22, -15, 27, 2);
+  context.stroke();
+
+  context.fillStyle = WARM_BOUNCE;
+  context.beginPath();
+  context.moveTo(-58, -8);
+  context.bezierCurveTo(-37, -1, -17, 8, 1, 7);
+  context.bezierCurveTo(-18, 13, -42, 9, -62, 1);
+  context.quadraticCurveTo(-62, -3, -58, -8);
+  context.closePath();
+  context.fill();
+}
+
+function drawTailorArms(context, time, pose, { reducedMotion = false } = {}) {
+  const motion = sampleTailorMotion({ time, pose, reducedMotion });
+  const leftSwing = motion.breath * 0.7;
+  const leftWristX = -45 - leftSwing * 0.25;
+  const leftWristY = -27 + leftSwing;
+
+  context.fillStyle = TAILOR_STYLE.dressBase;
+  context.beginPath();
+  context.moveTo(-30, -99);
+  context.bezierCurveTo(-44, -97, -51, -73, leftWristX - 6, leftWristY - 7);
+  context.bezierCurveTo(leftWristX - 4, leftWristY + 1, leftWristX + 3, leftWristY + 5, leftWristX + 10, leftWristY);
+  context.bezierCurveTo(-40, -58, -33, -82, -30, -99);
+  context.closePath();
+  fillStroke(context, 1.8);
+  context.fillStyle = TAILOR_STYLE.dressLight;
+  context.beginPath();
+  context.moveTo(-35, -91);
+  context.bezierCurveTo(-46, -70, leftWristX - 4, leftWristY - 9, leftWristX + 1, leftWristY - 6);
+  context.bezierCurveTo(-42, -69, -37, -83, -35, -91);
+  context.closePath();
+  context.fill();
+  context.strokeStyle = TAILOR_STYLE.apronMid;
+  context.lineWidth = 2.7;
+  context.beginPath();
+  context.moveTo(leftWristX - 5, leftWristY - 6);
+  context.bezierCurveTo(leftWristX - 1, leftWristY - 2, leftWristX + 4, leftWristY + 1, leftWristX + 9, leftWristY - 1);
+  context.stroke();
+  drawHand(context, leftWristX, leftWristY + 7, TAILOR_STYLE.skin, 7.8);
+
+  const rightHandX = 45 + motion.handTurn * 9;
+  const rightHandY = -24 - motion.handLift;
+  const elbowX = 50 + motion.handTurn * 3;
+  const elbowY = -62 - motion.handLift * 0.36;
+  context.fillStyle = TAILOR_STYLE.dressMid;
+  context.beginPath();
+  context.moveTo(29, -100);
+  context.bezierCurveTo(43, -99, 49, -82, elbowX + 3, elbowY - 5);
+  context.bezierCurveTo(52, -52, rightHandX + 5, rightHandY - 9, rightHandX + 6, rightHandY - 4);
+  context.bezierCurveTo(rightHandX + 2, rightHandY + 2, rightHandX - 4, rightHandY + 2, rightHandX - 8, rightHandY - 3);
+  context.bezierCurveTo(43, -58, 34, -80, 29, -100);
+  context.closePath();
+  fillStroke(context, 1.85);
+  context.fillStyle = TAILOR_STYLE.dressShadow;
+  context.beginPath();
+  context.moveTo(35, -92);
+  context.bezierCurveTo(45, -79, 49, -65, elbowX + 1, elbowY - 2);
+  context.bezierCurveTo(51, -50, rightHandX + 2, rightHandY - 7, rightHandX + 2, rightHandY - 4);
+  context.bezierCurveTo(47, -58, 39, -77, 35, -92);
+  context.closePath();
+  context.fill();
+  context.strokeStyle = TAILOR_STYLE.apronMid;
+  context.lineWidth = 2.8;
+  context.beginPath();
+  context.moveTo(rightHandX + 5, rightHandY - 5);
+  context.bezierCurveTo(rightHandX + 1, rightHandY - 1, rightHandX - 4, rightHandY, rightHandX - 7, rightHandY - 3);
+  context.stroke();
+  drawHand(context, rightHandX, rightHandY + 7, TAILOR_STYLE.skin, 8);
+}
+
+function drawTailorHead(context, blinking, time, pose, { reducedMotion = false } = {}) {
+  const motion = sampleTailorMotion({ time, pose, reducedMotion });
+  context.save();
+  context.translate(0, -141);
+  context.rotate(motion.headTilt);
+  context.translate(0, 141);
+
+  drawTailorEar(context, -34, -141, -1);
+  drawTailorEar(context, 35, -140, 1);
+
+  context.fillStyle = TAILOR_STYLE.skin;
+  context.beginPath();
+  context.moveTo(-4, -181);
+  context.bezierCurveTo(-23, -183, -34, -169, -33, -149);
+  context.bezierCurveTo(-36, -128, -25, -108, -9, -99);
+  context.bezierCurveTo(-1, -94, 9, -97, 17, -104);
+  context.bezierCurveTo(30, -117, 35, -137, 33, -153);
+  context.bezierCurveTo(34, -170, 18, -183, -4, -181);
+  context.closePath();
+  fillStroke(context, 1.9);
+
+  context.fillStyle = TAILOR_STYLE.skinShadow;
+  context.globalAlpha = 0.3;
+  context.beginPath();
+  context.moveTo(5, -180);
+  context.bezierCurveTo(24, -178, 33, -166, 31, -150);
+  context.bezierCurveTo(34, -132, 26, -111, 15, -103);
+  context.bezierCurveTo(9, -98, 4, -99, 2, -103);
+  context.bezierCurveTo(10, -125, 10, -157, 5, -180);
+  context.closePath();
+  context.fill();
+  context.globalAlpha = 1;
+
+  context.fillStyle = TAILOR_STYLE.skinLight;
+  context.beginPath();
+  context.moveTo(-25, -168);
+  context.bezierCurveTo(-19, -179, -8, -182, 1, -177);
+  context.bezierCurveTo(-9, -169, -14, -157, -15, -145);
+  context.bezierCurveTo(-24, -146, -30, -158, -25, -168);
+  context.closePath();
+  context.fill();
+
+  drawTailorCheek(context, -23, -127, -1);
+  drawTailorCheek(context, 23, -126, 1);
+  drawTailorEyes(context, blinking, time, pose, motion);
+  drawTailorNose(context);
+  drawTailorMouth(context, pose, motion);
+  drawTailorFrontHair(context, motion);
+
+  context.restore();
+}
+
+function drawTailorEar(context, x, y, side) {
+  context.fillStyle = TAILOR_STYLE.skin;
+  context.beginPath();
+  context.moveTo(x - side * 2, y - 8);
+  context.bezierCurveTo(x + side * 8, y - 10, x + side * 10, y + 4, x + side * 3, y + 10);
+  context.bezierCurveTo(x - side * 5, y + 8, x - side * 7, y - 3, x - side * 2, y - 8);
+  context.closePath();
+  fillStroke(context, 1.55);
+  context.strokeStyle = 'rgba(116, 62, 56, 0.36)';
+  context.lineWidth = 1.05;
+  context.beginPath();
+  context.moveTo(x + side, y - 4);
+  context.bezierCurveTo(x + side * 6, y - 2, x + side * 5, y + 5, x, y + 6);
+  context.stroke();
+}
+
+function drawTailorCheek(context, x, y, side) {
+  context.fillStyle = TAILOR_STYLE.cheek;
+  context.beginPath();
+  context.moveTo(x - 8, y - 1);
+  context.bezierCurveTo(x - 5, y - 5 - side, x + 5, y - 5 + side, x + 8, y);
+  context.bezierCurveTo(x + 5, y + 4, x - 5, y + 5 + side, x - 8, y - 1);
+  context.closePath();
+  context.fill();
+}
+
+function drawTailorEyes(context, blinking, time, pose, motion) {
+  const gazeX = Math.sin(time * 0.67 + 2.1) * 1.05;
+  const gazeY = Math.sin(time * 0.43 + 1.2) * 0.45;
+  const eyes = [
+    { x: -12.5, y: -145.5, side: -1, width: 6.5, height: 4.8 },
+    { x: 12.2, y: -144.8, side: 1, width: 6.2, height: 4.6 },
+  ];
+
+  for (const eye of eyes) {
+    if (blinking) {
+      context.fillStyle = TAILOR_STYLE.skinShadow;
+      context.globalAlpha = 0.4;
+      context.beginPath();
+      context.moveTo(eye.x - eye.width, eye.y + 0.2);
+      context.bezierCurveTo(eye.x - 3, eye.y - 1.9, eye.x + 3, eye.y - 1.7, eye.x + eye.width, eye.y);
+      context.bezierCurveTo(eye.x + 3, eye.y + 2.4, eye.x - 3, eye.y + 2.5, eye.x - eye.width, eye.y + 0.2);
+      context.closePath();
+      context.fill();
+      context.globalAlpha = 1;
+      context.strokeStyle = DEEP_OUTLINE;
+      context.lineWidth = 1.45;
+      context.beginPath();
+      context.moveTo(eye.x - eye.width, eye.y + 0.2);
+      context.bezierCurveTo(eye.x - 2.5, eye.y + 2.1, eye.x + 3, eye.y + 2.1, eye.x + eye.width, eye.y);
+      context.stroke();
+      continue;
+    }
+
+    context.fillStyle = '#f3e8d6';
+    context.beginPath();
+    context.moveTo(eye.x - eye.width, eye.y + 0.2);
+    context.bezierCurveTo(eye.x - 3, eye.y - eye.height, eye.x + 3.2, eye.y - eye.height + eye.side * 0.2, eye.x + eye.width, eye.y - 0.25);
+    context.bezierCurveTo(eye.x + 3, eye.y + eye.height * 0.7, eye.x - 3.2, eye.y + eye.height * 0.78, eye.x - eye.width, eye.y + 0.2);
+    context.closePath();
+    fillStroke(context, 1.35);
+
+    const irisX = eye.x + gazeX;
+    const irisY = eye.y + gazeY;
+    context.fillStyle = TAILOR_STYLE.iris;
+    context.beginPath();
+    context.moveTo(irisX - 0.3, irisY - 3.55);
+    context.bezierCurveTo(irisX + 3.1, irisY - 3, irisX + 3.4, irisY + 1.8, irisX + 0.2, irisY + 3.45);
+    context.bezierCurveTo(irisX - 3, irisY + 2.8, irisX - 3.3, irisY - 2.3, irisX - 0.3, irisY - 3.55);
+    context.closePath();
+    context.fill();
+    context.fillStyle = '#251b1a';
+    context.beginPath();
+    context.moveTo(irisX, irisY - 1.9);
+    context.bezierCurveTo(irisX + 1.6, irisY - 1.5, irisX + 1.7, irisY + 1.2, irisX + 0.1, irisY + 1.9);
+    context.bezierCurveTo(irisX - 1.55, irisY + 1.45, irisX - 1.65, irisY - 1.25, irisX, irisY - 1.9);
+    context.closePath();
+    context.fill();
+    context.fillStyle = 'rgba(255, 247, 222, 0.92)';
+    context.beginPath();
+    context.moveTo(irisX - 1.65, irisY - 2.1);
+    context.quadraticCurveTo(irisX - 0.5, irisY - 2.8, irisX + 0.15, irisY - 1.7);
+    context.quadraticCurveTo(irisX - 0.65, irisY - 0.7, irisX - 1.65, irisY - 2.1);
+    context.closePath();
+    context.fill();
+
+    context.strokeStyle = 'rgba(73, 50, 45, 0.58)';
+    context.lineWidth = 1.05;
+    context.beginPath();
+    context.moveTo(eye.x - eye.width, eye.y + 0.2);
+    context.bezierCurveTo(eye.x - 3, eye.y - eye.height, eye.x + 3.2, eye.y - eye.height + eye.side * 0.2, eye.x + eye.width, eye.y - 0.25);
+    context.stroke();
+  }
+
+  const speaking = pose === 'speaking' || pose === 'talk';
+  const leftLift = motion.browLift + (speaking ? 0.8 : 0.2);
+  const rightLift = motion.browLift * 0.62;
+  context.strokeStyle = TAILOR_STYLE.hairShadow;
+  context.lineWidth = 2.2;
+  context.beginPath();
+  context.moveTo(-20, -157 - leftLift);
+  context.bezierCurveTo(-16, -161 - leftLift, -10, -161.5 - leftLift, -6, -157 - leftLift * 0.8);
+  context.moveTo(6, -157 - rightLift);
+  context.bezierCurveTo(10, -160.5 - rightLift, 16, -160.5 - rightLift, 21, -156.5 - rightLift * 0.7);
+  context.stroke();
+
+  context.strokeStyle = 'rgba(116, 75, 65, 0.34)';
+  context.lineWidth = 0.85;
+  context.beginPath();
+  context.moveTo(-28, -139);
+  context.bezierCurveTo(-25, -136, -22, -135, -19, -136);
+  context.moveTo(19, -135);
+  context.bezierCurveTo(22, -134, 25, -136, 28, -139);
+  context.stroke();
+}
+
+function drawTailorNose(context) {
+  context.fillStyle = 'rgba(155, 89, 73, 0.2)';
+  context.beginPath();
+  context.moveTo(-1, -143);
+  context.bezierCurveTo(-4, -136, -5, -128, -2, -124);
+  context.bezierCurveTo(1, -121, 7, -123, 7, -127);
+  context.bezierCurveTo(4, -132, 3, -140, -1, -143);
+  context.closePath();
+  context.fill();
+  context.strokeStyle = 'rgba(105, 65, 57, 0.52)';
+  context.lineWidth = 1.05;
+  context.beginPath();
+  context.moveTo(-1, -141);
+  context.bezierCurveTo(-3, -133, -3, -126, 3, -125);
+  context.quadraticCurveTo(6, -124, 7, -127);
+  context.stroke();
+  context.strokeStyle = TAILOR_STYLE.skinLight;
+  context.lineWidth = 0.75;
+  context.beginPath();
+  context.moveTo(-1, -138);
+  context.quadraticCurveTo(-2, -132, 0, -129);
+  context.stroke();
+}
+
+function drawTailorMouth(context, pose, motion) {
+  const speaking = pose === 'speaking' || pose === 'talk';
+  const y = -113;
+  if (speaking) {
+    context.fillStyle = '#814c55';
+    context.beginPath();
+    context.moveTo(-7.5, y);
+    context.bezierCurveTo(-3, y - 2.4, 3.5, y - 2.2, 8, y + 0.2);
+    context.bezierCurveTo(5, y + motion.mouthOpen, -3, y + motion.mouthOpen + 0.7, -7.5, y);
+    context.closePath();
+    fillStroke(context, 1.15);
+    context.fillStyle = 'rgba(233, 145, 146, 0.62)';
+    context.beginPath();
+    context.moveTo(-4.5, y + motion.mouthOpen * 0.55);
+    context.quadraticCurveTo(0, y + motion.mouthOpen + 0.5, 4.8, y + motion.mouthOpen * 0.52);
+    context.quadraticCurveTo(0.4, y + motion.mouthOpen * 0.34, -4.5, y + motion.mouthOpen * 0.55);
+    context.closePath();
+    context.fill();
+    return;
+  }
+
+  context.strokeStyle = '#815157';
+  context.lineWidth = 1.75;
+  context.beginPath();
+  context.moveTo(-8, y + 0.4);
+  context.bezierCurveTo(-3, y + 4, 3.5, y + 3.5, 8.5, y - 0.2);
+  context.stroke();
+  context.strokeStyle = 'rgba(255, 216, 194, 0.3)';
+  context.lineWidth = 0.7;
+  context.beginPath();
+  context.moveTo(-5, y + 0.8);
+  context.quadraticCurveTo(-1, y + 2.5, 3, y + 1.5);
+  context.stroke();
+}
+
+function drawTailorFrontHair(context, motion) {
+  context.fillStyle = TAILOR_STYLE.hairBase;
+  context.beginPath();
+  context.moveTo(-32, -151);
+  context.bezierCurveTo(-36, -169, -23, -184, -7, -185);
+  context.bezierCurveTo(6, -192, 25, -185, 31, -170);
+  context.bezierCurveTo(36, -158, 32, -146, 27, -141);
+  context.bezierCurveTo(23, -155, 17, -159, 10, -157);
+  context.bezierCurveTo(3, -155, -2, -150, -8, -154);
+  context.bezierCurveTo(-15, -159, -23, -158, -32, -151);
+  context.closePath();
+  fillStroke(context, 1.75);
+
+  context.fillStyle = TAILOR_STYLE.hairShadow;
+  context.beginPath();
+  context.moveTo(3, -187);
+  context.bezierCurveTo(19, -187, 31, -177, 32, -164);
+  context.bezierCurveTo(35, -155, 31, -146, 27, -141);
+  context.bezierCurveTo(22, -154, 16, -159, 10, -157);
+  context.bezierCurveTo(13, -170, 10, -181, 3, -187);
+  context.closePath();
+  context.fill();
+
+  context.fillStyle = TAILOR_STYLE.hairMid;
+  context.beginPath();
+  context.moveTo(-30, -157);
+  context.bezierCurveTo(-29, -173, -16, -184, -3, -185);
+  context.bezierCurveTo(-15, -179, -20, -169, -18, -158);
+  context.bezierCurveTo(-23, -160, -27, -159, -30, -157);
+  context.closePath();
+  context.fill();
+
+  context.fillStyle = TAILOR_STYLE.hairLight;
+  context.globalAlpha = 0.52;
+  context.beginPath();
+  context.moveTo(-26, -169);
+  context.bezierCurveTo(-19, -181, -6, -187, 3, -183);
+  context.bezierCurveTo(-8, -178, -14, -168, -15, -157);
+  context.bezierCurveTo(-23, -158, -30, -163, -26, -169);
+  context.closePath();
+  context.fill();
+  context.globalAlpha = 1;
+
+  context.strokeStyle = TAILOR_STYLE.hairLight;
+  context.lineWidth = 1.1;
+  context.beginPath();
+  context.moveTo(-27, -171);
+  context.bezierCurveTo(-17, -185, -3, -187, 8, -182);
+  context.moveTo(-24, -162);
+  context.bezierCurveTo(-13, -176, 2, -181, 16, -174);
+  context.moveTo(-14, -156);
+  context.bezierCurveTo(-2, -166, 13, -170, 25, -160);
+  context.stroke();
+
+  context.strokeStyle = TAILOR_STYLE.hairShadow;
+  context.lineWidth = 0.95;
+  context.beginPath();
+  context.moveTo(-20, -179);
+  context.bezierCurveTo(-9, -182, 1, -177, 8, -168);
+  context.moveTo(-6, -185);
+  context.bezierCurveTo(7, -183, 18, -175, 23, -164);
+  context.moveTo(19, -177);
+  context.bezierCurveTo(27, -169, 29 + motion.hairSway, -156, 26, -146);
+  context.stroke();
+}
+
+function drawTailorAccessories(context, time, pose, { reducedMotion = false } = {}) {
+  const motion = sampleTailorMotion({ time, pose, reducedMotion });
+  const sway = motion.tapeSway;
+
+  context.strokeStyle = DEEP_OUTLINE;
+  context.lineWidth = 7.2;
+  context.beginPath();
+  context.moveTo(-19, -97);
+  context.bezierCurveTo(-25, -83, -30 + sway, -62, -25 + sway, -44);
+  context.bezierCurveTo(-22 + sway * 0.5, -31, -18, -21, -13, -15);
+  context.moveTo(19, -97);
+  context.bezierCurveTo(25, -82, 30 + sway, -61, 25 + sway, -43);
+  context.bezierCurveTo(22 + sway * 0.45, -31, 18, -22, 14, -16);
+  context.stroke();
+  context.strokeStyle = TAILOR_STYLE.tape;
+  context.lineWidth = 4.6;
+  context.stroke();
+  context.strokeStyle = TAILOR_STYLE.tapeLight;
+  context.lineWidth = 0.9;
+  context.beginPath();
+  context.moveTo(-20, -96);
+  context.bezierCurveTo(-25, -79, -27 + sway, -59, -23 + sway, -45);
+  context.moveTo(18, -96);
+  context.bezierCurveTo(23, -79, 27 + sway, -59, 23 + sway, -44);
+  context.stroke();
+
+  context.strokeStyle = TAILOR_STYLE.tapeMark;
+  context.lineWidth = 0.95;
+  context.beginPath();
+  for (const [x, y, length, direction] of [
+    [-26, -76, 3.6, 1], [-28, -65, 2.7, 1], [-27, -53, 3.8, 1], [-23, -39, 2.8, 1],
+    [26, -75, 3.7, -1], [28, -64, 2.6, -1], [27, -52, 3.8, -1], [23, -38, 2.8, -1],
+  ]) {
+    const shiftedX = x + sway * (Math.abs(y) < 50 ? 0.65 : 0.25);
+    context.moveTo(shiftedX, y);
+    context.quadraticCurveTo(shiftedX + direction * length * 0.55, y + 0.35, shiftedX + direction * length, y + 0.1);
+  }
+  context.stroke();
+
+  context.fillStyle = TAILOR_STYLE.apronShadow;
+  context.beginPath();
+  context.moveTo(-29, -37);
+  context.bezierCurveTo(-20, -40, -12, -38, -8, -32);
+  context.bezierCurveTo(-10, -22, -16, -17, -25, -19);
+  context.bezierCurveTo(-30, -24, -32, -31, -29, -37);
+  context.closePath();
+  context.fill();
+  context.strokeStyle = TAILOR_STYLE.apronLight;
+  context.lineWidth = 1;
+  context.stroke();
+  context.strokeStyle = 'rgba(244, 218, 205, 0.32)';
+  context.lineWidth = 0.75;
+  context.beginPath();
+  context.moveTo(-27, -34);
+  context.bezierCurveTo(-21, -36, -15, -34, -11, -30);
+  context.stroke();
+
+  const cushionX = 45 + motion.handTurn * 9;
+  const cushionY = -25 - motion.handLift;
+  context.fillStyle = TAILOR_STYLE.cushion;
+  context.beginPath();
+  context.moveTo(cushionX - 9, cushionY - 3);
+  context.bezierCurveTo(cushionX - 7, cushionY - 9, cushionX + 5, cushionY - 10, cushionX + 10, cushionY - 4);
+  context.bezierCurveTo(cushionX + 12, cushionY + 2, cushionX + 5, cushionY + 7, cushionX - 3, cushionY + 6);
+  context.bezierCurveTo(cushionX - 10, cushionY + 5, cushionX - 12, cushionY + 1, cushionX - 9, cushionY - 3);
+  context.closePath();
+  fillStroke(context, 1.25);
+  context.fillStyle = TAILOR_STYLE.cushionShadow;
+  context.beginPath();
+  context.moveTo(cushionX + 1, cushionY - 8);
+  context.bezierCurveTo(cushionX + 8, cushionY - 7, cushionX + 11, cushionY - 2, cushionX + 8, cushionY + 2);
+  context.bezierCurveTo(cushionX + 5, cushionY + 5, cushionX + 2, cushionY + 5, cushionX, cushionY + 3);
+  context.bezierCurveTo(cushionX + 3, cushionY - 1, cushionX + 3, cushionY - 5, cushionX + 1, cushionY - 8);
+  context.closePath();
+  context.fill();
+  context.strokeStyle = 'rgba(250, 202, 199, 0.44)';
+  context.lineWidth = 0.85;
+  context.beginPath();
+  context.moveTo(cushionX - 6, cushionY - 4);
+  context.bezierCurveTo(cushionX - 1, cushionY - 7, cushionX + 4, cushionY - 6, cushionX + 7, cushionY - 3);
+  context.stroke();
+
+  const pins = [
+    { dx: -5, bend: -2, height: 13, color: '#d58d79' },
+    { dx: 0, bend: 1.5, height: 16, color: '#8a6b9a' },
+    { dx: 5, bend: 2, height: 12, color: '#6f8790' },
+  ];
+  context.strokeStyle = '#8f8581';
+  context.lineWidth = 0.9;
+  for (const pin of pins) {
+    const startX = cushionX + pin.dx;
+    const endX = startX + pin.bend;
+    const endY = cushionY - pin.height;
+    context.beginPath();
+    context.moveTo(startX, cushionY - 5);
+    context.quadraticCurveTo(startX + pin.bend * 0.35, cushionY - pin.height * 0.55, endX, endY);
+    context.stroke();
+    drawTailorPinHead(context, endX, endY, pin.color);
+  }
+}
+
+function drawTailorPinHead(context, x, y, color) {
+  context.fillStyle = color;
+  context.beginPath();
+  context.moveTo(x - 1.8, y - 0.4);
+  context.bezierCurveTo(x - 1.3, y - 2.1, x + 1.3, y - 2.2, x + 2, y - 0.2);
+  context.bezierCurveTo(x + 1.6, y + 1.6, x - 1.2, y + 1.8, x - 1.8, y - 0.4);
+  context.closePath();
+  context.fill();
+  context.strokeStyle = DEEP_OUTLINE;
+  context.lineWidth = 0.55;
+  context.stroke();
 }
 
 function drawCat(context, time, motion) {
@@ -3923,6 +4675,32 @@ function drawWandmakerWarmRim(context) {
   context.moveTo(-31, -87);
   context.bezierCurveTo(-35, -66, -36, -36, -40, -8);
   context.stroke();
+}
+
+function drawTailorWarmRim(context, facingDirection) {
+  context.save();
+  if (facingDirection < 0) context.scale(-1, 1);
+  context.strokeStyle = TAILOR_STYLE.rim;
+  context.lineWidth = 1.65;
+  context.beginPath();
+  context.moveTo(-33, -151);
+  context.bezierCurveTo(-36, -170, -23, -185, -7, -187);
+  context.bezierCurveTo(-2, -190, 3, -189, 7, -187);
+  context.moveTo(-34, -98);
+  context.bezierCurveTo(-47, -88, -48, -71, -45, -59);
+  context.bezierCurveTo(-51, -39, -58, -17, -61, -2);
+  context.bezierCurveTo(-50, 3, -39, 7, -29, 9);
+  context.stroke();
+
+  context.strokeStyle = 'rgba(255, 238, 194, 0.24)';
+  context.lineWidth = 0.85;
+  context.beginPath();
+  context.moveTo(-29, -169);
+  context.bezierCurveTo(-22, -182, -9, -187, 2, -184);
+  context.moveTo(-39, -88);
+  context.bezierCurveTo(-45, -67, -48, -36, -55, -7);
+  context.stroke();
+  context.restore();
 }
 
 function drawGuideWarmRim(context) {

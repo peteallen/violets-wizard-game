@@ -3,10 +3,12 @@ import {
   CHARACTER_REVIEW_SCENES,
   CharacterRenderer,
   HAGRID_STYLE,
+  TAILOR_STYLE,
   VIOLET_STYLE,
   WANDMAKER_STYLE,
   drawVioletGlasses,
   sampleCompanionMotion,
+  sampleTailorMotion,
   sampleVioletMotion,
 } from '../src/game/render/CharacterRenderer.js';
 
@@ -202,6 +204,107 @@ describe('illustrated character renderer', () => {
       WANDMAKER_STYLE.wood,
     ]) expect(portrait.styles.some(([, value]) => value === style)).toBe(true);
     expect(portrait.depth).toBe(0);
+  });
+
+  it('renders Madam Malkin as one brisk organic seamstress shared by world and portrait', () => {
+    expect(TAILOR_STYLE).toMatchObject({
+      dressBase: '#75445f',
+      dressShadow: '#4c2d43',
+      apronBase: '#b7838d',
+      tape: '#d9c27f',
+      cushion: '#a64765',
+      hairBase: '#c8c4c1',
+      hairShadow: '#77747a',
+      skin: '#c98e70',
+      iris: '#5b4638',
+    });
+
+    const renderer = new CharacterRenderer();
+    const world = recordingContext();
+    const replayed = recordingContext();
+    const idle = recordingContext();
+    const character = {
+      kind: 'tailor', x: 180, y: 610, facing: 'right', pose: 'speaking',
+    };
+    renderer.draw(world, character, 1.375);
+    renderer.draw(replayed, character, 1.375);
+    renderer.draw(idle, { ...character, pose: 'idle' }, 1.375);
+
+    expect(world.calls).toEqual(replayed.calls);
+    expect(world.calls).not.toEqual(idle.calls);
+    expect(world.depth).toBe(0);
+    expect(world.calls).toContainEqual(['scale', 1.04, 1.04]);
+    expect(world.calls.filter(([name]) => name === 'bezierCurveTo').length).toBeGreaterThan(130);
+    expect(world.calls.some(([name]) => [
+      'arc', 'ellipse', 'fillRect', 'rect', 'roundRect', 'strokeRect',
+    ].includes(name))).toBe(false);
+    expect(world.calls.every(([, ...values]) => values.every(
+      (value) => typeof value !== 'number' || Number.isFinite(value),
+    ))).toBe(true);
+
+    for (const style of [
+      TAILOR_STYLE.dressBase,
+      TAILOR_STYLE.dressMid,
+      TAILOR_STYLE.dressShadow,
+      TAILOR_STYLE.dressLight,
+      TAILOR_STYLE.apronBase,
+      TAILOR_STYLE.apronMid,
+      TAILOR_STYLE.apronShadow,
+      TAILOR_STYLE.tape,
+      TAILOR_STYLE.tapeLight,
+      TAILOR_STYLE.cushion,
+      TAILOR_STYLE.hairBase,
+      TAILOR_STYLE.hairMid,
+      TAILOR_STYLE.hairShadow,
+      TAILOR_STYLE.hairLight,
+      TAILOR_STYLE.skin,
+      TAILOR_STYLE.iris,
+      TAILOR_STYLE.rim,
+    ]) expect(world.styles.some(([, value]) => value === style)).toBe(true);
+    expect(world.styles.filter(([, style]) => style === TAILOR_STYLE.iris)).toHaveLength(2);
+
+    const portrait = recordingContext();
+    renderer.drawPortrait(portrait, {
+      speaker: 'Madam Malkin', pose: 'speaking', x: 80, y: 90,
+    }, 1.375);
+    for (const style of [
+      TAILOR_STYLE.dressBase,
+      TAILOR_STYLE.apronBase,
+      TAILOR_STYLE.tape,
+      TAILOR_STYLE.cushion,
+      TAILOR_STYLE.hairBase,
+      TAILOR_STYLE.hairShadow,
+      TAILOR_STYLE.iris,
+      TAILOR_STYLE.rim,
+    ]) expect(portrait.styles.some(([, value]) => value === style)).toBe(true);
+    expect(portrait.styles.filter(([, style]) => style === TAILOR_STYLE.iris)).toHaveLength(2);
+    expect(portrait.depth).toBe(0);
+
+    const blink = recordingContext();
+    renderer.draw(blink, { ...character, pose: 'idle' }, 3.2);
+    expect(blink.styles.filter(([, style]) => style === TAILOR_STYLE.iris)).toHaveLength(0);
+    expect(blink.calls.some(([name]) => name === 'arc' || name === 'ellipse')).toBe(false);
+
+    const facingLeft = recordingContext();
+    renderer.draw(facingLeft, { ...character, facing: 'left' }, 1.375);
+    expect(facingLeft.calls).toContainEqual(['scale', -1.04, 1.04]);
+    expect(facingLeft.calls.filter((call) => (
+      call[0] === 'scale' && call[1] === -1 && call[2] === 1
+    )).length).toBeGreaterThanOrEqual(1);
+
+    const speakingMotion = sampleTailorMotion({ time: 1.125, pose: 'speaking' });
+    const repeatedMotion = sampleTailorMotion({ time: 1.125, pose: 'speaking' });
+    const idleMotion = sampleTailorMotion({ time: 1.125, pose: 'idle' });
+    const reducedMotion = sampleTailorMotion({
+      time: 1.125, pose: 'speaking', reducedMotion: true,
+    });
+    const sanitizedMotion = sampleTailorMotion({ time: Number.NaN, pose: 'speaking' });
+    expect(repeatedMotion).toEqual(speakingMotion);
+    expect(Object.values(speakingMotion).every(Number.isFinite)).toBe(true);
+    expect(Object.values(sanitizedMotion).every(Number.isFinite)).toBe(true);
+    expect(speakingMotion.handLift).toBeGreaterThan(idleMotion.handLift);
+    expect(Math.abs(reducedMotion.handLift)).toBeLessThan(Math.abs(speakingMotion.handLift));
+    expect(Math.abs(reducedMotion.tapeSway)).toBeLessThan(Math.abs(speakingMotion.tapeSway));
   });
 
   it('builds Violet from her full storybook palette and hand-drawn dark-green glasses', () => {
