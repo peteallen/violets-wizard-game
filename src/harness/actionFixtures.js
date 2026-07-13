@@ -59,7 +59,7 @@ registry
     ],
   ))
   .register('ch1-follow-hagrid-review', createFixture(
-    'Hold the post-introduction bedroom with Hagrid as the single obvious progression target.',
+    'Hold the deterministic Hagrid walk, turn, beckon, and sparkle-footprint teaching cue.',
   ))
   .register('world-shimmer-review', createFixture(
     'Hold Ollivanders across the globally staggered discoverable and secret glint schedule.',

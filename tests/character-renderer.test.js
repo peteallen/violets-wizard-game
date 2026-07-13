@@ -76,6 +76,30 @@ describe('illustrated character renderer', () => {
     expect(authoredTalk.calls).toEqual(canonicalSpeaking.calls);
   });
 
+  it('gives Hagrid deterministic walking and beckoning poses without leaking canvas state', () => {
+    const renderer = new CharacterRenderer();
+    for (const pose of ['walking', 'beckon']) {
+      const first = recordingContext();
+      const replayed = recordingContext();
+      const character = {
+        kind: 'guide', x: 180, y: 610, facing: 'right', pose, reducedMotion: false,
+      };
+      renderer.draw(first, character, 1.25);
+      renderer.draw(replayed, character, 1.25);
+      expect(first.calls).toEqual(replayed.calls);
+      expect(first.calls.every(([, ...values]) => values.every(
+        (value) => typeof value !== 'number' || Number.isFinite(value),
+      ))).toBe(true);
+      expect(first.depth).toBe(0);
+    }
+
+    const beckon = recordingContext();
+    renderer.draw(beckon, {
+      kind: 'guide', x: 180, y: 610, facing: 'right', pose: 'beckon', reducedMotion: true,
+    }, 1.25);
+    expect(beckon.calls.filter(([name]) => name === 'quadraticCurveTo').length).toBeGreaterThan(15);
+  });
+
   it('keeps Violet photo-matched with ash hair and hand-drawn dark-green glasses', () => {
     expect(VIOLET_STYLE).toMatchObject({
       hairBase: '#806f62',

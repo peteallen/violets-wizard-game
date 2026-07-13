@@ -30,6 +30,10 @@ export const WORLD_AFFORDANCE_REVIEW_SCENES = Object.freeze({
   'world-secret-pet-review': null,
 });
 
+export const GUIDE_WALK_REVIEW_SCENES = Object.freeze([
+  'ch1-follow-hagrid-review',
+]);
+
 function integer(value, path, { min = 0, max = Number.MAX_SAFE_INTEGER } = {}) {
   const parsed = Number(value);
   if (!Number.isSafeInteger(parsed) || parsed < min || parsed > max) {
@@ -176,6 +180,19 @@ export function prepareWorldAffordanceReview(game, scene) {
   return true;
 }
 
+export function prepareGuideWalkReview(game, scene) {
+  if (!GUIDE_WALK_REVIEW_SCENES.includes(scene) || !game.world) return false;
+  if (game.world.dialogue.active) game.world.dialogue.close('harness-guide-walk-review');
+  game.world.player.x = 360;
+  game.world.player.targetX = 360;
+  game.world.player.y = 610;
+  game.world.player.facing = 'left';
+  game.world.player.walking = false;
+  game.world.startGuideWalkCue({ restart: true });
+  game.processWorldEvents();
+  return true;
+}
+
 export async function bootHarness({
   search = globalThis.location?.search ?? '',
   canvas = globalThis.document?.querySelector('#game'),
@@ -219,6 +236,7 @@ export async function bootHarness({
       game.createWorld(stateFixture.save);
       await prepareSetPieceReview(game, request.scene);
       prepareWorldAffordanceReview(game, request.scene);
+      prepareGuideWalkReview(game, request.scene);
     }
     game.start();
     if (request.scene === 'pet-name-dialog') void game.petNameDialog?.open('Moonbeam');

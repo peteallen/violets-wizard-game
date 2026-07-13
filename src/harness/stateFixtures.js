@@ -160,7 +160,7 @@ registry
     createSave(),
   ))
   .register('ch1-follow-hagrid-review', createFixture(
-    'The bedroom immediately after Hagrid asks Violet to follow him, with the objective target on Hagrid.',
+    'The bedroom tap-to-walk lesson, with Hagrid stepping toward the door before turning back to beckon along a trail of sparkle footprints.',
     { chapter: 1, scene: 'ch1-follow-hagrid-review' },
     createSave({
       scene: 'ch1.followHagridReview',

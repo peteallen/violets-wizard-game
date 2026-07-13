@@ -84,8 +84,10 @@ export class CharacterRenderer {
     const scale = (character.scale ?? 1) * (kind === 'guide' ? 1.55 : 1.04);
     const direction = character.facing === 'left' ? -1 : 1;
     const phase = character.phase ?? kind.length * 0.37;
-    const bob = Math.sin(time * 1.65 + phase) * 1.5;
-    const sway = Math.sin(time * 1.15 + phase) * 0.012;
+    const walking = character.pose === 'walking';
+    const walkCycle = Math.sin(time * 7.6 + phase);
+    const bob = walking ? -Math.abs(walkCycle) * 2.3 : Math.sin(time * 1.65 + phase) * 1.5;
+    const sway = walking ? walkCycle * 0.009 : Math.sin(time * 1.15 + phase) * 0.012;
     const blinking = isBlinking(time, phase);
 
     context.save();
@@ -98,7 +100,9 @@ export class CharacterRenderer {
     drawNpcLegs(context, kind, palette, character.pose, time + phase);
     drawNpcBackDetails(context, kind, palette);
     drawNpcBody(context, kind, palette);
-    drawNpcArms(context, kind, palette, time + phase);
+    drawNpcArms(context, kind, palette, time + phase, character.pose, {
+      reducedMotion: Boolean(character.reducedMotion),
+    });
     drawNpcHead(context, kind, palette, blinking, time + phase, character.pose);
     drawNpcAccessory(context, kind, palette);
     drawUpperLeftRim(context, kind === 'guide'
@@ -1236,12 +1240,18 @@ function drawNpcGarmentDetails(context, kind, palette, { shoulder, hem, top }) {
   context.restore();
 }
 
-function drawNpcArms(context, kind, palette, time) {
+function drawNpcArms(context, kind, palette, time, pose = 'idle', { reducedMotion = false } = {}) {
+  if (kind === 'guide' && pose === 'beckon') {
+    drawGuideBeckonArms(context, palette, time, { reducedMotion });
+    return;
+  }
   const broad = kind === 'guide';
   const shoulderX = broad ? 49 : 32;
   const cuffX = broad ? 61 : 43;
   const handY = broad ? -37 : -30;
-  const sway = Math.sin(time * 1.4) * (broad ? 1.5 : 2);
+  const sway = pose === 'walking'
+    ? Math.sin(time * 7.6) * (broad ? 4.5 : 4)
+    : Math.sin(time * 1.4) * (broad ? 1.5 : 2);
   for (const side of [-1, 1]) {
     context.save();
     context.scale(side, 1);
@@ -1280,6 +1290,78 @@ function drawNpcArms(context, kind, palette, time) {
     context.stroke();
     context.restore();
     drawHand(context, side * (shoulderX + 7 + sway), handY + 7, palette.skin, broad ? 9 : 7.5);
+  }
+}
+
+function drawGuideBeckonArms(context, palette, time, { reducedMotion = false } = {}) {
+  const motion = reducedMotion ? 0.55 : 0.5 + Math.sin(time * 3.4) * 0.5;
+
+  context.save();
+  context.scale(-1, 1);
+  context.fillStyle = palette.robe;
+  context.strokeStyle = OUTLINE;
+  context.lineWidth = 2;
+  context.beginPath();
+  context.moveTo(36, -106);
+  context.bezierCurveTo(61, -106, 68, -62, 64, -43);
+  context.quadraticCurveTo(57, -31, 47, -39);
+  context.bezierCurveTo(48, -65, 37, -88, 36, -106);
+  context.closePath();
+  context.fill();
+  context.stroke();
+  context.strokeStyle = palette.accent;
+  context.lineWidth = 2.2;
+  context.beginPath();
+  context.moveTo(64, -46);
+  context.quadraticCurveTo(58, -40, 49, -42);
+  context.stroke();
+  context.restore();
+  drawHand(context, -57, -34, palette.skin, 9);
+
+  const elbowX = 70;
+  const elbowY = -91;
+  const handX = 91 - motion * 7;
+  const handY = -119 - motion * 5;
+
+  context.strokeStyle = OUTLINE;
+  context.lineWidth = 15;
+  context.lineCap = 'round';
+  context.beginPath();
+  context.moveTo(elbowX - 1, elbowY);
+  context.quadraticCurveTo(82, -103, handX - 3, handY + 4);
+  context.stroke();
+  context.strokeStyle = palette.skin;
+  context.lineWidth = 10;
+  context.stroke();
+
+  context.fillStyle = palette.robe;
+  context.strokeStyle = OUTLINE;
+  context.lineWidth = 2.1;
+  context.beginPath();
+  context.moveTo(35, -106);
+  context.bezierCurveTo(53, -111, 67, -103, elbowX + 5, elbowY - 7);
+  context.quadraticCurveTo(elbowX + 10, elbowY + 2, elbowX + 1, elbowY + 10);
+  context.bezierCurveTo(58, -91, 45, -88, 35, -106);
+  context.closePath();
+  context.fill();
+  context.stroke();
+  context.strokeStyle = palette.accent;
+  context.lineWidth = 2.4;
+  context.beginPath();
+  context.moveTo(elbowX + 5, elbowY - 7);
+  context.quadraticCurveTo(elbowX + 2, elbowY + 1, elbowX + 1, elbowY + 9);
+  context.stroke();
+
+  drawHand(context, handX, handY, palette.skin, 10);
+  context.strokeStyle = 'rgba(73, 55, 46, 0.58)';
+  context.lineWidth = 1.4;
+  context.lineCap = 'round';
+  for (let index = 0; index < 3; index += 1) {
+    const fingerY = handY - 4 + index * 4;
+    context.beginPath();
+    context.moveTo(handX + 2, fingerY);
+    context.quadraticCurveTo(handX + 10 + motion * 3, fingerY - 3, handX + 6, fingerY + 2);
+    context.stroke();
   }
 }
 

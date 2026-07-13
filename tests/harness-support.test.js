@@ -23,6 +23,7 @@ import {
   validateEnvironmentIdentity,
 } from '../src/harness/environment.js';
 import {
+  GUIDE_WALK_REVIEW_SCENES,
   SET_PIECE_REVIEW_SCENES,
   WORLD_AFFORDANCE_REVIEW_SCENES,
   actionsThroughFrame,
@@ -215,6 +216,15 @@ describe('registered harness scenarios', () => {
       'world-secret-pet-review': null,
     });
     for (const id of Object.keys(WORLD_AFFORDANCE_REVIEW_SCENES)) {
+      expect(STATE_FIXTURE_IDS).toContain(id);
+      expect(ACTION_FIXTURE_IDS).toContain(id);
+      expect(parseHarnessRequest(`?scene=${id}`)).toMatchObject({ scene: id, state: id, actions: id });
+    }
+  });
+
+  it('registers the Hagrid tap-to-walk lesson as a deterministic review scene', () => {
+    expect(GUIDE_WALK_REVIEW_SCENES).toEqual(['ch1-follow-hagrid-review']);
+    for (const id of GUIDE_WALK_REVIEW_SCENES) {
       expect(STATE_FIXTURE_IDS).toContain(id);
       expect(ACTION_FIXTURE_IDS).toContain(id);
       expect(parseHarnessRequest(`?scene=${id}`)).toMatchObject({ scene: id, state: id, actions: id });

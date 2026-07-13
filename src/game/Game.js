@@ -8,6 +8,7 @@ import { SoundEngine } from './core/SoundEngine.js';
 import { clamp, distance, easeInOutCubic } from './core/math.js';
 import { SeededRandom } from './core/rng.js';
 import { CharacterRenderer } from './render/CharacterRenderer.js';
+import { GuideFootprintRenderer } from './render/GuideFootprintRenderer.js';
 import { Particles } from './render/Particles.js';
 import { RoomRenderer } from './render/RoomRenderer.js';
 import { SetPieceRenderer } from './render/SetPieceRenderer.js';
@@ -82,6 +83,7 @@ export class Game {
     this.roomRenderer = new RoomRenderer({ resolveAsset });
     this.worldPropRenderer = new WorldPropRenderer();
     this.characterRenderer = new CharacterRenderer();
+    this.guideFootprintRenderer = new GuideFootprintRenderer();
     this.uiRenderer = new UIRenderer({ resolveAsset });
     this.setPieceRenderer = new SetPieceRenderer({ resolveAsset });
     this.worldAffordanceRenderer = new WorldAffordanceRenderer();
@@ -1369,6 +1371,7 @@ export class Game {
     } else {
       this.roomRenderer.draw(context, room, state, this.simTime, { x: state.cameraX });
       this.worldPropRenderer.draw(context, state, this.simTime, { reducedMotion: this.reducedMotion });
+      this.guideFootprintRenderer.draw(context, state, this.simTime, { reducedMotion: this.reducedMotion });
       if (behindCastSetPieceActive) {
         this.setPieceRenderer.draw(context, state.setPiece, state, { reducedMotion: this.reducedMotion });
       }
@@ -1494,7 +1497,12 @@ export class Game {
             : occupant.npc === 'npc.tailor'
               ? 'tailor'
               : 'keeper';
-        this.characterRenderer.draw(context, { ...occupant, kind, x: occupant.x - state.cameraX }, this.simTime);
+        this.characterRenderer.draw(context, {
+          ...occupant,
+          kind,
+          x: occupant.x - state.cameraX,
+          reducedMotion: this.reducedMotion,
+        }, this.simTime);
       }
     }
 

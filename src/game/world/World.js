@@ -10,6 +10,11 @@ import {
   createAffordancePlan,
   createAffordanceSnapshot,
 } from './AffordanceSalience.js';
+import {
+  applyGuideWalkCueToOccupants,
+  createGuideWalkCueSnapshot,
+  guideWalkCueAvailable,
+} from './GuideWalkCue.js';
 import { resolveRoomVariant } from './roomVariant.js';
 
 const PET_HOME_DISTANCE = 65;
@@ -46,6 +51,7 @@ export class World {
     this.objectiveEmphasisUntil = 0;
     this.glintActivations = new GlintActivationLedger();
     this.dialogueSourceTarget = null;
+    this.guideWalkCue = null;
 
     const chapterId = save.resume?.chapter ?? 'ch1';
     this.chapter = chapters[chapterId] ?? chapters.ch1;
@@ -68,6 +74,7 @@ export class World {
     this.bindSystems();
     this.quests.update();
     this.syncScene(true);
+    this.startGuideWalkCue();
     this.updateAffordanceActivations();
   }
 
@@ -468,6 +475,7 @@ export class World {
   travel(roomId, spawnId, transition = 'ink') {
     this.noteProgress();
     this.cancelPendingInteraction();
+    this.guideWalkCue = null;
     const requestedChapter = roomId.split('.')[0];
     if (requestedChapter !== this.chapter.id && this.chapters[requestedChapter]) {
       this.changeChapter(requestedChapter, roomId, spawnId);
@@ -496,6 +504,7 @@ export class World {
     if (!chapter) throw new Error(`Unknown chapter ${chapterId}.`);
     this.noteProgress();
     this.cancelPendingInteraction();
+    this.guideWalkCue = null;
     const from = this.roomId;
     this.chapter = chapter;
     this.bindSystems();
@@ -690,7 +699,39 @@ export class World {
         reason: 'affordance-spent',
       });
     }
+    if (script === 'ch1.guide.arrival' && reason === 'completed') this.startGuideWalkCue();
     this.updateAffordanceActivations();
+  }
+
+  startGuideWalkCue({ restart = false } = {}) {
+    if (!guideWalkCueAvailable({
+      chapterId: this.chapter.id,
+      roomId: this.roomId,
+      flags: this.flags,
+    })) {
+      this.guideWalkCue = null;
+      return false;
+    }
+    if (this.guideWalkCue && !restart) return false;
+    this.guideWalkCue = {
+      startedAt: this.time,
+      playerStart: { x: this.player.x, y: this.player.y },
+    };
+    return true;
+  }
+
+  guideWalkCueSnapshot() {
+    if (!this.guideWalkCue || !guideWalkCueAvailable({
+      chapterId: this.chapter.id,
+      roomId: this.roomId,
+      flags: this.flags,
+    })) return null;
+    return createGuideWalkCueSnapshot({
+      time: this.time,
+      startedAt: this.guideWalkCue.startedAt,
+      playerStart: this.guideWalkCue.playerStart,
+      reducedMotion: Boolean(this.save.settings?.reducedMotion),
+    });
   }
 
   syncScene(force = false) {
@@ -709,6 +750,10 @@ export class World {
   }
 
   snapshot() {
+    const tapToWalkCue = this.guideWalkCueSnapshot();
+    const baseOccupants = (this.room.occupants ?? [])
+      .filter((occupant) => conditionMatches(occupant.when, this.save));
+    const occupants = applyGuideWalkCueToOccupants(baseOccupants, tapToWalkCue);
     const baseTargets = this.targets();
     const basePet = this.save.character.pet?.type ? {
       ...this.save.character.pet,
@@ -742,7 +787,8 @@ export class World {
       cameraX: this.cameraX,
       player: { ...this.player },
       pet,
-      occupants: (this.room.occupants ?? []).filter((occupant) => conditionMatches(occupant.when, this.save)),
+      occupants,
+      tapToWalkCue,
       targets: affordances.targets,
       affordances,
       pendingInteraction: this.pendingInteraction ? {
