@@ -98,6 +98,17 @@ describe('PetNameDialog', () => {
     expect(dialog.isOpen).toBe(true);
     expect(dialog.root.getAttribute('aria-hidden')).toBeNull();
     expect(dialog.elements.dialog.getAttribute('role')).toBe('dialog');
+    expect(dialog.elements.dialog.getAttribute('aria-describedby')).toBe(dialog.elements.status.id);
+    expect(dialog.elements.input.getAttribute('aria-describedby')).toBe(dialog.elements.status.id);
+    expect(dialog.elements.status.className.split(' ')).toContain('visually-hidden');
+    expect(dialog.elements.status.getAttribute('role')).toBe('status');
+    expect(dialog.elements.status.getAttribute('aria-live')).toBe('polite');
+    expect(dialog.elements.status.getAttribute('aria-atomic')).toBe('true');
+    expect(dialog.elements.dialog.children.some((child) => child.textContent === 'Name your pet')).toBe(true);
+    expect(dialog.elements.dialog.children.some((child) => child.className === 'pet-name-instructions')).toBe(false);
+    expect(dialog.elements.submitButton.textContent).toBe('Use this name');
+    expect(dialog.elements.cancelButton.textContent).toBe('Name cards');
+    expect(dialog.elements.cancelButton.getAttribute('aria-label')).toBe('Choose a name card instead');
     expect(documentRef.activeElement).toBe(dialog.elements.input);
 
     dialog.elements.input.value = '  Star\n Light  ';
@@ -118,7 +129,9 @@ describe('PetNameDialog', () => {
     click(dialog.elements.submitButton);
     expect(dialog.isOpen).toBe(true);
     expect(dialog.elements.input.getAttribute('aria-invalid')).toBe('true');
-    expect(dialog.elements.status.textContent).toMatch(/Type a name/);
+    expect(dialog.elements.input.getAttribute('aria-errormessage')).toBe(dialog.elements.status.id);
+    expect(dialog.elements.status.className.split(' ')).toContain('visually-hidden');
+    expect(dialog.elements.status.textContent).toBe('Type a name, or choose a name card.');
 
     keydown(dialog.elements.dialog, 'Escape');
     await expect(result).resolves.toBeNull();

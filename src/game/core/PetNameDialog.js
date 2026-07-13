@@ -76,20 +76,12 @@ export class PetNameDialog {
     dialog.setAttribute('role', 'dialog');
     dialog.setAttribute('aria-modal', 'true');
     dialog.setAttribute('aria-labelledby', `${id}-title`);
-    dialog.setAttribute('aria-describedby', `${id}-instructions ${id}-status`);
+    dialog.setAttribute('aria-describedby', `${id}-status`);
     root.append(dialog);
 
     appendOwlMedallion(documentRef, dialog);
-    const title = appendTextElement(documentRef, dialog, 'h2', 'pet-name-title', 'Name Violet’s new friend');
+    const title = appendTextElement(documentRef, dialog, 'h2', 'pet-name-title', 'Name your pet');
     title.id = `${id}-title`;
-    const instructions = appendTextElement(
-      documentRef,
-      dialog,
-      'p',
-      'pet-name-instructions',
-      'A grown-up can type the name. Violet can still choose a name card instead.',
-    );
-    instructions.id = `${id}-instructions`;
 
     const label = appendTextElement(documentRef, dialog, 'label', 'pet-name-label', 'Pet name');
     label.setAttribute('for', `${id}-input`);
@@ -102,13 +94,20 @@ export class PetNameDialog {
     input.setAttribute('autocapitalize', 'words');
     input.setAttribute('enterkeyhint', 'done');
     input.setAttribute('spellcheck', 'false');
-    input.setAttribute('aria-describedby', `${id}-instructions ${id}-status`);
+    input.setAttribute('aria-describedby', `${id}-status`);
     dialog.append(input);
 
-    const status = appendTextElement(documentRef, dialog, 'p', 'pet-name-status', 'Up to 24 letters and spaces.');
+    const status = appendTextElement(
+      documentRef,
+      dialog,
+      'p',
+      'pet-name-status visually-hidden',
+      'Up to 24 letters and spaces.',
+    );
     status.id = `${id}-status`;
     status.setAttribute('role', 'status');
     status.setAttribute('aria-live', 'polite');
+    status.setAttribute('aria-atomic', 'true');
 
     const actions = documentRef.createElement('div');
     actions.className = 'pet-name-actions';
@@ -120,7 +119,8 @@ export class PetNameDialog {
     const cancelButton = documentRef.createElement('button');
     cancelButton.className = 'pet-name-button pet-name-button-secondary';
     cancelButton.type = 'button';
-    cancelButton.textContent = 'Choose a name card';
+    cancelButton.textContent = 'Name cards';
+    cancelButton.setAttribute('aria-label', 'Choose a name card instead');
     actions.append(cancelButton);
     dialog.append(actions);
     documentRef.body.append(root);
@@ -186,8 +186,8 @@ export class PetNameDialog {
     const name = cleanPetName(this.elements.input.value);
     if (!name) {
       this.elements.input.setAttribute('aria-invalid', 'true');
+      this.elements.input.setAttribute('aria-errormessage', this.elements.status.id);
       this.elements.status.textContent = 'Type a name, or choose a name card.';
-      this.elements.status.setAttribute('data-tone', 'error');
       this.elements.input.focus?.();
       return;
     }
@@ -196,8 +196,8 @@ export class PetNameDialog {
 
   #clearError() {
     this.elements.input.removeAttribute('aria-invalid');
+    this.elements.input.removeAttribute('aria-errormessage');
     this.elements.status.textContent = 'Up to 24 letters and spaces.';
-    this.elements.status.removeAttribute('data-tone');
   }
 
   #handleKeydown(event) {
