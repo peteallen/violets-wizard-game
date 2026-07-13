@@ -26,7 +26,7 @@ These seven become a mandatory **Storybook Standard section in every illusion ch
 
 The puppets are the largest quality gap and Violet-the-puppet is on every screen. The fix is not "try harder" — it's giving builders a **visual target instead of adjectives**:
 
-- **VU-00 Reference art first.** Generate painted character reference sheets in the exact room style (same style-prefix, front-facing full body + face close-up) for: Violet, Hagrid, the three shopkeepers, the hero owl, all three pets. These are *style targets, not shipped assets* — committed under `art/character-refs/` with prompts. Every puppet rebuild is reviewed **side-by-side against its reference**; the checklist question becomes "does the puppet look like this painting's cartoon sibling?" — answerable by an agent from a still.
+- **VU-00 Standard, checklists, and reference art first.** Two halves: (a) the Storybook Standard lands as a mandatory section in every illusion checklist (countable checks: every fill region ≥2 tones; outline colors within the ink range; no perfect-geometry primitives on player-facing surfaces; palette within room-palette distance; squint test vs. reference) plus the D31 budget assertions in the harness/test layer — every other workstream self-reviews against these, so they ship first; and (b) generate painted character reference sheets in the exact room style (same style-prefix, front-facing full body + face close-up) for: Violet, Hagrid, the three shopkeepers, the hero owl, all three pets. These are *style targets, not shipped assets* — committed under `art/character-refs/` with prompts. Every puppet rebuild is reviewed **side-by-side against its reference**; the checklist question becomes "does the puppet look like this painting's cartoon sibling?" — answerable by an agent from a still.
 - **Anatomy of the lift** (per ART_DIRECTION, now enforced): real eyes (iris + pupil + catch-light + lids — blinks are lid shapes, never a bar: the current title owl's blink frame reads as broken eyes in stills); eyebrows and cheek blush; hair as shaded masses with interior strand lines (Violet's messiness = the in-flight soft wisps, never spikes); robes with fold shading, collar/cuff detail, her purple lining and sneakers (D11); baked rim-light; soft varying outline.
 - **One face construction shared by puppet and portrait** (two detail tiers, same bones) so a character standing next to their own dialogue portrait no longer reads as two different games.
 - Order: **Violet first** (VU-01), then Hagrid + shopkeepers + owl + pets (VU-02). The in-flight hair-wisp work folds into VU-01.
@@ -43,11 +43,11 @@ Kill the dashed marching-ant rings and scattered diamond sparkles everywhere. On
 
 Three salience tiers, strictly enforced:
 
-1. **The golden thread** — the current objective's target. The strongest shimmer, and **exactly one on screen at any time**. If the objective's target is in another room, the room's exit/door carries the thread instead. She should always be able to answer "what's next?" by looking for the brightest gold thing.
+1. **The golden thread** — the current objective's target. The strongest shimmer, and **exactly one *assigned* at any time** (rendered only during active-play states — see the lifecycle rules below for when affordances draw at all). If the objective's target is in another room, the room's exit/door carries the thread instead. She should always be able to answer "what's next?" by looking for the brightest gold thing.
 2. **Discoverables** — optional interactables (shop browsing, flavor props, characters with idle lines). **No persistent glow.** They advertise via an occasional soft glint (~1.5s, staggered so no two glint simultaneously) and light up with the shimmer only on press-down (the arm-on-down input pattern already in the engine). Curiosity gets rewarded, not solicited.
 3. **Secrets** (hidden frog cards) — rarer, fainter glint (~2s every ~8s), plus the pet occasionally wandering over and pawing at the spot (the GAME_DESIGN richness-layer affordance, currently unimplemented).
 
-**Budget rule, checklist-enforced:** one golden thread + at most two visible glints in any 3-second window. A screen with five simultaneous advertisements is a defect by definition, regardless of how pretty each one is.
+**Budget rule, precisely** (checklist- and test-enforced): one assigned golden thread + at most **two glint activation *starts* in any inclusive rolling 3-second window** (counting starts, not overlap — two glints whose tails overlap a third's start still satisfy the rule only if no 3s window contains three starts). A screen with five simultaneous advertisements is a defect by definition, regardless of how pretty each one is.
 
 ### The lifecycle (state correctness)
 
@@ -56,8 +56,8 @@ Affordance state derives from quest/flag state — mechanically, not by hand-aut
 - **Spent hotspots go quiet.** When a hotspot's quest step completes or its script is exhausted to repeat-flavor, it drops out of the advertisement system entirely (still tappable for flavor — never advertised). Fixes "the ring is still there after I'm done."
 - The golden thread **moves the instant the objective advances** (same event that updates the quest star and map star).
 - The hint ladder plugs in as intensity, not new symbols: idle escalation brightens the existing golden thread and (rung 3+) sends the sparkle trail toward it.
-- While dialogue, set pieces, or walking are active, all affordances quiet to nothing — the world doesn't blink for attention while someone is talking.
-- Headless-testable: `World.snapshot()` exposes per-hotspot salience tier, so tests assert the budget ("exactly one thread; spent hotspots tier-none") across full chapter walkthroughs — this is a sim feature wearing art clothes.
+- While dialogue, set pieces, or walking are active, **zero affordances render** — the thread stays *assigned* in the sim but draws nothing; the world doesn't blink for attention while someone is talking. (This is the reconciliation of "exactly one thread" with "quiet during dialogue": assignment is constant, rendering is state-gated.)
+- Headless-testable: `World.snapshot()` exposes, per hotspot, its **salience tier** (`thread` / `discoverable` / `secret` / `none`) plus the **render-quiet state flag** and **glint activation timestamps**, so tests assert the budget mechanically across full chapter walkthroughs: exactly one `thread` assigned; zero rendered during quiet states; no inclusive rolling 3s window containing >2 glint starts; spent hotspots at `none`. This is a sim feature wearing art clothes.
 
 ### Map
 
@@ -70,7 +70,7 @@ The map objective is an actual glowing star on the destination — always presen
 
 ## Workstream 4 — Text purge (VU-07)
 
-**Rule (tightens GAME_DESIGN):** during play, on-screen text is caption chips (≤3 words) and proper nouns on title/chapter cards. Nothing else. Voice + icons carry all instruction. The parent panel is exempt (it's *for* adults).
+**Rule (tightens GAME_DESIGN; exceptions per D36):** during play, on-screen text is caption chips (≤3 words) and proper nouns on title/chapter cards — plus two deliberate exceptions: **readable story objects** (the letter's parchment, spellbook incantations, rune tiles, potion labels — reading them *is* the content per the learning layer, and their written words must match any narration verbatim) and **short action labels on primary controls** (≤3 easy caption-vocabulary words: "Hear the letter", "Again", the update prompt's "Reload"/"Later"). Everything else — helper sentences, subtitles, state labels — dies; voice + icons carry all instruction. The parent panel is exempt (it's *for* adults).
 
 Kill list from the current build: "Tap the page to continue" (the pulsing arrow already exists — first-time voice hint covers it), "A map that remembers where Violet needs to go," "Tap to travel," "Violet goes here," "Still hidden," "Hold for grown-ups," "Best with sound on" clutter, the title's subtitle sentence and envelope eyebrow text. Each removal that loses information gains a voice line (small VU voice-gen batch rides the existing pipeline + QA loop).
 
@@ -94,26 +94,27 @@ The "doesn't make sense" list, fixed in one sweep (all engine/content, parallel-
 
 Before the pass starts, the working tree goes green and empty: the Nimbus caption and on-screen title are decided (D30 — "Flying broom!" and **Violet at Hogwarts**, aligned in index.html), changed scenes re-captured and self-reviewed, decisions logged, committed.
 
-## Process changes (VU-09 — velocity-first, per D32)
+## Process rules (velocity-first, per D32)
 
-1. **Checklists gain the Storybook Standard section** — countable checks: every fill region ≥2 tones; outline colors within the ink range; no perfect-geometry primitives on player-facing surfaces; palette sampled within room-palette distance; element passes the squint test vs. its reference sheet.
-2. **Side-by-side self-review**: agents capture character/UI work next to its reference art in the same image strip and judge the match themselves — a tool for hitting the bar, not an approval step.
-3. **No human gates anywhere** (D32): no GIF approvals, no PENDING queue, no golden blessing. Agents self-review strictly, merge when green, and ship; CI (tests + content lint + asset checks) is the only gate. Taste-risky changes get a plain-language heads-up in the report so Pete knows what to look at *in the deployed game*.
-4. Log the drift batch this pass resolves in DECISIONS.md as it lands (dashed-ring removal, text rule, map rebuild replacing the hardcoded renderer bypass, etc.).
+1. **Side-by-side self-review**: agents capture character/UI work next to its reference art in the same image strip and judge the match themselves — a tool for hitting the bar, not an approval step.
+2. **No human gates anywhere** (D32): no GIF approvals, no PENDING queue, no golden blessing. Agents self-review strictly, ship when the local `npm run build` gate is green (tests + content lint + asset/voice/audio checks + bundle); CI re-runs the same battery and gates deployment. Taste-risky changes get a plain-language heads-up in the report so Pete knows what to look at *in the deployed game*.
+3. Log the drift batch this pass resolves in DECISIONS.md as it lands (dashed-ring removal, text rule, map rebuild replacing the hardcoded renderer bypass, etc.).
 
 ## Order and gating
 
 ```
-VU-pre (land in-flight diff, tree green)
-  → VU-00 Standard + reference art        ← everything below depends on the refs
-      ├─ VU-01 Violet rebuild → VU-02 cast rebuild        (character track)
-      ├─ VU-03 affordance language                        (parallel)
-      ├─ VU-04 dialogue panel → VU-05 satchel/map         (UI track)
-      └─ VU-08 clarity bugs                               (parallel, engine/content)
+VU-pre (land in-flight work, tree green)
+  → VU-00 Storybook Standard + upgraded illusion checklists (in docs/tests)
+          + painted character reference sheets
+      ├─ VU-01 Violet rebuild → VU-02 cast rebuild   (needs the reference sheets)
+      ├─ VU-03 affordance salience system             (parallel — no ref dependency)
+      ├─ VU-04 dialogue panel → VU-05 satchel/map     (parallel — no ref dependency)
+      └─ VU-08 clarity bugs                           (parallel, engine/content)
   → VU-06 title v3 + VU-07 text purge     ← after the language/UI tracks settle
-  → VU-09 checklist upgrades land in docs/tests
-  → deploy continuously → **Violet's first playtest** (the real M2 gate, at last)
+  → deploy continuously throughout → **Violet's first playtest** (completes M2)
 ```
+
+Only the character rebuilds (VU-01/02) wait on reference sheets; the checklist upgrades land **first**, inside VU-00, because every workstream self-reviews against them. VU-03/04/05/08 start immediately after VU-00's checklist half, in parallel.
 
 Every VU work package follows the standing loop (VERIFICATION.md): implement → capture → self-review against the upgraded checklist → merge when green. Commit and push **every green increment** (D33) — several pushes per session — so the GitHub Pages build is always current; Pete tests there continuously and feedback arrives as conversation.
 

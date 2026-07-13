@@ -92,7 +92,7 @@ Tracks A–E are parallel after WP-01. Within a track, arrows are hard dependenc
 |---|---|---|
 | **SP-A brick wall** | Does sliced-tile choreography hold 60fps and read as magic? | Strip + GIF pass SP-02's illusion checklist on placeholder art; frame time ≤8ms at peak on desktop, verified on iPad |
 | **SP-B mirror** | Clip + baked-soft-reflection pipeline | SP-15 checklist on placeholder art |
-| **SP-C style seam** | Do code-drawn puppets sit on generated paintings? | One real generated room + Violet puppet reviewed by dad — **this is the whole art direction's go/no-go** |
+| **SP-C style seam** | Do code-drawn puppets sit on generated paintings? | One real generated room + Violet puppet, agent-reviewed against the Storybook Standard; flagged to dad as a taste heads-up (non-blocking, per D32) — his play feedback steers the art direction |
 | **SP-D memory ceiling** | Confirm the researched budget (224–384MB global canvas cap, silent transparent failure) on *our* target iPad | The 5-canvas doctrine + canary from ARCHITECTURE.md exercised past the limit on device; observed ceiling and canary behavior land in DECISIONS.md |
 
 ---
@@ -104,7 +104,7 @@ The repeating pattern (shown for Ch. 1; each later chapter clones it after its C
 - **WP-30 · Ch. 1 grey-box.** `content/chapters/ch1.js` complete against placeholder assets: all rooms/hotspots/dialogue/quests wired, walkthrough sim test green (scripted taps complete the chapter headlessly), content lint green. *This WP proves the chapter's design in data before a single asset exists.*
 - **WP-31 · Ch. 1 set pieces.** SP-01 letter, SP-02 brick wall (from SP-A learnings), SP-03 wand chaos + AM systems used in Ch. 1 — each to its illusion checklist via harness strips.
 - **WP-32 · Ch. 1 production assets.** Rooms, voices (+ QA), music, SFX generated per chapter asset list; contact sheet reviewed; `check:assets` green.
-- **WP-33 · Ch. 1 device gate.** Deployed; five-layer verification; played end-to-end on the actual iPad (touch, perf, audio unlock, home-screen); yearbook capture verified. → **Violet playtest** (protocol in ROADMAP.md) → findings feed Ch. 2–3 detail pass.
+- **WP-33 · Ch. 1 device checkpoint.** Deployed (CI-gated); played end-to-end on the actual iPad (touch, perf, audio unlock, home-screen); yearbook capture verified. → **Violet playtest** (protocol in ROADMAP.md; a feedback checkpoint, not an approval — per D32 nothing blocks on it) → findings feed Ch. 2–3 detail pass.
 
 Chapter WPs after engine-stability can run with content parallelism (e.g. Ch. 3 grey-box while Ch. 2 production assets generate), but playtest gates in ROADMAP.md order the *releases*.
 

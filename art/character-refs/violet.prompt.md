@@ -2,7 +2,14 @@
 
 This is a style target only; it is not shipped by the game.
 
-## Accepted candidate metadata
+## Current accepted file (photo-guided revision, 2026-07-13)
+
+- Accepted file: `violet.png`
+- SHA-256: `7b43bf91b32b9ff4edbe31db02ca926b4d801a781f547c1fed0d55e8a72a96f2`
+- What changed vs. the prior accepted candidate (below): guided by a real photo Pete supplied — Violet now wears **dark-green rectangular glasses**, and her hair tone is a cooler **ash light-brown** (D37; ART_DIRECTION.md updated to match).
+- **Provenance gap:** the photo-guided revision prompts were not recorded by the session that generated this revision. The prompts below describe the *prior* candidate only. Whoever regenerates or edits this sheet next: record your prompts here (the reference photo itself is private and is never committed).
+
+## Prior accepted candidate metadata (superseded 2026-07-13)
 
 - Status: accepted after corrected-hair side-by-side review
 - Generated: 2026-07-13

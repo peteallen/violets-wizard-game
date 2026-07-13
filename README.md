@@ -31,4 +31,4 @@ For automation or a clean one-time launch, use `?reset=1`. The game clears the s
 
 ## Build and visual review
 
-Use `npm run dev` for the local game and `npm run build` for the complete test, asset, voice, audio, and production-build gate. Visual work is reviewed through deterministic registered scenes: `npm run snap -- --scene <scene-id> --times 0,0.5,1 --seed 42` writes ignored review frames, while `npm run flipbook -- --scene <scene-id>` produces the motion strip. Agents may prepare those review artifacts, but only explicit human approval can bless a new golden.
+Use `npm run dev` for the local game and `npm run build` for the complete test, asset, voice, audio, and production-build gate. Visual work is reviewed through deterministic registered scenes: `npm run snap -- --scene <scene-id> --times 0,0.5,1 --seed 42` writes ignored review frames, while `npm run flipbook -- --scene <scene-id>` produces the motion strip. Agents self-review those artifacts against the illusion checklists and ship when the build gate is green (D32 — no human approval steps); `bless`/`diff` remain available as optional self-serve snapshot tools.

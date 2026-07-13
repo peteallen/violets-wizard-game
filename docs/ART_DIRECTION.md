@@ -12,7 +12,7 @@
 | Night | deep blue `#1b2a4a`, twilight violet `#3a2d5e`, ink `#141126` | Night is velvet and inviting, never horror-dark |
 | Stone & wood | warm stone `#8a7a66`, aged oak `#5e4634`, parchment `#f0e3c8` | The castle's body |
 | Interaction accent | **one** gold shimmer `#ffd76a` with soft white core | The single "you can touch this" color, used for nothing else |
-| Violet herself | hair light brown `#8b6b4a`, eyes warm brown `#5a3d28`, robe black `#26222e` with **purple** lining/scarf-trim `#7a4fc9`, purple sneakers | Purple is her signature (it's her name) pre-Sorting; house colors join after |
+| Violet herself | hair **ash light-brown** (cooler than the old `#8b6b4a` — match the accepted reference sheet), eyes warm brown `#5a3d28`, **dark-green rectangular glasses**, robe black `#26222e` with **purple** lining/scarf-trim `#7a4fc9`, purple sneakers | Photo-matched per D37; purple is her signature (it's her name) pre-Sorting; house colors join after |
 
 House accent sets (scarf, banner, common room grading) defined per house when the Sorting decision lands.
 
@@ -55,7 +55,7 @@ Why code-drawn against painted rooms: full control of Violet's exact look, anima
 - Flat-ish fills with one soft shading pass + the baked rim-light matching the rooms' key light.
 - Proportions: big heads (~1:3.5), small bodies, stubby limbs — picture-book kid proportions, matching the backgrounds' whimsy.
 
-**Violet (the player):** light brown long hair, *deliberately a little messy* — three or four flyaway strands that bounce on the walk cycle (per the client: she prefers it messy); warm brown eyes; rosy cheeks; black first-year robe with purple lining visible at the collar and cuffs; purple sneakers peeking out (the kid-relatable detail under the robe). Post-Sorting she gains the house scarf; cosmetic robe-trim color from Madam Malkin's persists throughout.
+**Violet (the player):** long **ash light-brown** hair, *deliberately a little messy* — three or four soft hair-attached wisps that bounce on the walk cycle (per the client: she prefers it messy; never spikes or antennae); warm brown eyes behind **dark-green rectangular glasses** (photo-matched, D37 — the puppet and portrait both wear them); rosy cheeks; black first-year robe with purple lining visible at the collar and cuffs; purple sneakers peeking out (the kid-relatable detail under the robe). The accepted reference sheet `art/character-refs/violet.png` is the canonical look. Post-Sorting she gains the house scarf; cosmetic robe-trim color from Madam Malkin's persists throughout.
 
 **Cast silhouettes** stay instantly readable at gameplay scale: the half-giant guide is twice everyone's height and width; the charms professor is knee-high with a book-stack podium; the potions master is a black column with a widow's peak; the villain is smoke-edged. Silhouette-first design, faces second.
 
