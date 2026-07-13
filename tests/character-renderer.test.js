@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   CHARACTER_REVIEW_SCENES,
   CharacterRenderer,
+  HAGRID_STYLE,
   VIOLET_STYLE,
   drawVioletGlasses,
   sampleCompanionMotion,
@@ -98,6 +99,40 @@ describe('illustrated character renderer', () => {
       kind: 'guide', x: 180, y: 610, facing: 'right', pose: 'beckon', reducedMotion: true,
     }, 1.25);
     expect(beckon.calls.filter(([name]) => name === 'quadraticCurveTo').length).toBeGreaterThan(15);
+  });
+
+  it('renders Hagrid as a layered half-giant puppet shared by world and portrait', () => {
+    const renderer = new CharacterRenderer();
+    const world = recordingContext();
+    const replayed = recordingContext();
+    const character = { kind: 'guide', x: 180, y: 610, facing: 'right', pose: 'idle' };
+    renderer.draw(world, character, 1.375);
+    renderer.draw(replayed, character, 1.375);
+
+    expect(world.calls).toEqual(replayed.calls);
+    expect(world.depth).toBe(0);
+    expect(HAGRID_STYLE.worldScale).toBeGreaterThanOrEqual(1.7);
+    expect(world.calls).toContainEqual(['scale', HAGRID_STYLE.worldScale, HAGRID_STYLE.worldScale]);
+    expect(world.calls.filter(([name]) => name === 'bezierCurveTo').length).toBeGreaterThan(80);
+    expect(world.calls.some(([name]) => name === 'ellipse' || name === 'arc')).toBe(false);
+    expect(world.calls
+      .filter(([name]) => ['moveTo', 'lineTo', 'quadraticCurveTo', 'bezierCurveTo'].includes(name))
+      .every(([, ...values]) => values.every(Number.isFinite))).toBe(true);
+    for (const style of [
+      HAGRID_STYLE.coatBase,
+      HAGRID_STYLE.coatShadow,
+      HAGRID_STYLE.hairBase,
+      HAGRID_STYLE.hairMid,
+      HAGRID_STYLE.hairLight,
+      HAGRID_STYLE.rim,
+    ]) expect(world.styles.some(([, value]) => value === style)).toBe(true);
+
+    const portrait = recordingContext();
+    renderer.drawPortrait(portrait, { speaker: 'Hagrid', pose: 'speaking', x: 80, y: 90 }, 1.375);
+    for (const style of [HAGRID_STYLE.hairBase, HAGRID_STYLE.hairMid, HAGRID_STYLE.rim]) {
+      expect(portrait.styles.some(([, value]) => value === style)).toBe(true);
+    }
+    expect(portrait.depth).toBe(0);
   });
 
   it('keeps Violet photo-matched with ash hair and hand-drawn dark-green glasses', () => {

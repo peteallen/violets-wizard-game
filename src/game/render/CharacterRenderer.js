@@ -18,6 +18,19 @@ export const VIOLET_STYLE = Object.freeze({
   lenses: 'rgba(190, 218, 202, 0.08)',
 });
 
+export const HAGRID_STYLE = Object.freeze({
+  worldScale: 1.72,
+  coatBase: '#584536',
+  coatShadow: '#382d28',
+  coatLight: '#806247',
+  hairBase: '#33251f',
+  hairMid: '#4b3429',
+  hairLight: '#76513a',
+  skin: '#bd7d5e',
+  cheek: '#b76858',
+  rim: 'rgba(244, 198, 126, 0.42)',
+});
+
 export const CHARACTER_REVIEW_SCENES = Object.freeze([
   'character-cast-review',
   'character-pets-review',
@@ -27,7 +40,13 @@ export const CHARACTER_REVIEW_SCENES = Object.freeze([
 
 const CHARACTER_COLORS = Object.freeze({
   guide: {
-    robe: '#5d4938', robeShadow: '#3f322b', accent: '#a9865a', hair: '#34261f', hairLight: '#654536', skin: '#bd7d5e', cheek: '#b76858',
+    robe: HAGRID_STYLE.coatBase,
+    robeShadow: HAGRID_STYLE.coatShadow,
+    accent: HAGRID_STYLE.coatLight,
+    hair: HAGRID_STYLE.hairBase,
+    hairLight: HAGRID_STYLE.hairLight,
+    skin: HAGRID_STYLE.skin,
+    cheek: HAGRID_STYLE.cheek,
   },
   wandmaker: {
     robe: '#34364d', robeShadow: '#242638', accent: '#c6b681', hair: '#ddd4bc', hairLight: '#f3ead3', skin: '#d3a17d', cheek: '#c27d73',
@@ -81,7 +100,7 @@ export class CharacterRenderer {
   drawNpc(context, character, time) {
     const kind = character.kind in CHARACTER_COLORS ? character.kind : 'guide';
     const palette = CHARACTER_COLORS[kind];
-    const scale = (character.scale ?? 1) * (kind === 'guide' ? 1.55 : 1.04);
+    const scale = (character.scale ?? 1) * (kind === 'guide' ? HAGRID_STYLE.worldScale : 1.04);
     const direction = character.facing === 'left' ? -1 : 1;
     const phase = character.phase ?? kind.length * 0.37;
     const walking = character.pose === 'walking';
@@ -105,9 +124,9 @@ export class CharacterRenderer {
     });
     drawNpcHead(context, kind, palette, blinking, time + phase, character.pose);
     drawNpcAccessory(context, kind, palette);
-    drawUpperLeftRim(context, kind === 'guide'
-      ? [[-55, -129], [-54, -161], [-37, -185], [-10, -197], [17, -192], [42, -174]]
-      : [[-39, -132], [-34, -164], [-13, -182], [14, -180], [35, -160]], 1.25);
+    if (kind === 'guide') drawGuideMouth(context, character.pose, time + phase);
+    if (kind === 'guide') drawGuideWarmRim(context);
+    else drawUpperLeftRim(context, [[-39, -132], [-34, -164], [-13, -182], [14, -180], [35, -160]], 1.25);
 
     context.restore();
   }
@@ -451,14 +470,34 @@ function drawGroundingShadow(context, kind) {
   const width = guide ? 72 : violet ? 49 : 54;
   context.save();
   context.fillStyle = 'rgba(27,18,24,0.2)';
-  context.beginPath();
-  context.ellipse(4, 26, width, guide ? 13 : 9, 0, 0, Math.PI * 2);
+  traceOrganicGroundShadow(context, 4, 26, width, guide ? 13 : 9, 0.08);
   context.fill();
   context.fillStyle = 'rgba(45,27,22,0.18)';
-  context.beginPath();
-  context.ellipse(-2, 23, width * 0.7, guide ? 7 : 5, 0, 0, Math.PI * 2);
+  traceOrganicGroundShadow(context, -2, 23, width * 0.7, guide ? 7 : 5, -0.11);
   context.fill();
   context.restore();
+}
+
+function traceOrganicGroundShadow(context, x, y, radiusX, radiusY, wobble) {
+  context.beginPath();
+  context.moveTo(x - radiusX * (0.96 + wobble), y - radiusY * 0.08);
+  context.bezierCurveTo(
+    x - radiusX * 0.63,
+    y - radiusY * (1.02 - wobble),
+    x + radiusX * 0.38,
+    y - radiusY * (0.88 + wobble),
+    x + radiusX * (1.01 - wobble),
+    y + radiusY * 0.05,
+  );
+  context.bezierCurveTo(
+    x + radiusX * 0.57,
+    y + radiusY * (0.93 - wobble),
+    x - radiusX * 0.42,
+    y + radiusY * (1.04 + wobble),
+    x - radiusX * (0.96 + wobble),
+    y - radiusY * 0.08,
+  );
+  context.closePath();
 }
 
 function drawCompanionShadow(context, type, motion) {
@@ -915,6 +954,50 @@ function drawNpcLegs(context, kind, palette, pose = 'idle', time = 0) {
 }
 
 function drawNpcBackDetails(context, kind, palette) {
+  if (kind === 'guide') {
+    context.fillStyle = HAGRID_STYLE.hairBase;
+    context.beginPath();
+    context.moveTo(-7, -199);
+    context.bezierCurveTo(-39, -205, -59, -185, -58, -156);
+    context.bezierCurveTo(-71, -145, -69, -116, -57, -98);
+    context.bezierCurveTo(-45, -84, -25, -91, -17, -108);
+    context.bezierCurveTo(-8, -91, 7, -88, 15, -108);
+    context.bezierCurveTo(29, -88, 52, -93, 61, -111);
+    context.bezierCurveTo(72, -132, 62, -155, 56, -165);
+    context.bezierCurveTo(53, -191, 23, -205, -7, -199);
+    context.closePath();
+    fillStroke(context, 2.35);
+
+    context.fillStyle = darken(HAGRID_STYLE.hairBase, 0.09);
+    context.beginPath();
+    context.moveTo(6, -198);
+    context.bezierCurveTo(38, -200, 61, -179, 56, -157);
+    context.bezierCurveTo(70, -133, 56, -106, 37, -98);
+    context.bezierCurveTo(29, -91, 19, -99, 15, -110);
+    context.bezierCurveTo(12, -137, 18, -173, 6, -198);
+    context.closePath();
+    context.fill();
+
+    context.fillStyle = HAGRID_STYLE.hairMid;
+    context.globalAlpha = 0.78;
+    context.beginPath();
+    context.moveTo(-48, -171);
+    context.bezierCurveTo(-58, -145, -53, -116, -38, -104);
+    context.bezierCurveTo(-31, -97, -24, -101, -20, -112);
+    context.bezierCurveTo(-30, -135, -27, -160, -16, -185);
+    context.bezierCurveTo(-29, -187, -42, -182, -48, -171);
+    context.closePath();
+    context.fill();
+    context.globalAlpha = 1;
+
+    context.strokeStyle = HAGRID_STYLE.rim;
+    context.lineWidth = 1.8;
+    context.beginPath();
+    context.moveTo(-52, -153);
+    context.bezierCurveTo(-62, -174, -43, -197, -13, -198);
+    context.bezierCurveTo(-4, -200, 2, -199, 8, -197);
+    context.stroke();
+  }
   if (kind === 'tailor') {
     context.fillStyle = palette.hairShadow ?? darken(palette.hair, 0.12);
     context.beginPath();
@@ -977,12 +1060,13 @@ function drawNpcBody(context, kind, palette) {
     context.quadraticCurveTo(16, 9, hem, 0);
     context.bezierCurveTo(42, -36, 39, -79, shoulder, top);
   } else {
-    context.moveTo(-43, top - 2);
-    context.bezierCurveTo(-58, top - 4, -65, -101, -64, -84);
-    context.bezierCurveTo(-67, -57, -72, -23, -hem, 0);
-    context.quadraticCurveTo(0, 12, hem, 0);
-    context.bezierCurveTo(72, -23, 67, -57, 64, -84);
-    context.bezierCurveTo(65, -101, 58, top - 4, 43, top - 2);
+    context.moveTo(-45, top - 3);
+    context.bezierCurveTo(-62, top - 8, -70, -101, -67, -82);
+    context.bezierCurveTo(-72, -59, -79, -24, -75, 2);
+    context.bezierCurveTo(-55, 7, -27, 13, -3, 8);
+    context.bezierCurveTo(24, 15, 54, 7, 77, -2);
+    context.bezierCurveTo(76, -26, 70, -60, 66, -86);
+    context.bezierCurveTo(67, -103, 57, top - 7, 45, top - 1);
   }
   context.closePath();
   fillStroke(context, broad ? 2.15 : 1.9);
@@ -1048,10 +1132,10 @@ function drawNpcGarmentDetails(context, kind, palette, { shoulder, hem, top }) {
     context.fillStyle = '#2e2927';
     context.beginPath();
     context.moveTo(-36, -106);
-    context.lineTo(-11, -67);
-    context.lineTo(0, -96);
-    context.lineTo(11, -67);
-    context.lineTo(36, -106);
+    context.bezierCurveTo(-29, -89, -20, -74, -11, -67);
+    context.quadraticCurveTo(-5, -84, 0, -96);
+    context.quadraticCurveTo(6, -82, 11, -67);
+    context.bezierCurveTo(20, -76, 29, -94, 36, -106);
     context.quadraticCurveTo(0, -116, -36, -106);
     context.closePath();
     context.fill();
@@ -1059,10 +1143,11 @@ function drawNpcGarmentDetails(context, kind, palette, { shoulder, hem, top }) {
     context.fillStyle = '#49372e';
     context.beginPath();
     context.moveTo(-17, -78);
-    context.lineTo(0, -96);
-    context.lineTo(17, -78);
-    context.lineTo(21, -49);
-    context.lineTo(-21, -49);
+    context.quadraticCurveTo(-8, -88, 0, -96);
+    context.quadraticCurveTo(8, -87, 17, -78);
+    context.bezierCurveTo(18, -68, 21, -58, 21, -49);
+    context.quadraticCurveTo(0, -45, -21, -49);
+    context.bezierCurveTo(-20, -58, -19, -68, -17, -78);
     context.closePath();
     context.fill();
     context.strokeStyle = 'rgba(228,193,137,0.28)';
@@ -1083,18 +1168,24 @@ function drawNpcGarmentDetails(context, kind, palette, { shoulder, hem, top }) {
     context.stroke();
     context.fillStyle = '#b98a43';
     context.beginPath();
-    context.roundRect?.(-8, -51, 16, 14, 3);
-    if (typeof context.roundRect === 'function') context.fill();
-    else {
-      context.fillRect(-8, -51, 16, 14);
-    }
+    context.moveTo(-8, -50);
+    context.quadraticCurveTo(-1, -54, 8, -49);
+    context.bezierCurveTo(10, -45, 8, -39, 5, -37);
+    context.quadraticCurveTo(-2, -35, -9, -39);
+    context.bezierCurveTo(-11, -43, -10, -47, -8, -50);
+    context.closePath();
+    context.fill();
+    context.strokeStyle = 'rgba(255,224,158,0.38)';
+    context.lineWidth = 1.2;
+    context.stroke();
     for (const [x, y] of [[-42, -27], [42, -27]]) {
       context.fillStyle = x < 0 ? 'rgba(52,38,31,0.32)' : 'rgba(34,27,26,0.42)';
       context.beginPath();
       context.moveTo(x - 15, y - 8);
-      context.lineTo(x + 15, y - 8);
-      context.lineTo(x + 12, y + 12);
+      context.quadraticCurveTo(x, y - 11 + (x < 0 ? -2 : 1), x + 15, y - 8);
+      context.bezierCurveTo(x + 16, y - 1, x + 14, y + 7, x + 12, y + 12);
       context.quadraticCurveTo(x, y + 18, x - 12, y + 12);
+      context.bezierCurveTo(x - 14, y + 5, x - 16, y - 2, x - 15, y - 8);
       context.closePath();
       context.fill();
       context.strokeStyle = palette.accent;
@@ -1110,6 +1201,23 @@ function drawNpcGarmentDetails(context, kind, palette, { shoulder, hem, top }) {
       context.quadraticCurveTo(x + (x < 0 ? -4 : 4), -61, x, -13);
       context.stroke();
     }
+
+    context.strokeStyle = 'rgba(250,211,149,0.19)';
+    context.lineWidth = 2.2;
+    context.beginPath();
+    context.moveTo(-54, -94);
+    context.bezierCurveTo(-61, -70, -63, -39, -67, -7);
+    context.moveTo(-18, -67);
+    context.bezierCurveTo(-24, -46, -20, -21, -27, 3);
+    context.stroke();
+    context.strokeStyle = 'rgba(35,25,25,0.23)';
+    context.lineWidth = 3.1;
+    context.beginPath();
+    context.moveTo(25, -71);
+    context.bezierCurveTo(33, -48, 29, -19, 37, 3);
+    context.moveTo(57, -91);
+    context.bezierCurveTo(64, -65, 61, -37, 68, -9);
+    context.stroke();
   } else if (kind === 'wandmaker') {
     context.fillStyle = '#222536';
     context.beginPath();
@@ -1365,7 +1473,174 @@ function drawGuideBeckonArms(context, palette, time, { reducedMotion = false } =
   }
 }
 
+function drawGuideHead(context, palette, blinking, time) {
+  const headY = -157;
+
+  drawGuideEar(context, -43, headY, palette.skin, -1);
+  drawGuideEar(context, 44, headY + 1, palette.skin, 1);
+
+  context.fillStyle = palette.skin;
+  context.beginPath();
+  context.moveTo(-5, -201);
+  context.bezierCurveTo(-31, -202, -45, -187, -46, -164);
+  context.bezierCurveTo(-50, -143, -37, -119, -15, -112);
+  context.bezierCurveTo(2, -106, 26, -113, 38, -129);
+  context.bezierCurveTo(52, -147, 48, -174, 39, -188);
+  context.bezierCurveTo(30, -201, 10, -205, -5, -201);
+  context.closePath();
+  fillStroke(context, 2.35);
+
+  context.fillStyle = darken(palette.skin, 0.16);
+  context.globalAlpha = 0.28;
+  context.beginPath();
+  context.moveTo(8, -199);
+  context.bezierCurveTo(34, -197, 46, -181, 42, -158);
+  context.bezierCurveTo(46, -140, 32, -118, 13, -113);
+  context.bezierCurveTo(19, -138, 16, -173, 8, -199);
+  context.closePath();
+  context.fill();
+  context.globalAlpha = 1;
+
+  context.fillStyle = 'rgba(255, 220, 166, 0.2)';
+  context.beginPath();
+  context.moveTo(-31, -184);
+  context.bezierCurveTo(-24, -197, -8, -200, 3, -194);
+  context.bezierCurveTo(-10, -188, -18, -176, -22, -164);
+  context.bezierCurveTo(-31, -166, -36, -174, -31, -184);
+  context.closePath();
+  context.fill();
+
+  context.fillStyle = 'rgba(183, 83, 75, 0.24)';
+  context.beginPath();
+  context.moveTo(-35, -145);
+  context.bezierCurveTo(-28, -151, -18, -149, -15, -142);
+  context.bezierCurveTo(-20, -136, -31, -135, -36, -141);
+  context.quadraticCurveTo(-38, -143, -35, -145);
+  context.closePath();
+  context.moveTo(17, -140);
+  context.bezierCurveTo(22, -147, 35, -147, 39, -139);
+  context.bezierCurveTo(34, -133, 23, -132, 17, -137);
+  context.quadraticCurveTo(15, -139, 17, -140);
+  context.closePath();
+  context.fill();
+
+  drawRuggedEyes(context, headY - 2, blinking, Math.sin(time * 0.62 + 5) * 1.1, Math.sin(time * 0.39 + 3.5) * 0.55);
+
+  context.fillStyle = darken(palette.skin, 0.05);
+  context.beginPath();
+  context.moveTo(-4, -160);
+  context.bezierCurveTo(-9, -150, -10, -139, -5, -134);
+  context.bezierCurveTo(1, -130, 9, -134, 10, -140);
+  context.bezierCurveTo(8, -147, 5, -156, -4, -160);
+  context.closePath();
+  fillStroke(context, 1.35);
+  context.fillStyle = 'rgba(255, 225, 178, 0.24)';
+  context.beginPath();
+  context.moveTo(-3, -156);
+  context.bezierCurveTo(-6, -149, -5, -141, -1, -138);
+  context.quadraticCurveTo(2, -140, 1, -154, -3, -156);
+  context.closePath();
+  context.fill();
+
+  context.fillStyle = HAGRID_STYLE.hairBase;
+  context.beginPath();
+  context.moveTo(-46, -164);
+  context.bezierCurveTo(-48, -186, -32, -204, -12, -203);
+  context.bezierCurveTo(-2, -211, 12, -205, 18, -201);
+  context.bezierCurveTo(33, -202, 46, -188, 43, -168);
+  context.bezierCurveTo(36, -176, 29, -177, 24, -169);
+  context.bezierCurveTo(17, -183, 8, -180, 2, -171);
+  context.bezierCurveTo(-7, -185, -17, -180, -23, -168);
+  context.bezierCurveTo(-33, -178, -40, -174, -46, -164);
+  context.closePath();
+  fillStroke(context, 2.15);
+
+  context.fillStyle = HAGRID_STYLE.hairMid;
+  context.beginPath();
+  context.moveTo(-42, -176);
+  context.bezierCurveTo(-35, -195, -19, -203, -4, -201);
+  context.bezierCurveTo(-13, -192, -14, -181, -22, -169);
+  context.bezierCurveTo(-31, -179, -36, -179, -42, -176);
+  context.closePath();
+  context.fill();
+  context.beginPath();
+  context.moveTo(7, -202);
+  context.bezierCurveTo(25, -201, 40, -188, 41, -172);
+  context.bezierCurveTo(31, -180, 23, -176, 17, -166);
+  context.bezierCurveTo(18, -181, 14, -193, 7, -202);
+  context.closePath();
+  context.fill();
+
+  context.fillStyle = darken(HAGRID_STYLE.hairBase, 0.1);
+  context.globalAlpha = 0.68;
+  context.beginPath();
+  context.moveTo(14, -201);
+  context.bezierCurveTo(34, -197, 46, -182, 41, -167);
+  context.bezierCurveTo(35, -176, 27, -176, 21, -169);
+  context.bezierCurveTo(24, -181, 21, -193, 14, -201);
+  context.closePath();
+  context.fill();
+  context.globalAlpha = 1;
+
+  context.strokeStyle = HAGRID_STYLE.hairLight;
+  context.lineWidth = 1.55;
+  context.beginPath();
+  for (const [x, bend, endY] of [[-36, -5, -169], [-25, 5, -166], [-11, -4, -170], [3, 5, -168], [18, -5, -165], [32, 4, -169]]) {
+    context.moveTo(x, -195 + Math.abs(x) * 0.08);
+    context.bezierCurveTo(x + bend, -187, x - bend * 0.4, -177, x + bend * 0.25, endY);
+  }
+  context.stroke();
+}
+
+function drawGuideEar(context, x, y, color, side) {
+  context.fillStyle = color;
+  context.beginPath();
+  context.moveTo(x - side * 2, y - 9);
+  context.bezierCurveTo(x + side * 9, y - 11, x + side * 11, y + 5, x + side * 3, y + 11);
+  context.bezierCurveTo(x - side * 5, y + 8, x - side * 7, y - 4, x - side * 2, y - 9);
+  context.closePath();
+  fillStroke(context, 1.8);
+  context.strokeStyle = 'rgba(116, 62, 56, 0.38)';
+  context.lineWidth = 1.2;
+  context.beginPath();
+  context.moveTo(x + side * 1, y - 5);
+  context.bezierCurveTo(x + side * 7, y - 2, x + side * 5, y + 6, x, y + 7);
+  context.stroke();
+}
+
+function drawGuideMouth(context, pose, time) {
+  const speaking = pose === 'speaking';
+  const open = speaking ? 2.5 + Math.abs(Math.sin(time * 8.4)) * 3.4 : 0;
+  if (speaking) {
+    context.fillStyle = '#6f3d3e';
+    context.beginPath();
+    context.moveTo(-9, -126);
+    context.bezierCurveTo(-5, -130 - open * 0.2, 5, -130 - open * 0.1, 10, -126);
+    context.bezierCurveTo(6, -120 + open, -4, -120 + open, -9, -126);
+    context.closePath();
+    fillStroke(context, 1.3);
+    context.fillStyle = 'rgba(230, 141, 132, 0.64)';
+    context.beginPath();
+    context.moveTo(-5, -123 + open * 0.45);
+    context.quadraticCurveTo(1, -120 + open, 6, -123 + open * 0.5);
+    context.quadraticCurveTo(0, -121 + open * 0.25, -5, -123 + open * 0.45);
+    context.closePath();
+    context.fill();
+    return;
+  }
+  context.strokeStyle = '#754641';
+  context.lineWidth = 2;
+  context.beginPath();
+  context.moveTo(-9, -126);
+  context.bezierCurveTo(-3, -121, 4, -121, 10, -127);
+  context.stroke();
+}
+
 function drawNpcHead(context, kind, palette, blinking, time, pose = 'idle') {
+  if (kind === 'guide') {
+    drawGuideHead(context, palette, blinking, time);
+    return;
+  }
   const broad = kind === 'guide';
   const headY = broad ? -151 : -137;
   const rx = broad ? 41 : kind === 'wandmaker' ? 31 : kind === 'keeper' ? 35 : 34;
@@ -1633,7 +1908,7 @@ function drawNpcHairPlanes(context, kind, palette, headY, rx, ry) {
 
 function drawNpcAccessory(context, kind, palette) {
   if (kind === 'guide') {
-    context.fillStyle = '#30231f';
+    context.fillStyle = HAGRID_STYLE.hairBase;
     context.beginPath();
     context.moveTo(-32, -145);
     context.bezierCurveTo(-37, -128, -31, -110, -21, -102);
@@ -1647,7 +1922,7 @@ function drawNpcAccessory(context, kind, palette) {
     context.closePath();
     fillStroke(context, 1.8);
 
-    context.fillStyle = '#211b1a';
+    context.fillStyle = darken(HAGRID_STYLE.hairBase, 0.1);
     context.globalAlpha = 0.55;
     context.beginPath();
     context.moveTo(3, -133);
@@ -1658,7 +1933,7 @@ function drawNpcAccessory(context, kind, palette) {
     context.fill();
     context.globalAlpha = 1;
 
-    context.fillStyle = '#463027';
+    context.fillStyle = HAGRID_STYLE.hairMid;
     context.globalAlpha = 0.72;
     context.beginPath();
     context.moveTo(-28, -139);
@@ -1702,7 +1977,7 @@ function drawNpcAccessory(context, kind, palette) {
     context.lineWidth = 1.5;
     context.stroke();
 
-    context.strokeStyle = '#72503b';
+    context.strokeStyle = HAGRID_STYLE.hairLight;
     context.lineWidth = 1.25;
     context.beginPath();
     context.moveTo(-25, -135);
@@ -2168,7 +2443,15 @@ function drawHand(context, x, y, color, radius) {
   context.strokeStyle = 'rgba(255,231,168,0.4)';
   context.lineWidth = 1.5;
   context.beginPath();
-  context.arc(-1.5, -1.5, Math.max(2, radius - 3), Math.PI, 1.5 * Math.PI);
+  context.moveTo(-radius * 0.62, -radius * 0.18);
+  context.bezierCurveTo(
+    -radius * 0.58,
+    -radius * 0.58,
+    -radius * 0.12,
+    -radius * 0.78,
+    radius * 0.28,
+    -radius * 0.56,
+  );
   context.stroke();
   context.strokeStyle = 'rgba(87,52,42,0.35)';
   context.lineWidth = 1.1;
@@ -2194,14 +2477,18 @@ function drawEar(context, x, y, color, radius = 7) {
 function drawRuggedEyes(context, eyeY, blinking, gazeX, gazeY) {
   const eyes = [[-15, -1], [15, 1]];
   if (blinking) {
-    context.strokeStyle = DEEP_OUTLINE;
-    context.lineWidth = 2.3;
-    context.beginPath();
     for (const [x, side] of eyes) {
-      context.moveTo(x - 6, eyeY + side * 0.35);
-      context.quadraticCurveTo(x, eyeY + 2.4, x + 6, eyeY - side * 0.35);
+      context.fillStyle = '#9f614f';
+      context.beginPath();
+      context.moveTo(x - 7, eyeY + side * 0.35);
+      context.quadraticCurveTo(x, eyeY - 2.4, x + 7, eyeY - side * 0.25);
+      context.quadraticCurveTo(x, eyeY + 3.2, x - 7, eyeY + side * 0.35);
+      context.closePath();
+      context.fill();
+      context.strokeStyle = DEEP_OUTLINE;
+      context.lineWidth = 1.8;
+      context.stroke();
     }
-    context.stroke();
   } else {
     for (const [x, side] of eyes) {
       context.fillStyle = '#f4e9d4';
@@ -2215,17 +2502,28 @@ function drawRuggedEyes(context, eyeY, blinking, gazeX, gazeY) {
       context.lineWidth = 1.55;
       context.stroke();
 
+      const irisX = x + gazeX * 0.7;
+      const irisY = eyeY + gazeY * 0.55;
       context.fillStyle = '#654533';
       context.beginPath();
-      context.ellipse(x + gazeX * 0.7, eyeY + gazeY * 0.55, 3.1, 3.7, 0, 0, Math.PI * 2);
+      context.moveTo(irisX, irisY - 3.8);
+      context.bezierCurveTo(irisX + 3.2, irisY - 3.2, irisX + 3.6, irisY + 1.5, irisX + 0.5, irisY + 3.7);
+      context.bezierCurveTo(irisX - 3.2, irisY + 3, irisX - 3.5, irisY - 1.8, irisX, irisY - 3.8);
+      context.closePath();
       context.fill();
       context.fillStyle = '#231a18';
       context.beginPath();
-      context.arc(x + gazeX * 0.72, eyeY + gazeY * 0.58, 1.7, 0, Math.PI * 2);
+      context.moveTo(irisX, irisY - 1.9);
+      context.bezierCurveTo(irisX + 1.7, irisY - 1.5, irisX + 1.8, irisY + 1.2, irisX + 0.2, irisY + 1.9);
+      context.bezierCurveTo(irisX - 1.7, irisY + 1.5, irisX - 1.8, irisY - 1.2, irisX, irisY - 1.9);
+      context.closePath();
       context.fill();
-      context.fillStyle = 'rgba(255,255,255,0.82)';
+      context.fillStyle = 'rgba(250, 236, 207, 0.88)';
       context.beginPath();
-      context.arc(x - 1 + gazeX * 0.65, eyeY - 1.5 + gazeY * 0.5, 0.85, 0, Math.PI * 2);
+      context.moveTo(irisX - 1.4, irisY - 2.1);
+      context.quadraticCurveTo(irisX - 0.3, irisY - 2.8, irisX + 0.4, irisY - 1.7);
+      context.quadraticCurveTo(irisX - 0.7, irisY - 0.7, irisX - 1.4, irisY - 2.1);
+      context.closePath();
       context.fill();
 
       context.strokeStyle = 'rgba(70,43,35,0.58)';
@@ -2238,12 +2536,12 @@ function drawRuggedEyes(context, eyeY, blinking, gazeX, gazeY) {
   }
 
   context.strokeStyle = '#34241f';
-  context.lineWidth = 3.5;
+  context.lineWidth = 3.8;
   context.beginPath();
-  context.moveTo(-27, eyeY - 9);
-  context.quadraticCurveTo(-18, eyeY - 13, -7, eyeY - 7);
+  context.moveTo(-28, eyeY - 9);
+  context.bezierCurveTo(-22, eyeY - 15, -14, eyeY - 14, -7, eyeY - 7);
   context.moveTo(7, eyeY - 7);
-  context.quadraticCurveTo(18, eyeY - 13, 27, eyeY - 9);
+  context.bezierCurveTo(15, eyeY - 13, 22, eyeY - 14, 28, eyeY - 8);
   context.stroke();
   context.strokeStyle = 'rgba(132,86,58,0.38)';
   context.lineWidth = 1.05;
@@ -2364,6 +2662,28 @@ function drawUpperLeftRim(context, points, width) {
     if (index === 0) context.moveTo(x, y);
     else context.lineTo(x, y);
   });
+  context.stroke();
+}
+
+function drawGuideWarmRim(context) {
+  context.strokeStyle = HAGRID_STYLE.rim;
+  context.lineWidth = 2.1;
+  context.beginPath();
+  context.moveTo(-58, -151);
+  context.bezierCurveTo(-60, -179, -38, -201, -9, -203);
+  context.bezierCurveTo(-2, -205, 4, -204, 9, -202);
+  context.moveTo(-61, -112);
+  context.bezierCurveTo(-73, -102, -75, -82, -70, -62);
+  context.bezierCurveTo(-76, -38, -79, -16, -74, 1);
+  context.stroke();
+
+  context.strokeStyle = 'rgba(255, 229, 178, 0.22)';
+  context.lineWidth = 1.05;
+  context.beginPath();
+  context.moveTo(-46, -174);
+  context.bezierCurveTo(-39, -195, -20, -203, -3, -201);
+  context.moveTo(-58, -94);
+  context.bezierCurveTo(-65, -68, -68, -35, -69, -12);
   context.stroke();
 }
 
