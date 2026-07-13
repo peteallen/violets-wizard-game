@@ -308,6 +308,10 @@ registry
     'ui-dialogue-review',
     'The illustrated dialogue parchment, animated Hagrid cameo, short caption, and replay control.',
   ))
+  .register('ui-letter-reading-review', characterReviewFixture(
+    'ui-letter-reading-review',
+    'The fully opened Hogwarts invitation held until Violet chooses to hear it read aloud.',
+  ))
   .register('ui-choices-review', characterReviewFixture(
     'ui-choices-review',
     'Three authored companion choice cards without font-glyph stand-ins.',

@@ -151,6 +151,9 @@ describe('chapter content contracts', () => {
 
     interact('bedroom.owl');
     interact('bedroom.letter');
+    expect(world.overlay).toEqual({ surface: 'letter-reading', tab: null });
+    world.closeOverlay();
+    world.runAction({ type: 'dialogue.start', script: 'ch1.letter.read' });
     finishLines();
     interact('bedroom.guide');
     finishLines();
@@ -160,8 +163,11 @@ describe('chapter content contracts', () => {
     finishLines();
     interact('courtyard.brickWall');
 
-    interact('street.guide');
+    expect(world.roomId).toBe('ch1.diagonStreet');
+    expect(world.dialogue.scriptId).toBe('ch1.guide.map');
     finishLines();
+    expect(world.flags['ch1.satchelReceived']).toBe(true);
+    expect(world.overlay).toEqual({ surface: 'satchel', tab: 'map' });
     world.closeOverlay();
     world.runActions(chapter1Map.locations.find((location) => location.id === 'map.ch1.ollivanders').onSelect);
     finishLines();

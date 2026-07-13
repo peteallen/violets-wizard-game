@@ -85,6 +85,7 @@ describe('state fixtures', () => {
       'character-portraits-review',
       'owl-motion-review',
       'ui-dialogue-review',
+      'ui-letter-reading-review',
       'ui-choices-review',
       'ui-satchel-map-review',
       'ui-satchel-cards-review',
@@ -134,10 +135,8 @@ describe('action fixtures', () => {
     expect(getActionFixture('ch1-start').actions.map((action) => action.target)).toEqual([
       'letter.owl',
       'letter.envelope',
-      'letter.seal',
-      'letter.seal',
     ]);
-    expect(getActionFixture('ch1-start').actions.map((action) => action.frame)).toEqual([30, 480, 520, 540]);
+    expect(getActionFixture('ch1-start').actions.map((action) => action.frame)).toEqual([30, 480]);
     expect(getActionFixture('parent-panel').actions.at(-1)).toEqual({
       frame: 60,
       type: 'hold',

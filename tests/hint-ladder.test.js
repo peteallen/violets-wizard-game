@@ -93,10 +93,10 @@ describe('World hint ladder', () => {
       },
     }));
     expect(assistEvents).toContainEqual(expect.objectContaining({
-      type: 'dialogue.opened',
-      payload: { script: 'ch1.letter.read', node: 'invitation' },
+      type: 'ui.openRequested',
+      payload: { surface: 'letter-reading', tab: null },
     }));
-    expect(world.dialogue.active).toBe(true);
+    expect(world.overlay).toEqual({ surface: 'letter-reading', tab: null });
     expect(world.recordFailedAttempt()).toBe(false);
   });
 
@@ -122,12 +122,12 @@ describe('World hint ladder', () => {
     }
 
     world.tap(emptyPoint);
-    expect(world.failedAttempts).toBe(HINTS.autoCompleteFailures);
-    expect(hintEvents(world)).toEqual([expect.objectContaining({
+    expect(world.failedAttempts).toBe(0);
+    expect(hintEvents(world)).toContainEqual(expect.objectContaining({
       type: 'hint.assistTriggered',
       payload: expect.objectContaining({ target: 'bedroom.owl' }),
-    })]);
-    expect(world.dialogue.active).toBe(true);
+    }));
+    expect(world.overlay).toEqual({ surface: 'letter-reading', tab: null });
   });
 
   it('resets elapsed time and failed attempts after meaningful input and quest progress', () => {

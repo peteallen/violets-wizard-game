@@ -19,11 +19,13 @@ import {
   drawVectorIcon,
   drawWaxIcon,
 } from './uiIllustrations.js';
+import { drawReadableInvitation } from './SetPieceRenderer.js';
 
 const STORY_GRADIENTS = new WeakMap();
 
 export const UI_REVIEW_SCENES = Object.freeze([
   'ui-dialogue-review',
+  'ui-letter-reading-review',
   'ui-choices-review',
   'ui-satchel-map-review',
   'ui-satchel-cards-review',
@@ -36,6 +38,7 @@ export const UI_RECTS = Object.freeze({
   satchel: { x: 28, y: 584, width: 108, height: 108 },
   wand: { x: 1144, y: 584, width: 108, height: 108 },
   dialogueReplay: { x: 1008, y: 493, width: 108, height: 140 },
+  letterContinue: { x: 420, y: 594, width: 440, height: 96 },
   debugReset: { x: 510, y: 18, width: 260, height: 88 },
   satchelMapTab: { x: 205, y: 145, width: 210, height: 88 },
   satchelCardsTab: { x: 435, y: 145, width: 210, height: 88 },
@@ -84,7 +87,9 @@ export class UIRenderer {
     if (!UI_REVIEW_SCENES.includes(scene)) return false;
     context.fillStyle = storyGradient(context);
     context.fillRect(0, 0, WORLD.width, WORLD.height);
-    if (scene === 'ui-dialogue-review') {
+    if (scene === 'ui-letter-reading-review') {
+      this.drawLetterReading(context);
+    } else if (scene === 'ui-dialogue-review') {
       this.drawDialogue(context, {
         type: 'line', speaker: 'npc.guide', speakerLabel: 'Hagrid', portraitPose: 'talk',
         caption: 'This way!', text: 'Come along, Violet. Diagon Alley is waiting for you.',
@@ -230,6 +235,18 @@ export class UIRenderer {
     context.restore();
 
     if (dialogue.choices?.length) this.drawChoices(context, dialogue.choices);
+  }
+
+  drawLetterReading(context) {
+    context.fillStyle = 'rgba(20,17,38,0.66)';
+    context.fillRect(0, 0, WORLD.width, WORLD.height);
+    drawReadableInvitation(context);
+    drawParchmentAction(context, UI_RECTS.letterContinue, {
+      label: 'Hear the letter',
+      detail: 'Read it aloud',
+      icon: vectorControlIcon('speaker'),
+      selected: true,
+    });
   }
 
   drawResumeRecap(context, recap, time, muted = false, reducedMotion = false) {

@@ -58,11 +58,11 @@ Format: **Moment · Composition · Assets · Beats · Verify** (illusion checkli
 
 ### SP-01 `letter` — The letter arrives (Ch. 1) — T2
 
-**Moment:** Owl taps window; letter drops; VIOLET glows on the envelope; tap her name; seal breaks; letter unfolds; narrator reads.
-**Composition:** Owl = puppet (perch pose, tap-beak pose, flap-off). Window = painted; the *opening* casement is a rigid painted slice on a hinge (generated with the window shut; the open state reveals painted sky already behind it via the layered painting). Letter = scripted prop: envelope quad + wax-seal sprite + name lettering (canvas text, gold); unfold = 3 hinged quads opening in sequence (0.9s, `easeOutBack` on the last fold). Seal break = crack sprite swap + 12-particle burst.
+**Moment:** Owl taps window; letter drops; VIOLET glows on the envelope; tap her name; seal breaks; letter unfolds; the complete invitation waits for Violet; she chooses when the narrator begins.
+**Composition:** Owl = puppet (perch pose, tap-beak pose, flap-off). Window = painted; the *opening* casement is a rigid painted slice on a hinge (generated with the window shut; the open state reveals painted sky already behind it via the layered painting). Letter = scripted prop: layered envelope back, flap, front pocket, wax-seal halves, name lettering (canvas text, gold), and a single continuous parchment whose top and bottom folds open as foreshortened hinged panels. The fully opened parchment is reused without a visual jump by the reading surface. Seal break = crack sprite swap + 12-particle burst.
 **Assets:** bedroom painting (2 layers: room / sky-behind-window), owl puppet, letter prop, seal sprites, SFX (tap-tap, seal crack, paper).
-**Beats:** owl taps ×2 (loop until tapped) → flutter to sill → letter slides out (0.6s) → name shimmer loop → [tap] seal crack + burst → unfold → camera push-in 12% over 2s while narrator reads.
-**Verify:** name legible at iPad size in keyframe t=2.0; unfold quads never intersect visually; seal burst stays ≤ letter bounds ×1.5; push-in doesn't reveal painting edges.
+**Beats:** owl taps ×2 (loop until tapped) → flutter to sill → letter slides out (0.6s) → name shimmer loop → [tap] seal crack + burst → flap opens → folded parchment rises from behind the front pocket → top and bottom folds open → camera push-in settles → the complete invitation remains indefinitely with an explicit “Hear the letter” action → [tap] narrator reads.
+**Verify:** name legible at iPad size in keyframe t=2.0; envelope, flap, and parchment keep physically believable front-to-back layering; no intermediate frame becomes a large blank rectangle; unfold panels never intersect visually; the final animation frame and reading surface align exactly; narration cannot replace the letter before the player acts.
 **Fallback:** unfold → simple scale-up + crossfade to open-letter sprite.
 
 ### SP-02 `brick-wall` — Diagon Alley opens (Ch. 1) — T3 FLAGSHIP

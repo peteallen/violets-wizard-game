@@ -110,6 +110,10 @@ export class Game {
     if (this.debug) window.addEventListener('keydown', this.boundKeyDown);
     this.resize(options.width, options.height, options.dpr);
 
+    this.updateStatus(this.hasStoredSave
+      ? 'Continue Violet\u2019s saved adventure.'
+      : 'Violet\u2019s letter is waiting. Open the letter to begin.');
+
     if (options.startImmediately) this.createWorld(this.saveData);
   }
 
@@ -441,6 +445,14 @@ export class Game {
   }
 
   handleOverlayTap(point, state) {
+    if (state.overlay.surface === 'letter-reading') {
+      if (!pointInUiRect(point, UI_RECTS.letterContinue)) return;
+      this.world.closeOverlay();
+      this.sound.playSfx('sfx/ui/page', 'tap');
+      this.world.runAction({ type: 'dialogue.start', script: 'ch1.letter.read' });
+      this.processWorldEvents();
+      return;
+    }
     if (pointInUiRect(point, UI_RECTS.close)) {
       if (state.overlay.surface === 'yearbook') this.openParentPanel('play');
       else this.world.closeOverlay();
@@ -715,6 +727,9 @@ export class Game {
         break;
       case 'ui.openRequested':
         if (event.payload.surface === 'chapter-replay') this.beginReplay();
+        else if (event.payload.surface === 'letter-reading') {
+          this.updateStatus('Dear Violet, you are invited to Hogwarts School of Witchcraft and Wizardry. Your place is waiting. Tap Hear the letter to listen.');
+        }
         break;
       case 'chapter.completed':
         this.world.changeChapter(event.payload.nextChapter ?? 'ch2');
@@ -1083,6 +1098,7 @@ export class Game {
       if (state.overlay?.surface === 'satchel') {
         this.uiRenderer.drawSatchel(context, state, cards, { parentGateProgress: this.parentGateProgress });
       }
+      if (state.overlay?.surface === 'letter-reading') this.uiRenderer.drawLetterReading(context);
       if (state.overlay?.surface === 'objective') {
         this.uiRenderer.drawObjective(context, state.objective, this.simTime, { reducedMotion: this.reducedMotion });
       }
@@ -1248,6 +1264,9 @@ export class Game {
       for (const slot of state.__cardSlots ?? []) {
         targets.push({ id: `satchel.card.${slot.id}`, x: slot.__rect.x + slot.__rect.width / 2, y: slot.__rect.y + slot.__rect.height / 2 });
       }
+    }
+    if (state.overlay?.surface === 'letter-reading') {
+      targets.push(semanticRect('letter.hear', UI_RECTS.letterContinue));
     }
     if (state.overlay?.surface === 'parent') {
       targets.push(semanticRect('overlay.close', UI_RECTS.close));

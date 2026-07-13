@@ -74,10 +74,32 @@ describe('one-tap world interactions', () => {
     expect(world.dialogue.active).toBe(false);
     expect(world.player.x).toBe(760);
 
-    settle(world, 3.4);
+    settle(world, 4.6);
+
+    expect(world.dialogue.active).toBe(false);
+    expect(world.overlay).toEqual({ surface: 'letter-reading', tab: null });
+
+    world.closeOverlay();
+    world.runAction({ type: 'dialogue.start', script: 'ch1.letter.read' });
 
     expect(world.dialogue.active).toBe(true);
     expect(world.dialogue.scriptId).toBe('ch1.letter.read');
+  });
+
+  it('does not leave reduced-motion players waiting on a finished letter', () => {
+    const world = createWorld({ flags: { 'ch1.owlTapped': true } });
+    world.setPieces.reducedMotion = true;
+
+    world.runActions([
+      { type: 'setPiece.play', id: 'sp.letterOpen' },
+      { type: 'ui.open', surface: 'letter-reading' },
+    ]);
+
+    expect(world.setPieces.active?.descriptor.id).toBe('reduced.letterOpenFade');
+    expect(world.setPieces.active?.descriptor.duration).toBe(1.35);
+    settle(world, 1.35);
+    expect(world.setPieces.active).toBeNull();
+    expect(world.overlay).toEqual({ surface: 'letter-reading', tab: null });
   });
 
   it('lets Violet follow Hagrid by tapping Hagrid once instead of finding a clipped door target', () => {
@@ -88,6 +110,60 @@ describe('one-tap world interactions', () => {
     expect(result.id).toBe('bedroom.exit');
     expect(world.roomId).toBe('ch1.leaky');
     expect(world.pendingInteraction).toBeNull();
+  });
+
+  it('gives Violet the satchel tutorial before asking her to use the map', () => {
+    const world = createWorld({
+      flags: {
+        'ch1.owlTapped': true,
+        'ch1.letterOpened': true,
+        'ch1.letterRead': true,
+        'ch1.guideMet': true,
+        'ch1.leakyReached': true,
+        'ch1.courtyardReached': true,
+      },
+      room: 'ch1.courtyard',
+      spawn: 'courtyard.guide',
+    });
+
+    world.runAction({ type: 'setPiece.play', id: 'sp.brickWall' });
+    settle(world, 3.6);
+
+    expect(world.roomId).toBe('ch1.diagonStreet');
+    expect(world.dialogue.scriptId).toBe('ch1.guide.map');
+    expect(world.flags['ch1.satchelReceived']).not.toBe(true);
+
+    world.advanceDialogue();
+
+    expect(world.flags['ch1.satchelReceived']).toBe(true);
+    expect(world.overlay).toEqual({ surface: 'satchel', tab: 'map' });
+    expect(world.unlockedRooms()).toContain('ch1.ollivanders');
+  });
+
+  it('restores Hagrid\u2019s map handoff after reloading before the satchel is received', () => {
+    const world = createWorld({
+      flags: {
+        'ch1.owlTapped': true,
+        'ch1.letterOpened': true,
+        'ch1.letterRead': true,
+        'ch1.guideMet': true,
+        'ch1.leakyReached': true,
+        'ch1.courtyardReached': true,
+        'ch1.wallOpened': true,
+        'ch1.diagonReached': true,
+      },
+      room: 'ch1.diagonStreet',
+      spawn: 'street.west',
+    });
+
+    expect(world.currentSceneId).toBe('ch1.diagonMapIntro');
+    expect(world.dialogue.scriptId).toBe('ch1.guide.map');
+    expect(world.flags['ch1.satchelReceived']).not.toBe(true);
+
+    world.advanceDialogue();
+
+    expect(world.flags['ch1.satchelReceived']).toBe(true);
+    expect(world.overlay).toEqual({ surface: 'satchel', tab: 'map' });
   });
 
   it('keeps an empty-floor tap as walk-only and cancels the queued interaction', () => {

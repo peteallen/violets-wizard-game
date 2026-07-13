@@ -49,12 +49,10 @@ registry
     [{ frame: 30, type: 'tap', target: 'foundation.start' }],
   ))
   .register('ch1-start', createFixture(
-    'Open the Chapter 1 letter using the real semantic interaction targets.',
+    'Open the Chapter 1 letter and hold its player-paced reading surface.',
     [
       { frame: 30, type: 'tap', target: 'letter.owl' },
       { frame: 480, type: 'tap', target: 'letter.envelope' },
-      { frame: 520, type: 'tap', target: 'letter.seal' },
-      { frame: 540, type: 'tap', target: 'letter.seal' },
     ],
   ))
   .register('ch1-follow-hagrid-review', createFixture(
@@ -151,6 +149,9 @@ registry
   ))
   .register('ui-dialogue-review', createFixture(
     'Hold the illustrated voiced-dialogue frame and replay control.',
+  ))
+  .register('ui-letter-reading-review', createFixture(
+    'Hold the readable invitation and its explicit hear-the-letter action.',
   ))
   .register('ui-choices-review', createFixture(
     'Hold a complete set of authored vector choice cards.',

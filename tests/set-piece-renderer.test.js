@@ -35,10 +35,10 @@ describe('SetPieceRenderer dispatch', () => {
 
   it('stages the seal crack before three non-intersecting letter folds and a readable push-in', () => {
     const sealed = letterOpenState(0);
-    const cracked = letterOpenState(0.3);
-    const topFold = letterOpenState(1.2);
-    const readable = letterOpenState(2);
-    const pushed = letterOpenState(3.2);
+    const cracked = letterOpenState(0.45);
+    const topFold = letterOpenState(2);
+    const readable = letterOpenState(3);
+    const pushed = letterOpenState(4.2);
 
     expect(sealed.sealCrack).toBe(0);
     expect(cracked.sealCrack).toBeGreaterThan(0.8);
@@ -50,7 +50,9 @@ describe('SetPieceRenderer dispatch', () => {
 
     const reduced = letterOpenState(2, { reducedMotion: true });
     expect(reduced.push).toBe(0);
-    expect(reduced.scale).toBe(0.94);
+    expect(reduced.scale).toBe(1.03);
+    expect(reduced.foldTop).toBe(1);
+    expect(reduced.foldBottom).toBe(1);
   });
 
   it('opens an exact ten-by-eight brick grid from the center before the corners', () => {

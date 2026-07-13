@@ -28,6 +28,10 @@ function setPiecePlay(id) {
   return { type: 'setPiece.play', id };
 }
 
+function uiOpen(surface, tab = null) {
+  return { type: 'ui.open', surface, ...(tab ? { tab } : {}) };
+}
+
 function audioSfx(key) {
   return { type: 'audio.command', command: 'sfx', key };
 }
@@ -516,7 +520,16 @@ const questGraph = {
         mapStar: null,
       },
       doneWhen: when({ allFlags: ['ch1.letterRead'] }),
-      hints: { lookTarget: 'bedroom.owl', repeatVoice: 'voice/ch1/objective/openLetter', trailTarget: 'bedroom.owl', assistActions: [dialogueStart('ch1.letter.read')] },
+      hints: {
+        lookTarget: 'bedroom.owl',
+        repeatVoice: 'voice/ch1/objective/openLetter',
+        trailTarget: 'bedroom.owl',
+        assistActions: [
+          flagSet('ch1.owlTapped'),
+          flagSet('ch1.letterOpened'),
+          uiOpen('letter-reading'),
+        ],
+      },
       onEnter: [],
       onComplete: [],
       next: 'ch1.followGuide',
@@ -547,7 +560,7 @@ const questGraph = {
       },
       doneWhen: when({ allFlags: ['ch1.mapUsed'] }),
       hints: { lookTarget: 'hud.satchel', repeatVoice: 'voice/ch1/objective/useMap', trailTarget: 'hud.satchel', assistActions: [{ type: 'ui.open', surface: 'satchel', tab: 'map' }] },
-      onEnter: [dialogueStart('ch1.guide.map')],
+      onEnter: [],
       onComplete: [],
       next: 'ch1.chooseWand',
     },
@@ -650,6 +663,7 @@ const sceneDoneWhen = {
   'ch1.guideArrival': when({ allFlags: ['ch1.guideMet'] }),
   'ch1.leakyArrival': when({ allFlags: ['ch1.leakyReached'] }),
   'ch1.wallOpening': when({ allFlags: ['ch1.wallOpened'] }),
+  'ch1.diagonMapIntro': when({ allFlags: ['ch1.satchelReceived'] }),
   'ch1.diagonArrival': when({ allFlags: ['ch1.mapUsed'] }),
   'ch1.wandShopping': when({ allFlags: ['ch1.wandChosen'] }),
   'ch1.robeShopping': when({ allFlags: ['ch1.trimChosen'] }),
@@ -688,7 +702,8 @@ export const chapter1 = {
     { id: 'ch1.guideArrival', room: 'ch1.bedroom', spawn: 'bedroom.letter', quest: 'ch1.followGuide', when: when({ allFlags: ['ch1.letterRead'], noFlags: ['ch1.guideMet'] }), onEnter: [] },
     { id: 'ch1.leakyArrival', room: 'ch1.leaky', spawn: 'leaky.entry', quest: 'ch1.followGuide', when: when({ allFlags: ['ch1.guideMet'], noFlags: ['ch1.leakyReached'] }), onEnter: [dialogueStart('ch1.guide.leaky')] },
     { id: 'ch1.wallOpening', room: 'ch1.courtyard', spawn: 'courtyard.entry', quest: 'ch1.followGuide', when: when({ allFlags: ['ch1.leakyReached'], noFlags: ['ch1.wallOpened'] }), onEnter: [flagSet('ch1.courtyardReached'), dialogueStart('ch1.guide.wall')] },
-    { id: 'ch1.diagonArrival', room: 'ch1.diagonStreet', spawn: 'street.west', quest: 'ch1.useMap', when: when({ allFlags: ['ch1.wallOpened'], noFlags: ['ch1.shoppingComplete'] }), backgroundVariant: 'day', onEnter: [flagSet('ch1.diagonReached')] },
+    { id: 'ch1.diagonMapIntro', room: 'ch1.diagonStreet', spawn: 'street.west', quest: 'ch1.useMap', when: when({ allFlags: ['ch1.wallOpened'], noFlags: ['ch1.satchelReceived'] }), backgroundVariant: 'day', onEnter: [flagSet('ch1.diagonReached'), dialogueStart('ch1.guide.map')] },
+    { id: 'ch1.diagonArrival', room: 'ch1.diagonStreet', spawn: 'street.west', quest: 'ch1.useMap', when: when({ allFlags: ['ch1.wallOpened', 'ch1.satchelReceived'], noFlags: ['ch1.shoppingComplete'] }), backgroundVariant: 'day', onEnter: [flagSet('ch1.diagonReached')] },
     { id: 'ch1.wandShopping', room: 'ch1.ollivanders', spawn: 'ollivanders.entry', quest: 'ch1.chooseWand', when: when({ allFlags: ['ch1.mapUsed'], noFlags: ['ch1.wandChosen'] }), onEnter: [dialogueStart('ch1.wandmaker.welcome')] },
     { id: 'ch1.robeShopping', room: 'ch1.malkins', spawn: 'malkins.entry', quest: 'ch1.chooseRobes', when: when({ allFlags: ['ch1.wandChosen'], noFlags: ['ch1.trimChosen'] }), onEnter: [] },
     { id: 'ch1.petShopping', room: 'ch1.menagerie', spawn: 'menagerie.entry', quest: 'ch1.choosePet', when: when({ allFlags: ['ch1.trimChosen'], noFlags: ['ch1.petNamed'] }), onEnter: [] },
@@ -738,7 +753,7 @@ export const chapter1 = {
           presentation: { icon: 'letter', glow: 'objective' },
           repeat: 'until-condition',
           requiredSpell: null,
-          onInteract: [flagSet('ch1.letterOpened'), setPiecePlay('sp.letterOpen'), dialogueStart('ch1.letter.read')],
+          onInteract: [flagSet('ch1.letterOpened'), setPiecePlay('sp.letterOpen'), uiOpen('letter-reading')],
         },
         {
           id: 'bedroom.guide',
@@ -1114,7 +1129,7 @@ export const chapter1 = {
       particleBudget: 'standard',
       assets: ['rooms/ch1/bedroom/base', 'rooms/ch1/bedroom/sky', 'sfx/ch1/owlTap', 'sfx/ch1/owlFlap', 'sfx/ch1/paperSlide', 'sfx/ch1/sealCrack'],
       fallback: 'fallback.letterCrossfade',
-      reducedMotion: 'reduced.letterFade',
+      reducedMotion: 'reduced.letterDeliveryFade',
       params: { specification: 'SP-01' },
       timeline: { tracks: [sfxCue(0.25, 'sfx/ch1/owlFlap'), sfxCue(0.95, 'sfx/ch1/paperSlide')] },
       verification: { keyframes: [0, 2, 3.2, 4.8], checklist: ['Violet is legible on the envelope.', 'The letter folds do not intersect.', 'No painting edge is exposed.'] },
@@ -1123,19 +1138,49 @@ export const chapter1 = {
     'sp.letterOpen': {
       id: 'sp.letterOpen',
       tier: 'T2',
-      duration: 3.4,
+      duration: 4.6,
       clock: 'world',
       blocksInput: true,
       particleBudget: 'standard',
       assets: ['sfx/ch1/sealCrack', 'sfx/ch1/paperSlide'],
       fallback: 'fallback.letterCrossfade',
-      reducedMotion: 'reduced.letterFade',
+      reducedMotion: 'reduced.letterOpenFade',
       params: { specification: 'SP-01', variant: 'open-invitation' },
-      timeline: { tracks: [sfxCue(0.12, 'sfx/ch1/sealCrack'), sfxCue(0.52, 'sfx/ch1/paperSlide')] },
+      timeline: { tracks: [sfxCue(0.2, 'sfx/ch1/sealCrack'), sfxCue(1.05, 'sfx/ch1/paperSlide')] },
       verification: {
-        keyframes: [0, 0.25, 0.7, 1.25, 2, 3.4],
-        checklist: ['The owl seal visibly cracks before it parts.', 'The three folds open in sequence without intersecting.', 'The invitation is readable during the camera push-in.'],
+        keyframes: [0, 0.35, 0.9, 1.55, 2.25, 3.1, 4.6],
+        checklist: ['The owl seal visibly cracks before it parts.', 'The flap, paper rise, and two folds each have a distinct readable beat.', 'No intermediate frame becomes a large blank rectangle.', 'The invitation settles into the exact reading-surface position.'],
       },
+      onComplete: [],
+    },
+    'reduced.letterDeliveryFade': {
+      id: 'reduced.letterDeliveryFade',
+      tier: 'T1',
+      duration: 1.9,
+      clock: 'world',
+      blocksInput: true,
+      particleBudget: 'reduced',
+      assets: ['sfx/ch1/owlFlap', 'sfx/ch1/paperSlide'],
+      fallback: null,
+      reducedMotion: null,
+      params: { specification: 'SP-01', variant: 'reduced-delivery' },
+      timeline: { tracks: [sfxCue(0.15, 'sfx/ch1/owlFlap'), sfxCue(0.4, 'sfx/ch1/paperSlide')] },
+      verification: { keyframes: [0, 0.5, 1.9], checklist: ['The owl and envelope crossfade without rapid travel.', 'The delivered letter reaches its normal resting place.'] },
+      onComplete: [],
+    },
+    'reduced.letterOpenFade': {
+      id: 'reduced.letterOpenFade',
+      tier: 'T1',
+      duration: 1.35,
+      clock: 'world',
+      blocksInput: true,
+      particleBudget: 'reduced',
+      assets: ['sfx/ch1/sealCrack', 'sfx/ch1/paperSlide'],
+      fallback: null,
+      reducedMotion: null,
+      params: { specification: 'SP-01', variant: 'reduced-open' },
+      timeline: { tracks: [sfxCue(0.2, 'sfx/ch1/sealCrack'), sfxCue(0.45, 'sfx/ch1/paperSlide')] },
+      verification: { keyframes: [0, 0.5, 1.3], checklist: ['The sealed envelope crossfades to the fully readable invitation without unfolding motion.', 'The reading action appears without a static input lock.'] },
       onComplete: [],
     },
     'sp.brickWall': {
