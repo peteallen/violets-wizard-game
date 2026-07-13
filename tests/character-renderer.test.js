@@ -1,10 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import {
+  CAT_STYLE,
   CHARACTER_REVIEW_SCENES,
   CharacterRenderer,
   HAGRID_STYLE,
   KEEPER_STYLE,
   TAILOR_STYLE,
+  TOAD_STYLE,
   VIOLET_STYLE,
   WANDMAKER_STYLE,
   drawVioletGlasses,
@@ -592,12 +594,18 @@ describe('illustrated character renderer', () => {
       const full = sampleCompanionMotion(input);
       const repeated = sampleCompanionMotion(input);
       const reduced = sampleCompanionMotion({ ...input, reducedMotion: true });
+      const sanitized = sampleCompanionMotion({ ...input, time: Number.NaN });
       expect(repeated).toEqual(full);
       expect(Object.values(full).every(Number.isFinite)).toBe(true);
+      expect(Object.values(sanitized).every(Number.isFinite)).toBe(true);
       expect(Math.abs(full.tilt)).toBeLessThan(0.08);
       expect(full.hop).toBeGreaterThanOrEqual(0);
       expect(Math.abs(reduced.tilt)).toBeLessThan(Math.abs(full.tilt));
       expect(reduced.hop).toBeLessThan(full.hop);
+      expect(reduced.foreLift).toBeLessThan(full.foreLift);
+      expect(Math.abs(reduced.headNod)).toBeLessThan(Math.abs(full.headNod));
+      expect(Math.abs(reduced.headTilt)).toBeLessThan(Math.abs(full.headTilt));
+      expect(Math.abs(1 - reduced.bodySquash)).toBeLessThan(Math.abs(1 - full.bodySquash));
     }
 
     const idleCat = sampleCompanionMotion({ type: 'cat', pose: 'idle', time: 0.25 });
@@ -608,5 +616,86 @@ describe('illustrated character renderer', () => {
     expect(idleCat.pawLift).toBe(0);
     expect(pawingCat.pawLift).toBeGreaterThan(0.4);
     expect(reducedPawingCat.pawLift).toBeLessThan(pawingCat.pawLift);
+  });
+
+  it('renders cat and toad as layered organic puppets shared by world and portrait', () => {
+    const renderer = new CharacterRenderer();
+    const companions = [
+      {
+        type: 'cat',
+        style: CAT_STYLE,
+        palette: [
+          CAT_STYLE.furBase,
+          CAT_STYLE.furMid,
+          CAT_STYLE.furShadow,
+          CAT_STYLE.furLight,
+          CAT_STYLE.chest,
+          CAT_STYLE.muzzle,
+          CAT_STYLE.collar,
+          CAT_STYLE.brass,
+          CAT_STYLE.rim,
+        ],
+        minimumCurves: 145,
+      },
+      {
+        type: 'toad',
+        style: TOAD_STYLE,
+        palette: [
+          TOAD_STYLE.skinBase,
+          TOAD_STYLE.skinMid,
+          TOAD_STYLE.skinShadow,
+          TOAD_STYLE.skinLight,
+          TOAD_STYLE.belly,
+          TOAD_STYLE.bellyLight,
+          TOAD_STYLE.rim,
+        ],
+        minimumCurves: 120,
+      },
+    ];
+
+    for (const {
+      type, style, palette, minimumCurves,
+    } of companions) {
+      const world = recordingContext();
+      const replayed = recordingContext();
+      const pet = {
+        type, x: 140, y: 180, scale: 1.2, pose: 'pet-follow', facing: 'right',
+      };
+      renderer.drawPet(world, pet, 1.375);
+      renderer.drawPet(replayed, pet, 1.375);
+
+      expect(world.calls).toEqual(replayed.calls);
+      expect(world.depth).toBe(0);
+      expect(world.calls.filter(([, ...values]) => values.some(
+        (value) => typeof value === 'number' && !Number.isFinite(value),
+      ))).toHaveLength(0);
+      expect(world.calls.filter(([name]) => name === 'bezierCurveTo').length)
+        .toBeGreaterThanOrEqual(minimumCurves);
+      expect(world.calls.some(([name]) => [
+        'arc', 'ellipse', 'fillRect', 'rect', 'roundRect', 'strokeRect',
+      ].includes(name))).toBe(false);
+      for (const color of palette) {
+        expect(world.styles.some(([, value]) => value === color)).toBe(true);
+      }
+      for (const eyeColor of [style.eyeWhite, style.iris, style.pupil, style.catchlight]) {
+        expect(world.styles.filter(([, value]) => value === eyeColor)).toHaveLength(2);
+      }
+
+      const portrait = recordingContext();
+      renderer.drawPortrait(portrait, {
+        speaker: type, pose: 'speaking', x: 80, y: 90, facing: 'right',
+      }, 1.375);
+      for (const color of palette) {
+        expect(portrait.styles.some(([, value]) => value === color)).toBe(true);
+      }
+      expect(portrait.depth).toBe(0);
+
+      const sanitized = recordingContext();
+      renderer.drawPet(sanitized, { ...pet, reducedMotion: true }, Number.NaN);
+      expect(sanitized.calls.filter(([, ...values]) => values.some(
+        (value) => typeof value === 'number' && !Number.isFinite(value),
+      ))).toHaveLength(0);
+      expect(sanitized.depth).toBe(0);
+    }
   });
 });
