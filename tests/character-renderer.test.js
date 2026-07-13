@@ -4,6 +4,7 @@ import {
   CharacterRenderer,
   HAGRID_STYLE,
   VIOLET_STYLE,
+  WANDMAKER_STYLE,
   drawVioletGlasses,
   sampleCompanionMotion,
 } from '../src/game/render/CharacterRenderer.js';
@@ -132,6 +133,73 @@ describe('illustrated character renderer', () => {
     for (const style of [HAGRID_STYLE.hairBase, HAGRID_STYLE.hairMid, HAGRID_STYLE.rim]) {
       expect(portrait.styles.some(([, value]) => value === style)).toBe(true);
     }
+    expect(portrait.depth).toBe(0);
+  });
+
+  it('renders the Wandmaker as one organic elderly puppet shared by world and portrait', () => {
+    expect(WANDMAKER_STYLE).toMatchObject({
+      robeBase: '#292c43',
+      robeShadow: '#1d2031',
+      brass: '#b89a5d',
+      wood: '#765136',
+      hairBase: '#c9c6bd',
+      hairShadow: '#8f9296',
+      skin: '#d0a07d',
+      iris: '#738697',
+    });
+
+    const renderer = new CharacterRenderer();
+    const world = recordingContext();
+    const replayed = recordingContext();
+    const character = {
+      kind: 'wandmaker', x: 180, y: 610, facing: 'right', pose: 'curious',
+    };
+    renderer.draw(world, character, 1.375);
+    renderer.draw(replayed, character, 1.375);
+
+    expect(world.calls).toEqual(replayed.calls);
+    expect(world.depth).toBe(0);
+    expect(world.calls).toContainEqual(['scale', 1.04, 1.04]);
+    expect(world.calls.filter(([name]) => name === 'bezierCurveTo').length).toBeGreaterThan(70);
+    expect(world.calls.some(([name]) => [
+      'arc', 'ellipse', 'fillRect', 'rect', 'roundRect', 'strokeRect',
+    ].includes(name))).toBe(false);
+    expect(world.calls.every(([, ...values]) => values.every(
+      (value) => typeof value !== 'number' || Number.isFinite(value),
+    ))).toBe(true);
+
+    for (const style of [
+      WANDMAKER_STYLE.robeBase,
+      WANDMAKER_STYLE.robeMid,
+      WANDMAKER_STYLE.robeShadow,
+      WANDMAKER_STYLE.robeLight,
+      WANDMAKER_STYLE.brass,
+      WANDMAKER_STYLE.wood,
+      WANDMAKER_STYLE.hairBase,
+      WANDMAKER_STYLE.hairShadow,
+      WANDMAKER_STYLE.hairLight,
+      WANDMAKER_STYLE.skin,
+      WANDMAKER_STYLE.iris,
+      WANDMAKER_STYLE.rim,
+    ]) expect(world.styles.some(([, value]) => value === style)).toBe(true);
+
+    const speaking = recordingContext();
+    renderer.draw(speaking, { ...character, pose: 'speaking' }, 1.375);
+    expect(speaking.calls).not.toEqual(world.calls);
+    expect(speaking.calls.some(([name]) => name === 'arc' || name === 'ellipse')).toBe(false);
+
+    const portrait = recordingContext();
+    renderer.drawPortrait(portrait, {
+      speaker: 'Ollivander', pose: 'speaking', x: 80, y: 90,
+    }, 1.375);
+    for (const style of [
+      WANDMAKER_STYLE.robeBase,
+      WANDMAKER_STYLE.hairBase,
+      WANDMAKER_STYLE.hairShadow,
+      WANDMAKER_STYLE.skin,
+      WANDMAKER_STYLE.iris,
+      WANDMAKER_STYLE.wood,
+    ]) expect(portrait.styles.some(([, value]) => value === style)).toBe(true);
     expect(portrait.depth).toBe(0);
   });
 

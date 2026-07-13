@@ -31,6 +31,26 @@ export const HAGRID_STYLE = Object.freeze({
   rim: 'rgba(244, 198, 126, 0.42)',
 });
 
+export const WANDMAKER_STYLE = Object.freeze({
+  robeBase: '#292c43',
+  robeMid: '#3b405d',
+  robeShadow: '#1d2031',
+  robeLight: 'rgba(139, 148, 183, 0.32)',
+  waistcoat: '#4b4655',
+  brass: '#b89a5d',
+  brassLight: '#e1ca8b',
+  wood: '#765136',
+  woodShadow: '#4b3428',
+  hairBase: '#c9c6bd',
+  hairShadow: '#8f9296',
+  hairLight: '#f0ead9',
+  skin: '#d0a07d',
+  skinShadow: '#a86f5b',
+  skinLight: 'rgba(255, 222, 176, 0.3)',
+  iris: '#738697',
+  rim: 'rgba(255, 225, 164, 0.48)',
+});
+
 export const CHARACTER_REVIEW_SCENES = Object.freeze([
   'character-cast-review',
   'character-pets-review',
@@ -49,7 +69,13 @@ const CHARACTER_COLORS = Object.freeze({
     cheek: HAGRID_STYLE.cheek,
   },
   wandmaker: {
-    robe: '#34364d', robeShadow: '#242638', accent: '#c6b681', hair: '#ddd4bc', hairLight: '#f3ead3', skin: '#d3a17d', cheek: '#c27d73',
+    robe: WANDMAKER_STYLE.robeBase,
+    robeShadow: WANDMAKER_STYLE.robeShadow,
+    accent: WANDMAKER_STYLE.brass,
+    hair: WANDMAKER_STYLE.hairBase,
+    hairLight: WANDMAKER_STYLE.hairLight,
+    skin: WANDMAKER_STYLE.skin,
+    cheek: WANDMAKER_STYLE.skinShadow,
   },
   tailor: {
     robe: '#81486f', robeShadow: '#58324e', accent: '#efbd78', hair: '#3c2923', hairLight: '#6a4536', skin: '#b97657', cheek: '#a95859',
@@ -123,9 +149,12 @@ export class CharacterRenderer {
       reducedMotion: Boolean(character.reducedMotion),
     });
     drawNpcHead(context, kind, palette, blinking, time + phase, character.pose);
-    drawNpcAccessory(context, kind, palette);
+    drawNpcAccessory(context, kind, palette, time + phase, character.pose, {
+      reducedMotion: Boolean(character.reducedMotion),
+    });
     if (kind === 'guide') drawGuideMouth(context, character.pose, time + phase);
     if (kind === 'guide') drawGuideWarmRim(context);
+    else if (kind === 'wandmaker') drawWandmakerWarmRim(context);
     else drawUpperLeftRim(context, [[-39, -132], [-34, -164], [-13, -182], [14, -180], [35, -160]], 1.25);
 
     context.restore();
@@ -920,6 +949,10 @@ function drawVioletCollar(context, trim) {
 }
 
 function drawNpcLegs(context, kind, palette, pose = 'idle', time = 0) {
+  if (kind === 'wandmaker') {
+    drawWandmakerLegs(context, pose, time);
+    return;
+  }
   const broad = kind === 'guide';
   const stride = pose === 'walking' ? Math.sin(time * 7.6) * 6 : 0;
   for (const side of [-1, 1]) {
@@ -953,7 +986,76 @@ function drawNpcLegs(context, kind, palette, pose = 'idle', time = 0) {
   }
 }
 
+function drawWandmakerLegs(context, pose, time) {
+  const stride = pose === 'walking' ? Math.sin(time * 7.6) * 5 : 0;
+  for (const side of [-1, 1]) {
+    const ankleX = side * 15 + side * stride;
+    context.strokeStyle = DEEP_OUTLINE;
+    context.lineWidth = 9;
+    context.beginPath();
+    context.moveTo(side * 14, -7);
+    context.quadraticCurveTo(side * (15 + stride * 0.25), 8, ankleX, 20);
+    context.stroke();
+    context.strokeStyle = WANDMAKER_STYLE.robeShadow;
+    context.lineWidth = 5.4;
+    context.stroke();
+
+    context.fillStyle = side < 0 ? '#34303a' : '#292832';
+    context.beginPath();
+    context.moveTo(ankleX - 6, 14);
+    context.bezierCurveTo(
+      ankleX + side * 2,
+      13,
+      ankleX + side * 15,
+      17,
+      ankleX + side * 20,
+      23,
+    );
+    context.quadraticCurveTo(ankleX + side * 16, 29, ankleX + side * 7, 29);
+    context.quadraticCurveTo(ankleX - side * 6, 30, ankleX - side * 8, 24);
+    context.quadraticCurveTo(ankleX - 9, 18, ankleX - 6, 14);
+    context.closePath();
+    fillStroke(context, 2.1);
+    context.strokeStyle = 'rgba(205, 181, 128, 0.32)';
+    context.lineWidth = 1.35;
+    context.beginPath();
+    context.moveTo(ankleX - side * 3, 22);
+    context.quadraticCurveTo(ankleX + side * 8, 20, ankleX + side * 16, 24);
+    context.stroke();
+  }
+}
+
 function drawNpcBackDetails(context, kind, palette) {
+  if (kind === 'wandmaker') {
+    context.fillStyle = WANDMAKER_STYLE.hairShadow;
+    context.beginPath();
+    context.moveTo(-22, -171);
+    context.bezierCurveTo(-37, -162, -40, -137, -34, -116);
+    context.bezierCurveTo(-31, -104, -25, -98, -18, -101);
+    context.bezierCurveTo(-25, -121, -21, -149, -11, -174);
+    context.bezierCurveTo(-15, -176, -19, -174, -22, -171);
+    context.closePath();
+    fillStroke(context, 1.65);
+
+    context.fillStyle = WANDMAKER_STYLE.hairBase;
+    context.beginPath();
+    context.moveTo(17, -175);
+    context.bezierCurveTo(35, -164, 38, -143, 32, -123);
+    context.bezierCurveTo(31, -110, 25, -102, 18, -104);
+    context.bezierCurveTo(24, -126, 21, -152, 8, -178);
+    context.bezierCurveTo(11, -179, 15, -177, 17, -175);
+    context.closePath();
+    fillStroke(context, 1.65);
+
+    context.strokeStyle = 'rgba(244, 238, 221, 0.54)';
+    context.lineWidth = 1.15;
+    context.beginPath();
+    context.moveTo(-28, -158);
+    context.bezierCurveTo(-34, -140, -31, -119, -23, -106);
+    context.moveTo(23, -163);
+    context.bezierCurveTo(32, -145, 29, -119, 22, -108);
+    context.stroke();
+  }
   if (kind === 'guide') {
     context.fillStyle = HAGRID_STYLE.hairBase;
     context.beginPath();
@@ -1032,6 +1134,10 @@ function drawNpcBackDetails(context, kind, palette) {
 }
 
 function drawNpcBody(context, kind, palette) {
+  if (kind === 'wandmaker') {
+    drawWandmakerBody(context);
+    return;
+  }
   const broad = kind === 'guide';
   const shoulder = broad ? 56 : kind === 'keeper' ? 39 : kind === 'tailor' ? 38 : 33;
   const hem = broad ? 74 : kind === 'tailor' ? 60 : kind === 'keeper' ? 55 : 48;
@@ -1053,12 +1159,6 @@ function drawNpcBody(context, kind, palette) {
     context.quadraticCurveTo(0, 13, hem, 0);
     context.lineTo(47, -34);
     context.bezierCurveTo(43, -58, 48, -82, shoulder, top);
-  } else if (kind === 'wandmaker') {
-    context.moveTo(-shoulder, top);
-    context.bezierCurveTo(-39, -79, -42, -36, -hem, 0);
-    context.quadraticCurveTo(-16, 9, 0, 5);
-    context.quadraticCurveTo(16, 9, hem, 0);
-    context.bezierCurveTo(42, -36, 39, -79, shoulder, top);
   } else {
     context.moveTo(-45, top - 3);
     context.bezierCurveTo(-62, top - 8, -70, -101, -67, -82);
@@ -1113,6 +1213,165 @@ function drawNpcBody(context, kind, palette) {
   context.fill();
 
   drawNpcGarmentDetails(context, kind, palette, { shoulder, hem, top });
+}
+
+function drawWandmakerBody(context) {
+  context.fillStyle = WANDMAKER_STYLE.robeBase;
+  context.beginPath();
+  context.moveTo(-27, -102);
+  context.bezierCurveTo(-37, -93, -36, -74, -34, -61);
+  context.bezierCurveTo(-37, -45, -42, -20, -44, 1);
+  context.bezierCurveTo(-29, 7, -12, 10, 2, 6);
+  context.bezierCurveTo(16, 11, 31, 7, 40, 1);
+  context.bezierCurveTo(39, -22, 35, -47, 34, -65);
+  context.bezierCurveTo(36, -82, 34, -97, 25, -104);
+  context.bezierCurveTo(8, -110, -13, -108, -27, -102);
+  context.closePath();
+  fillStroke(context, 1.9);
+
+  context.fillStyle = WANDMAKER_STYLE.robeShadow;
+  context.globalAlpha = 0.78;
+  context.beginPath();
+  context.moveTo(5, -105);
+  context.bezierCurveTo(24, -106, 34, -94, 33, -72);
+  context.bezierCurveTo(36, -51, 39, -21, 39, 0);
+  context.bezierCurveTo(28, 7, 16, 9, 4, 6);
+  context.bezierCurveTo(11, -25, 10, -69, 5, -105);
+  context.closePath();
+  context.fill();
+  context.globalAlpha = 1;
+
+  context.fillStyle = WANDMAKER_STYLE.robeMid;
+  context.beginPath();
+  context.moveTo(-26, -98);
+  context.bezierCurveTo(-18, -86, -13, -69, -12, -50);
+  context.bezierCurveTo(-15, -31, -19, -12, -21, 5);
+  context.bezierCurveTo(-10, 9, -2, 8, 4, 6);
+  context.bezierCurveTo(1, -28, 1, -66, 5, -101);
+  context.bezierCurveTo(-6, -106, -17, -104, -26, -98);
+  context.closePath();
+  context.fill();
+
+  context.fillStyle = WANDMAKER_STYLE.robeLight;
+  context.beginPath();
+  context.moveTo(-26, -96);
+  context.bezierCurveTo(-33, -79, -31, -59, -32, -43);
+  context.bezierCurveTo(-35, -27, -38, -12, -39, -3);
+  context.quadraticCurveTo(-31, 2, -23, 3);
+  context.bezierCurveTo(-25, -25, -20, -69, -26, -96);
+  context.closePath();
+  context.fill();
+
+  context.fillStyle = WANDMAKER_STYLE.waistcoat;
+  context.beginPath();
+  context.moveTo(-18, -91);
+  context.bezierCurveTo(-12, -76, -9, -59, -9, -43);
+  context.bezierCurveTo(-8, -27, -10, -13, -12, -3);
+  context.quadraticCurveTo(-2, 1, 9, -2);
+  context.bezierCurveTo(8, -25, 9, -56, 16, -91);
+  context.quadraticCurveTo(0, -101, -18, -91);
+  context.closePath();
+  context.fill();
+  context.strokeStyle = 'rgba(225, 212, 181, 0.28)';
+  context.lineWidth = 1.2;
+  context.stroke();
+
+  context.fillStyle = WANDMAKER_STYLE.robeShadow;
+  context.beginPath();
+  context.moveTo(-25, -99);
+  context.bezierCurveTo(-16, -89, -10, -78, -2, -68);
+  context.quadraticCurveTo(-8, -60, -10, -48, -11, -38);
+  context.bezierCurveTo(-18, -53, -24, -73, -25, -99);
+  context.closePath();
+  context.moveTo(23, -101);
+  context.bezierCurveTo(14, -89, 8, -78, 1, -68);
+  context.quadraticCurveTo(8, -59, 9, -46, 9, -37);
+  context.bezierCurveTo(17, -55, 23, -78, 23, -101);
+  context.closePath();
+  context.fill();
+
+  context.strokeStyle = WANDMAKER_STYLE.brass;
+  context.lineWidth = 2.1;
+  context.beginPath();
+  context.moveTo(-23, -98);
+  context.bezierCurveTo(-14, -84, -7, -73, -1, -67);
+  context.moveTo(22, -100);
+  context.bezierCurveTo(14, -86, 7, -74, 1, -67);
+  context.stroke();
+
+  for (const [x, y, scale, turn] of [[0, -55, 2.9, -1], [1, -35, 2.7, 1], [-1, -16, 2.55, -1]]) {
+    drawWandmakerBrassStud(context, x, y, scale, turn);
+  }
+
+  context.strokeStyle = 'rgba(224, 211, 185, 0.3)';
+  context.lineWidth = 1.25;
+  context.beginPath();
+  context.moveTo(-29, -82);
+  context.bezierCurveTo(-31, -61, -32, -34, -36, -5);
+  context.moveTo(25, -82);
+  context.bezierCurveTo(29, -58, 28, -26, 33, -3);
+  context.moveTo(-17, -48);
+  context.bezierCurveTo(-20, -31, -20, -14, -22, 2);
+  context.stroke();
+
+  context.strokeStyle = 'rgba(19, 20, 33, 0.48)';
+  context.lineWidth = 2.4;
+  context.beginPath();
+  context.moveTo(13, -44);
+  context.bezierCurveTo(17, -29, 15, -12, 19, 5);
+  context.moveTo(29, -59);
+  context.bezierCurveTo(33, -41, 31, -18, 35, -1);
+  context.stroke();
+
+  context.fillStyle = WARM_BOUNCE;
+  context.beginPath();
+  context.moveTo(-42, -8);
+  context.bezierCurveTo(-22, -2, -8, 7, 3, 6);
+  context.bezierCurveTo(17, 10, 30, 5, 39, 0);
+  context.quadraticCurveTo(29, 10, 4, 11);
+  context.quadraticCurveTo(-20, 13, -44, 1);
+  context.closePath();
+  context.fill();
+
+  context.strokeStyle = WANDMAKER_STYLE.brass;
+  context.lineWidth = 2.25;
+  context.beginPath();
+  context.moveTo(-36, -6);
+  context.bezierCurveTo(-17, -13, 15, -14, 34, -7);
+  context.stroke();
+}
+
+function drawWandmakerBrassStud(context, x, y, scale, turn) {
+  context.fillStyle = WANDMAKER_STYLE.brass;
+  context.beginPath();
+  context.moveTo(x - scale * 0.9, y - scale * 0.25);
+  context.bezierCurveTo(
+    x - scale * 0.65,
+    y - scale,
+    x + scale * 0.45,
+    y - scale * (0.86 + turn * 0.04),
+    x + scale,
+    y - scale * 0.1,
+  );
+  context.bezierCurveTo(
+    x + scale * 0.72,
+    y + scale * 0.82,
+    x - scale * 0.52,
+    y + scale * (0.95 - turn * 0.05),
+    x - scale * 0.9,
+    y - scale * 0.25,
+  );
+  context.closePath();
+  context.fill();
+  context.strokeStyle = WANDMAKER_STYLE.woodShadow;
+  context.lineWidth = 0.85;
+  context.stroke();
+  context.strokeStyle = WANDMAKER_STYLE.brassLight;
+  context.lineWidth = 0.75;
+  context.beginPath();
+  context.moveTo(x - scale * 0.46, y - scale * 0.38);
+  context.quadraticCurveTo(x, y - scale * 0.72, x + scale * 0.42, y - scale * 0.24);
+  context.stroke();
 }
 
 function drawNpcGarmentDetails(context, kind, palette, { shoulder, hem, top }) {
@@ -1218,52 +1477,6 @@ function drawNpcGarmentDetails(context, kind, palette, { shoulder, hem, top }) {
     context.moveTo(57, -91);
     context.bezierCurveTo(64, -65, 61, -37, 68, -9);
     context.stroke();
-  } else if (kind === 'wandmaker') {
-    context.fillStyle = '#222536';
-    context.beginPath();
-    context.moveTo(-27, -95);
-    context.lineTo(-9, -59);
-    context.lineTo(0, -79);
-    context.lineTo(9, -59);
-    context.lineTo(27, -95);
-    context.lineTo(16, -99);
-    context.lineTo(0, -86);
-    context.lineTo(-16, -99);
-    context.closePath();
-    context.fill();
-    context.strokeStyle = 'rgba(235,224,188,0.3)';
-    context.lineWidth = 1.3;
-    context.stroke();
-    context.strokeStyle = '#171a29';
-    context.lineWidth = 3.6;
-    context.beginPath();
-    context.moveTo(0, -78);
-    context.lineTo(0, -3);
-    context.stroke();
-    for (const y of [-55, -34, -13]) {
-      context.fillStyle = palette.accent;
-      context.beginPath();
-      context.arc(0, y, 3.1, 0, Math.PI * 2);
-      context.fill();
-      context.fillStyle = 'rgba(255,249,217,0.72)';
-      context.beginPath();
-      context.arc(-0.8, y - 0.9, 0.85, 0, Math.PI * 2);
-      context.fill();
-    }
-    context.strokeStyle = palette.accent;
-    context.lineWidth = 2.4;
-    context.beginPath();
-    context.moveTo(-35, -8);
-    context.quadraticCurveTo(0, -17, 35, -8);
-    context.stroke();
-    context.strokeStyle = 'rgba(227,218,188,0.24)';
-    context.lineWidth = 1.25;
-    context.beginPath();
-    context.moveTo(-28, -80);
-    context.bezierCurveTo(-32, -56, -34, -26, -38, -4);
-    context.moveTo(28, -80);
-    context.bezierCurveTo(32, -56, 34, -26, 38, -4);
-    context.stroke();
   } else if (kind === 'tailor') {
     context.fillStyle = 'rgba(61,29,52,0.42)';
     context.beginPath();
@@ -1353,6 +1566,10 @@ function drawNpcArms(context, kind, palette, time, pose = 'idle', { reducedMotio
     drawGuideBeckonArms(context, palette, time, { reducedMotion });
     return;
   }
+  if (kind === 'wandmaker') {
+    drawWandmakerArms(context, time, pose, { reducedMotion });
+    return;
+  }
   const broad = kind === 'guide';
   const shoulderX = broad ? 49 : 32;
   const cuffX = broad ? 61 : 43;
@@ -1399,6 +1616,84 @@ function drawNpcArms(context, kind, palette, time, pose = 'idle', { reducedMotio
     context.restore();
     drawHand(context, side * (shoulderX + 7 + sway), handY + 7, palette.skin, broad ? 9 : 7.5);
   }
+}
+
+function drawWandmakerArms(context, time, pose, { reducedMotion = false } = {}) {
+  const motionScale = reducedMotion ? 0.3 : 1;
+  const breath = Math.sin(time * 1.4) * motionScale;
+  const gesture = sampleWandmakerGesture(time, pose, { reducedMotion });
+
+  context.fillStyle = WANDMAKER_STYLE.robeBase;
+  context.beginPath();
+  context.moveTo(-25, -96);
+  context.bezierCurveTo(-42, -96, -47, -72, -45, -55);
+  context.bezierCurveTo(-47, -42, -48 + breath, -30, -43 + breath, -22);
+  context.quadraticCurveTo(-35, -18, -30, -26);
+  context.bezierCurveTo(-32, -47, -29, -74, -25, -96);
+  context.closePath();
+  fillStroke(context, 1.8);
+  context.fillStyle = WANDMAKER_STYLE.robeMid;
+  context.globalAlpha = 0.56;
+  context.beginPath();
+  context.moveTo(-37, -88);
+  context.bezierCurveTo(-43, -68, -41, -42, -39 + breath, -26);
+  context.quadraticCurveTo(-34, -24, -31, -29);
+  context.bezierCurveTo(-35, -48, -31, -72, -37, -88);
+  context.closePath();
+  context.fill();
+  context.globalAlpha = 1;
+  context.strokeStyle = WANDMAKER_STYLE.brass;
+  context.lineWidth = 2;
+  context.beginPath();
+  context.moveTo(-45 + breath, -28);
+  context.quadraticCurveTo(-38, -23, -31, -28);
+  context.stroke();
+  drawHand(context, -39 + breath, -16, WANDMAKER_STYLE.skin, 7.2);
+
+  const wristX = 43 + gesture;
+  const wristY = -64 - gesture * 0.7;
+  context.fillStyle = WANDMAKER_STYLE.robeBase;
+  context.beginPath();
+  context.moveTo(23, -99);
+  context.bezierCurveTo(37, -97, 42, -85, 43, -74);
+  context.bezierCurveTo(45, -67, wristX + 2, wristY - 3, wristX + 4, wristY + 3);
+  context.quadraticCurveTo(wristX - 1, wristY + 10, wristX - 9, wristY + 6);
+  context.bezierCurveTo(34, -70, 28, -82, 23, -99);
+  context.closePath();
+  fillStroke(context, 1.8);
+  context.fillStyle = WANDMAKER_STYLE.robeShadow;
+  context.globalAlpha = 0.5;
+  context.beginPath();
+  context.moveTo(31, -92);
+  context.bezierCurveTo(41, -84, 44, -71, wristX + 1, wristY + 2);
+  context.quadraticCurveTo(wristX - 3, wristY + 7, wristX - 7, wristY + 5);
+  context.bezierCurveTo(36, -74, 31, -84, 31, -92);
+  context.closePath();
+  context.fill();
+  context.globalAlpha = 1;
+  context.strokeStyle = WANDMAKER_STYLE.brass;
+  context.lineWidth = 2;
+  context.beginPath();
+  context.moveTo(wristX + 3, wristY + 1);
+  context.quadraticCurveTo(wristX - 1, wristY + 7, wristX - 8, wristY + 5);
+  context.stroke();
+  drawHand(context, wristX, wristY + 12, WANDMAKER_STYLE.skin, 7.4);
+
+  context.strokeStyle = 'rgba(95, 56, 43, 0.45)';
+  context.lineWidth = 1;
+  context.beginPath();
+  context.moveTo(wristX - 3, wristY + 10);
+  context.quadraticCurveTo(wristX + 2, wristY + 12, wristX + 5, wristY + 9);
+  context.moveTo(wristX - 2, wristY + 14);
+  context.quadraticCurveTo(wristX + 2, wristY + 16, wristX + 5, wristY + 13);
+  context.stroke();
+}
+
+function sampleWandmakerGesture(time, pose, { reducedMotion = false } = {}) {
+  const motionScale = reducedMotion ? 0.3 : 1;
+  if (pose === 'speaking') return Math.sin(time * 4.2) * 2.4 * motionScale;
+  if (pose === 'curious') return 1.7 * motionScale;
+  return 0.8 * motionScale;
 }
 
 function drawGuideBeckonArms(context, palette, time, { reducedMotion = false } = {}) {
@@ -1641,22 +1936,21 @@ function drawNpcHead(context, kind, palette, blinking, time, pose = 'idle') {
     drawGuideHead(context, palette, blinking, time);
     return;
   }
+  if (kind === 'wandmaker') {
+    drawWandmakerHead(context, blinking, time, pose);
+    return;
+  }
   const broad = kind === 'guide';
   const headY = broad ? -151 : -137;
-  const rx = broad ? 41 : kind === 'wandmaker' ? 31 : kind === 'keeper' ? 35 : 34;
-  const ry = broad ? 43 : kind === 'wandmaker' ? 41 : kind === 'keeper' ? 37 : 39;
+  const rx = broad ? 41 : kind === 'keeper' ? 35 : 34;
+  const ry = broad ? 43 : kind === 'keeper' ? 37 : 39;
   drawEar(context, -rx, headY, palette.skin, broad ? 8 : 6.5);
   drawEar(context, rx, headY, palette.skin, broad ? 8 : 6.5);
 
   context.fillStyle = palette.skin;
   context.beginPath();
   context.moveTo(0, headY - ry);
-  if (kind === 'wandmaker') {
-    context.bezierCurveTo(-22, headY - ry - 1, -rx - 2, headY - 18, -rx, headY + 2);
-    context.bezierCurveTo(-29, headY + 24, -13, headY + ry - 1, 0, headY + ry + 2);
-    context.bezierCurveTo(13, headY + ry - 1, 29, headY + 24, rx, headY + 2);
-    context.bezierCurveTo(rx + 2, headY - 18, 22, headY - ry - 1, 0, headY - ry);
-  } else if (kind === 'tailor') {
+  if (kind === 'tailor') {
     context.bezierCurveTo(-23, headY - ry - 2, -rx - 2, headY - 16, -rx, headY + 4);
     context.bezierCurveTo(-31, headY + 26, -15, headY + ry, 0, headY + ry + 1);
     context.bezierCurveTo(17, headY + ry, 33, headY + 24, rx, headY + 2);
@@ -1711,19 +2005,19 @@ function drawNpcHead(context, kind, palette, blinking, time, pose = 'idle') {
       eyeY,
       12,
       eyeY,
-      kind === 'wandmaker' ? '#71808d' : '#493228',
+      '#493228',
       blinking,
-      kind === 'wandmaker' ? 3.7 : 3.9,
+      3.9,
       gazeX,
       gazeY,
-      { browLift: kind === 'wandmaker' ? -1.5 : kind === 'tailor' ? 1.1 : 0 },
+      { browLift: kind === 'tailor' ? 1.1 : 0 },
     );
   }
   context.strokeStyle = darken(palette.skin, 0.28);
   context.lineWidth = broad ? 1.45 : 1.25;
   context.beginPath();
-  context.moveTo(kind === 'wandmaker' ? 1 : broad ? -2 : 0, headY - 3);
-  context.quadraticCurveTo(kind === 'wandmaker' ? -4 : broad ? -6 : -2, headY + 9, broad ? 5 : kind === 'keeper' ? 4 : 3, headY + 10);
+  context.moveTo(broad ? -2 : 0, headY - 3);
+  context.quadraticCurveTo(broad ? -6 : -2, headY + 9, broad ? 5 : kind === 'keeper' ? 4 : 3, headY + 10);
   context.stroke();
   if (broad) {
     context.fillStyle = darken(palette.skin, 0.04);
@@ -1752,18 +2046,7 @@ function drawNpcHead(context, kind, palette, blinking, time, pose = 'idle') {
     context.quadraticCurveTo(25, eyeY + 11, 31, eyeY + 7);
     context.stroke();
   }
-  if (kind === 'wandmaker') {
-    context.strokeStyle = 'rgba(92,72,67,0.36)';
-    context.lineWidth = 1.1;
-    context.beginPath();
-    context.moveTo(-25, eyeY + 10);
-    context.quadraticCurveTo(-17, eyeY + 14, -9, eyeY + 11);
-    context.moveTo(9, eyeY + 11);
-    context.quadraticCurveTo(17, eyeY + 14, 25, eyeY + 10);
-    context.moveTo(-10, headY + 25);
-    context.quadraticCurveTo(0, headY + 28, 10, headY + 24);
-    context.stroke();
-  } else if (kind === 'tailor') {
+  if (kind === 'tailor') {
     context.strokeStyle = darken(palette.hair, 0.08);
     context.lineWidth = 1.5;
     context.beginPath();
@@ -1787,30 +2070,315 @@ function drawNpcHead(context, kind, palette, blinking, time, pose = 'idle') {
   drawNpcHairPlanes(context, kind, palette, headY, rx, ry);
 }
 
-function drawNpcHair(context, kind, palette, headY, rx, ry, time) {
-  context.fillStyle = palette.hair;
+function drawWandmakerHead(context, blinking, time, pose) {
+  drawWandmakerEar(context, -28, -141, -1);
+  drawWandmakerEar(context, 27, -140, 1);
 
-  if (kind === 'wandmaker') {
-    context.beginPath();
-    context.moveTo(-rx + 2, headY - 13);
-    context.bezierCurveTo(-31, headY - 43, -13, headY - ry - 5, 2, headY - ry + 3);
-    context.quadraticCurveTo(18, headY - ry - 8, rx - 2, headY - 12);
-    context.quadraticCurveTo(20, headY - 25, 9, headY - 23);
-    context.quadraticCurveTo(-5, headY - 33, -17, headY - 19);
-    context.quadraticCurveTo(-27, headY - 27, -rx + 2, headY - 13);
-    context.closePath();
-    fillStroke(context);
-    context.strokeStyle = palette.hairLight;
-    context.lineWidth = 2.2;
-    for (const [x, offset] of [[-23, 2], [-8, -2], [9, 1], [23, 4]]) {
+  context.fillStyle = WANDMAKER_STYLE.skin;
+  context.beginPath();
+  context.moveTo(-4, -183);
+  context.bezierCurveTo(-21, -184, -30, -171, -29, -151);
+  context.bezierCurveTo(-31, -132, -24, -110, -10, -99);
+  context.bezierCurveTo(-3, -93, 5, -94, 12, -100);
+  context.bezierCurveTo(24, -112, 29, -133, 27, -153);
+  context.bezierCurveTo(28, -171, 15, -184, -4, -183);
+  context.closePath();
+  fillStroke(context, 1.8);
+
+  context.fillStyle = WANDMAKER_STYLE.skinShadow;
+  context.globalAlpha = 0.28;
+  context.beginPath();
+  context.moveTo(4, -181);
+  context.bezierCurveTo(21, -178, 28, -166, 26, -149);
+  context.bezierCurveTo(28, -128, 20, -108, 10, -100);
+  context.quadraticCurveTo(5, -95, 1, -98);
+  context.bezierCurveTo(8, -122, 8, -155, 4, -181);
+  context.closePath();
+  context.fill();
+  context.globalAlpha = 1;
+
+  context.fillStyle = WANDMAKER_STYLE.skinLight;
+  context.beginPath();
+  context.moveTo(-22, -168);
+  context.bezierCurveTo(-16, -178, -6, -181, 1, -176);
+  context.bezierCurveTo(-8, -168, -12, -156, -13, -143);
+  context.bezierCurveTo(-22, -144, -27, -157, -22, -168);
+  context.closePath();
+  context.fill();
+
+  context.fillStyle = 'rgba(176, 91, 81, 0.2)';
+  context.beginPath();
+  context.moveTo(-24, -130);
+  context.bezierCurveTo(-19, -136, -11, -135, -8, -129);
+  context.bezierCurveTo(-12, -123, -21, -122, -25, -127);
+  context.quadraticCurveTo(-26, -129, -24, -130);
+  context.closePath();
+  context.moveTo(10, -128);
+  context.bezierCurveTo(15, -133, 23, -132, 26, -126);
+  context.bezierCurveTo(22, -121, 14, -120, 10, -125);
+  context.quadraticCurveTo(9, -127, 10, -128);
+  context.closePath();
+  context.fill();
+
+  const gazeX = Math.sin(time * 0.62 + 8.1) * 1.2;
+  const gazeY = Math.sin(time * 0.39 + 4.7) * 0.48;
+  drawWandmakerEyes(context, blinking, gazeX, gazeY, pose);
+  drawWandmakerNose(context);
+  drawWandmakerMouth(context, pose, time);
+
+  context.strokeStyle = 'rgba(100, 67, 59, 0.34)';
+  context.lineWidth = 1;
+  context.beginPath();
+  context.moveTo(-24, -133);
+  context.bezierCurveTo(-19, -128, -14, -127, -9, -129);
+  context.moveTo(9, -128);
+  context.bezierCurveTo(14, -125, 20, -126, 25, -131);
+  context.moveTo(-21, -120);
+  context.quadraticCurveTo(-13, -116, -7, -119);
+  context.moveTo(8, -118);
+  context.quadraticCurveTo(15, -115, 21, -119);
+  context.moveTo(-8, -106);
+  context.quadraticCurveTo(1, -102, 10, -108);
+  context.stroke();
+
+  drawWandmakerHair(context, time);
+}
+
+function drawWandmakerEar(context, x, y, side) {
+  context.fillStyle = WANDMAKER_STYLE.skin;
+  context.beginPath();
+  context.moveTo(x - side * 1.5, y - 8);
+  context.bezierCurveTo(x + side * 7, y - 10, x + side * 9, y + 3, x + side * 3, y + 10);
+  context.bezierCurveTo(x - side * 4, y + 8, x - side * 6, y - 3, x - side * 1.5, y - 8);
+  context.closePath();
+  fillStroke(context, 1.5);
+  context.strokeStyle = 'rgba(126, 73, 67, 0.4)';
+  context.lineWidth = 1;
+  context.beginPath();
+  context.moveTo(x + side * 0.5, y - 4);
+  context.bezierCurveTo(x + side * 5, y - 1, x + side * 4, y + 5, x, y + 6);
+  context.stroke();
+}
+
+function drawWandmakerEyes(context, blinking, gazeX, gazeY, pose) {
+  const curiousLift = pose === 'curious' ? 1.8 : 0;
+  const speakingTilt = pose === 'speaking' ? 0.8 : 0;
+  const eyes = [
+    { x: -11.5, y: -145.5, side: -1, skew: -0.5 },
+    { x: 10.5, y: -144.5, side: 1, skew: 0.6 },
+  ];
+  for (const { x, y, side, skew } of eyes) {
+    if (blinking) {
+      context.fillStyle = WANDMAKER_STYLE.skinShadow;
+      context.globalAlpha = 0.28;
       context.beginPath();
-      context.moveTo(x, headY - 34 + offset);
-      context.quadraticCurveTo(x - 4, headY - 22, x + 2, headY - 11);
+      context.moveTo(x - 7, y + skew);
+      context.quadraticCurveTo(x, y - 2.2 - side * 0.3, x + 7, y - skew);
+      context.quadraticCurveTo(x, y + 2.5 + side * 0.2, x - 7, y + skew);
+      context.closePath();
+      context.fill();
+      context.globalAlpha = 1;
+      context.strokeStyle = DEEP_OUTLINE;
+      context.lineWidth = 1.6;
+      context.stroke();
+    } else {
+      context.fillStyle = '#f6ead8';
+      context.beginPath();
+      context.moveTo(x - 7.4, y + 0.7 + skew);
+      context.quadraticCurveTo(x - 0.5, y - 5.7 - side * 0.4, x + 7.2, y - 0.2 - skew);
+      context.quadraticCurveTo(x + 0.7, y + 4.4 + side * 0.2, x - 7.4, y + 0.7 + skew);
+      context.closePath();
+      context.fill();
+      context.strokeStyle = DEEP_OUTLINE;
+      context.lineWidth = 1.45;
+      context.stroke();
+
+      const irisX = x + gazeX;
+      const irisY = y + gazeY;
+      context.fillStyle = WANDMAKER_STYLE.iris;
+      context.beginPath();
+      context.moveTo(irisX - 0.4, irisY - 3.7);
+      context.bezierCurveTo(irisX + 3.1, irisY - 3.1, irisX + 3.5, irisY + 1.6, irisX + 0.2, irisY + 3.6);
+      context.bezierCurveTo(irisX - 3.2, irisY + 3, irisX - 3.4, irisY - 1.7, irisX - 0.4, irisY - 3.7);
+      context.closePath();
+      context.fill();
+      context.fillStyle = '#242329';
+      context.beginPath();
+      context.moveTo(irisX, irisY - 1.9);
+      context.bezierCurveTo(irisX + 1.55, irisY - 1.5, irisX + 1.6, irisY + 1.1, irisX, irisY + 1.9);
+      context.bezierCurveTo(irisX - 1.5, irisY + 1.35, irisX - 1.55, irisY - 1.25, irisX, irisY - 1.9);
+      context.closePath();
+      context.fill();
+      context.fillStyle = 'rgba(255, 249, 225, 0.9)';
+      context.beginPath();
+      context.moveTo(irisX - 1.7, irisY - 2.2);
+      context.quadraticCurveTo(irisX - 0.5, irisY - 3, irisX + 0.2, irisY - 1.8);
+      context.quadraticCurveTo(irisX - 0.7, irisY - 0.7, irisX - 1.7, irisY - 2.2);
+      context.closePath();
+      context.fill();
+
+      context.strokeStyle = 'rgba(77, 52, 46, 0.52)';
+      context.lineWidth = 1;
+      context.beginPath();
+      context.moveTo(x - 6, y + 3.2);
+      context.quadraticCurveTo(x, y + 5.3, x + 5.5, y + 3);
       context.stroke();
     }
-    drawFlyaway(context, -19, headY - ry + 3, -30, headY - ry - 10 + Math.sin(time * 2.6) * 2, palette.hair);
+  }
+
+  context.strokeStyle = WANDMAKER_STYLE.hairShadow;
+  context.lineWidth = 2.5;
+  context.beginPath();
+  context.moveTo(-20, -156 - curiousLift);
+  context.bezierCurveTo(-16, -161 - curiousLift, -9, -160 - speakingTilt, -5, -155);
+  context.moveTo(4, -155);
+  context.bezierCurveTo(9, -161 - speakingTilt, 16, -160 - curiousLift, 20, -154 - curiousLift * 0.4);
+  context.stroke();
+  context.strokeStyle = 'rgba(255, 246, 221, 0.46)';
+  context.lineWidth = 0.9;
+  context.beginPath();
+  context.moveTo(-18, -157 - curiousLift);
+  context.quadraticCurveTo(-12, -160 - curiousLift, -7, -156);
+  context.moveTo(6, -156);
+  context.quadraticCurveTo(12, -160 - curiousLift, 18, -155 - curiousLift * 0.4);
+  context.stroke();
+}
+
+function drawWandmakerNose(context) {
+  context.fillStyle = 'rgba(155, 93, 75, 0.22)';
+  context.beginPath();
+  context.moveTo(-1, -145);
+  context.bezierCurveTo(-3, -137, -6, -126, -4, -121);
+  context.bezierCurveTo(-1, -117, 6, -118, 8, -122);
+  context.quadraticCurveTo(5, -125, 2, -124);
+  context.bezierCurveTo(3, -132, 2, -140, -1, -145);
+  context.closePath();
+  context.fill();
+  context.strokeStyle = 'rgba(99, 65, 58, 0.48)';
+  context.lineWidth = 1.1;
+  context.beginPath();
+  context.moveTo(-1, -145);
+  context.bezierCurveTo(-2, -135, -5, -126, -3, -122);
+  context.quadraticCurveTo(2, -118, 7, -122);
+  context.stroke();
+  context.strokeStyle = 'rgba(255, 230, 190, 0.35)';
+  context.lineWidth = 0.9;
+  context.beginPath();
+  context.moveTo(-2, -140);
+  context.quadraticCurveTo(-3, -130, -1, -125);
+  context.stroke();
+}
+
+function drawWandmakerMouth(context, pose, time) {
+  const mouthY = -111;
+  if (pose === 'speaking') {
+    const open = 3 + Math.abs(Math.sin(time * 8.4)) * 2.8;
+    context.fillStyle = '#70474a';
+    context.beginPath();
+    context.moveTo(-7.5, mouthY);
+    context.bezierCurveTo(-3, mouthY - 2.4, 3, mouthY - 2, 7.8, mouthY + 0.3);
+    context.bezierCurveTo(5, mouthY + open, -2.8, mouthY + open + 0.8, -7.5, mouthY);
+    context.closePath();
+    fillStroke(context, 1.2);
+    context.fillStyle = 'rgba(226, 137, 137, 0.58)';
+    context.beginPath();
+    context.moveTo(-4.3, mouthY + open * 0.55);
+    context.quadraticCurveTo(0, mouthY + open + 0.6, 4.8, mouthY + open * 0.52);
+    context.quadraticCurveTo(0.5, mouthY + open * 0.35, -4.3, mouthY + open * 0.55);
+    context.closePath();
+    context.fill();
     return;
   }
+
+  context.strokeStyle = '#77504d';
+  context.lineWidth = 1.8;
+  context.beginPath();
+  context.moveTo(-7.5, mouthY + 0.5);
+  context.quadraticCurveTo(-3, mouthY + 2.4, 0, mouthY + 1.7);
+  context.quadraticCurveTo(4, mouthY - 0.8, 8, mouthY + 0.8);
+  context.stroke();
+}
+
+function drawWandmakerHair(context, time) {
+  context.fillStyle = WANDMAKER_STYLE.hairShadow;
+  context.beginPath();
+  context.moveTo(-29, -153);
+  context.bezierCurveTo(-34, -171, -23, -188, -8, -190);
+  context.bezierCurveTo(-3, -192, 1, -189, 3, -185);
+  context.bezierCurveTo(-5, -177, -8, -166, -8, -157);
+  context.quadraticCurveTo(-17, -165, -21, -153);
+  context.quadraticCurveTo(-26, -160, -29, -153);
+  context.closePath();
+  fillStroke(context, 1.55);
+
+  context.fillStyle = WANDMAKER_STYLE.hairBase;
+  context.beginPath();
+  context.moveTo(-5, -188);
+  context.bezierCurveTo(8, -197, 24, -189, 29, -176);
+  context.bezierCurveTo(34, -164, 30, -150, 25, -145);
+  context.quadraticCurveTo(20, -158, 12, -153);
+  context.quadraticCurveTo(10, -166, 2, -160);
+  context.bezierCurveTo(4, -173, 0, -182, -5, -188);
+  context.closePath();
+  fillStroke(context, 1.55);
+
+  context.fillStyle = WANDMAKER_STYLE.hairLight;
+  context.globalAlpha = 0.42;
+  context.beginPath();
+  context.moveTo(-24, -172);
+  context.bezierCurveTo(-18, -185, -7, -190, 0, -185);
+  context.quadraticCurveTo(-8, -177, -10, -165);
+  context.quadraticCurveTo(-17, -170, -21, -160);
+  context.quadraticCurveTo(-24, -166, -24, -172);
+  context.closePath();
+  context.fill();
+  context.globalAlpha = 1;
+
+  context.strokeStyle = WANDMAKER_STYLE.hairLight;
+  context.lineWidth = 1.2;
+  context.beginPath();
+  for (const [x, y, bend, endX, endY] of [
+    [-26, -171, -5, -22, -151],
+    [-18, -184, 5, -13, -160],
+    [-7, -189, -4, -5, -164],
+    [4, -191, 5, 8, -162],
+    [14, -188, -5, 16, -156],
+    [24, -178, 4, 25, -149],
+  ]) {
+    context.moveTo(x, y);
+    context.bezierCurveTo(x + bend, y + 8, endX - bend * 0.4, endY - 8, endX, endY);
+  }
+  context.stroke();
+
+  context.strokeStyle = 'rgba(104, 108, 117, 0.5)';
+  context.lineWidth = 0.95;
+  context.beginPath();
+  context.moveTo(-20, -178);
+  context.bezierCurveTo(-10, -181, -8, -168, -11, -158);
+  context.moveTo(8, -187);
+  context.bezierCurveTo(18, -180, 19, -166, 16, -155);
+  context.stroke();
+
+  drawFlyaway(
+    context,
+    -19,
+    -187,
+    -31,
+    -194 + Math.sin(time * 2.3) * 1.3,
+    WANDMAKER_STYLE.hairShadow,
+  );
+  drawFlyaway(
+    context,
+    17,
+    -184,
+    29,
+    -188 + Math.sin(time * 1.9 + 0.7) * 1.1,
+    WANDMAKER_STYLE.hairBase,
+  );
+}
+
+function drawNpcHair(context, kind, palette, headY, rx, ry, time) {
+  context.fillStyle = palette.hair;
 
   if (kind === 'tailor') {
     context.beginPath();
@@ -1872,8 +2440,8 @@ function drawNpcHair(context, kind, palette, headY, rx, ry, time) {
 
 function drawNpcHairPlanes(context, kind, palette, headY, rx, ry) {
   context.save();
-  context.fillStyle = darken(palette.hair, kind === 'wandmaker' ? 0.08 : 0.13);
-  context.globalAlpha = kind === 'wandmaker' ? 0.24 : 0.34;
+  context.fillStyle = darken(palette.hair, 0.13);
+  context.globalAlpha = 0.34;
   context.beginPath();
   context.moveTo(2, headY - ry + 1);
   context.bezierCurveTo(rx * 0.74, headY - ry + 1, rx + 1, headY - 20, rx - 1, headY - 8);
@@ -1883,7 +2451,7 @@ function drawNpcHairPlanes(context, kind, palette, headY, rx, ry) {
   context.fill();
   context.globalAlpha = 1;
 
-  context.strokeStyle = kind === 'wandmaker' ? 'rgba(255,249,222,0.55)' : 'rgba(246,203,139,0.3)';
+  context.strokeStyle = 'rgba(246,203,139,0.3)';
   context.lineWidth = 1.15;
   context.beginPath();
   context.moveTo(-rx * 0.58, headY - ry * 0.58);
@@ -1906,7 +2474,14 @@ function drawNpcHairPlanes(context, kind, palette, headY, rx, ry) {
   context.restore();
 }
 
-function drawNpcAccessory(context, kind, palette) {
+function drawNpcAccessory(
+  context,
+  kind,
+  palette,
+  time = 0,
+  pose = 'idle',
+  { reducedMotion = false } = {},
+) {
   if (kind === 'guide') {
     context.fillStyle = HAGRID_STYLE.hairBase;
     context.beginPath();
@@ -2045,22 +2620,51 @@ function drawNpcAccessory(context, kind, palette) {
     context.fillRect(34, -59, 14, 2);
     context.fillRect(34, -53, 11, 2);
   } else if (kind === 'wandmaker') {
-    context.strokeStyle = palette.accent;
-    context.lineWidth = 3;
+    const gesture = sampleWandmakerGesture(time, pose, { reducedMotion });
+    const handX = 43 + gesture;
+    const handY = -52 - gesture * 0.7;
+
+    context.strokeStyle = DEEP_OUTLINE;
+    context.lineWidth = 5.6;
     context.beginPath();
-    context.moveTo(-19, -139);
-    context.quadraticCurveTo(-12, -146, -5, -139);
-    context.moveTo(5, -139);
-    context.quadraticCurveTo(12, -146, 19, -139);
+    context.moveTo(handX - 1, handY + 1);
+    context.bezierCurveTo(handX + 4, -68, handX + 11, -87, handX + 14, -104);
     context.stroke();
-    context.strokeStyle = '#6d4b31';
-    context.lineWidth = 3.5;
+    context.strokeStyle = WANDMAKER_STYLE.wood;
+    context.lineWidth = 3.2;
+    context.stroke();
+    context.strokeStyle = 'rgba(232, 191, 123, 0.48)';
+    context.lineWidth = 0.9;
     context.beginPath();
-    context.moveTo(29, -53);
-    context.lineTo(53, -91);
+    context.moveTo(handX, handY - 1);
+    context.bezierCurveTo(handX + 5, -71, handX + 10, -89, handX + 13, -102);
     context.stroke();
-    context.fillStyle = palette.accent;
-    drawFourPointStar(context, 54, -93, 3.5);
+
+    context.fillStyle = WANDMAKER_STYLE.woodShadow;
+    context.beginPath();
+    context.moveTo(handX - 4, handY - 3);
+    context.bezierCurveTo(handX - 1, handY - 7, handX + 5, handY - 6, handX + 7, handY - 2);
+    context.bezierCurveTo(handX + 5, handY + 4, handX - 1, handY + 5, handX - 4, handY - 3);
+    context.closePath();
+    context.fill();
+    context.strokeStyle = DEEP_OUTLINE;
+    context.lineWidth = 1.25;
+    context.stroke();
+
+    context.strokeStyle = WANDMAKER_STYLE.brass;
+    context.lineWidth = 2.1;
+    context.beginPath();
+    context.moveTo(handX + 6.5, -78);
+    context.quadraticCurveTo(handX + 9, -75, handX + 12, -77);
+    context.moveTo(handX + 9, -91);
+    context.quadraticCurveTo(handX + 12, -88, handX + 15, -90);
+    context.stroke();
+    context.strokeStyle = WANDMAKER_STYLE.brassLight;
+    context.lineWidth = 0.8;
+    context.beginPath();
+    context.moveTo(handX + 8, -78);
+    context.quadraticCurveTo(handX + 9.5, -77, handX + 11, -78);
+    context.stroke();
   }
 }
 
@@ -2662,6 +3266,28 @@ function drawUpperLeftRim(context, points, width) {
     if (index === 0) context.moveTo(x, y);
     else context.lineTo(x, y);
   });
+  context.stroke();
+}
+
+function drawWandmakerWarmRim(context) {
+  context.strokeStyle = WANDMAKER_STYLE.rim;
+  context.lineWidth = 1.75;
+  context.beginPath();
+  context.moveTo(-29, -151);
+  context.bezierCurveTo(-34, -171, -23, -189, -8, -191);
+  context.bezierCurveTo(-4, -193, -1, -191, 2, -188);
+  context.moveTo(-27, -101);
+  context.bezierCurveTo(-39, -91, -37, -71, -35, -59);
+  context.bezierCurveTo(-39, -40, -43, -18, -44, 0);
+  context.stroke();
+
+  context.strokeStyle = 'rgba(255, 239, 198, 0.24)';
+  context.lineWidth = 0.95;
+  context.beginPath();
+  context.moveTo(-25, -169);
+  context.bezierCurveTo(-20, -183, -10, -190, -1, -187);
+  context.moveTo(-31, -87);
+  context.bezierCurveTo(-35, -66, -36, -36, -40, -8);
   context.stroke();
 }
 
