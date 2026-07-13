@@ -1206,7 +1206,10 @@ function drawCloseIcon(context, color, secondary) {
   context.stroke();
   context.fillStyle = secondary;
   context.beginPath();
-  context.arc(0, 0, 5, 0, Math.PI * 2);
+  context.moveTo(-5, -1);
+  context.bezierCurveTo(-4, -6, 4, -5, 5, 0);
+  context.bezierCurveTo(4, 5, -4, 6, -5, -1);
+  context.closePath();
   context.fill();
 }
 

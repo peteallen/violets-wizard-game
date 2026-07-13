@@ -252,6 +252,24 @@ export function titleForegroundLayout(presentation) {
   });
 }
 
+export function objectiveOverlayLayout() {
+  return Object.freeze({
+    panel: Object.freeze({ x: 250, y: 150, width: 780, height: 420 }),
+    compass: Object.freeze({ x: 520, y: 188, width: 240, height: 184 }),
+    caption: Object.freeze({ x: 350, y: 390, width: 580, height: 92 }),
+  });
+}
+
+export function chapterCardLayout() {
+  return Object.freeze({
+    panel: Object.freeze({ x: 156, y: 82, width: 968, height: 550 }),
+    ticket: Object.freeze({ x: 218, y: 136, width: 844, height: 320 }),
+    illustration: Object.freeze({ x: 246, y: 168, width: 260, height: 250 }),
+    title: Object.freeze({ x: 520, y: 184, width: 492, height: 224 }),
+    action: Object.freeze({ x: 425, y: 506, width: 430, height: 91 }),
+  });
+}
+
 function speakerDimensions(speaker) {
   if (speaker === 'npc.guide') return { width: 244, height: 340, ground: 35 };
   if (speaker === 'npc.violet') return { width: 148, height: 228, ground: 32 };
@@ -705,26 +723,23 @@ export class UIRenderer {
   }
 
   drawObjective(context, objective, time = 0, { reducedMotion = false } = {}) {
+    const layout = objectiveOverlayLayout();
     context.fillStyle = 'rgba(20,17,38,0.74)';
     context.fillRect(0, 0, WORLD.width, WORLD.height);
-    drawDeckledParchment(context, { x: 235, y: 170, width: 810, height: 382 });
-    drawCompassQuest(
-      context,
-      { x: 574, y: 205, width: 132, height: 132 },
-      reducedMotion ? 0 : time,
-      { pulse: !reducedMotion },
-    );
+    drawDeckledParchment(context, layout.panel, { ornament: false });
+    drawObjectiveCompass(context, layout.compass, reducedMotion ? 0 : time, { reducedMotion });
     context.textAlign = 'center';
     context.fillStyle = '#382a24';
     context.font = '700 42px "Andika", "Trebuchet MS", sans-serif';
-    context.fillText(
+    fitText(
+      context,
       childFacingUiText(objective?.caption ?? 'Explore!', 'caption'),
-      WORLD.width / 2,
-      400,
+      layout.caption.x + layout.caption.width / 2,
+      layout.caption.y + layout.caption.height * 0.66,
+      layout.caption.width,
     );
-    drawVectorIcon(context, 'owl', 297, 492, 62, { color: '#805d3d', secondary: '#d4b174' });
-    drawVectorIcon(context, 'owl', 983, 492, 62, { color: '#805d3d', secondary: '#d4b174' });
     drawClose(context);
+    return layout;
   }
 
   drawChapterCard(context, card, time, { paintedBackground = false, reducedMotion = false } = {}) {
@@ -735,34 +750,30 @@ export class UIRenderer {
       context.fillStyle = 'rgba(20,17,38,0.36)';
       context.fillRect(0, 0, WORLD.width, WORLD.height);
     }
+    const layout = chapterCardLayout();
     const animationTime = reducedMotion ? 0 : time;
-    const drift = reducedMotion ? 0 : Math.sin(animationTime * 0.7) * 8;
-    drawDeckledParchment(context, { x: 156, y: 82, width: 968, height: 550 }, { fill: '#efe0bd' });
-    context.fillStyle = 'rgba(244,213,141,0.24)';
-    context.beginPath();
-    context.arc(977 + drift, 184, 83, 0, Math.PI * 2);
-    context.fill();
-    drawVectorIcon(context, 'owl', 975 + drift, 183, 104, { color: '#69472f', secondary: '#d9b876' });
-    drawVectorIcon(context, 'owl', 292 - drift * 0.35, 180, 68, { color: '#815d3b', secondary: '#d9b876' });
+    drawDeckledParchment(context, layout.panel, { fill: '#efe0bd', ornament: false });
+    drawPlatformTicket(context, layout.ticket, layout.illustration, animationTime, { reducedMotion });
     context.fillStyle = '#382a24';
-    context.font = '700 64px "Andika", "Trebuchet MS", sans-serif';
+    context.font = '700 56px "Andika", "Trebuchet MS", sans-serif';
     wrapText(
       context,
       childFacingUiText(card?.title ?? 'Platform Nine and Three-Quarters', 'proper-name'),
-      250,
-      276,
-      780,
-      73,
-      2,
+      layout.title.x,
+      layout.title.y + 68,
+      layout.title.width,
+      64,
+      3,
       'center',
     );
     if (card?.buttonLabel !== null) {
-      drawInvitationButton(
+      drawChapterAction(
         context,
         childFacingUiText(card?.buttonLabel ?? 'Continue', 'action'),
-        { x: 425, y: 506, width: 430, height: 91 },
+        layout.action,
       );
     }
+    return layout;
   }
 
   drawTitle(context, time, hasSave, reducedMotion = false) {
@@ -1170,6 +1181,395 @@ function drawWandButton(context, rect, enabled, time = 0) {
 
 function drawClose(context) {
   drawWaxIcon(context, 1090, 120, 45, 'close');
+}
+
+function drawObjectiveCompass(context, rect, time, { reducedMotion = false } = {}) {
+  const centerX = rect.x + rect.width / 2;
+  const centerY = rect.y + rect.height / 2;
+  const pulse = reducedMotion ? 1 : 1 + Math.sin(time * 1.7) * 0.018;
+  context.save();
+  context.translate(centerX, centerY);
+  context.scale(pulse, pulse);
+  context.translate(-centerX, -centerY);
+
+  context.fillStyle = 'rgba(54,35,29,0.28)';
+  traceCompassBody(context, centerX + 7, centerY + 9, 94, 76);
+  context.fill();
+  context.fillStyle = '#b48545';
+  traceCompassBody(context, centerX, centerY, 94, 76);
+  context.fill();
+  context.strokeStyle = '#5f402b';
+  context.lineWidth = 5;
+  context.stroke();
+
+  context.fillStyle = '#e6d3a5';
+  traceCompassBody(context, centerX - 2, centerY - 1, 75, 60);
+  context.fill();
+  context.strokeStyle = '#8d6537';
+  context.lineWidth = 2.4;
+  context.stroke();
+  context.fillStyle = 'rgba(255,244,210,0.35)';
+  traceCompassLight(context, centerX, centerY, 72, 57);
+  context.fill();
+  context.fillStyle = 'rgba(93,58,39,0.16)';
+  traceCompassShade(context, centerX, centerY, 73, 58);
+  context.fill();
+
+  context.strokeStyle = 'rgba(105,72,43,0.58)';
+  context.lineWidth = 2.5;
+  context.lineCap = 'round';
+  context.beginPath();
+  context.moveTo(centerX - 52, centerY + 2);
+  context.quadraticCurveTo(centerX - 61, centerY, centerX - 67, centerY - 2);
+  context.moveTo(centerX + 52, centerY - 1);
+  context.quadraticCurveTo(centerX + 60, centerY + 2, centerX + 66, centerY + 1);
+  context.moveTo(centerX - 1, centerY - 44);
+  context.quadraticCurveTo(centerX + 1, centerY - 52, centerX + 3, centerY - 58);
+  context.moveTo(centerX + 2, centerY + 44);
+  context.quadraticCurveTo(centerX - 1, centerY + 51, centerX - 2, centerY + 57);
+  context.stroke();
+
+  drawCompassNeedle(context, centerX, centerY, -7, -55, '#d7a942', '#f4d58d');
+  drawCompassNeedle(context, centerX, centerY, 8, 52, '#66405f', '#9d6f98');
+  context.fillStyle = '#6d452d';
+  traceOrganicSpot(context, centerX, centerY, 10, 9, 0.13);
+  context.fill();
+  context.fillStyle = '#f0cb70';
+  traceOrganicSpot(context, centerX - 2, centerY - 2, 4.2, 3.5, -0.18);
+  context.fill();
+  context.restore();
+}
+
+function traceCompassBody(context, x, y, radiusX, radiusY) {
+  context.beginPath();
+  context.moveTo(x - radiusX * 0.96, y - radiusY * 0.08);
+  context.bezierCurveTo(
+    x - radiusX * 0.78,
+    y - radiusY * 0.79,
+    x - radiusX * 0.24,
+    y - radiusY * 1.04,
+    x + radiusX * 0.09,
+    y - radiusY * 0.96,
+  );
+  context.bezierCurveTo(
+    x + radiusX * 0.68,
+    y - radiusY * 0.91,
+    x + radiusX * 1.02,
+    y - radiusY * 0.38,
+    x + radiusX * 0.95,
+    y + radiusY * 0.08,
+  );
+  context.bezierCurveTo(
+    x + radiusX * 0.86,
+    y + radiusY * 0.69,
+    x + radiusX * 0.26,
+    y + radiusY * 1.02,
+    x - radiusX * 0.12,
+    y + radiusY * 0.94,
+  );
+  context.bezierCurveTo(
+    x - radiusX * 0.7,
+    y + radiusY * 0.88,
+    x - radiusX * 1.03,
+    y + radiusY * 0.4,
+    x - radiusX * 0.96,
+    y - radiusY * 0.08,
+  );
+  context.closePath();
+}
+
+function traceCompassLight(context, x, y, radiusX, radiusY) {
+  context.beginPath();
+  context.moveTo(x - radiusX * 0.78, y - radiusY * 0.2);
+  context.bezierCurveTo(
+    x - radiusX * 0.58,
+    y - radiusY * 0.83,
+    x - radiusX * 0.08,
+    y - radiusY * 0.88,
+    x + radiusX * 0.24,
+    y - radiusY * 0.7,
+  );
+  context.bezierCurveTo(
+    x - radiusX * 0.02,
+    y - radiusY * 0.42,
+    x - radiusX * 0.34,
+    y - radiusY * 0.2,
+    x - radiusX * 0.78,
+    y - radiusY * 0.2,
+  );
+  context.closePath();
+}
+
+function traceCompassShade(context, x, y, radiusX, radiusY) {
+  context.beginPath();
+  context.moveTo(x - radiusX * 0.18, y + radiusY * 0.76);
+  context.bezierCurveTo(
+    x + radiusX * 0.34,
+    y + radiusY * 0.94,
+    x + radiusX * 0.82,
+    y + radiusY * 0.57,
+    x + radiusX * 0.84,
+    y + radiusY * 0.06,
+  );
+  context.bezierCurveTo(
+    x + radiusX * 0.55,
+    y + radiusY * 0.36,
+    x + radiusX * 0.2,
+    y + radiusY * 0.57,
+    x - radiusX * 0.18,
+    y + radiusY * 0.76,
+  );
+  context.closePath();
+}
+
+function drawCompassNeedle(context, x, y, tipX, tipY, fill, highlight) {
+  context.fillStyle = fill;
+  context.beginPath();
+  context.moveTo(x - 5, y + 4);
+  context.bezierCurveTo(x - 8, y - 8, x + tipX * 0.46, y + tipY * 0.55, x + tipX, y + tipY);
+  context.bezierCurveTo(x + tipX * 0.3, y + tipY * 0.68, x + 8, y + 8, x - 5, y + 4);
+  context.closePath();
+  context.fill();
+  context.strokeStyle = '#5f402b';
+  context.lineWidth = 1.8;
+  context.stroke();
+  context.strokeStyle = highlight;
+  context.lineWidth = 1.2;
+  context.beginPath();
+  context.moveTo(x - 1, y);
+  context.quadraticCurveTo(x + tipX * 0.43, y + tipY * 0.48, x + tipX * 0.82, y + tipY * 0.82);
+  context.stroke();
+}
+
+function drawPlatformTicket(context, rect, illustration, time, { reducedMotion = false } = {}) {
+  const shimmer = reducedMotion ? 0 : Math.sin(time * 0.8) * 2.4;
+  context.fillStyle = 'rgba(50,32,29,0.22)';
+  traceRoundedRect(context, rect.x + 7, rect.y + 9, rect.width, rect.height, 26);
+  context.fill();
+  context.fillStyle = '#dfc894';
+  traceRoundedRect(context, rect.x, rect.y, rect.width, rect.height, 26);
+  context.fill();
+  context.strokeStyle = '#8a6238';
+  context.lineWidth = 4.5;
+  context.stroke();
+
+  context.fillStyle = 'rgba(255,244,210,0.3)';
+  context.beginPath();
+  context.moveTo(rect.x + 24, rect.y + 14);
+  context.bezierCurveTo(
+    rect.x + rect.width * 0.33,
+    rect.y - 1,
+    rect.x + rect.width * 0.59,
+    rect.y + 10,
+    rect.x + rect.width * 0.72,
+    rect.y + rect.height * 0.19,
+  );
+  context.bezierCurveTo(
+    rect.x + rect.width * 0.45,
+    rect.y + rect.height * 0.25,
+    rect.x + rect.width * 0.17,
+    rect.y + rect.height * 0.3,
+    rect.x + 16,
+    rect.y + rect.height * 0.38,
+  );
+  context.closePath();
+  context.fill();
+  context.fillStyle = 'rgba(91,56,39,0.17)';
+  context.beginPath();
+  context.moveTo(rect.x + rect.width * 0.25, rect.y + rect.height * 0.83);
+  context.bezierCurveTo(
+    rect.x + rect.width * 0.55,
+    rect.y + rect.height * 0.76,
+    rect.x + rect.width * 0.86,
+    rect.y + rect.height * 0.7,
+    rect.x + rect.width - 9,
+    rect.y + rect.height * 0.62,
+  );
+  context.bezierCurveTo(
+    rect.x + rect.width - 8,
+    rect.y + rect.height * 0.86,
+    rect.x + rect.width * 0.72,
+    rect.y + rect.height + 4,
+    rect.x + rect.width * 0.25,
+    rect.y + rect.height * 0.83,
+  );
+  context.closePath();
+  context.fill();
+
+  const perforationX = illustration.x + illustration.width + 10;
+  context.strokeStyle = 'rgba(103,70,43,0.42)';
+  context.lineWidth = 2.2;
+  context.lineCap = 'round';
+  for (let index = 0; index < 9; index += 1) {
+    const y = rect.y + 28 + index * 33;
+    context.beginPath();
+    context.moveTo(perforationX - 2, y);
+    context.quadraticCurveTo(perforationX + 1 + (index % 2), y + 4, perforationX - 1, y + 8);
+    context.stroke();
+  }
+  drawPlatformArch(context, illustration, shimmer);
+}
+
+function drawPlatformArch(context, rect, shimmer) {
+  const centerX = rect.x + rect.width / 2;
+  const baseY = rect.y + rect.height - 16;
+  context.fillStyle = '#53464d';
+  context.beginPath();
+  context.moveTo(rect.x + 20, baseY);
+  context.bezierCurveTo(rect.x + 17, baseY - 58, rect.x + 23, rect.y + 138, rect.x + 20, rect.y + 94);
+  context.bezierCurveTo(rect.x + 28, rect.y + 25, rect.x + 78, rect.y + 10, centerX, rect.y + 9);
+  context.bezierCurveTo(rect.x + rect.width - 76, rect.y + 13, rect.x + rect.width - 27, rect.y + 35, rect.x + rect.width - 20, rect.y + 96);
+  context.bezierCurveTo(
+    rect.x + rect.width - 17,
+    rect.y + 138,
+    rect.x + rect.width - 23,
+    baseY - 58,
+    rect.x + rect.width - 20,
+    baseY,
+  );
+  context.closePath();
+  context.fill();
+  context.strokeStyle = '#3a2d22';
+  context.lineWidth = 4.2;
+  context.stroke();
+  context.fillStyle = '#25263b';
+  context.beginPath();
+  context.moveTo(rect.x + 49, baseY);
+  context.bezierCurveTo(rect.x + 47, baseY - 47, rect.x + 52, rect.y + 137, rect.x + 49, rect.y + 104);
+  context.bezierCurveTo(rect.x + 58, rect.y + 58, rect.x + 91, rect.y + 43, centerX, rect.y + 43);
+  context.bezierCurveTo(rect.x + rect.width - 91, rect.y + 43, rect.x + rect.width - 58, rect.y + 61, rect.x + rect.width - 49, rect.y + 105);
+  context.bezierCurveTo(
+    rect.x + rect.width - 47,
+    rect.y + 137,
+    rect.x + rect.width - 52,
+    baseY - 47,
+    rect.x + rect.width - 49,
+    baseY,
+  );
+  context.closePath();
+  context.fill();
+
+  context.fillStyle = '#76522c';
+  traceRoundedRect(context, centerX - 55, baseY - 88, 110, 78, 18);
+  context.fill();
+  context.strokeStyle = '#3a2d22';
+  context.lineWidth = 3.5;
+  context.stroke();
+  context.fillStyle = '#9b7040';
+  traceRoundedRect(context, centerX - 45, baseY - 80, 43, 35, 10);
+  context.fill();
+  context.fillStyle = '#d4a944';
+  traceRoundedRect(context, centerX + 8, baseY - 79, 37, 34, 10);
+  context.fill();
+  context.fillStyle = 'rgba(255,225,145,0.38)';
+  traceOrganicSpot(context, centerX + 23 + shimmer, baseY - 64, 11, 9, 0.17);
+  context.fill();
+
+  for (const wheelX of [centerX - 34, centerX + 35]) {
+    context.fillStyle = '#332a2b';
+    traceOrganicSpot(context, wheelX, baseY - 8, 18, 15, wheelX < centerX ? -0.13 : 0.11);
+    context.fill();
+    context.fillStyle = '#b48745';
+    traceOrganicSpot(context, wheelX - 2, baseY - 10, 7, 6, wheelX < centerX ? 0.16 : -0.12);
+    context.fill();
+  }
+  context.strokeStyle = '#8d6537';
+  context.lineWidth = 4;
+  context.beginPath();
+  context.moveTo(rect.x + 25, baseY + 7);
+  context.bezierCurveTo(centerX - 55, baseY + 2, centerX + 58, baseY + 4, rect.x + rect.width - 24, baseY + 8);
+  context.moveTo(rect.x + 30, baseY + 18);
+  context.bezierCurveTo(centerX - 52, baseY + 14, centerX + 55, baseY + 15, rect.x + rect.width - 31, baseY + 18);
+  context.stroke();
+}
+
+function drawChapterAction(context, label, rect) {
+  context.save();
+  context.fillStyle = 'rgba(50,32,29,0.26)';
+  traceRoundedRect(context, rect.x + 6, rect.y + 8, rect.width, rect.height, 22);
+  context.fill();
+  context.fillStyle = '#ead7ae';
+  traceRoundedRect(context, rect.x, rect.y, rect.width, rect.height, 22);
+  context.fill();
+  context.strokeStyle = PALETTE.interactive;
+  context.lineWidth = 5;
+  context.stroke();
+  context.fillStyle = 'rgba(255,246,219,0.5)';
+  context.beginPath();
+  context.moveTo(rect.x + 20, rect.y + 13);
+  context.bezierCurveTo(
+    rect.x + rect.width * 0.34,
+    rect.y + 3,
+    rect.x + rect.width * 0.62,
+    rect.y + 8,
+    rect.x + rect.width - 18,
+    rect.y + 25,
+  );
+  context.bezierCurveTo(
+    rect.x + rect.width * 0.62,
+    rect.y + 31,
+    rect.x + rect.width * 0.31,
+    rect.y + 32,
+    rect.x + 20,
+    rect.y + 13,
+  );
+  context.closePath();
+  context.fill();
+  drawChapterQuill(context, rect.x + 58, rect.y + rect.height / 2);
+  context.fillStyle = '#382a24';
+  context.textAlign = 'center';
+  context.font = '700 29px "Andika", "Trebuchet MS", sans-serif';
+  fitText(context, label, rect.x + rect.width / 2 + 30, rect.y + rect.height / 2 + 10, rect.width - 125);
+  context.restore();
+}
+
+function drawChapterQuill(context, x, y) {
+  context.save();
+  context.translate(x, y);
+  context.rotate(-0.68);
+  context.fillStyle = '#d4a944';
+  context.beginPath();
+  context.moveTo(-3, 23);
+  context.bezierCurveTo(-16, 5, -14, -22, 5, -32);
+  context.bezierCurveTo(22, -18, 19, 8, -3, 23);
+  context.closePath();
+  context.fill();
+  context.strokeStyle = '#6d452d';
+  context.lineWidth = 2.5;
+  context.stroke();
+  context.beginPath();
+  context.moveTo(-10, 31);
+  context.bezierCurveTo(-2, 14, 6, -5, 12, -26);
+  context.moveTo(2, 11);
+  context.quadraticCurveTo(-4, 7, -10, 4);
+  context.moveTo(7, 0);
+  context.quadraticCurveTo(14, -5, 18, -10);
+  context.moveTo(10, -11);
+  context.quadraticCurveTo(3, -15, -2, -17);
+  context.stroke();
+  context.restore();
+}
+
+function traceOrganicSpot(context, x, y, radiusX, radiusY, wobble = 0) {
+  context.beginPath();
+  context.moveTo(x - radiusX * (0.96 + wobble), y - radiusY * 0.07);
+  context.bezierCurveTo(
+    x - radiusX * 0.62,
+    y - radiusY * (1.02 - wobble),
+    x + radiusX * 0.4,
+    y - radiusY * (0.88 + wobble),
+    x + radiusX * (1.01 - wobble),
+    y + radiusY * 0.05,
+  );
+  context.bezierCurveTo(
+    x + radiusX * 0.56,
+    y + radiusY * (0.93 - wobble),
+    x - radiusX * 0.43,
+    y + radiusY * (1.04 + wobble),
+    x - radiusX * (0.96 + wobble),
+    y - radiusY * 0.07,
+  );
+  context.closePath();
 }
 
 function drawInvitationButton(context, label, rect, { largeSeal = false, time = 0 } = {}) {
