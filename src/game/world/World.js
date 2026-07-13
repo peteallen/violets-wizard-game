@@ -4,6 +4,7 @@ import { SeededRandom } from '../core/rng.js';
 import { Dialogue } from '../systems/Dialogue.js';
 import { Quests } from '../systems/Quests.js';
 import { SetPieces } from '../systems/SetPieces.js';
+import { resolveRoomVariant } from './roomVariant.js';
 
 export class World {
   constructor({ chapters, save, seed, clock = () => '2000-01-01T00:00:00.000Z', onDirty = () => {} }) {
@@ -622,7 +623,10 @@ export class World {
       chapterId: this.chapter.id,
       sceneId: this.currentSceneId,
       roomId: this.roomId,
-      roomVariant: this.flags['ch1.petNamed'] ? 'dusk' : 'base',
+      roomVariant: resolveRoomVariant(
+        this.room,
+        this.flags['ch1.petNamed'] ? 'dusk' : 'base',
+      ),
       cameraX: this.cameraX,
       player: { ...this.player },
       pet: this.save.character.pet?.type ? {

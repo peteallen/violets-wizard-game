@@ -15,6 +15,7 @@ import {
   drawBrassWandHolster,
   drawCompassQuest,
   drawDeckledParchment,
+  drawDialogueScroll,
   drawLeatherSatchel,
   drawVectorIcon,
   drawWaxIcon,
@@ -23,6 +24,7 @@ import { drawVectorOwl } from './OwlRenderer.js';
 import { drawReadableInvitation } from './SetPieceRenderer.js';
 
 const STORY_GRADIENTS = new WeakMap();
+const NIGHT_DIALOGUE_GRADIENTS = new WeakMap();
 const TITLE_STARS = Object.freeze([
   [76, 82, 2.2], [166, 137, 3.2], [286, 91, 1.8], [372, 338, 2.4],
   [468, 67, 2], [598, 112, 3.1], [728, 74, 1.8], [848, 330, 2.3],
@@ -31,6 +33,8 @@ const TITLE_STARS = Object.freeze([
 
 export const UI_REVIEW_SCENES = Object.freeze([
   'ui-dialogue-review',
+  'ui-dialogue-night-review',
+  'ui-dialogue-center-review',
   'ui-broom-caption-review',
   'ui-letter-reading-review',
   'ui-choices-review',
@@ -44,7 +48,7 @@ export const UI_RECTS = Object.freeze({
   quest: { x: 28, y: 28, width: 104, height: 104 },
   satchel: { x: 28, y: 584, width: 108, height: 108 },
   wand: { x: 1144, y: 584, width: 108, height: 108 },
-  dialogueReplay: { x: 1008, y: 493, width: 108, height: 140 },
+  dialogueReplay: { x: 985, y: 557, width: 88, height: 96 },
   letterContinue: { x: 420, y: 594, width: 440, height: 96 },
   debugReset: { x: 510, y: 18, width: 260, height: 88 },
   satchelMapTab: { x: 205, y: 145, width: 210, height: 88 },
@@ -78,8 +82,100 @@ export const UI_RECTS = Object.freeze({
   parentAcceptConfirm: { x: 705, y: 470, width: 360, height: 108 },
   yearbookPrevious: { x: 125, y: 565, width: 230, height: 96 },
   yearbookNext: { x: 925, y: 565, width: 230, height: 96 },
-  dialogueAdvance: { x: 0, y: 0, width: WORLD.width, height: WORLD.height },
+  dialogueAdvance: { x: 986, y: 656, width: 86, height: 43 },
 });
+
+const DIALOGUE_FRAME = Object.freeze({ y: 548, height: 155, maximumWidth: 900, margin: 32, speakerGap: 38 });
+
+export function dialogueSceneContext(state, dialogue = state?.dialogue) {
+  const night = state?.roomVariant === 'dusk' || state?.roomVariant === 'night';
+  const speaker = dialogue?.speaker;
+  if (!speaker || speaker === 'npc.narrator') return { night, speakerPosition: null, speakerBounds: null };
+
+  const cameraX = state?.cameraX ?? 0;
+  let actor = null;
+  if (speaker === 'npc.violet' && state?.player) actor = state.player;
+  else if (speaker.startsWith('npc.pet.') && state?.pet) actor = state.pet;
+  else actor = state?.occupants?.find((occupant) => occupant.npc === speaker) ?? null;
+  if (!actor) return { night, speakerPosition: null, speakerBounds: null };
+
+  const position = { x: actor.x - cameraX, y: actor.y };
+  const dimensions = speakerDimensions(speaker);
+  return {
+    night,
+    speakerPosition: position,
+    speakerBounds: {
+      left: position.x - dimensions.width / 2,
+      right: position.x + dimensions.width / 2,
+      top: position.y - dimensions.height,
+      bottom: position.y + dimensions.ground,
+    },
+  };
+}
+
+export function dialogueScrollLayout({ speakerBounds = null } = {}) {
+  const frame = {
+    x: (WORLD.width - DIALOGUE_FRAME.maximumWidth) / 2,
+    y: DIALOGUE_FRAME.y,
+    width: DIALOGUE_FRAME.maximumWidth,
+    height: DIALOGUE_FRAME.height,
+  };
+  let side = 'center';
+  const overlapsDialogueBand = speakerBounds
+    && speakerBounds.bottom >= frame.y - 8
+    && speakerBounds.top <= frame.y + frame.height + 8;
+
+  if (overlapsDialogueBand) {
+    const leftSpace = Math.max(0, speakerBounds.left - DIALOGUE_FRAME.speakerGap - DIALOGUE_FRAME.margin);
+    const rightEdge = speakerBounds.right + DIALOGUE_FRAME.speakerGap;
+    const rightSpace = Math.max(0, WORLD.width - DIALOGUE_FRAME.margin - rightEdge);
+    if (rightSpace >= leftSpace) {
+      side = 'right';
+      frame.x = rightEdge;
+      frame.width = Math.min(DIALOGUE_FRAME.maximumWidth, rightSpace);
+    } else {
+      side = 'left';
+      frame.x = DIALOGUE_FRAME.margin;
+      frame.width = Math.min(DIALOGUE_FRAME.maximumWidth, leftSpace);
+    }
+  }
+
+  const portraitOnLeft = side !== 'left';
+  const portrait = {
+    x: portraitOnLeft ? frame.x + 76 : frame.x + frame.width - 76,
+    y: frame.y + 77,
+    scale: 0.9,
+  };
+  const controlX = portraitOnLeft ? frame.x + frame.width - 61 : frame.x + 61;
+  const captionLeft = portraitOnLeft ? frame.x + 143 : frame.x + 111;
+  const captionRight = portraitOnLeft ? frame.x + frame.width - 111 : frame.x + frame.width - 143;
+  const replayRect = { x: controlX - 44, y: frame.y + 9, width: 88, height: 96 };
+  const advanceRect = { x: controlX - 43, y: frame.y + 108, width: 86, height: 43 };
+
+  return {
+    side,
+    frame,
+    portrait,
+    captionRect: {
+      x: captionLeft,
+      y: frame.y + 27,
+      width: Math.max(1, captionRight - captionLeft),
+      height: 93,
+    },
+    controlX,
+    replayRect,
+    advanceRect,
+    rotation: side === 'left' ? 0.006 : side === 'right' ? -0.006 : -0.004,
+  };
+}
+
+function speakerDimensions(speaker) {
+  if (speaker === 'npc.guide') return { width: 244, height: 340, ground: 35 };
+  if (speaker === 'npc.violet') return { width: 148, height: 228, ground: 32 };
+  if (speaker === 'npc.owlPost' || speaker.includes('.owl')) return { width: 154, height: 188, ground: 25 };
+  if (speaker.startsWith('npc.pet.')) return { width: 132, height: 142, ground: 28 };
+  return { width: 148, height: 236, ground: 32 };
+}
 
 export class UIRenderer {
   constructor({ resolveAsset = () => null, characterRenderer = new CharacterRenderer() } = {}) {
@@ -92,20 +188,74 @@ export class UIRenderer {
 
   drawReviewScene(context, scene, time = 0, { reducedMotion = false } = {}) {
     if (!UI_REVIEW_SCENES.includes(scene)) return false;
-    context.fillStyle = storyGradient(context);
+    context.fillStyle = scene === 'ui-dialogue-night-review'
+      ? nightDialogueGradient(context)
+      : storyGradient(context);
     context.fillRect(0, 0, WORLD.width, WORLD.height);
     if (scene === 'ui-letter-reading-review') {
       this.drawLetterReading(context);
     } else if (scene === 'ui-broom-caption-review') {
-      this.drawDialogue(context, {
+      const dialogue = {
         type: 'line', speaker: 'npc.violet', speakerLabel: 'Violet', portraitPose: 'wonder',
         caption: 'Flying broom!', text: 'That broom looks fast!',
-      }, time, false, reducedMotion);
+      };
+      const player = { kind: 'violet', x: 1060, y: 665, facing: 'left', pose: 'wonder', wand: true };
+      this.characterRenderer.draw(context, player, time);
+      this.drawDialogue(
+        context,
+        dialogue,
+        time,
+        false,
+        reducedMotion,
+        dialogueSceneContext({ dialogue, player, cameraX: 0, roomVariant: 'base' }),
+      );
     } else if (scene === 'ui-dialogue-review') {
-      this.drawDialogue(context, {
+      const dialogue = {
         type: 'line', speaker: 'npc.guide', speakerLabel: 'Hagrid', portraitPose: 'talk',
         caption: 'This way!', text: 'Come along, Violet. Diagon Alley is waiting for you.',
-      }, time, false, reducedMotion);
+      };
+      const guide = { npc: 'npc.guide', kind: 'guide', x: 220, y: 665, facing: 'right', pose: 'speaking' };
+      this.characterRenderer.draw(context, guide, time);
+      this.drawDialogue(
+        context,
+        dialogue,
+        time,
+        false,
+        reducedMotion,
+        dialogueSceneContext({ dialogue, occupants: [guide], cameraX: 0, roomVariant: 'base' }),
+      );
+    } else if (scene === 'ui-dialogue-night-review') {
+      const dialogue = {
+        type: 'line', speaker: 'npc.wandmaker', speakerLabel: 'Wandmaker', portraitPose: 'curious',
+        caption: 'Your wand!', text: 'Curious… this wand has been waiting for you.',
+      };
+      const wandmaker = {
+        npc: 'npc.wandmaker', kind: 'wandmaker', x: 1040, y: 665, facing: 'left', pose: 'curious',
+      };
+      this.characterRenderer.draw(context, wandmaker, time);
+      this.drawDialogue(
+        context,
+        dialogue,
+        time,
+        false,
+        reducedMotion,
+        dialogueSceneContext({ dialogue, occupants: [wandmaker], cameraX: 0, roomVariant: 'dusk' }),
+      );
+    } else if (scene === 'ui-dialogue-center-review') {
+      const dialogue = {
+        type: 'line', speaker: 'npc.violet', speakerLabel: 'Violet', portraitPose: 'talk',
+        caption: 'Spells come later!', text: 'I need a spell!',
+      };
+      const player = { kind: 'violet', x: 640, y: 665, facing: 'right', pose: 'speaking', wand: true };
+      this.characterRenderer.draw(context, player, time);
+      this.drawDialogue(
+        context,
+        dialogue,
+        time,
+        false,
+        reducedMotion,
+        dialogueSceneContext({ dialogue, player, cameraX: 0, roomVariant: 'base' }),
+      );
     } else if (scene === 'ui-choices-review') {
       this.drawDialogue(context, {
         type: 'choice',
@@ -158,18 +308,24 @@ export class UIRenderer {
     drawWandButton(context, UI_RECTS.wand, Boolean(state.hasWand), animationTime);
   }
 
-  drawDialogue(context, dialogue, time, muted = false, reducedMotion = false) {
+  drawDialogue(context, dialogue, time, muted = false, reducedMotion = false, scene = {}) {
     if (!dialogue) return;
-    context.fillStyle = 'rgba(20,17,38,0.28)';
+    context.fillStyle = scene.night ? 'rgba(13,10,24,0.1)' : 'rgba(20,17,38,0.14)';
     context.fillRect(0, 0, WORLD.width, WORLD.height);
     if (dialogue.type === 'choice' && dialogue.choices?.length) {
       this.drawChoices(context, dialogue.choices);
-      return;
+      return null;
     }
-    const frame = { x: 128, y: 462, width: 1024, height: 230 };
-    drawDeckledParchment(context, frame);
+    const layout = dialogueScrollLayout(scene);
+    const { frame, portrait, captionRect, controlX } = layout;
+    const centerX = frame.x + frame.width / 2;
+    const centerY = frame.y + frame.height / 2;
+    context.save();
+    context.translate(centerX, centerY);
+    context.rotate(layout.rotation);
+    context.translate(-centerX, -centerY);
+    drawDialogueScroll(context, frame, { night: Boolean(scene.night) });
 
-    const portrait = { x: 232, y: 562, radius: 79 };
     const portraitDrawn = typeof this.characterRenderer?.drawPortrait === 'function';
     if (portraitDrawn) {
       this.characterRenderer.drawPortrait(context, {
@@ -177,76 +333,41 @@ export class UIRenderer {
         pose: dialogue.portraitPose ?? 'talk',
         x: portrait.x,
         y: portrait.y,
-        scale: 1.2,
+        scale: portrait.scale,
       }, time);
     } else {
-      drawBrassCameoFrame(context, portrait.x, portrait.y, portrait.radius);
+      const radius = 49;
+      drawBrassCameoFrame(context, portrait.x, portrait.y, radius);
       context.save();
       context.beginPath();
-      context.ellipse(portrait.x, portrait.y, 67, 71, 0, 0, Math.PI * 2);
+      context.ellipse(portrait.x, portrait.y, 43, 47, 0, 0, Math.PI * 2);
       context.clip();
       context.fillStyle = '#3a3046';
-      context.fillRect(portrait.x - 70, portrait.y - 74, 140, 148);
-      drawVectorIcon(context, dialogue.speaker === 'npc.narrator' ? 'quill' : 'owl', portrait.x, portrait.y, 78, {
+      context.fillRect(portrait.x - 48, portrait.y - 51, 96, 102);
+      drawVectorIcon(context, dialogue.speaker === 'npc.narrator' ? 'quill' : 'owl', portrait.x, portrait.y, 59, {
         color: PALETTE.parchment,
         secondary: PALETTE.candle,
       });
       context.restore();
     }
 
-    context.fillStyle = '#4d2430';
-    traceRoundedRect(context, 165, 635, 134, 39, 16);
-    context.fill();
-    context.strokeStyle = PALETTE.candle;
-    context.lineWidth = 2;
-    context.stroke();
-    context.fillStyle = '#fff8e8';
+    drawDialogueCaption(context, captionRect, dialogue.caption ?? 'Listen', Boolean(scene.night));
+
+    drawWaxIcon(context, controlX, frame.y + 47, 31, 'speaker', {
+      iconColor: scene.night ? '#f8e4b4' : '#fff8e8',
+    });
+    context.fillStyle = scene.night ? '#f2d89f' : '#513b2f';
     context.textAlign = 'center';
-    context.font = '700 20px "Andika", "Trebuchet MS", sans-serif';
-    fitText(context, dialogue.speakerLabel ?? 'Friend', 232, 661, 112);
-
-    context.fillStyle = '#fff1cf';
-    traceRoundedRect(context, 338, 488, 624, 82, 34);
-    context.fill();
-    context.strokeStyle = '#bd8e45';
-    context.lineWidth = 4;
-    context.stroke();
-    drawVectorIcon(context, 'owl', 375, 529, 44, { color: '#6b4a31', secondary: '#d8b56f' });
-    context.fillStyle = '#382a24';
-    context.textAlign = 'center';
-    context.font = '700 43px "Andika", "Trebuchet MS", sans-serif';
-    fitText(context, dialogue.caption ?? 'Listen', 665, 544, 530);
-
-    if (muted) {
-      context.fillStyle = '#5c4738';
-      context.font = '23px "Andika", "Trebuchet MS", sans-serif';
-      wrapText(context, dialogue.text ?? '', 350, 603, 610, 29, 2, 'center');
-    } else {
-      context.fillStyle = '#6b5744';
-      context.font = '21px "Andika", "Trebuchet MS", sans-serif';
-      context.fillText('Tap the page to continue', 655, 620);
-    }
-
-    drawWaxIcon(context, 1062, 549, 43, 'speaker');
-    context.fillStyle = '#5c4738';
     context.font = '700 18px "Andika", "Trebuchet MS", sans-serif';
-    context.fillText('Again', 1062, 613);
+    context.fillText('Again', controlX, frame.y + 95);
 
     const animationTime = reducedMotion ? 0 : time;
     const pulse = reducedMotion ? 1 : 1 + Math.sin(animationTime * 4) * 0.08;
-    context.save();
-    context.translate(1060, 654);
-    context.scale(pulse, pulse);
-    context.fillStyle = PALETTE.violet;
-    context.beginPath();
-    context.moveTo(-13, -10);
-    context.lineTo(14, 0);
-    context.lineTo(-13, 10);
-    context.closePath();
-    context.fill();
+    drawDialogueNextArrow(context, controlX, frame.y + 129, pulse, Boolean(scene.night));
     context.restore();
 
     if (dialogue.choices?.length) this.drawChoices(context, dialogue.choices);
+    return layout;
   }
 
   drawLetterReading(context) {
@@ -261,12 +382,12 @@ export class UIRenderer {
     });
   }
 
-  drawResumeRecap(context, recap, time, muted = false, reducedMotion = false) {
-    this.drawDialogue(context, {
+  drawResumeRecap(context, recap, time, muted = false, reducedMotion = false, scene = {}) {
+    return this.drawDialogue(context, {
       speakerLabel: 'Story so far',
       caption: recap.caption,
       text: recap.text,
-    }, time, muted, reducedMotion);
+    }, time, muted, reducedMotion, scene);
   }
 
   drawChoices(context, choices) {
@@ -1199,6 +1320,142 @@ function vectorControlIcon(icon) {
   });
 }
 
+function drawDialogueCaption(context, rect, caption, night) {
+  const colors = night
+    ? { base: '#372a31', light: '#48343a', shadow: '#261f29' }
+    : { base: '#f0d8aa', light: '#fff0c9', shadow: '#d8b982' };
+  context.fillStyle = colors.base;
+  traceDialogueCaption(context, rect);
+  context.fill();
+  context.save();
+  traceDialogueCaption(context, rect);
+  context.clip();
+  context.fillStyle = colors.light;
+  context.beginPath();
+  context.moveTo(rect.x, rect.y);
+  context.lineTo(rect.x + rect.width, rect.y);
+  context.lineTo(rect.x + rect.width, rect.y + rect.height * 0.38);
+  context.bezierCurveTo(
+    rect.x + rect.width * 0.7,
+    rect.y + rect.height * 0.46,
+    rect.x + rect.width * 0.28,
+    rect.y + rect.height * 0.3,
+    rect.x,
+    rect.y + rect.height * 0.42,
+  );
+  context.closePath();
+  context.fill();
+  context.fillStyle = colors.shadow;
+  context.beginPath();
+  context.moveTo(rect.x, rect.y + rect.height * 0.77);
+  context.bezierCurveTo(
+    rect.x + rect.width * 0.32,
+    rect.y + rect.height * 0.68,
+    rect.x + rect.width * 0.71,
+    rect.y + rect.height * 0.86,
+    rect.x + rect.width,
+    rect.y + rect.height * 0.73,
+  );
+  context.lineTo(rect.x + rect.width, rect.y + rect.height);
+  context.lineTo(rect.x, rect.y + rect.height);
+  context.closePath();
+  context.fill();
+  context.restore();
+  context.strokeStyle = night ? '#d2a95b' : '#91633b';
+  context.lineWidth = 3.4;
+  traceDialogueCaption(context, rect);
+  context.stroke();
+  context.strokeStyle = night ? 'rgba(249,223,162,0.34)' : 'rgba(255,248,219,0.72)';
+  context.lineWidth = 1.4;
+  traceDialogueCaption(context, {
+    x: rect.x + 7,
+    y: rect.y + 6,
+    width: rect.width - 14,
+    height: rect.height - 13,
+  });
+  context.stroke();
+
+  const words = String(caption).trim().split(/\s+/u).filter(Boolean).slice(0, 3);
+  const text = words.join(' ') || 'Listen';
+  context.fillStyle = night ? '#f8e6ba' : '#382a24';
+  context.textAlign = 'center';
+  context.textBaseline = 'alphabetic';
+  context.font = '700 42px "Andika", "Trebuchet MS", sans-serif';
+  const lines = balancedCaptionLines(context, words, rect.width - 28);
+  let size = lines.length === 1 ? 42 : 40;
+  context.font = `700 ${size}px "Andika", "Trebuchet MS", sans-serif`;
+  while (size > 27 && lines.some((line) => context.measureText(line).width > rect.width - 28)) {
+    size -= 1;
+    context.font = `700 ${size}px "Andika", "Trebuchet MS", sans-serif`;
+  }
+  if (lines.length === 1) context.fillText(lines[0] ?? text, rect.x + rect.width / 2, rect.y + 62);
+  else {
+    const lineHeight = size + 4;
+    const textBlockHeight = size + lineHeight * (lines.length - 1);
+    const firstBaseline = rect.y + (rect.height - textBlockHeight) / 2 + size * 0.82;
+    lines.forEach((line, index) => context.fillText(line, rect.x + rect.width / 2, firstBaseline + index * lineHeight));
+  }
+}
+
+function balancedCaptionLines(context, words, maxWidth) {
+  if (words.length < 2) return [words.join(' ') || 'Listen'];
+  const oneLine = words.join(' ');
+  if (context.measureText(oneLine).width <= maxWidth) return [oneLine];
+  let best = null;
+  for (let split = 1; split < words.length; split += 1) {
+    const lines = [words.slice(0, split).join(' '), words.slice(split).join(' ')];
+    const widest = Math.max(...lines.map((line) => context.measureText(line).width));
+    if (!best || widest < best.widest) best = { lines, widest };
+  }
+  return best?.lines ?? [oneLine];
+}
+
+function traceDialogueCaption(context, rect) {
+  const { x, y, width, height } = rect;
+  context.beginPath();
+  context.moveTo(x + 19, y + 1);
+  context.bezierCurveTo(x + width * 0.3, y - 2, x + width * 0.69, y + 3, x + width - 17, y + 1);
+  context.quadraticCurveTo(x + width + 2, y + 8, x + width - 1, y + 23);
+  context.lineTo(x + width - 4, y + height - 19);
+  context.quadraticCurveTo(x + width - 2, y + height - 2, x + width - 21, y + height);
+  context.bezierCurveTo(x + width * 0.68, y + height + 2, x + width * 0.31, y + height - 3, x + 17, y + height);
+  context.quadraticCurveTo(x + 1, y + height - 5, x + 3, y + height - 23);
+  context.lineTo(x, y + 20);
+  context.quadraticCurveTo(x + 2, y + 4, x + 19, y + 1);
+  context.closePath();
+}
+
+function drawDialogueNextArrow(context, x, y, pulse, night) {
+  context.save();
+  context.translate(x, y);
+  context.scale(pulse, pulse);
+  context.fillStyle = 'rgba(42,29,31,0.34)';
+  traceDialogueArrow(context, 3, 4);
+  context.fill();
+  context.fillStyle = night ? '#e4bc63' : '#704777';
+  context.strokeStyle = night ? '#3b2c27' : '#3a2d22';
+  context.lineWidth = 2.4;
+  traceDialogueArrow(context, 0, 0);
+  context.fill();
+  context.stroke();
+  context.strokeStyle = night ? 'rgba(255,239,190,0.62)' : 'rgba(229,193,226,0.52)';
+  context.lineWidth = 1.4;
+  context.beginPath();
+  context.moveTo(-10, -8);
+  context.quadraticCurveTo(2, -5, 12, 0);
+  context.stroke();
+  context.restore();
+}
+
+function traceDialogueArrow(context, offsetX, offsetY) {
+  context.beginPath();
+  context.moveTo(-15 + offsetX, -11 + offsetY);
+  context.quadraticCurveTo(-2 + offsetX, -7 + offsetY, 15 + offsetX, -1 + offsetY);
+  context.quadraticCurveTo(3 + offsetX, 6 + offsetY, -14 + offsetX, 12 + offsetY);
+  context.quadraticCurveTo(-7 + offsetX, 1 + offsetY, -15 + offsetX, -11 + offsetY);
+  context.closePath();
+}
+
 function fitText(context, text, x, y, maxWidth) {
   let size = Number.parseInt(context.font, 10) || 28;
   while (size > 18 && context.measureText(text).width > maxWidth) {
@@ -1236,6 +1493,16 @@ function storyGradient(context) {
   gradient.addColorStop(0.68, PALETTE.twilight);
   gradient.addColorStop(1, PALETTE.ink);
   STORY_GRADIENTS.set(context, gradient);
+  return gradient;
+}
+
+function nightDialogueGradient(context) {
+  if (NIGHT_DIALOGUE_GRADIENTS.has(context)) return NIGHT_DIALOGUE_GRADIENTS.get(context);
+  const gradient = context.createLinearGradient(0, 0, WORLD.width, WORLD.height);
+  gradient.addColorStop(0, '#28304d');
+  gradient.addColorStop(0.58, '#34283c');
+  gradient.addColorStop(1, '#17131f');
+  NIGHT_DIALOGUE_GRADIENTS.set(context, gradient);
   return gradient;
 }
 

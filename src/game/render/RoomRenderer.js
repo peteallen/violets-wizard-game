@@ -1,4 +1,5 @@
 import { PALETTE, WORLD } from '../config.js';
+import { resolveRoomVariant } from '../world/roomVariant.js';
 
 const ROOM_MOODS = Object.freeze({
   'ch1.bedroom': ['#9bc7d5', '#f4d58d', '#87684f'],
@@ -321,7 +322,7 @@ export class RoomRenderer {
 
   draw(context, room, state, time, camera = { x: 0 }) {
     const roomId = room?.id ?? state?.roomId ?? 'ch1.bedroom';
-    const variant = state?.roomVariant ?? 'base';
+    const variant = resolveRoomVariant(room, state?.roomVariant);
     const scale = contextScale(context);
     const description = describeRoomCache(room, state, scale, this.resolveAsset);
     this.currentCacheKey = description.key;
@@ -422,7 +423,7 @@ function contextScale(context) {
 
 function describeRoomCache(room, state, scale, resolveAsset) {
   const roomId = room?.id ?? state?.roomId ?? 'ch1.bedroom';
-  const variant = state?.roomVariant ?? 'base';
+  const variant = resolveRoomVariant(room, state?.roomVariant);
   const variantLayers = room?.background?.variants?.[variant];
   const layers = variantLayers?.length ? variantLayers : (room?.background?.layers ?? []);
   const keys = [...new Set(layers.filter((key) => key && resolveAsset(key)))];

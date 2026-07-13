@@ -349,6 +349,47 @@ registry
     'ui-dialogue-review',
     'The illustrated dialogue parchment, animated Hagrid cameo, short caption, and replay control.',
   ))
+  .register('ui-dialogue-night-review', characterReviewFixture(
+    'ui-dialogue-night-review',
+    'The warm-dark dialogue scroll opposite its active speaker in a night-painted room.',
+  ))
+  .register('ui-dialogue-center-review', characterReviewFixture(
+    'ui-dialogue-center-review',
+    'The narrowed dialogue scroll beside a centered Violet with the longest shipped caption.',
+  ))
+  .register('ui-dialogue-live-review', createFixture(
+    'The adaptive dialogue scroll opposite Hagrid in Violet’s painted bedroom.',
+    { chapter: 1, scene: 'ui-dialogue-live-review' },
+    createSave({
+      scene: 'ch1.guideArrival',
+      room: 'ch1.bedroom',
+      spawn: 'letter',
+      questFlags: {
+        'ch1.owlTapped': true,
+        'ch1.letterOpened': true,
+        'ch1.letterRead': true,
+      },
+    }),
+  ))
+  .register('ui-dialogue-night-live-review', createFixture(
+    'The warm-dark dialogue scroll opposite Hagrid in the painted dusk street.',
+    { chapter: 1, scene: 'ui-dialogue-night-live-review' },
+    createSave({
+      scene: 'ch1.ticket',
+      room: 'ch1.diagonStreet',
+      spawn: 'west',
+      questFlags: {
+        ...throughWandFlags,
+        'ch1.trimChosen': true,
+        'ch1.petChosen': true,
+        'ch1.petNamed': true,
+        'ch1.shoppingComplete': true,
+      },
+      wandId: 'violet-first-wand',
+      robeTrim: 'purple',
+      pet: { type: 'cat', name: 'Biscuit' },
+    }),
+  ))
   .register('ui-broom-caption-review', characterReviewFixture(
     'ui-broom-caption-review',
     'Violet’s broom reaction with its complete spoken line and short knowledge-independent caption.',

@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 import { Game, selectChapter1ResumeRecap } from '../src/game/Game.js';
 import { chapter1ResumeRecaps } from '../src/game/content/chapters/ch1.js';
+import { dialogueScrollLayout } from '../src/game/render/UIRenderer.js';
 import { createSaveV1 } from '../src/game/systems/Save.js';
 
 const NOW = '2026-07-12T18:00:00.000Z';
@@ -110,7 +111,11 @@ describe('Chapter 1 resume recaps', () => {
     };
     game.updateStatus = vi.fn();
 
-    game.handleTap({ x: 1062, y: 549 });
+    const layout = dialogueScrollLayout();
+    game.handleTap({
+      x: layout.replayRect.x + layout.replayRect.width / 2,
+      y: layout.replayRect.y + layout.replayRect.height / 2,
+    });
 
     expect(game.resumeRecap).toBe(recap);
     expect(game.sound.speak).toHaveBeenCalledWith(recap.voice, recap.text);

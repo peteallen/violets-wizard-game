@@ -88,6 +88,10 @@ describe('state fixtures', () => {
       'character-portraits-review',
       'owl-motion-review',
       'ui-dialogue-review',
+      'ui-dialogue-night-review',
+      'ui-dialogue-center-review',
+      'ui-dialogue-live-review',
+      'ui-dialogue-night-live-review',
       'ui-broom-caption-review',
       'ui-letter-reading-review',
       'ui-choices-review',
@@ -163,6 +167,21 @@ describe('action fixtures', () => {
 describe('registered harness scenarios', () => {
   it('registers dedicated gameplay-scale review scenes for the cast, companions, portraits, and owl poses', () => {
     for (const id of ['character-cast-review', 'character-pets-review', 'character-portraits-review', 'owl-motion-review']) {
+      expect(STATE_FIXTURE_IDS).toContain(id);
+      expect(ACTION_FIXTURE_IDS).toContain(id);
+      expect(parseHarnessRequest(`?scene=${id}`)).toMatchObject({ scene: id, state: id, actions: id });
+    }
+  });
+
+  it('registers speaker-left, speaker-right, and night dialogue review coverage', () => {
+    for (const id of [
+      'ui-dialogue-review',
+      'ui-broom-caption-review',
+      'ui-dialogue-night-review',
+      'ui-dialogue-center-review',
+      'ui-dialogue-live-review',
+      'ui-dialogue-night-live-review',
+    ]) {
       expect(STATE_FIXTURE_IDS).toContain(id);
       expect(ACTION_FIXTURE_IDS).toContain(id);
       expect(parseHarnessRequest(`?scene=${id}`)).toMatchObject({ scene: id, state: id, actions: id });

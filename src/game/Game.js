@@ -11,7 +11,13 @@ import { CharacterRenderer } from './render/CharacterRenderer.js';
 import { Particles } from './render/Particles.js';
 import { RoomRenderer } from './render/RoomRenderer.js';
 import { SetPieceRenderer } from './render/SetPieceRenderer.js';
-import { UIRenderer, UI_RECTS, pointInUiRect } from './render/UIRenderer.js';
+import {
+  UIRenderer,
+  UI_RECTS,
+  dialogueSceneContext,
+  dialogueScrollLayout,
+  pointInUiRect,
+} from './render/UIRenderer.js';
 import { WorldPropRenderer } from './render/WorldPropRenderer.js';
 import { Save, YEARBOOK_MAX_BYTES, createSaveV1 } from './systems/Save.js';
 import { World } from './world/World.js';
@@ -328,7 +334,9 @@ export class Game {
       return;
     }
     if (this.resumeRecap) {
-      if (pointInUiRect(point, UI_RECTS.dialogueReplay)) {
+      const recapState = this.lastRenderState ?? this.world?.snapshot?.() ?? {};
+      const recapLayout = dialogueScrollLayout(dialogueSceneContext(recapState, this.resumeRecap));
+      if (pointInUiRect(point, recapLayout.replayRect)) {
         this.sound.playSfx('sfx/ui/tap', 'tap');
         this.sound.speak(this.resumeRecap.voice, this.resumeRecap.text);
         this.updateStatus(this.resumeRecap.text);
@@ -360,7 +368,10 @@ export class Game {
         }
         this.sound.playSfx('sfx/ui/choice', 'chime');
         this.world.advanceDialogue(choice.id);
-      } else if (pointInUiRect(point, UI_RECTS.dialogueReplay)) {
+      } else if (pointInUiRect(
+        point,
+        dialogueScrollLayout(dialogueSceneContext(state)).replayRect,
+      )) {
         this.sound.playSfx('sfx/ui/tap', 'tap');
         this.world.dialogue.replay();
       } else {
@@ -1365,6 +1376,7 @@ export class Game {
         this.simTime,
         this.saveData.settings.muted,
         this.reducedMotion,
+        dialogueSceneContext(state, this.resumeRecap),
       );
     } else {
       if (state.dialogue) {
@@ -1374,6 +1386,7 @@ export class Game {
           this.simTime,
           this.saveData.settings.muted,
           this.reducedMotion,
+          dialogueSceneContext(state),
         );
       }
       if (state.overlay?.surface === 'satchel') {
@@ -1516,9 +1529,11 @@ export class Game {
     if (this.screen === 'title') return [{ id: 'foundation.start', x: 640, y: 460 }, ...debugTargets];
     if (!this.world) return debugTargets;
     if (this.resumeRecap) {
+      const state = this.lastRenderState ?? this.world.snapshot();
+      const layout = dialogueScrollLayout(dialogueSceneContext(state, this.resumeRecap));
       return [
-        { id: 'resume.continue', x: 1065, y: 630 },
-        semanticRect('dialogue.replay', UI_RECTS.dialogueReplay),
+        semanticRect('resume.continue', layout.advanceRect),
+        semanticRect('dialogue.replay', layout.replayRect),
       ];
     }
     const state = this.lastRenderState ?? this.world.snapshot();
@@ -1533,7 +1548,13 @@ export class Game {
       { id: 'hud.wand', x: 1198, y: 638 },
     );
     if (this.shouldShowReplayExit()) targets.push(semanticRect('replay.exit', UI_RECTS.replayExit));
-    if (state.dialogue?.type === 'line') targets.push(semanticRect('dialogue.replay', UI_RECTS.dialogueReplay));
+    if (state.dialogue?.type === 'line') {
+      const layout = dialogueScrollLayout(dialogueSceneContext(state));
+      targets.push(
+        semanticRect('dialogue.replay', layout.replayRect),
+        semanticRect('dialogue.advance', layout.advanceRect),
+      );
+    }
     for (const choice of state.dialogue?.choices ?? []) {
       if (choice.__rect) targets.push({ id: `dialogue.${choice.id}`, x: choice.__rect.x + choice.__rect.width / 2, y: choice.__rect.y + choice.__rect.height / 2 });
     }

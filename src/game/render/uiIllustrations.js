@@ -8,6 +8,12 @@ const BRASS_LIGHT = '#f4d58d';
 const BRASS_DARK = '#76522c';
 const LEATHER = '#6d452d';
 const LEATHER_DARK = '#3f2b23';
+const PAPER_GRAIN = Object.freeze([
+  [0.08, 0.23, 0.055, -0.012], [0.15, 0.71, 0.072, 0.016], [0.23, 0.42, 0.044, -0.018],
+  [0.31, 0.82, 0.061, 0.011], [0.38, 0.18, 0.052, 0.014], [0.46, 0.58, 0.067, -0.013],
+  [0.54, 0.29, 0.046, 0.018], [0.61, 0.76, 0.058, -0.012], [0.69, 0.47, 0.073, 0.015],
+  [0.77, 0.16, 0.049, -0.014], [0.84, 0.66, 0.064, 0.012], [0.91, 0.35, 0.052, -0.017],
+]);
 
 export function traceDeckledRect(context, x, y, width, height, depth = 7) {
   const top = [0, 0.16, -0.08, 0.12, -0.05, 0.1, 0];
@@ -59,6 +65,151 @@ export function drawDeckledParchment(context, rect, {
     drawQuillFlourish(context, x + width - 43, y + 40, -1);
   }
   context.restore();
+}
+
+export function drawDialogueScroll(context, rect, { night = false } = {}) {
+  const { x, y, width, height } = rect;
+  const colors = night
+    ? {
+        top: '#806447', middle: '#69503d', bottom: '#4d392f', edge: '#d4aa5b', ink: '#2f2422',
+        highlight: 'rgba(250,221,154,0.2)', grain: 'rgba(244,210,139,0.13)', shadow: 'rgba(15,10,22,0.58)',
+        rollLight: '#9a794f', rollMiddle: '#765b42', rollDark: '#47332b',
+      }
+    : {
+        top: '#f7e9c8', middle: '#e6ce9f', bottom: '#c9a978', edge: '#9a6938', ink: '#49352a',
+        highlight: 'rgba(255,246,210,0.48)', grain: 'rgba(112,75,43,0.13)', shadow: 'rgba(28,18,27,0.46)',
+        rollLight: '#f3dfb8', rollMiddle: '#e4c999', rollDark: '#b58f60',
+      };
+
+  context.save();
+  context.fillStyle = colors.shadow;
+  traceDeckledRect(context, x + 8, y + 11, width, height, 11);
+  context.fill();
+
+  context.fillStyle = colors.middle;
+  traceDeckledRect(context, x, y, width, height, 11);
+  context.fill();
+  context.strokeStyle = colors.ink;
+  context.lineWidth = 6;
+  context.stroke();
+  context.strokeStyle = colors.edge;
+  context.lineWidth = 3;
+  traceDeckledRect(context, x + 4, y + 3, width - 8, height - 7, 8);
+  context.stroke();
+
+  context.save();
+  traceDeckledRect(context, x + 7, y + 7, width - 14, height - 14, 7);
+  context.clip();
+  context.fillStyle = colors.top;
+  context.beginPath();
+  context.moveTo(x, y);
+  context.lineTo(x + width, y);
+  context.lineTo(x + width, y + height * 0.34);
+  context.bezierCurveTo(
+    x + width * 0.73,
+    y + height * 0.43,
+    x + width * 0.34,
+    y + height * 0.3,
+    x,
+    y + height * 0.4,
+  );
+  context.closePath();
+  context.fill();
+  context.fillStyle = colors.bottom;
+  context.beginPath();
+  context.moveTo(x, y + height * 0.75);
+  context.bezierCurveTo(
+    x + width * 0.31,
+    y + height * 0.68,
+    x + width * 0.68,
+    y + height * 0.84,
+    x + width,
+    y + height * 0.72,
+  );
+  context.lineTo(x + width, y + height);
+  context.lineTo(x, y + height);
+  context.closePath();
+  context.fill();
+  context.fillStyle = colors.highlight;
+  context.beginPath();
+  context.ellipse(x + width * 0.21, y + height * 0.19, width * 0.24, height * 0.16, -0.05, 0, Math.PI * 2);
+  context.fill();
+
+  context.strokeStyle = colors.grain;
+  context.lineCap = 'round';
+  context.lineWidth = 1.4;
+  for (const [grainX, grainY, grainLength, grainBend] of PAPER_GRAIN) {
+    const startX = x + width * grainX;
+    const startY = y + height * grainY;
+    const length = width * grainLength;
+    context.beginPath();
+    context.moveTo(startX, startY);
+    context.quadraticCurveTo(
+      startX + length * 0.48,
+      startY + height * grainBend,
+      startX + length,
+      startY + height * grainBend * 0.4,
+    );
+    context.stroke();
+  }
+
+  context.strokeStyle = night ? 'rgba(244,210,139,0.1)' : 'rgba(103,68,39,0.1)';
+  context.lineWidth = 2.2;
+  for (const progress of [0.21, 0.53, 0.78]) {
+    context.beginPath();
+    context.moveTo(x + 28, y + height * progress);
+    context.bezierCurveTo(
+      x + width * 0.32,
+      y + height * (progress - 0.018),
+      x + width * 0.69,
+      y + height * (progress + 0.024),
+      x + width - 30,
+      y + height * progress,
+    );
+    context.stroke();
+  }
+  context.restore();
+
+  drawScrollRoll(context, x + 20, y + height / 2, height, -1, colors);
+  drawScrollRoll(context, x + width - 20, y + height / 2, height, 1, colors);
+  context.restore();
+}
+
+function drawScrollRoll(context, x, y, height, direction, colors) {
+  const halfHeight = height * 0.42;
+  const outerX = x + direction * 16;
+  const innerX = x - direction * 14;
+  context.fillStyle = colors.rollMiddle;
+  context.beginPath();
+  context.moveTo(innerX, y - halfHeight + 4);
+  context.bezierCurveTo(outerX, y - halfHeight - 3, outerX + direction * 4, y - halfHeight * 0.34, outerX, y);
+  context.bezierCurveTo(outerX + direction * 5, y + halfHeight * 0.36, outerX, y + halfHeight + 2, innerX, y + halfHeight - 4);
+  context.quadraticCurveTo(x - direction * 3, y + halfHeight * 0.24, innerX, y - halfHeight + 4);
+  context.closePath();
+  context.fill();
+  context.strokeStyle = colors.ink;
+  context.lineWidth = 3.4;
+  context.stroke();
+  context.fillStyle = colors.rollDark;
+  context.beginPath();
+  context.moveTo(innerX, y - halfHeight + 5);
+  context.quadraticCurveTo(x - direction * 4, y, innerX, y + halfHeight - 5);
+  context.quadraticCurveTo(x + direction * 2, y + halfHeight * 0.31, x + direction * 2, y - halfHeight * 0.28);
+  context.closePath();
+  context.fill();
+  context.fillStyle = colors.rollLight;
+  context.beginPath();
+  context.moveTo(outerX - direction * 5, y - halfHeight * 0.72);
+  context.quadraticCurveTo(outerX + direction * 2, y - halfHeight * 0.08, outerX - direction * 4, y + halfHeight * 0.5);
+  context.quadraticCurveTo(outerX - direction * 8, y, outerX - direction * 5, y - halfHeight * 0.72);
+  context.closePath();
+  context.fill();
+  context.strokeStyle = colors.edge;
+  context.lineWidth = 1.8;
+  context.beginPath();
+  context.moveTo(outerX - direction * 3, y - halfHeight * 0.75);
+  context.quadraticCurveTo(outerX + direction * 3, y, outerX - direction * 2, y + halfHeight * 0.72);
+  context.stroke();
 }
 
 export function drawBrassCameoFrame(context, x, y, radius, { active = true } = {}) {

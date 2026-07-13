@@ -4,6 +4,7 @@ import {
   drawBrassWandHolster,
   drawCompassQuest,
   drawDeckledParchment,
+  drawDialogueScroll,
   drawLeatherSatchel,
   drawVectorIcon,
   drawWaxIcon,
@@ -60,6 +61,8 @@ describe('illustrated interface primitives', () => {
     const context = recordingContext();
     traceDeckledRect(context, 10, 12, 300, 160);
     drawDeckledParchment(context, { x: 10, y: 12, width: 300, height: 160 });
+    drawDialogueScroll(context, { x: 20, y: 548, width: 760, height: 155 });
+    drawDialogueScroll(context, { x: 20, y: 548, width: 760, height: 155 }, { night: true });
     drawWaxIcon(context, 80, 80, 38, 'owl');
     drawBrassCameoFrame(context, 100, 100, 70);
     drawLeatherSatchel(context, { x: 20, y: 20, width: 108, height: 108 });
@@ -67,5 +70,21 @@ describe('illustrated interface primitives', () => {
     drawBrassWandHolster(context, { x: 20, y: 20, width: 108, height: 108 }, { time: 1.25 });
     expect(context.calls.length).toBeGreaterThan(150);
     expect(context.depth).toBe(0);
+  });
+
+  it('renders both dialogue parchment palettes from the same deterministic deckled construction', () => {
+    const first = recordingContext();
+    const second = recordingContext();
+    const night = recordingContext();
+    const rect = { x: 250, y: 548, width: 780, height: 155 };
+    drawDialogueScroll(first, rect);
+    drawDialogueScroll(second, rect);
+    drawDialogueScroll(night, rect, { night: true });
+
+    expect(first.calls).toEqual(second.calls);
+    expect(first.strokeStyle).not.toBe(night.strokeStyle);
+    expect(first.calls.filter(([name]) => name === 'quadraticCurveTo').length).toBeGreaterThan(15);
+    expect(first.depth).toBe(0);
+    expect(night.depth).toBe(0);
   });
 });

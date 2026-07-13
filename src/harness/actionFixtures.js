@@ -164,6 +164,20 @@ registry
   .register('ui-dialogue-review', createFixture(
     'Hold the illustrated voiced-dialogue frame and replay control.',
   ))
+  .register('ui-dialogue-night-review', createFixture(
+    'Hold the warm-dark dialogue scroll opposite its active speaker.',
+  ))
+  .register('ui-dialogue-center-review', createFixture(
+    'Hold the narrowed scroll beside centered Violet and its two-line caption.',
+  ))
+  .register('ui-dialogue-live-review', createFixture(
+    'Walk to Hagrid and hold his first bedroom line against the painted room.',
+    [{ frame: 30, type: 'tap', target: 'bedroom.guide' }],
+  ))
+  .register('ui-dialogue-night-live-review', createFixture(
+    'Walk to Hagrid and hold his ticket line against the painted dusk street.',
+    [{ frame: 30, type: 'tap', target: 'street.guideTicket' }],
+  ))
   .register('ui-broom-caption-review', createFixture(
     'Hold Violet’s broom reaction and caption for deterministic visual review.',
   ))
