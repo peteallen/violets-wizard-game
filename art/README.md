@@ -19,3 +19,5 @@ This file records the production briefs and source relationships that matter for
 | `card-dumbledore.png` | Collectible card portrait | An original, kind headmaster portrait for a collectible card, framed consistently with Morgana and not based on a real performer. |
 
 The generated room paintings intentionally contain no player character. Violet, companions, pets, and interactive effects are separate assets or render layers so movement, choices, and deterministic captures can remain under game-engine control.
+
+Painted character design targets live in [`character-refs/`](character-refs/README.md). They provide a concrete fidelity and identity reference for rebuilding the deterministic Canvas puppets; they are source documentation only and never ship as runtime character sprites.
