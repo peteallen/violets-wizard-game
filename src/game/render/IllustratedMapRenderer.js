@@ -252,36 +252,105 @@ function drawQuillRoute(context, route) {
   if (route.points.length < 2) return;
   context.save();
   context.globalAlpha = route.fogState === MAP_FOG_STATES.soft ? 0.36 : 0.78;
-  context.lineCap = 'round';
-  context.lineJoin = 'round';
-
-  context.strokeStyle = '#5a3827';
-  context.lineWidth = 6.4;
-  traceQuillRoute(context, route.points, route.phase);
-  context.stroke();
-
-  context.globalAlpha *= 0.72;
-  context.strokeStyle = '#c0914c';
-  context.lineWidth = 2.1;
-  traceQuillRoute(context, route.points, route.phase + 0.23);
-  context.stroke();
+  for (const mark of sampleQuillRouteMarks(route.points, route.phase)) {
+    drawQuillMark(context, mark);
+  }
   context.restore();
 }
 
-function traceQuillRoute(context, points, phase) {
-  context.beginPath();
-  context.moveTo(points[0].x, points[0].y);
+export function sampleQuillRouteMarks(points, phase = 0) {
+  if (!Array.isArray(points) || points.length < 2) return Object.freeze([]);
+  const safePhase = Number.isFinite(phase) ? phase : 0;
+  const marks = [];
   for (let index = 1; index < points.length; index += 1) {
     const previous = points[index - 1];
     const point = points[index];
     const dx = point.x - previous.x;
     const dy = point.y - previous.y;
     const length = Math.max(1, Math.hypot(dx, dy));
-    const wobble = Math.sin(phase * 31 + index * 2.17) * Math.min(9, length * 0.065);
+    const wobble = Math.sin(safePhase * 31 + index * 2.17) * Math.min(9, length * 0.065);
     const controlX = (previous.x + point.x) / 2 - dy / length * wobble;
     const controlY = (previous.y + point.y) / 2 + dx / length * wobble;
-    context.quadraticCurveTo(controlX, controlY, point.x, point.y);
+    const curveLength = Math.hypot(controlX - previous.x, controlY - previous.y)
+      + Math.hypot(point.x - controlX, point.y - controlY);
+    const markCount = Math.max(2, Math.round(curveLength / 24));
+    for (let markIndex = 0; markIndex < markCount; markIndex += 1) {
+      const t = (markIndex + 0.5) / markCount;
+      const inverse = 1 - t;
+      const curveX = inverse * inverse * previous.x
+        + 2 * inverse * t * controlX
+        + t * t * point.x;
+      const curveY = inverse * inverse * previous.y
+        + 2 * inverse * t * controlY
+        + t * t * point.y;
+      const tangentX = 2 * inverse * (controlX - previous.x) + 2 * t * (point.x - controlX);
+      const tangentY = 2 * inverse * (controlY - previous.y) + 2 * t * (point.y - controlY);
+      const tangentLength = Math.max(1, Math.hypot(tangentX, tangentY));
+      const rhythm = safePhase * 43 + index * 5.17 + markIndex * 1.91;
+      const offset = Math.sin(rhythm) * 1.15;
+      marks.push(Object.freeze({
+        x: curveX - tangentY / tangentLength * offset,
+        y: curveY + tangentX / tangentLength * offset,
+        angle: Math.atan2(tangentY, tangentX) + Math.sin(rhythm * 0.71) * 0.045,
+        length: 9.2 + (Math.sin(rhythm * 1.13) + 1) * 1.25,
+        width: 4.1 + (Math.cos(rhythm * 0.83) + 1) * 0.55,
+      }));
+    }
   }
+  return Object.freeze(marks);
+}
+
+function drawQuillMark(context, mark) {
+  const halfLength = mark.length / 2;
+  const halfWidth = mark.width / 2;
+  context.save();
+  context.translate(mark.x, mark.y);
+  context.rotate(mark.angle);
+
+  context.fillStyle = '#5a3827';
+  context.beginPath();
+  context.moveTo(-halfLength, -halfWidth * 0.38);
+  context.bezierCurveTo(
+    -halfLength * 0.42,
+    -halfWidth,
+    halfLength * 0.48,
+    -halfWidth * 0.74,
+    halfLength,
+    -halfWidth * 0.08,
+  );
+  context.bezierCurveTo(
+    halfLength * 0.52,
+    halfWidth * 0.82,
+    -halfLength * 0.5,
+    halfWidth * 0.72,
+    -halfLength,
+    -halfWidth * 0.38,
+  );
+  context.closePath();
+  context.fill();
+
+  context.fillStyle = 'rgba(211,164,83,0.5)';
+  context.beginPath();
+  context.moveTo(-halfLength * 0.48, -halfWidth * 0.2);
+  context.bezierCurveTo(
+    -halfLength * 0.12,
+    -halfWidth * 0.48,
+    halfLength * 0.42,
+    -halfWidth * 0.36,
+    halfLength * 0.62,
+    -halfWidth * 0.06,
+  );
+  context.bezierCurveTo(
+    halfLength * 0.24,
+    halfWidth * 0.18,
+    -halfLength * 0.22,
+    halfWidth * 0.16,
+    -halfLength * 0.48,
+    -halfWidth * 0.2,
+  );
+  context.closePath();
+  context.fill();
+  context.restore();
 }
 
 function drawLocationVignette(context, location) {

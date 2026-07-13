@@ -5,6 +5,7 @@ import {
   createIllustratedMapPresentation,
   ILLUSTRATED_MAP_RENDERER_STATUS,
   IllustratedMapRenderer,
+  sampleQuillRouteMarks,
 } from '../src/game/render/IllustratedMapRenderer.js';
 
 function recordingContext() {
@@ -164,7 +165,28 @@ describe('code-only illustrated map renderer foundation', () => {
     expect(fullLater.objective.affordance).not.toEqual(fullStart.objective.affordance);
   });
 
-  it('draws organic multi-tone vignettes, continuous quill routes, and warm fog without geometry badges', () => {
+  it('samples deterministic, finite, individually shaped quill marks along authored routes', () => {
+    const points = [
+      { x: 110, y: 430 },
+      { x: 330, y: 292 },
+      { x: 594, y: 412 },
+    ];
+    const first = sampleQuillRouteMarks(points, 0.37);
+    const replayed = sampleQuillRouteMarks(points, 0.37);
+    const sanitized = sampleQuillRouteMarks(points, Number.NaN);
+
+    expect(first).toEqual(replayed);
+    expect(first.length).toBeGreaterThan(16);
+    expect(Object.isFrozen(first)).toBe(true);
+    expect(first.every(Object.isFrozen)).toBe(true);
+    expect(first.every((mark) => Object.values(mark).every(Number.isFinite))).toBe(true);
+    expect(sanitized.every((mark) => Object.values(mark).every(Number.isFinite))).toBe(true);
+    expect(sampleQuillRouteMarks([], 0.4)).toEqual([]);
+    expect(new Set(first.map(({ length }) => length)).size).toBeGreaterThan(6);
+    expect(new Set(first.map(({ width }) => width)).size).toBeGreaterThan(6);
+  });
+
+  it('draws organic multi-tone vignettes, dotted quill routes, and warm fog without geometry badges', () => {
     const lockedModel = buildMapState(chapter1Map, mapSnapshot());
     const unlockedModel = buildMapState(chapter1Map, mapSnapshot({
       unlockedRooms: chapter1Map.locations.map(({ to }) => to.room),
@@ -186,6 +208,8 @@ describe('code-only illustrated map renderer foundation', () => {
     expect(lockedContext.calls.filter(([name]) => name === 'quadraticCurveTo').length)
       .toBeGreaterThan(120);
     expect(lockedContext.calls.some(([name]) => name === 'bezierCurveTo')).toBe(true);
+    expect(lockedContext.calls.filter(([name]) => name === 'translate').length).toBeGreaterThan(35);
+    expect(lockedContext.calls.filter(([name]) => name === 'rotate').length).toBeGreaterThan(35);
     expect(lockedContext.calls.filter(([name]) => name === 'fill').length)
       .toBeGreaterThan(unlockedContext.calls.filter(([name]) => name === 'fill').length);
 
