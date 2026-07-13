@@ -7,6 +7,17 @@ const RIM_LIGHT = 'rgba(255, 224, 158, 0.34)';
 const SHADOW_WASH = 'rgba(37, 26, 35, 0.26)';
 const WARM_BOUNCE = 'rgba(229, 170, 93, 0.18)';
 
+export const VIOLET_STYLE = Object.freeze({
+  hairBase: '#806f62',
+  hairMid: '#695a50',
+  hairShadow: '#514640',
+  hairLight: 'rgba(231, 218, 198, 0.32)',
+  hairRim: 'rgba(220, 205, 184, 0.42)',
+  glasses: '#203d34',
+  glassesLight: '#557266',
+  lenses: 'rgba(190, 218, 202, 0.08)',
+});
+
 export const CHARACTER_REVIEW_SCENES = Object.freeze([
   'character-cast-review',
   'character-pets-review',
@@ -499,7 +510,7 @@ function drawVioletLeg(context, x, stride, behind) {
 }
 
 function drawVioletBackHair(context) {
-  context.fillStyle = '#674737';
+  context.fillStyle = VIOLET_STYLE.hairBase;
   context.beginPath();
   context.moveTo(-34, -168);
   context.bezierCurveTo(-50, -151, -45, -111, -39, -79);
@@ -509,7 +520,7 @@ function drawVioletBackHair(context) {
   context.bezierCurveTo(47, -119, 45, -151, 31, -170);
   context.closePath();
   fillStroke(context);
-  context.fillStyle = '#4c342c';
+  context.fillStyle = VIOLET_STYLE.hairShadow;
   context.globalAlpha = 0.58;
   context.beginPath();
   context.moveTo(5, -184);
@@ -519,7 +530,7 @@ function drawVioletBackHair(context) {
   context.closePath();
   context.fill();
   context.globalAlpha = 1;
-  context.fillStyle = 'rgba(246, 211, 143, 0.17)';
+  context.fillStyle = VIOLET_STYLE.hairLight;
   context.beginPath();
   context.moveTo(-29, -162);
   context.bezierCurveTo(-40, -133, -35, -103, -30, -84);
@@ -527,7 +538,7 @@ function drawVioletBackHair(context) {
   context.bezierCurveTo(-24, -112, -19, -145, -8, -170);
   context.closePath();
   context.fill();
-  context.strokeStyle = 'rgba(223,177,111,0.36)';
+  context.strokeStyle = VIOLET_STYLE.hairRim;
   context.lineWidth = 1.45;
   for (const [x, bend, end] of [[-28, -6, -91], [-14, 5, -78], [2, -4, -82], [18, 6, -79], [30, 3, -91]]) {
     context.beginPath();
@@ -726,6 +737,7 @@ function drawVioletHead(context, blinking, time, pose = 'idle') {
   drawIllustratedEyes(context, -13, -145, 13, -145, '#6a482d', blinking, 5.2, gazeX, gazeY, {
     browLift: Math.sin(time * 0.53) * 0.7,
   });
+  drawVioletGlasses(context);
   context.strokeStyle = '#6d4736';
   context.lineWidth = 1.45;
   context.beginPath();
@@ -746,7 +758,7 @@ function drawVioletHead(context, blinking, time, pose = 'idle') {
   drawFourPointStar(context, 27, -174, 5.2);
   context.stroke();
 
-  context.fillStyle = '#73513b';
+  context.fillStyle = VIOLET_STYLE.hairBase;
   context.beginPath();
   context.moveTo(-36, -154);
   context.bezierCurveTo(-39, -180, -20, -193, 3, -192);
@@ -758,7 +770,7 @@ function drawVioletHead(context, blinking, time, pose = 'idle') {
   context.closePath();
   fillStroke(context);
 
-  context.fillStyle = '#4f372e';
+  context.fillStyle = VIOLET_STYLE.hairShadow;
   context.globalAlpha = 0.72;
   context.beginPath();
   context.moveTo(6, -190);
@@ -769,7 +781,7 @@ function drawVioletHead(context, blinking, time, pose = 'idle') {
   context.fill();
   context.globalAlpha = 1;
 
-  context.strokeStyle = '#684936';
+  context.strokeStyle = VIOLET_STYLE.hairMid;
   context.lineWidth = 6.5;
   context.beginPath();
   context.moveTo(-30, -160);
@@ -777,7 +789,7 @@ function drawVioletHead(context, blinking, time, pose = 'idle') {
   context.moveTo(31, -158);
   context.quadraticCurveTo(42, -136, 31, -111);
   context.stroke();
-  context.strokeStyle = 'rgba(244,213,141,0.32)';
+  context.strokeStyle = VIOLET_STYLE.hairRim;
   context.lineWidth = 1.35;
   context.beginPath();
   context.moveTo(-28, -179);
@@ -788,10 +800,59 @@ function drawVioletHead(context, blinking, time, pose = 'idle') {
   context.quadraticCurveTo(20, -181, 29, -169);
   context.stroke();
 
-  drawFlyaway(context, -22, -188, -42, -202 + Math.sin(time * 3.1) * 3);
-  drawFlyaway(context, -7, -193, -5, -211 + Math.sin(time * 3.5) * 4);
-  drawFlyaway(context, 8, -191, 18, -207 + Math.sin(time * 2.8) * 3);
-  drawFlyaway(context, 25, -183, 44, -194 + Math.sin(time * 3.3) * 3);
+  drawVioletFlyaway(context, -30, -174, -48, -184 + Math.sin(time * 3.1) * 2, -42, -159);
+  drawVioletFlyaway(context, -17, -190, -31, -198 + Math.sin(time * 3.5) * 2, -33, -181);
+  drawVioletFlyaway(context, 11, -189, 27, -196 + Math.sin(time * 2.8) * 1.8, 32, -176);
+}
+
+export function drawVioletGlasses(context) {
+  context.save();
+  context.fillStyle = VIOLET_STYLE.lenses;
+  context.strokeStyle = VIOLET_STYLE.glasses;
+  context.lineWidth = 3.5;
+  context.lineJoin = 'round';
+  context.lineCap = 'round';
+
+  traceVioletLens(context, -32, -155, 31, 20, -0.7);
+  context.fill();
+  context.stroke();
+  traceVioletLens(context, 1, -155, 31, 20, 0.7);
+  context.fill();
+  context.stroke();
+
+  context.beginPath();
+  context.moveTo(-1.5, -147);
+  context.quadraticCurveTo(0, -149.5, 1.5, -147);
+  context.stroke();
+  context.beginPath();
+  context.moveTo(-32, -149);
+  context.quadraticCurveTo(-36, -150, -38, -146);
+  context.moveTo(32, -149);
+  context.quadraticCurveTo(36, -150, 38, -146);
+  context.stroke();
+
+  context.strokeStyle = VIOLET_STYLE.glassesLight;
+  context.lineWidth = 1.25;
+  context.beginPath();
+  context.moveTo(-28, -152.5);
+  context.quadraticCurveTo(-18, -155.5, -7, -152.5);
+  context.moveTo(5, -152.5);
+  context.quadraticCurveTo(16, -155.5, 28, -152.5);
+  context.stroke();
+  context.restore();
+}
+
+function traceVioletLens(context, x, y, width, height, skew) {
+  context.beginPath();
+  context.moveTo(x + 4 + skew, y);
+  context.quadraticCurveTo(x + 1, y, x, y + 4);
+  context.lineTo(x + 1 - skew * 0.3, y + height - 4);
+  context.quadraticCurveTo(x + 1, y + height, x + 5, y + height);
+  context.lineTo(x + width - 4, y + height - 1);
+  context.quadraticCurveTo(x + width, y + height - 1, x + width, y + height - 5);
+  context.lineTo(x + width - 1 + skew, y + 4);
+  context.quadraticCurveTo(x + width - 1, y + 1, x + width - 5, y + 1);
+  context.closePath();
 }
 
 function drawVioletCollar(context, trim) {
@@ -2160,6 +2221,18 @@ function drawFourPointStar(context, x, y, radius) {
   context.lineTo(x - radius * 0.33, y - radius * 0.33);
   context.closePath();
   context.fill();
+}
+
+function drawVioletFlyaway(context, x1, y1, controlX, controlY, x2, y2) {
+  context.strokeStyle = OUTLINE;
+  context.lineWidth = 3.4;
+  context.beginPath();
+  context.moveTo(x1, y1);
+  context.quadraticCurveTo(controlX, controlY, x2, y2);
+  context.stroke();
+  context.strokeStyle = VIOLET_STYLE.hairBase;
+  context.lineWidth = 1.6;
+  context.stroke();
 }
 
 function drawFlyaway(context, x1, y1, x2, y2, color = '#8b6b4a') {
