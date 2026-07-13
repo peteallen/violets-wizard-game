@@ -149,4 +149,33 @@ describe('shared Storybook Standard paper surfaces', () => {
     expect(first.depth).toBe(0);
     expect(replayed.depth).toBe(0);
   });
+
+  it('preserves dark custom paper with restrained gold light instead of a cream wash', () => {
+    const earned = recordingContext();
+    const locked = recordingContext();
+    const rect = { x: 84, y: 102, width: 292, height: 386 };
+
+    drawDeckledParchment(earned, rect, {
+      fill: '#6a4c35',
+      edge: '#e8b44f',
+      ornament: false,
+      lighting: 'dark',
+    });
+    drawDeckledParchment(locked, rect, {
+      fill: '#5a5264',
+      edge: '#9a8fa2',
+      ornament: false,
+      lighting: 'dark',
+    });
+
+    for (const context of [earned, locked]) {
+      const fills = assignedStyles(context, 'fillStyle');
+      expect(fills).toContain('rgba(244,213,141,0.12)');
+      expect(fills).toContain('rgba(18,14,24,0.26)');
+      expect(fills).not.toContain('rgba(255,244,210,0.38)');
+      expect(context.depth).toBe(0);
+    }
+    expect(assignedStyles(earned, 'fillStyle')).toContain('#6a4c35');
+    expect(assignedStyles(locked, 'fillStyle')).toContain('#5a5264');
+  });
 });

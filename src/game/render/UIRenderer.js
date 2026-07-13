@@ -625,6 +625,7 @@ export class UIRenderer {
       fill: entry.earned ? '#6a4c35' : '#5a5264',
       edge: entry.earned ? PALETTE.candle : '#9a8fa2',
       ornament: false,
+      lighting: 'dark',
     });
 
     const portrait = { x: rect.x + 38, y: rect.y + 28, width: rect.width - 76, height: 250 };

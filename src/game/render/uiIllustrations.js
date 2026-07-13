@@ -55,6 +55,7 @@ export function drawDeckledParchment(context, rect, {
   edge = '#a87942',
   shadow = 'rgba(31,20,28,0.5)',
   ornament = true,
+  lighting = 'light',
 } = {}) {
   const { x, y, width, height } = rect;
   context.save();
@@ -68,7 +69,7 @@ export function drawDeckledParchment(context, rect, {
   context.save();
   traceDeckledRect(context, x, y, width, height, 9);
   context.clip();
-  drawParchmentLight(context, x, y, width, height);
+  drawParchmentLight(context, x, y, width, height, lighting);
   drawParchmentGrain(context, x, y, width, height);
   context.restore();
 
@@ -87,8 +88,9 @@ export function drawDeckledParchment(context, rect, {
   context.restore();
 }
 
-function drawParchmentLight(context, x, y, width, height) {
-  context.fillStyle = 'rgba(255,244,210,0.38)';
+function drawParchmentLight(context, x, y, width, height, lighting) {
+  const dark = lighting === 'dark';
+  context.fillStyle = dark ? 'rgba(244,213,141,0.12)' : 'rgba(255,244,210,0.38)';
   context.beginPath();
   context.moveTo(x - 5, y - 4);
   context.bezierCurveTo(
@@ -110,7 +112,7 @@ function drawParchmentLight(context, x, y, width, height) {
   context.closePath();
   context.fill();
 
-  context.fillStyle = 'rgba(105,65,38,0.17)';
+  context.fillStyle = dark ? 'rgba(18,14,24,0.26)' : 'rgba(105,65,38,0.17)';
   context.beginPath();
   context.moveTo(x - 4, y + height * 0.72);
   context.bezierCurveTo(
@@ -132,7 +134,7 @@ function drawParchmentLight(context, x, y, width, height) {
   context.closePath();
   context.fill();
 
-  context.fillStyle = 'rgba(126,82,44,0.1)';
+  context.fillStyle = dark ? 'rgba(219,183,126,0.07)' : 'rgba(126,82,44,0.1)';
   context.beginPath();
   context.moveTo(x + width * 0.79, y + height * 0.06);
   context.bezierCurveTo(
