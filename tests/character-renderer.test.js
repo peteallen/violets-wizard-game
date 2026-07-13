@@ -3,11 +3,13 @@ import {
   CHARACTER_REVIEW_SCENES,
   CharacterRenderer,
   HAGRID_STYLE,
+  KEEPER_STYLE,
   TAILOR_STYLE,
   VIOLET_STYLE,
   WANDMAKER_STYLE,
   drawVioletGlasses,
   sampleCompanionMotion,
+  sampleKeeperMotion,
   sampleTailorMotion,
   sampleVioletMotion,
 } from '../src/game/render/CharacterRenderer.js';
@@ -305,6 +307,116 @@ describe('illustrated character renderer', () => {
     expect(speakingMotion.handLift).toBeGreaterThan(idleMotion.handLift);
     expect(Math.abs(reducedMotion.handLift)).toBeLessThan(Math.abs(speakingMotion.handLift));
     expect(Math.abs(reducedMotion.tapeSway)).toBeLessThan(Math.abs(speakingMotion.tapeSway));
+  });
+
+  it('renders the Menagerie keeper as one organic animal carer shared by world and portrait', () => {
+    expect(KEEPER_STYLE).toMatchObject({
+      coatBase: '#496653',
+      coatShadow: '#30483b',
+      apronBase: '#8c6344',
+      pouchBase: '#765139',
+      gauntletBase: '#79583f',
+      brushWood: '#6d4933',
+      bristle: '#d4bc91',
+      hairBase: '#a9633a',
+      hairShadow: '#6e402f',
+      skin: '#ca906d',
+      iris: '#5b5638',
+    });
+
+    const renderer = new CharacterRenderer();
+    const world = recordingContext();
+    const replayed = recordingContext();
+    const idle = recordingContext();
+    const character = {
+      kind: 'keeper', x: 180, y: 610, facing: 'right', pose: 'speaking',
+    };
+    renderer.draw(world, character, 1.375);
+    renderer.draw(replayed, character, 1.375);
+    renderer.draw(idle, { ...character, pose: 'idle' }, 1.375);
+
+    expect(world.calls).toEqual(replayed.calls);
+    expect(world.calls).not.toEqual(idle.calls);
+    expect(world.depth).toBe(0);
+    expect(world.calls).toContainEqual(['scale', 1.04, 1.04]);
+    expect(world.calls.filter(([name]) => name === 'bezierCurveTo').length).toBeGreaterThan(145);
+    expect(world.calls.some(([name]) => [
+      'arc', 'ellipse', 'fillRect', 'rect', 'roundRect', 'strokeRect',
+    ].includes(name))).toBe(false);
+    expect(world.calls.every(([, ...values]) => values.every(
+      (value) => typeof value !== 'number' || Number.isFinite(value),
+    ))).toBe(true);
+
+    for (const style of [
+      KEEPER_STYLE.coatBase,
+      KEEPER_STYLE.coatMid,
+      KEEPER_STYLE.coatShadow,
+      KEEPER_STYLE.coatLight,
+      KEEPER_STYLE.apronBase,
+      KEEPER_STYLE.apronMid,
+      KEEPER_STYLE.apronShadow,
+      KEEPER_STYLE.pouchBase,
+      KEEPER_STYLE.pouchShadow,
+      KEEPER_STYLE.gauntletBase,
+      KEEPER_STYLE.gauntletShadow,
+      KEEPER_STYLE.brushWood,
+      KEEPER_STYLE.bristle,
+      KEEPER_STYLE.featherBase,
+      KEEPER_STYLE.hairBase,
+      KEEPER_STYLE.hairMid,
+      KEEPER_STYLE.hairShadow,
+      KEEPER_STYLE.hairLight,
+      KEEPER_STYLE.skin,
+      KEEPER_STYLE.iris,
+      KEEPER_STYLE.rim,
+    ]) expect(world.styles.some(([, value]) => value === style)).toBe(true);
+    expect(world.styles.filter(([, style]) => style === KEEPER_STYLE.iris)).toHaveLength(2);
+
+    const portrait = recordingContext();
+    renderer.drawPortrait(portrait, {
+      speaker: 'Menagerie keeper', pose: 'speaking', x: 80, y: 90,
+    }, 1.375);
+    for (const style of [
+      KEEPER_STYLE.coatBase,
+      KEEPER_STYLE.apronBase,
+      KEEPER_STYLE.pouchBase,
+      KEEPER_STYLE.gauntletBase,
+      KEEPER_STYLE.brushWood,
+      KEEPER_STYLE.bristle,
+      KEEPER_STYLE.hairBase,
+      KEEPER_STYLE.hairShadow,
+      KEEPER_STYLE.iris,
+      KEEPER_STYLE.rim,
+    ]) expect(portrait.styles.some(([, value]) => value === style)).toBe(true);
+    expect(portrait.styles.filter(([, style]) => style === KEEPER_STYLE.iris)).toHaveLength(2);
+    expect(portrait.depth).toBe(0);
+
+    const blink = recordingContext();
+    renderer.draw(blink, { ...character, pose: 'idle' }, 3.2);
+    expect(blink.styles.filter(([, style]) => style === KEEPER_STYLE.iris)).toHaveLength(0);
+    expect(blink.calls.some(([name]) => name === 'arc' || name === 'ellipse')).toBe(false);
+
+    const facingLeft = recordingContext();
+    renderer.draw(facingLeft, { ...character, facing: 'left' }, 1.375);
+    expect(facingLeft.calls).toContainEqual(['scale', -1.04, 1.04]);
+    expect(facingLeft.calls.filter((call) => (
+      call[0] === 'scale' && call[1] === -1 && call[2] === 1
+    )).length).toBeGreaterThanOrEqual(1);
+
+    const speakingMotion = sampleKeeperMotion({ time: 1.125, pose: 'speaking' });
+    const repeatedMotion = sampleKeeperMotion({ time: 1.125, pose: 'speaking' });
+    const idleMotion = sampleKeeperMotion({ time: 1.125, pose: 'idle' });
+    const reducedMotion = sampleKeeperMotion({
+      time: 1.125, pose: 'speaking', reducedMotion: true,
+    });
+    const sanitizedMotion = sampleKeeperMotion({ time: Number.NaN, pose: 'speaking' });
+    expect(repeatedMotion).toEqual(speakingMotion);
+    expect(Object.values(speakingMotion).every(Number.isFinite)).toBe(true);
+    expect(Object.values(sanitizedMotion).every(Number.isFinite)).toBe(true);
+    expect(speakingMotion.gloveLift).toBeGreaterThan(idleMotion.gloveLift);
+    expect(Math.abs(reducedMotion.gloveLift)).toBeLessThan(Math.abs(speakingMotion.gloveLift));
+    expect(Math.abs(reducedMotion.brushTilt)).toBeLessThan(Math.abs(speakingMotion.brushTilt));
+    expect(Math.abs(reducedMotion.pouchSway)).toBeLessThan(Math.abs(speakingMotion.pouchSway));
   });
 
   it('builds Violet from her full storybook palette and hand-drawn dark-green glasses', () => {
