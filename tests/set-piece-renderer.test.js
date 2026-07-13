@@ -1,10 +1,12 @@
 import { describe, expect, it, vi } from 'vitest';
+import { chapter1LetterLines } from '../src/game/content/chapters/ch1-letter.js';
 import {
   BRICK_GRID,
   SetPieceRenderer,
   brickTileState,
   brickTileSourceRect,
   deliveryLetteringAlpha,
+  drawReadableInvitation,
   letterOpenState,
   ticketPresentationState,
   vaseShardPose,
@@ -53,6 +55,20 @@ describe('SetPieceRenderer dispatch', () => {
     expect(reduced.scale).toBe(1.03);
     expect(reduced.foldTop).toBe(1);
     expect(reduced.foldBottom).toBe(1);
+  });
+
+  it('renders only the canonical narrated wording on the open letter', () => {
+    const fillText = vi.fn();
+    const context = new Proxy({ fillText, globalAlpha: 1 }, {
+      get(target, property) {
+        if (!Object.hasOwn(target, property)) target[property] = vi.fn();
+        return target[property];
+      },
+    });
+
+    drawReadableInvitation(context);
+
+    expect(fillText.mock.calls.map(([text]) => text)).toEqual(chapter1LetterLines);
   });
 
   it('opens an exact ten-by-eight brick grid from the center before the corners', () => {

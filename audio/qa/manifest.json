@@ -208,8 +208,8 @@
     "voice/ch1/wandmaker/chosen": {
       "transcript": "wandChosen.json",
       "audio": "voice/ch1/wandmaker/chosen.mp3",
-      "bytes": 41839,
-      "sha256": "c3a04cc81122e7f22530ea36c00a508799e0f3a57f32593dc0ccc5b2aa4b6289"
+      "bytes": 15090,
+      "sha256": "63e9e65da53b8cb62dcd2df0b70298efc94d2840504f220671654a10a6828ec0"
     },
     "voice/ch1/wandmaker/welcome": {
       "transcript": "ch1/wandmaker/welcome.json",

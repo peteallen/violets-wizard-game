@@ -11,6 +11,10 @@ import {
   chapter1Map,
   chapter1ResumeRecaps,
 } from '../src/game/content/chapters/ch1.js';
+import {
+  chapter1LetterLines,
+  chapter1LetterNarration,
+} from '../src/game/content/chapters/ch1-letter.js';
 import { chapter2, chapter2AssetKeys } from '../src/game/content/chapters/ch2.js';
 import {
   chapterAvailability,
@@ -97,6 +101,27 @@ describe('chapter content contracts', () => {
     expect(chapter1Flags).toContain('ch1.complete');
     expect(chapter1.rooms['ch1.ollivanders'].hotspots.find((hotspot) => hotspot.id === 'ollivanders.cardMorgana')).toBeTruthy();
     expect(chapter1.rooms['ch1.menagerie'].hotspots.find((hotspot) => hotspot.id === 'menagerie.cardDumbledore')).toBeTruthy();
+  });
+
+  it('draws exactly the same original letter wording that the narrator reads', () => {
+    const letter = chapter1.dialogues['ch1.letter.read'];
+    const narratedText = [
+      letter.nodes.invitation.text,
+      letter.nodes.waiting.text,
+    ];
+
+    expect(narratedText).toEqual(chapter1LetterNarration);
+    expect(chapter1LetterLines.join(' ')).toBe(narratedText.join(' '));
+    expect(chapter1LetterLines.join(' ')).not.toContain('We await your owl.');
+  });
+
+  it('keeps the chosen-wand reveal on the Wandmaker’s whispery Curious beat', () => {
+    expect(chapter1.dialogues['ch1.wandmaker.chosen'].nodes.chosen).toMatchObject({
+      speaker: 'npc.wandmaker',
+      voice: 'voice/ch1/wandmaker/chosen',
+      text: 'Curious…',
+      caption: 'Your wand!',
+    });
   });
 
   it('lets pet selection be reconsidered before recording a permanent name', () => {

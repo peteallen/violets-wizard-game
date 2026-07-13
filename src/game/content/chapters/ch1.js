@@ -1,3 +1,5 @@
+import { chapter1LetterNarration } from './ch1-letter.js';
+
 const noCondition = Object.freeze({});
 
 function when({ allFlags = [], noFlags = [], profileEquals } = {}) {
@@ -75,14 +77,14 @@ const dialogueGraphs = [
       invitation: voiceLine({
         speaker: 'npc.narrator',
         voice: 'voice/ch1/narrator/letterInvitation',
-        text: 'Dear Violet, you are invited to Hogwarts School of Witchcraft and Wizardry.',
+        text: chapter1LetterNarration[0],
         caption: 'HOGWARTS!',
         next: 'waiting',
       }),
       waiting: voiceLine({
         speaker: 'npc.narrator',
         voice: 'voice/ch1/narrator/letterWaiting',
-        text: 'Your place is waiting. Bring your brightest curiosity.',
+        text: chapter1LetterNarration[1],
         caption: 'For Violet',
         next: 'finish',
       }),
@@ -218,7 +220,7 @@ const dialogueGraphs = [
       chosen: voiceLine({
         speaker: 'npc.wandmaker',
         voice: 'voice/ch1/wandmaker/chosen',
-        text: 'There you are. The wand has chosen its witch.',
+        text: 'Curious…',
         caption: 'Your wand!',
         next: 'wow',
       }),

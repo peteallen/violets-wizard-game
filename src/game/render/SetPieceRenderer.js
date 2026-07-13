@@ -1,5 +1,6 @@
 import { easeInOutCubic, easeOutBack, easeOutCubic, lerp } from '../core/math.js';
 import { PALETTE, WORLD } from '../config.js';
+import { chapter1LetterLines } from '../content/chapters/ch1-letter.js';
 import { drawVectorOwl, sampleOwlDelivery } from './OwlRenderer.js';
 
 export const BRICK_GRID = Object.freeze({
@@ -736,22 +737,19 @@ function drawInvitation(context, state) {
   context.globalAlpha *= topReadable;
   drawInvitationOwlCrest(context, 0, -158);
   context.fillStyle = '#4d342b';
-  context.textAlign = 'center';
+  context.textAlign = 'left';
   context.font = '700 28px "Andika", "Trebuchet MS", sans-serif';
-  context.fillText('HOGWARTS SCHOOL', 0, -111);
-  context.font = '700 17px "Andika", "Trebuchet MS", sans-serif';
-  context.fillText('OF WITCHCRAFT AND WIZARDRY', 0, -84);
+  context.fillText(chapter1LetterLines[0], -270, -97);
   context.restore();
 
   context.save();
   context.globalAlpha *= centerReadable;
   context.fillStyle = '#4d342b';
   context.textAlign = 'left';
-  context.font = '700 31px "Andika", "Trebuchet MS", sans-serif';
-  context.fillText('Dear Violet,', -270, -25);
   context.font = '700 23px "Andika", "Trebuchet MS", sans-serif';
-  context.fillText('We are delighted to offer you a place', -270, 21);
-  context.fillText('at Hogwarts. Term begins 1 September.', -270, 55);
+  context.fillText(chapter1LetterLines[1], -270, -38);
+  context.fillText(chapter1LetterLines[2], -270, -2);
+  context.fillText(chapter1LetterLines[3], -270, 49);
   context.restore();
 
   context.save();
@@ -759,10 +757,7 @@ function drawInvitation(context, state) {
   context.fillStyle = '#4d342b';
   context.textAlign = 'left';
   context.font = '700 23px "Andika", "Trebuchet MS", sans-serif';
-  context.fillText('Bring this letter — and your owl post.', -270, 105);
-  context.textAlign = 'right';
-  context.font = '700 21px "Andika", "Trebuchet MS", sans-serif';
-  context.fillText('We await your owl.', 270, 157);
+  context.fillText(chapter1LetterLines[4], -270, 115);
   context.restore();
 }
 
