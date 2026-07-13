@@ -8,6 +8,12 @@ import { SoundEngine } from './core/SoundEngine.js';
 import { clamp, distance, easeInOutCubic } from './core/math.js';
 import { SeededRandom } from './core/rng.js';
 import { CharacterRenderer } from './render/CharacterRenderer.js';
+import {
+  CHAPTER_PREVIEW_ACTIONS,
+  ChapterPreviewRenderer,
+  chapterPreviewActionAt,
+  chapterPreviewLayout,
+} from './render/ChapterPreviewRenderer.js';
 import { GuideFootprintRenderer } from './render/GuideFootprintRenderer.js';
 import { Particles } from './render/Particles.js';
 import { RoomRenderer } from './render/RoomRenderer.js';
@@ -33,6 +39,13 @@ const LETTER_NARRATION_CLIPS = Object.freeze(
     return Object.freeze({ voice: node.voice, text: node.text });
   }),
 );
+
+function isChapterTwoPreview(world, state) {
+  return Boolean(
+    world?.chapter?.id === 'ch2'
+    && state?.roomId === 'ch2.previewRoom',
+  );
+}
 
 export class Game {
   constructor(canvas, options = {}) {
@@ -91,6 +104,7 @@ export class Game {
     this.roomRenderer = new RoomRenderer({ resolveAsset });
     this.worldPropRenderer = new WorldPropRenderer();
     this.characterRenderer = new CharacterRenderer();
+    this.chapterPreviewRenderer = options.chapterPreviewRenderer ?? new ChapterPreviewRenderer();
     this.guideFootprintRenderer = new GuideFootprintRenderer();
     this.uiRenderer = new UIRenderer({ resolveAsset });
     this.setPieceRenderer = new SetPieceRenderer({ resolveAsset });
@@ -376,6 +390,28 @@ export class Game {
       return;
     }
 
+    if (state.overlay?.surface === 'parent') {
+      this.handleOverlayTap(point, state);
+      return;
+    }
+
+    if (isChapterTwoPreview(this.world, state) && !state.setPiece) {
+      const actionId = chapterPreviewActionAt(point);
+      if (actionId === CHAPTER_PREVIEW_ACTIONS.startFresh) {
+        this.sound.playSfx('sfx/ui/parchment', 'chime');
+        this.openParentPanel('confirm-start-over', null, { returnTo: 'chapter-preview' });
+        return;
+      }
+      if (state.dialogue?.type === 'choice') {
+        const choice = state.dialogue.choices.find((candidate) => candidate.id === actionId);
+        if (!choice) return;
+        this.sound.playSfx('sfx/ui/choice', 'chime');
+        this.world.advanceDialogue(choice.id);
+        this.processWorldEvents();
+        return;
+      }
+    }
+
     if (state.setPiece) {
       this.sound.playSfx('sfx/ui/tap', 'tap');
       return;
@@ -638,10 +674,11 @@ export class Game {
     }
   }
 
-  openParentPanel(page = 'play', notice = null) {
+  openParentPanel(page = 'play', notice = null, { returnTo = null } = {}) {
     if (!this.world) return false;
     this.parentGateProgress = 0;
     this.world.overlay = { surface: 'parent', page, notice };
+    if (returnTo) this.world.overlay.returnTo = returnTo;
     this.render();
     return true;
   }
@@ -659,7 +696,10 @@ export class Game {
   handleParentPanelTap(point, overlay) {
     if (overlay.page === 'confirm-start-over' || overlay.page === 'confirm-restore') {
       if (pointInUiRect(point, UI_RECTS.parentCancelConfirm)) {
-        this.openParentPanel('save');
+        if (overlay.returnTo === 'chapter-preview') {
+          this.world.closeOverlay();
+          this.render();
+        } else this.openParentPanel('save');
         this.sound.playSfx('sfx/ui/page', 'tap');
         return;
       }
@@ -1433,18 +1473,20 @@ export class Game {
     const brickWallActive = setPieceId.includes('brick');
     const behindCastSetPieceActive = brickWallActive || setPieceId.includes('wandchaos') || setPieceId.includes('wand-chaos');
 
-    if (this.world.chapter.id === 'ch2' || state.roomId === 'ch1.chapterCardRoom') {
+    const chapterTwoPreview = isChapterTwoPreview(this.world, state);
+    if (chapterTwoPreview || state.roomId === 'ch1.chapterCardRoom') {
       this.roomRenderer.draw(context, room, state, this.simTime, { x: 0 });
-      if (!(this.world.chapter.id === 'ch2' && state.setPiece)) {
-        const card = this.world.chapter.id === 'ch2'
-          ? {
-              eyebrow: 'Chapter Two',
-              title: 'Platform Nine and Three-Quarters',
-              subtitle: 'Coming next: the Hogwarts Express!',
-              buttonLabel: state.dialogue?.type === 'choice' ? null : 'Choose below',
-            }
-          : { eyebrow: 'Chapter One Complete', title: 'Platform Nine and Three-Quarters', subtitle: 'Next time: the Hogwarts Express!' };
-        this.uiRenderer.drawChapterCard(context, card, this.simTime, {
+      if (chapterTwoPreview && !state.setPiece) {
+        this.chapterPreviewRenderer.draw(context, {
+          choices: state.dialogue?.choices ?? [],
+          showChoices: state.dialogue?.type === 'choice',
+        });
+      } else if (!chapterTwoPreview) {
+        this.uiRenderer.drawChapterCard(context, {
+          eyebrow: 'Chapter One Complete',
+          title: 'Platform Nine and Three-Quarters',
+          subtitle: 'Next time: the Hogwarts Express!',
+        }, this.simTime, {
           paintedBackground: true,
           reducedMotion: this.reducedMotion,
         });
@@ -1475,7 +1517,7 @@ export class Game {
         dialogueSceneContext(state, this.resumeRecap),
       );
     } else {
-      if (state.dialogue) {
+      if (state.dialogue && !(chapterTwoPreview && state.dialogue.type === 'choice')) {
         this.uiRenderer.drawDialogue(
           context,
           state.dialogue,
@@ -1634,7 +1676,17 @@ export class Game {
       { id: 'hud.wand', x: 1198, y: 638 },
     );
     if (this.shouldShowReplayExit()) targets.push(semanticRect('replay.exit', UI_RECTS.replayExit));
-    if (state.dialogue?.type === 'line') {
+    const chapterTwoPreview = isChapterTwoPreview(this.world, state);
+    if (chapterTwoPreview && !state.setPiece && !state.overlay) {
+      const previewLayout = chapterPreviewLayout();
+      targets.push(semanticRect('chapter.preview.startFresh', previewLayout.startFresh));
+      if (state.dialogue?.type === 'choice') {
+        for (const action of previewLayout.choices) {
+          targets.push(semanticRect(`chapter.preview.${action.id}`, action.rect));
+        }
+      }
+    }
+    if (state.dialogue?.type === 'line' && !state.overlay) {
       const layout = dialogueScrollLayout(dialogueSceneContext(state));
       targets.push(
         semanticRect('dialogue.replay', layout.replayRect),
@@ -1642,7 +1694,7 @@ export class Game {
       );
     }
     for (const choice of state.dialogue?.choices ?? []) {
-      if (choice.__rect) targets.push({ id: `dialogue.${choice.id}`, x: choice.__rect.x + choice.__rect.width / 2, y: choice.__rect.y + choice.__rect.height / 2 });
+      if (!chapterTwoPreview && choice.__rect) targets.push({ id: `dialogue.${choice.id}`, x: choice.__rect.x + choice.__rect.width / 2, y: choice.__rect.y + choice.__rect.height / 2 });
     }
     if (state.overlay?.surface === 'satchel') {
       targets.push(

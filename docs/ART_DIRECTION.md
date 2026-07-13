@@ -70,6 +70,8 @@ Uncluttered but highly stylized — the HUD should look like objects from the wo
 - **Spell cards** in the fan: parchment with the quill-drawn spell icon, the one-word name in a friendly rounded hand, and the spell's signature color as the wax seal.
 - **Incantation ribbons & rune-tiles** (the learning layer): floating parchment ribbon with letter slots; letter tiles as small stone runes with gold-leaf letters that flip and chime into place; completed words ignite in the spell's color.
 - **Caption chips:** cream parchment chip, large friendly rounded lettering (high contrast, ~44px virtual minimum), max three words, bottom-center above the HUD line.
+- **Dialogue card:** one unrotated asymmetric deckled parchment, never a rolled scroll. The speaking portrait is physically attached half outside the edge nearest the on-screen speaker; the short caption is printed directly on the parchment; **Again** and advance are separate full-size wax/brass controls on the opposite edge. No nested caption box and no floating “bookend” curls.
+- **Chapter preview:** preserve the painted hero image between a compact upper title plaque and one bottom action shelf. Preview actions never cover the title or focal painting, and decorative character/animal icons appear only when they communicate an action — never as corner filler.
 - **Type:** one bundled open-license rounded storybook face (candidates: Baloo 2, Quicksand, or Andika — pick during Ch. 1 build; Andika is designed for early readers) — self-hosted, no CDN. Display flourishes get a second decorative face used *only* at title/chapter cards.
 - **Motion language:** everything eases (no linear tweens); UI enters with a soft overshoot (`easeOutBack`); nothing flashes hard; reduced-motion swaps overshoots for fades.
 

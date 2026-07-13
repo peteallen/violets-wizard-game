@@ -47,8 +47,8 @@ The duel block is called simply **"Shield"** — one word she can read, no spell
 
 ## Dialogue: voice-first
 
-- The speaking character gets an animated portrait frame; the line plays **aloud** (ElevenLabs, British cast — see [AUDIO_DIRECTION.md](AUDIO_DIRECTION.md)); a caption chip shows **1–3 easy words** distilling the line ("Follow me!", "A troll!", "Well done!").
-- Tap anywhere to advance (a gently pulsing arrow teaches this); a replay button re-plays the current line — kids love replaying, and it doubles as "I missed it."
+- The speaking character gets an animated portrait attached to the edge of one coherent deckled dialogue card; the line plays **aloud** (ElevenLabs, British cast — see [AUDIO_DIRECTION.md](AUDIO_DIRECTION.md)); **1–3 easy words** are printed directly on that card to distill the line ("Follow me!", "A troll!", "Well done!").
+- Tap the separate brass advance medallion — or, for child-friendly forgiveness, anywhere outside **Again** — to continue; the disjoint 88×88 **Again** control re-plays the current line, which kids love and doubles as "I missed it." Rolled scroll ends and nested caption panels are not part of the dialogue language.
 - Story objects that are meant to be read or studied, beginning with Violet’s Hogwarts letter, remain on screen until an explicit voiced action is chosen. Dialogue never covers them on an automatic timer.
 - **Player choices are 2–3 icon cards** with at most 1–2 word labels. There are no wrong answers ever — choices color the response, unlock flavor, or pick cosmetics; they never fail a quest.
 - Caption text doubles as reading practice: consistent words recur (Look, Go, Help, Wow) so she starts recognizing them.

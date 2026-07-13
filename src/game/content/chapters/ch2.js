@@ -116,7 +116,7 @@ export const chapter2 = {
       timeline: { tracks: [] },
       verification: {
         keyframes: [0, 1, 4],
-        checklist: ['The ticket remains legible.', 'Both choices are visible after narration.', 'No control implies that Chapter 2 is already playable.'],
+        checklist: ['The ticket remains legible.', 'The compact title plaque and bottom action shelf never overlap.', 'The platform painting remains visible between title and actions.', 'Explore, Play again, and Start fresh each have a distinct generous target.', 'No generic owl ornament or choice card is present.', 'Start fresh opens confirmation before clearing progress.', 'No control implies that Chapter 2 is already playable.'],
       },
       onComplete: [{ type: 'dialogue.start', script: 'ch2.preview' }],
     },
