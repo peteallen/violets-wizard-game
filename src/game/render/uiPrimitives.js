@@ -5,15 +5,84 @@ const MUTED_INK = '#6b5744';
 const PAGE_EDGE = '#b68b55';
 const PAGE_SHADOW = '#2b2034';
 const WAX_DARK = '#4d2430';
+const PAGE_HIGHLIGHT = 'rgba(255,244,210,0.42)';
+const PAGE_SHADE = 'rgba(93,58,39,0.18)';
+const PAGE_GRAIN = Object.freeze([
+  [0.07, 0.18, 0.19, -0.012], [0.16, 0.34, 0.14, 0.015], [0.1, 0.53, 0.23, -0.009],
+  [0.3, 0.72, 0.17, 0.013], [0.42, 0.24, 0.2, -0.014], [0.51, 0.47, 0.15, 0.011],
+  [0.62, 0.63, 0.22, -0.012], [0.73, 0.16, 0.16, 0.014], [0.79, 0.39, 0.14, -0.01],
+  [0.71, 0.82, 0.21, 0.009],
+]);
 
 export function traceRoundedRect(context, x, y, width, height, radius) {
-  const r = Math.min(radius, width / 2, height / 2);
+  const r = Math.max(0, Math.min(radius, width / 2, height / 2));
+  const wobble = Math.min(r * 0.14, width * 0.018, height * 0.026, 3.2);
   context.beginPath();
-  context.moveTo(x + r, y);
-  context.arcTo(x + width, y, x + width, y + height, r);
-  context.arcTo(x + width, y + height, x, y + height, r);
-  context.arcTo(x, y + height, x, y, r);
-  context.arcTo(x, y, x + width, y, r);
+  context.moveTo(x + r * 0.9, y + wobble * 0.3);
+  context.bezierCurveTo(
+    x + width * 0.3,
+    y,
+    x + width * 0.69,
+    y + wobble * 0.76,
+    x + width - r * 0.96,
+    y + wobble * 0.22,
+  );
+  context.bezierCurveTo(
+    x + width - r * 0.36,
+    y,
+    x + width,
+    y + r * 0.4,
+    x + width - wobble * 0.08,
+    y + r * 1.03,
+  );
+  context.bezierCurveTo(
+    x + width,
+    y + height * 0.33,
+    x + width - wobble * 0.7,
+    y + height * 0.68,
+    x + width - wobble * 0.18,
+    y + height - r * 0.92,
+  );
+  context.bezierCurveTo(
+    x + width,
+    y + height - r * 0.34,
+    x + width - r * 0.42,
+    y + height,
+    x + width - r * 1.04,
+    y + height - wobble * 0.18,
+  );
+  context.bezierCurveTo(
+    x + width * 0.7,
+    y + height,
+    x + width * 0.31,
+    y + height - wobble * 0.66,
+    x + r * 0.94,
+    y + height - wobble * 0.12,
+  );
+  context.bezierCurveTo(
+    x + r * 0.34,
+    y + height,
+    x,
+    y + height - r * 0.43,
+    x + wobble * 0.12,
+    y + height - r * 1.01,
+  );
+  context.bezierCurveTo(
+    x,
+    y + height * 0.69,
+    x + wobble * 0.58,
+    y + height * 0.32,
+    x + wobble * 0.16,
+    y + r * 0.96,
+  );
+  context.bezierCurveTo(
+    x,
+    y + r * 0.35,
+    x + r * 0.39,
+    y,
+    x + r * 0.9,
+    y + wobble * 0.3,
+  );
   context.closePath();
 }
 
@@ -32,24 +101,36 @@ export function drawStorybookSpread(context, rect, { title, subtitle = null } = 
   context.fillStyle = '#60442f';
   traceRoundedRect(context, x - 8, y - 7, width + 16, height + 14, 46);
   context.fill();
+  drawBookCoverLight(context, x - 2, y - 1, width + 4, height + 2);
   context.strokeStyle = PALETTE.candle;
   context.lineWidth = 5;
+  traceRoundedRect(context, x - 8, y - 7, width + 16, height + 14, 46);
   context.stroke();
 
-  traceOpenBookPage(context, x, y, width / 2 + 10, height, 'left');
-  context.fillStyle = '#f3e6ca';
+  drawOpenBookPage(context, x, y, width / 2 + 10, height, 'left', '#f3e6ca');
+  drawOpenBookPage(context, middle - 10, y, width / 2 + 10, height, 'right', PALETTE.parchment);
+
+  context.fillStyle = 'rgba(73,45,33,0.13)';
+  context.beginPath();
+  context.moveTo(middle - 7, y + 22);
+  context.bezierCurveTo(
+    middle - 23,
+    y + height * 0.31,
+    middle - 20,
+    y + height * 0.72,
+    middle - 6,
+    y + height - 25,
+  );
+  context.bezierCurveTo(
+    middle + 2,
+    y + height * 0.76,
+    middle + 2,
+    y + height * 0.25,
+    middle - 7,
+    y + 22,
+  );
+  context.closePath();
   context.fill();
-  context.strokeStyle = PAGE_EDGE;
-  context.lineWidth = 4;
-  context.stroke();
-
-  traceOpenBookPage(context, middle - 10, y, width / 2 + 10, height, 'right');
-  context.fillStyle = PALETTE.parchment;
-  context.fill();
-  context.strokeStyle = PAGE_EDGE;
-  context.lineWidth = 4;
-  context.stroke();
-
   context.strokeStyle = 'rgba(92,62,42,0.34)';
   context.lineWidth = 3;
   context.beginPath();
@@ -72,6 +153,138 @@ export function drawStorybookSpread(context, rect, { title, subtitle = null } = 
     context.fillText(subtitle, middle, y + 94);
   }
   context.restore();
+}
+
+function drawBookCoverLight(context, x, y, width, height) {
+  context.fillStyle = 'rgba(226,174,103,0.2)';
+  context.beginPath();
+  context.moveTo(x + 34, y + 9);
+  context.bezierCurveTo(
+    x + width * 0.29,
+    y + 2,
+    x + width * 0.57,
+    y + 8,
+    x + width * 0.7,
+    y + height * 0.12,
+  );
+  context.bezierCurveTo(
+    x + width * 0.52,
+    y + height * 0.17,
+    x + width * 0.25,
+    y + height * 0.2,
+    x + 18,
+    y + height * 0.34,
+  );
+  context.bezierCurveTo(x + 12, y + height * 0.2, x + 16, y + 24, x + 34, y + 9);
+  context.closePath();
+  context.fill();
+
+  context.fillStyle = 'rgba(37,24,29,0.2)';
+  context.beginPath();
+  context.moveTo(x + width * 0.44, y + height * 0.87);
+  context.bezierCurveTo(
+    x + width * 0.68,
+    y + height * 0.82,
+    x + width * 0.89,
+    y + height * 0.69,
+    x + width - 15,
+    y + height * 0.6,
+  );
+  context.bezierCurveTo(
+    x + width - 10,
+    y + height * 0.79,
+    x + width - 22,
+    y + height - 10,
+    x + width - 42,
+    y + height - 7,
+  );
+  context.bezierCurveTo(
+    x + width * 0.78,
+    y + height - 3,
+    x + width * 0.58,
+    y + height - 7,
+    x + width * 0.44,
+    y + height * 0.87,
+  );
+  context.closePath();
+  context.fill();
+}
+
+function drawOpenBookPage(context, x, y, width, height, side, fill) {
+  traceOpenBookPage(context, x, y, width, height, side);
+  context.fillStyle = fill;
+  context.fill();
+
+  context.save();
+  traceOpenBookPage(context, x, y, width, height, side);
+  context.clip();
+  context.fillStyle = PAGE_HIGHLIGHT;
+  context.beginPath();
+  context.moveTo(x - 4, y - 3);
+  context.bezierCurveTo(
+    x + width * 0.28,
+    y + 2,
+    x + width * 0.58,
+    y - 1,
+    x + width * 0.69,
+    y + height * 0.14,
+  );
+  context.bezierCurveTo(
+    x + width * 0.56,
+    y + height * 0.25,
+    x + width * 0.23,
+    y + height * 0.3,
+    x - 4,
+    y + height * 0.38,
+  );
+  context.closePath();
+  context.fill();
+
+  context.fillStyle = PAGE_SHADE;
+  context.beginPath();
+  context.moveTo(x - 3, y + height * 0.73);
+  context.bezierCurveTo(
+    x + width * 0.31,
+    y + height * 0.68,
+    x + width * 0.7,
+    y + height * 0.79,
+    x + width + 4,
+    y + height * 0.64,
+  );
+  context.bezierCurveTo(
+    x + width + 3,
+    y + height * 0.87,
+    x + width * 0.74,
+    y + height + 5,
+    x - 3,
+    y + height + 3,
+  );
+  context.closePath();
+  context.fill();
+
+  context.strokeStyle = 'rgba(111,75,43,0.12)';
+  context.lineWidth = 1.2;
+  context.lineCap = 'round';
+  for (const [grainX, grainY, grainLength, grainBend] of PAGE_GRAIN) {
+    const startX = x + width * grainX;
+    const startY = y + height * grainY;
+    const length = width * grainLength;
+    context.beginPath();
+    context.moveTo(startX, startY);
+    context.quadraticCurveTo(
+      startX + length * 0.48,
+      startY + height * grainBend,
+      startX + length,
+      startY + height * grainBend * 0.36,
+    );
+    context.stroke();
+  }
+  context.restore();
+
+  context.strokeStyle = PAGE_EDGE;
+  context.lineWidth = 4;
+  traceOpenBookPage(context, x, y, width, height, side);
+  context.stroke();
 }
 
 export function drawRibbonTab(context, rect, label, { icon = '', active = false } = {}) {
@@ -199,18 +412,19 @@ function traceOpenBookPage(context, x, y, width, height, side) {
   if (side === 'left') {
     context.moveTo(x + 28, y);
     context.quadraticCurveTo(x + 8, y + 5, x, y + 30);
-    context.lineTo(x + 7, y + height - 35);
+    context.quadraticCurveTo(x - 1, y + height * 0.48, x + 7, y + height - 35);
     context.quadraticCurveTo(x + 12, y + height, x + 42, y + height);
     context.quadraticCurveTo(inner - 48, y + height - 18, inner, y + height - 2);
-    context.lineTo(inner, y + 18);
+    context.quadraticCurveTo(inner - 5, y + height * 0.5, inner, y + 18);
     context.quadraticCurveTo(inner - 52, y + 3, x + 28, y);
   } else {
     context.moveTo(inner, y + 18);
     context.quadraticCurveTo(x + 52, y + 3, x + width - 28, y);
     context.quadraticCurveTo(x + width - 8, y + 5, x + width, y + 30);
-    context.lineTo(x + width - 7, y + height - 35);
+    context.quadraticCurveTo(x + width + 1, y + height * 0.48, x + width - 7, y + height - 35);
     context.quadraticCurveTo(x + width - 12, y + height, x + width - 42, y + height);
     context.quadraticCurveTo(x + 48, y + height - 18, inner, y + height - 2);
+    context.quadraticCurveTo(inner + 5, y + height * 0.5, inner, y + 18);
   }
   context.closePath();
 }

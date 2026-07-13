@@ -33,10 +33,20 @@ export function traceDeckledRect(context, x, y, width, height, depth = 7) {
     points.push([x - side[index] * depth, y + (height * index) / (side.length - 1)]);
   }
   context.beginPath();
-  points.forEach(([pointX, pointY], index) => {
-    if (index === 0) context.moveTo(pointX, pointY);
-    else context.lineTo(pointX, pointY);
-  });
+  context.moveTo(
+    (points[0][0] + points[1][0]) / 2,
+    (points[0][1] + points[1][1]) / 2,
+  );
+  for (let index = 1; index <= points.length; index += 1) {
+    const point = points[index % points.length];
+    const next = points[(index + 1) % points.length];
+    context.quadraticCurveTo(
+      point[0],
+      point[1],
+      (point[0] + next[0]) / 2,
+      (point[1] + next[1]) / 2,
+    );
+  }
   context.closePath();
 }
 
@@ -54,18 +64,115 @@ export function drawDeckledParchment(context, rect, {
   context.fillStyle = fill;
   traceDeckledRect(context, x, y, width, height, 9);
   context.fill();
+
+  context.save();
+  traceDeckledRect(context, x, y, width, height, 9);
+  context.clip();
+  drawParchmentLight(context, x, y, width, height);
+  drawParchmentGrain(context, x, y, width, height);
+  context.restore();
+
   context.strokeStyle = edge;
   context.lineWidth = 5;
+  traceDeckledRect(context, x, y, width, height, 9);
   context.stroke();
   context.strokeStyle = 'rgba(126,86,45,0.42)';
   context.lineWidth = 2;
   traceDeckledRect(context, x + 15, y + 15, width - 30, height - 30, 5);
   context.stroke();
   if (ornament) {
-    drawQuillFlourish(context, x + 43, y + 40, 1);
-    drawQuillFlourish(context, x + width - 43, y + 40, -1);
+    drawPaperFlourish(context, x + 43, y + 40, 1);
+    drawPaperFlourish(context, x + width - 43, y + 40, -1);
   }
   context.restore();
+}
+
+function drawParchmentLight(context, x, y, width, height) {
+  context.fillStyle = 'rgba(255,244,210,0.38)';
+  context.beginPath();
+  context.moveTo(x - 5, y - 4);
+  context.bezierCurveTo(
+    x + width * 0.27,
+    y + 1,
+    x + width * 0.56,
+    y - 2,
+    x + width * 0.68,
+    y + height * 0.15,
+  );
+  context.bezierCurveTo(
+    x + width * 0.52,
+    y + height * 0.24,
+    x + width * 0.24,
+    y + height * 0.3,
+    x - 5,
+    y + height * 0.39,
+  );
+  context.closePath();
+  context.fill();
+
+  context.fillStyle = 'rgba(105,65,38,0.17)';
+  context.beginPath();
+  context.moveTo(x - 4, y + height * 0.72);
+  context.bezierCurveTo(
+    x + width * 0.29,
+    y + height * 0.67,
+    x + width * 0.68,
+    y + height * 0.8,
+    x + width + 5,
+    y + height * 0.63,
+  );
+  context.bezierCurveTo(
+    x + width + 4,
+    y + height * 0.86,
+    x + width * 0.76,
+    y + height + 5,
+    x - 4,
+    y + height + 4,
+  );
+  context.closePath();
+  context.fill();
+
+  context.fillStyle = 'rgba(126,82,44,0.1)';
+  context.beginPath();
+  context.moveTo(x + width * 0.79, y + height * 0.06);
+  context.bezierCurveTo(
+    x + width * 0.94,
+    y + height * 0.18,
+    x + width * 0.96,
+    y + height * 0.48,
+    x + width * 0.9,
+    y + height * 0.7,
+  );
+  context.bezierCurveTo(
+    x + width * 0.84,
+    y + height * 0.53,
+    x + width * 0.82,
+    y + height * 0.29,
+    x + width * 0.79,
+    y + height * 0.06,
+  );
+  context.closePath();
+  context.fill();
+}
+
+function drawParchmentGrain(context, x, y, width, height) {
+  context.strokeStyle = 'rgba(111,75,43,0.13)';
+  context.lineWidth = 1.25;
+  context.lineCap = 'round';
+  for (const [grainX, grainY, grainLength, grainBend] of PAPER_GRAIN) {
+    const startX = x + width * grainX;
+    const startY = y + height * grainY;
+    const length = width * grainLength;
+    context.beginPath();
+    context.moveTo(startX, startY);
+    context.quadraticCurveTo(
+      startX + length * 0.48,
+      startY + height * grainBend,
+      startX + length,
+      startY + height * grainBend * 0.4,
+    );
+    context.stroke();
+  }
 }
 
 export function drawDialogueScroll(context, rect, { night = false, portraitSide = 'left' } = {}) {
@@ -1235,16 +1342,37 @@ function drawOwlIconMini(context, x, y, color, secondary) {
   context.restore();
 }
 
-function drawQuillFlourish(context, x, y, direction) {
+function drawPaperFlourish(context, x, y, direction) {
   context.save();
   context.strokeStyle = 'rgba(105,72,43,0.46)';
-  context.lineWidth = 3;
+  context.lineWidth = 2.4;
+  context.lineCap = 'round';
   context.beginPath();
   context.moveTo(x, y + 18);
   context.bezierCurveTo(x + direction * 32, y + 15, x + direction * 30, y - 16, x + direction * 5, y - 9);
   context.bezierCurveTo(x - direction * 11, y - 4, x - direction * 11, y + 10, x, y + 11);
   context.stroke();
-  drawOwlIconMini(context, x + direction * 25, y + 8, 'rgba(105,72,43,0.46)', 'rgba(211,172,105,0.38)');
+  context.fillStyle = 'rgba(211,172,105,0.3)';
+  context.beginPath();
+  context.moveTo(x + direction * 13, y + 8);
+  context.bezierCurveTo(
+    x + direction * 28,
+    y - 4,
+    x + direction * 33,
+    y + 4,
+    x + direction * 18,
+    y + 12,
+  );
+  context.bezierCurveTo(
+    x + direction * 13,
+    y + 14,
+    x + direction * 10,
+    y + 12,
+    x + direction * 13,
+    y + 8,
+  );
+  context.closePath();
+  context.fill();
   context.restore();
 }
 
