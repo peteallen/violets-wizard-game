@@ -26,6 +26,12 @@ import { World } from './world/World.js';
 
 const FIXED_HARNESS_TIME = '2000-01-01T00:00:00.000Z';
 const ROOM_TRANSITION_READY_TIMEOUT_MS = 2500;
+const LETTER_NARRATION_CLIPS = Object.freeze(
+  ['invitation', 'waiting'].map((nodeId) => {
+    const node = contentRegistry.ch1.dialogues['ch1.letter.read'].nodes[nodeId];
+    return Object.freeze({ voice: node.voice, text: node.text });
+  }),
+);
 
 export class Game {
   constructor(canvas, options = {}) {
@@ -59,6 +65,7 @@ export class Game {
     this.replayMode = false;
     this.canonicalSave = null;
     this.resumeRecap = null;
+    this.letterNarrationRequest = null;
     this.sessionGeneration = 0;
 
     const storage = options.storage ?? safeStorage();
@@ -491,12 +498,61 @@ export class Game {
     this.updateStatus(dialogue?.text ?? 'Continue Violet’s adventure.');
   }
 
+  startLetterNarration() {
+    if (this.world?.overlay?.surface !== 'letter-reading') return false;
+    this.stopLetterNarration();
+    const request = Object.freeze({ world: this.world });
+    this.letterNarrationRequest = request;
+    this.playLetterNarrationClip(request, 0);
+    return true;
+  }
+
+  playLetterNarrationClip(request, index) {
+    if (!this.isLetterNarrationCurrent(request)) return;
+    const clip = LETTER_NARRATION_CLIPS[index];
+    if (!clip) {
+      this.letterNarrationRequest = null;
+      return;
+    }
+    this.sound.speak(clip.voice, clip.text, {
+      onEnded: () => {
+        if (!this.isLetterNarrationCurrent(request)) return;
+        if (index + 1 >= LETTER_NARRATION_CLIPS.length) {
+          this.letterNarrationRequest = null;
+          return;
+        }
+        this.playLetterNarrationClip(request, index + 1);
+      },
+    });
+  }
+
+  isLetterNarrationCurrent(request) {
+    return Boolean(
+      request
+      && this.letterNarrationRequest === request
+      && !this.destroyed
+      && this.world === request.world
+      && this.world?.overlay?.surface === 'letter-reading',
+    );
+  }
+
+  stopLetterNarration() {
+    this.letterNarrationRequest = null;
+    this.sound.stopVoice();
+  }
+
   handleOverlayTap(point, state) {
     if (state.overlay.surface === 'letter-reading') {
+      if (pointInUiRect(point, UI_RECTS.letterHear)) {
+        this.sound.playSfx('sfx/ui/tap', 'tap');
+        this.startLetterNarration();
+        return;
+      }
       if (!pointInUiRect(point, UI_RECTS.letterContinue)) return;
+      this.stopLetterNarration();
       this.world.closeOverlay();
       this.sound.playSfx('sfx/ui/page', 'tap');
-      this.world.runAction({ type: 'dialogue.start', script: 'ch1.letter.read' });
+      this.world.setFlag('ch1.letterRead', true);
       this.processWorldEvents();
       return;
     }
@@ -797,7 +853,7 @@ export class Game {
       case 'ui.openRequested':
         if (event.payload.surface === 'chapter-replay') this.beginReplay();
         else if (event.payload.surface === 'letter-reading') {
-          this.updateStatus('Dear Violet, you are invited to Hogwarts School of Witchcraft and Wizardry. Your place is waiting. Tap Hear the letter to listen.');
+          this.updateStatus('Dear Violet, you are invited to Hogwarts School of Witchcraft and Wizardry. Your place is waiting. Choose Hear the letter to listen, or Let’s go to continue.');
         }
         break;
       case 'chapter.completed':
@@ -1594,7 +1650,10 @@ export class Game {
       }
     }
     if (state.overlay?.surface === 'letter-reading') {
-      targets.push(semanticRect('letter.hear', UI_RECTS.letterContinue));
+      targets.push(
+        semanticRect('letter.hear', UI_RECTS.letterHear),
+        semanticRect('letter.continue', UI_RECTS.letterContinue),
+      );
     }
     if (state.overlay?.surface === 'parent') {
       targets.push(semanticRect('overlay.close', UI_RECTS.close));

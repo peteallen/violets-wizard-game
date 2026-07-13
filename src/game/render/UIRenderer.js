@@ -60,7 +60,8 @@ export const UI_RECTS = Object.freeze({
   satchel: { x: 28, y: 584, width: 108, height: 108 },
   wand: { x: 1144, y: 584, width: 108, height: 108 },
   dialogueReplay: { x: 985, y: 557, width: 88, height: 96 },
-  letterContinue: { x: 420, y: 594, width: 440, height: 96 },
+  letterHear: { x: 238, y: 594, width: 374, height: 96 },
+  letterContinue: { x: 668, y: 594, width: 374, height: 96 },
   debugReset: { x: 510, y: 18, width: 260, height: 88 },
   satchelMapTab: { x: 205, y: 145, width: 210, height: 88 },
   satchelCardsTab: { x: 435, y: 145, width: 210, height: 88 },
@@ -424,9 +425,14 @@ export class UIRenderer {
     context.fillStyle = 'rgba(20,17,38,0.66)';
     context.fillRect(0, 0, WORLD.width, WORLD.height);
     drawReadableInvitation(context);
-    drawParchmentAction(context, UI_RECTS.letterContinue, {
+    drawParchmentAction(context, UI_RECTS.letterHear, {
       label: childFacingUiText('Hear the letter', 'action'),
       icon: vectorControlIcon('speaker'),
+      selected: true,
+    });
+    drawParchmentAction(context, UI_RECTS.letterContinue, {
+      label: childFacingUiText('Let’s go!', 'action'),
+      icon: vectorControlIcon('check'),
       selected: true,
     });
   }

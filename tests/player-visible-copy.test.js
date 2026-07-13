@@ -99,10 +99,10 @@ describe('player-visible copy', () => {
       {
         name: 'letter',
         draw: (context) => renderer.drawLetterReading(context),
-        expected: [...chapter1LetterLines, 'Hear the letter'],
+        expected: [...chapter1LetterLines, 'Hear the letter', 'Let’s go!'],
         roles: {
           storyObjects: [...chapter1LetterLines],
-          actions: ['Hear the letter'],
+          actions: ['Hear the letter', 'Let’s go!'],
         },
       },
       {
