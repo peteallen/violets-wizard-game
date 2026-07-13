@@ -16,6 +16,14 @@ import {
 const UINT32_MAX = 0xffffffff;
 const FIXED_STEP = 1 / 60;
 
+export const SET_PIECE_REVIEW_SCENES = Object.freeze({
+  'sp-letter-open-review': 'sp.letterOpen',
+  'sp-brick-wall-review': 'sp.brickWall',
+  'sp-wand-vase-review': 'sp.wandChaos2',
+  'sp-wand-chosen-review': 'sp.wandChosen',
+  'sp-ch2-ticket-review': 'sp.ch2.previewTicket',
+});
+
 function integer(value, path, { min = 0, max = Number.MAX_SAFE_INTEGER } = {}) {
   const parsed = Number(value);
   if (!Number.isSafeInteger(parsed) || parsed < min || parsed > max) {
@@ -130,6 +138,26 @@ async function preloadVisibleRoom(game) {
   await game.roomRenderer.preload([...new Set(keys)]);
 }
 
+export async function prepareSetPieceReview(game, scene) {
+  const setPieceId = SET_PIECE_REVIEW_SCENES[scene];
+  if (!setPieceId || !game.world) return false;
+  if (scene === 'sp-brick-wall-review') await game.setPieceRenderer.preloadBrickWall();
+  if (game.world.dialogue.active) game.world.dialogue.close('harness-set-piece-review');
+  game.world.afterSetPieceActions.length = 0;
+  const stagedPlayerX = {
+    'sp-wand-vase-review': 910,
+    'sp-wand-chosen-review': 1080,
+  }[scene];
+  if (stagedPlayerX) {
+    game.world.player.x = stagedPlayerX;
+    game.world.player.targetX = stagedPlayerX;
+    game.world.player.facing = 'right';
+  }
+  if (game.world.setPieces.active?.requestedId !== setPieceId) game.world.setPieces.start(setPieceId);
+  game.processWorldEvents();
+  return true;
+}
+
 export async function bootHarness({
   search = globalThis.location?.search ?? '',
   canvas = globalThis.document?.querySelector('#game'),
@@ -160,6 +188,7 @@ export async function bootHarness({
       saveData: stateFixture.save,
       storage: memoryStorage(),
       enableSaveTransfer: request.scene === 'save-transfer',
+      enablePetNameDialog: request.scene === 'pet-name-dialog',
     });
     game.sound.destroy();
     game.sound = harnessSound(eventLog, () => Math.round(game.simTime / FIXED_STEP));
@@ -168,8 +197,12 @@ export async function bootHarness({
       eventLog.push({ type: 'world.event', frame: Math.round(game.simTime / FIXED_STEP), event: structuredClone(event) });
       handleWorldEvent(event);
     };
-    if (stateFixture.entry.chapter > 0) game.createWorld(stateFixture.save);
+    if (stateFixture.entry.chapter > 0) {
+      game.createWorld(stateFixture.save);
+      await prepareSetPieceReview(game, request.scene);
+    }
     game.start();
+    if (request.scene === 'pet-name-dialog') void game.petNameDialog?.open('Moonbeam');
 
     const appliedActions = actionsThroughFrame(actionFixture, frame);
     for (const action of appliedActions) {

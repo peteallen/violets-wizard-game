@@ -2,6 +2,7 @@ import { cards, cardsById, contentRegistry } from './content/index.js';
 import { chapter1Map, chapter1ResumeRecaps } from './content/chapters/ch1.js';
 import { INPUT, PALETTE, WORLD } from './config.js';
 import { resolveAsset } from './core/assetManifest.js';
+import { cleanPetName, PetNameDialog } from './core/PetNameDialog.js';
 import { SaveTransferDialog } from './core/SaveTransferDialog.js';
 import { SoundEngine } from './core/SoundEngine.js';
 import { clamp, distance } from './core/math.js';
@@ -27,7 +28,7 @@ export class Game {
     this.harness = Boolean(options.harness);
     this.harnessScene = typeof options.harnessScene === 'string' ? options.harnessScene : null;
     this.debug = Boolean(options.debug);
-    this.promptForText = options.promptForText ?? ((message, initialValue = '') => globalThis.prompt?.(message, initialValue) ?? null);
+    this.promptForText = options.promptForText ?? null;
     this.clock = options.clock ?? (() => this.harness ? FIXED_HARNESS_TIME : new Date().toISOString());
     this.running = false;
     this.destroyed = false;
@@ -70,7 +71,7 @@ export class Game {
     this.worldPropRenderer = new WorldPropRenderer();
     this.characterRenderer = new CharacterRenderer();
     this.uiRenderer = new UIRenderer({ resolveAsset });
-    this.setPieceRenderer = new SetPieceRenderer();
+    this.setPieceRenderer = new SetPieceRenderer({ resolveAsset });
     this.particles = new Particles(new SeededRandom(this.saveData.worldSeed).fork('particles'), { reducedMotion: this.reducedMotion });
     this.world = null;
     this.screen = options.startImmediately ? 'playing' : 'title';
@@ -81,6 +82,9 @@ export class Game {
         onResult: (result) => this.handleSaveTransferResult(result),
         onClose: () => this.render(),
       });
+    this.petNameDialog = options.petNameDialog === null || (this.harness && !options.enablePetNameDialog)
+      ? null
+      : options.petNameDialog ?? new PetNameDialog({ onClose: () => this.render() });
 
     this.boundResize = () => this.resize();
     this.boundFrame = (time) => this.frame(time);
@@ -136,6 +140,7 @@ export class Game {
     this.screen = 'playing';
     this.processWorldEvents();
     this.updateMusic();
+    if (this.world.roomId === 'ch1.courtyard') void this.setPieceRenderer.preloadBrickWall();
   }
 
   async startAdventure() {
@@ -325,9 +330,8 @@ export class Game {
         const choice = state.dialogue.choices.find((candidate) => candidate.__rect && pointInUiRect(point, candidate.__rect));
         if (!choice) return;
         if (choice.id === 'nameCustom') {
-          const customName = this.requestCustomPetName();
-          if (!customName) return;
-          this.world.setPetName(customName);
+          void this.completeCustomPetNameChoice(choice.id);
+          return;
         }
         this.sound.playSfx('sfx/ui/choice', 'chime');
         this.world.advanceDialogue(choice.id);
@@ -378,21 +382,30 @@ export class Game {
     this.resetGame();
   }
 
-  requestCustomPetName() {
+  async completeCustomPetNameChoice(choiceId = 'nameCustom') {
+    const customName = await this.requestCustomPetName();
+    if (!customName || this.destroyed || !this.world) return false;
+    const state = this.world.snapshot();
+    if (state.dialogue?.type !== 'choice' || !state.dialogue.choices?.some((choice) => choice.id === choiceId)) return false;
+    if (!this.world.setPetName(customName)) return false;
+    this.sound.playSfx('sfx/ui/choice', 'chime');
+    this.world.advanceDialogue(choiceId);
+    this.processWorldEvents();
+    return true;
+  }
+
+  async requestCustomPetName() {
     let response;
     try {
-      response = this.promptForText('Dad can type a name for Violet’s pet:', '');
+      response = this.promptForText
+        ? await this.promptForText('A grown-up can type a name for Violet’s pet:', '')
+        : await this.petNameDialog?.open('');
     } catch {
       this.updateStatus('The name keyboard could not open. Choose one of the name cards instead.');
       return null;
     }
     if (response === null || response === undefined) return null;
-    const name = String(response)
-      .replace(/[\u0000-\u001f\u007f]/g, '')
-      .replace(/\s+/g, ' ')
-      .trim()
-      .slice(0, 24)
-      .trim();
+    const name = cleanPetName(response);
     if (!name) {
       this.updateStatus('Type a name, or choose one of the name cards.');
       return null;
@@ -698,6 +711,7 @@ export class Game {
         this.particles.clear();
         this.transitionAlpha = this.reducedMotion ? 0.35 : 1;
         this.updateMusic();
+        if (event.payload.room === 'ch1.courtyard') void this.setPieceRenderer.preloadBrickWall();
         break;
       case 'ui.openRequested':
         if (event.payload.surface === 'chapter-replay') this.beginReplay();
@@ -852,6 +866,7 @@ export class Game {
 
   adoptSave(save, { status, toTitle = false, hasStoredSave = hasMeaningfulProgress(save), preserveSave = false } = {}) {
     this.sessionGeneration += 1;
+    this.petNameDialog?.close?.(null, 'game-changed');
     if (this.pointer && this.canvas.hasPointerCapture?.(this.pointer.id)) {
       this.canvas.releasePointerCapture?.(this.pointer.id);
     }
@@ -1012,26 +1027,41 @@ export class Game {
     const state = this.world.snapshot();
     this.lastRenderState = state;
     const room = this.world.room;
+    const setPieceId = String(state.setPiece?.requestedId ?? state.setPiece?.id ?? '').toLowerCase();
+    const brickWallActive = setPieceId.includes('brick');
+    const behindCastSetPieceActive = brickWallActive || setPieceId.includes('wandchaos') || setPieceId.includes('wand-chaos');
 
     if (this.world.chapter.id === 'ch2' || state.roomId === 'ch1.chapterCardRoom') {
       this.roomRenderer.draw(context, room, state, this.simTime, { x: 0 });
-      const card = this.world.chapter.id === 'ch2'
-        ? { eyebrow: 'Chapter Two', title: 'Platform Nine and Three-Quarters', subtitle: 'Coming next: the Hogwarts Express!', buttonLabel: 'Choose below' }
-        : { eyebrow: 'Chapter One Complete', title: 'Platform Nine and Three-Quarters', subtitle: 'Next time: the Hogwarts Express!' };
-      this.uiRenderer.drawChapterCard(context, card, this.simTime, {
-        paintedBackground: true,
-        reducedMotion: this.reducedMotion,
-      });
+      if (!(this.world.chapter.id === 'ch2' && state.setPiece)) {
+        const card = this.world.chapter.id === 'ch2'
+          ? {
+              eyebrow: 'Chapter Two',
+              title: 'Platform Nine and Three-Quarters',
+              subtitle: 'Coming next: the Hogwarts Express!',
+              buttonLabel: state.dialogue?.type === 'choice' ? null : 'Choose below',
+            }
+          : { eyebrow: 'Chapter One Complete', title: 'Platform Nine and Three-Quarters', subtitle: 'Next time: the Hogwarts Express!' };
+        this.uiRenderer.drawChapterCard(context, card, this.simTime, {
+          paintedBackground: true,
+          reducedMotion: this.reducedMotion,
+        });
+      }
     } else {
       this.roomRenderer.draw(context, room, state, this.simTime, { x: state.cameraX });
       this.worldPropRenderer.draw(context, state, this.simTime, { reducedMotion: this.reducedMotion });
-      this.drawWorldTargets(context, state);
+      if (behindCastSetPieceActive) {
+        this.setPieceRenderer.draw(context, state.setPiece, state, { reducedMotion: this.reducedMotion });
+      }
+      if (!state.setPiece) this.drawWorldTargets(context, state);
       this.drawCharacters(context, state);
       this.particles.draw(context);
     }
 
-    this.setPieceRenderer.draw(context, state.setPiece, state, { reducedMotion: this.reducedMotion });
-    this.uiRenderer.drawHud(context, state, this.simTime, this.reducedMotion);
+    if (!behindCastSetPieceActive) {
+      this.setPieceRenderer.draw(context, state.setPiece, state, { reducedMotion: this.reducedMotion });
+    }
+    if (!state.setPiece) this.uiRenderer.drawHud(context, state, this.simTime, this.reducedMotion);
     if (this.resumeRecap) {
       this.uiRenderer.drawResumeRecap(
         context,
@@ -1342,7 +1372,9 @@ export class Game {
     this.saveManager.destroy();
     this.sound.destroy();
     this.roomRenderer.destroy?.();
+    this.setPieceRenderer.destroy?.();
     this.saveTransferDialog?.destroy?.();
+    this.petNameDialog?.destroy?.();
     window.removeEventListener('resize', this.boundResize);
     document.removeEventListener('visibilitychange', this.boundVisibility);
     this.motionQuery.removeEventListener?.('change', this.boundMotionChanged);

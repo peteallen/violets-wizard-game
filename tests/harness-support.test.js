@@ -23,6 +23,7 @@ import {
   validateEnvironmentIdentity,
 } from '../src/harness/environment.js';
 import {
+  SET_PIECE_REVIEW_SCENES,
   actionsThroughFrame,
   parseHarnessRequest,
   resolveHarnessScenario,
@@ -63,15 +64,22 @@ describe('state fixtures', () => {
     expect(STATE_FIXTURE_IDS).toEqual([
       'foundation',
       'ch1-start',
+      'ch1-follow-hagrid-review',
       'ch1-wand-chosen',
       'ch1-complete',
       'ch2-placeholder',
+      'sp-letter-open-review',
+      'sp-brick-wall-review',
+      'sp-wand-vase-review',
+      'sp-wand-chosen-review',
+      'sp-ch2-ticket-review',
       'parent-panel',
       'parent-settings',
       'parent-save',
       'parent-confirm',
       'parent-yearbook',
       'save-transfer',
+      'pet-name-dialog',
       'character-cast-review',
       'character-pets-review',
       'character-portraits-review',
@@ -79,6 +87,7 @@ describe('state fixtures', () => {
       'ui-dialogue-review',
       'ui-choices-review',
       'ui-satchel-map-review',
+      'ui-satchel-cards-review',
       'ui-objective-review',
       'ui-chapter-card-review',
     ]);
@@ -155,6 +164,22 @@ describe('registered harness scenarios', () => {
       expect(ACTION_FIXTURE_IDS).toContain(id);
       expect(parseHarnessRequest(`?scene=${id}`)).toMatchObject({ scene: id, state: id, actions: id });
     }
+  });
+
+  it('registers the signature Chapter One set pieces and Chapter Two ticket as direct deterministic review scenes', () => {
+    expect(SET_PIECE_REVIEW_SCENES).toEqual({
+      'sp-letter-open-review': 'sp.letterOpen',
+      'sp-brick-wall-review': 'sp.brickWall',
+      'sp-wand-vase-review': 'sp.wandChaos2',
+      'sp-wand-chosen-review': 'sp.wandChosen',
+      'sp-ch2-ticket-review': 'sp.ch2.previewTicket',
+    });
+    for (const id of Object.keys(SET_PIECE_REVIEW_SCENES)) {
+      expect(parseHarnessRequest(`?scene=${id}`)).toMatchObject({ scene: id, state: id, actions: id });
+    }
+    expect(getActionFixture('sp-ch2-ticket-review').actions).toEqual([
+      { frame: 250, type: 'tap', target: 'hud.quest' },
+    ]);
   });
 
   it('defaults manual scene URLs to matching immutable state and action fixtures', () => {

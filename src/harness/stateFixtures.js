@@ -86,6 +86,20 @@ const throughWandFlags = Object.freeze({
   'ch1.wandChosen': true,
 });
 
+const throughFirstWandFlags = Object.freeze({
+  'ch1.owlTapped': true,
+  'ch1.letterOpened': true,
+  'ch1.letterRead': true,
+  'ch1.guideMet': true,
+  'ch1.leakyReached': true,
+  'ch1.courtyardReached': true,
+  'ch1.wallOpened': true,
+  'ch1.diagonReached': true,
+  'ch1.satchelReceived': true,
+  'ch1.mapUsed': true,
+  'ch1.wandTry1': true,
+});
+
 const completeChapterFlags = Object.freeze({
   ...throughWandFlags,
   'ch1.trimChosen': true,
@@ -140,6 +154,21 @@ registry
     { chapter: 1, scene: 'ch1.letter' },
     createSave(),
   ))
+  .register('ch1-follow-hagrid-review', createFixture(
+    'The bedroom immediately after Hagrid asks Violet to follow him, with the objective target on Hagrid.',
+    { chapter: 1, scene: 'ch1-follow-hagrid-review' },
+    createSave({
+      scene: 'ch1.followHagridReview',
+      room: 'ch1.bedroom',
+      spawn: 'bedroom.letter',
+      questFlags: {
+        'ch1.owlTapped': true,
+        'ch1.letterOpened': true,
+        'ch1.letterRead': true,
+        'ch1.guideMet': true,
+      },
+    }),
+  ))
   .register('ch1-wand-chosen', createFixture(
     'Chapter 1 in Ollivanders immediately after the third wand chooses Violet.',
     { chapter: 1, scene: 'ch1.wandShopping' },
@@ -172,6 +201,65 @@ registry
       spawn: 'start',
     }),
   ))
+  .register('sp-letter-open-review', createFixture(
+    'The delivered letter at the start of its seal-crack, unfold, and readable invitation sequence.',
+    { chapter: 1, scene: 'sp-letter-open-review' },
+    createSave({
+      scene: 'ch1.letter',
+      room: 'ch1.bedroom',
+      spawn: 'bedroom.letter',
+      questFlags: { 'ch1.owlTapped': true },
+    }),
+  ))
+  .register('sp-brick-wall-review', createFixture(
+    'The courtyard wall staged for its real ten-by-eight center-out reveal.',
+    { chapter: 1, scene: 'sp-brick-wall-review' },
+    createSave({
+      scene: 'ch1.wallOpening',
+      room: 'ch1.courtyard',
+      spawn: 'courtyard.guide',
+      questFlags: {
+        'ch1.owlTapped': true,
+        'ch1.letterOpened': true,
+        'ch1.letterRead': true,
+        'ch1.guideMet': true,
+        'ch1.leakyReached': true,
+        'ch1.courtyardReached': true,
+      },
+    }),
+  ))
+  .register('sp-wand-vase-review', createFixture(
+    'The second wrong wand staged with its authored vase wobble, shatter, bounce, and settle.',
+    { chapter: 1, scene: 'sp-wand-vase-review' },
+    createSave({
+      scene: 'ch1.wandShopping',
+      room: 'ch1.ollivanders',
+      spawn: 'ollivanders.wandmaker',
+      questFlags: throughFirstWandFlags,
+    }),
+  ))
+  .register('sp-wand-chosen-review', createFixture(
+    'The chosen wand staged for its complete golden visual and audio-friendly crescendo.',
+    { chapter: 1, scene: 'sp-wand-chosen-review' },
+    createSave({
+      scene: 'ch1.wandShopping',
+      room: 'ch1.ollivanders',
+      spawn: 'ollivanders.wandmaker',
+      questFlags: { ...throughFirstWandFlags, 'ch1.wandTry2': true },
+      wandId: 'violet-first-wand',
+    }),
+  ))
+  .register('sp-ch2-ticket-review', createFixture(
+    'The intentional Chapter Two preview ticket followed by its two clearly framed preview choices.',
+    { chapter: 2, scene: 'sp-ch2-ticket-review' },
+    createSave({
+      ...completedProfile,
+      chapter: 'ch2',
+      scene: 'ch2.placeholder',
+      room: 'ch2.previewRoom',
+      spawn: 'start',
+    }),
+  ))
   .register('parent-panel', completedSurfaceFixture(
     'parent-panel',
     'The grown-up book on its safe chapter replay and yearbook page.',
@@ -195,6 +283,10 @@ registry
   .register('save-transfer', completedSurfaceFixture(
     'save-transfer',
     'The accessible save export transfer dialog over the game.',
+  ))
+  .register('pet-name-dialog', completedSurfaceFixture(
+    'pet-name-dialog',
+    'The parent-assisted custom pet naming dialog over Violet’s current adventure.',
   ))
   .register('character-cast-review', characterReviewFixture(
     'character-cast-review',
@@ -223,6 +315,10 @@ registry
   .register('ui-satchel-map-review', characterReviewFixture(
     'ui-satchel-map-review',
     'The open storybook satchel and its objective-aware Diagon Alley map.',
+  ))
+  .register('ui-satchel-cards-review', characterReviewFixture(
+    'ui-satchel-cards-review',
+    'The satchel card album with its grown-up hold control and collection count visibly separated.',
   ))
   .register('ui-objective-review', characterReviewFixture(
     'ui-objective-review',

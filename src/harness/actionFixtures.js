@@ -57,6 +57,9 @@ registry
       { frame: 540, type: 'tap', target: 'letter.seal' },
     ],
   ))
+  .register('ch1-follow-hagrid-review', createFixture(
+    'Hold the post-introduction bedroom with Hagrid as the single obvious progression target.',
+  ))
   .register('ch1-wand-chosen', createFixture(
     'Hold the post-choice wand state without introducing another interaction.',
   ))
@@ -65,6 +68,22 @@ registry
   ))
   .register('ch2-placeholder', createFixture(
     'Hold the Chapter 2 placeholder state before its content is authored.',
+  ))
+  .register('sp-letter-open-review', createFixture(
+    'Hold the letter-open choreography on its deterministic timeline.',
+  ))
+  .register('sp-brick-wall-review', createFixture(
+    'Hold the ten-by-eight wall reveal on its deterministic timeline.',
+  ))
+  .register('sp-wand-vase-review', createFixture(
+    'Hold the second wrong-wand vase mishap on its deterministic timeline.',
+  ))
+  .register('sp-wand-chosen-review', createFixture(
+    'Hold the chosen-wand crescendo on its deterministic timeline.',
+  ))
+  .register('sp-ch2-ticket-review', createFixture(
+    'Advance the preview narration after the ticket settles so both intentional next-step choices can be reviewed.',
+    [{ frame: 250, type: 'tap', target: 'hud.quest' }],
   ))
   .register('parent-panel', createFixture(
     'Open the satchel and hold its grown-up gear for the full three-second gate.',
@@ -115,6 +134,9 @@ registry
       { frame: 280, type: 'tap', target: 'parent.save.export' },
     ],
   ))
+  .register('pet-name-dialog', createFixture(
+    'Hold the custom pet naming dialog open for visual and keyboard review.',
+  ))
   .register('character-cast-review', createFixture(
     'Hold the full cast on their deterministic idle and speaking loops.',
   ))
@@ -135,6 +157,9 @@ registry
   ))
   .register('ui-satchel-map-review', createFixture(
     'Hold the open satchel map with an objective destination.',
+  ))
+  .register('ui-satchel-cards-review', createFixture(
+    'Hold the card album with the grown-up gate and collection count visible.',
   ))
   .register('ui-objective-review', createFixture(
     'Hold the illustrated quest-compass objective page.',

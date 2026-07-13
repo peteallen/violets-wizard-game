@@ -64,9 +64,16 @@ export class World {
 
   get dialoguePresentation() {
     const presentation = this.dialogue.presentation();
-    if (!presentation?.speaker) return presentation;
+    if (!presentation) return presentation;
+    const namedPetCaption = presentation.scriptId === 'ch1.keeper.petAndName'
+      && presentation.nodeId === 'done'
+      && this.save.character.pet?.name
+      ? `${this.save.character.pet.name}!`
+      : null;
+    if (!presentation.speaker) return namedPetCaption ? { ...presentation, caption: namedPetCaption } : presentation;
     return {
       ...presentation,
+      ...(namedPetCaption ? { caption: namedPetCaption } : {}),
       speakerLabel: this.chapter.npcs[presentation.speaker]?.displayName ?? presentation.speakerLabel ?? 'Friend',
     };
   }

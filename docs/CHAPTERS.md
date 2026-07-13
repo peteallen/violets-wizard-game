@@ -21,7 +21,7 @@ Every chapter ends with an illustrated **chapter card** (like a picture-book pag
 3. **The wall opens** — brick-by-brick animation into Diagon Alley (her first "whoa" set piece; the street is the richest painting in the chapter: owls, cauldrons, brooms, bustle).
 4. **Ollivanders.** The wand chooses the witch: two wrong wands cause escalating comic chaos (papers whirl; a vase shatters — remembered later: Reparo's teaching moment in Ch. 5 can call back to it). The third wand erupts in golden light with the music's first full swell. Ollivander, whispery and delighted: "Curious…" Caption: "Your wand!"
 5. **Madam Malkin's.** Robes fitted — she picks a trim color (pure cosmetic choice, persisted forever; choices with visible permanence are gold for kids).
-6. **Magical Menagerie.** She chooses her pet — owl, cat, or toad — and names it (preset name cards + optional typed name with dad). The pet follows her from this moment for the rest of the game.
+6. **Magical Menagerie.** She chooses her pet — owl, cat, or toad — and names it (preset name cards + an optional grown-up-assisted storybook naming dialog). The pet follows her from this moment for the rest of the game.
 7. **Dusk on the street.** Hagrid hands her the train ticket. Chapter card: *Platform Nine and Three-Quarters* tease.
 
 **Quests:** main quest only (the shopping trip), plus 2 hidden chocolate frog cards (one behind Ollivanders' shelves, one in the Menagerie) to seed the collecting habit.

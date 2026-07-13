@@ -188,6 +188,8 @@ export function drawVectorOwl(context, owl = {}, time = 0) {
   context.strokeStyle = OUTLINE;
   context.lineWidth = 3;
 
+  drawOwlShadow(context, owl.pose ?? (variant === 'pet' ? 'idle' : 'perch'), motion);
+
   drawTail(context, palette, motion);
   drawFarWing(context, palette, motion);
 
@@ -206,6 +208,23 @@ export function drawVectorOwl(context, owl = {}, time = 0) {
   drawHead(context, palette, variant, motion);
   context.restore();
 
+  context.restore();
+}
+
+function drawOwlShadow(context, pose, motion) {
+  if (pose === 'flight' || pose === 'delivery' || pose === 'takeoff') return;
+  const lift = Math.min(0.46, motion.hop / 18);
+  context.save();
+  context.translate(0, motion.hop - motion.bodyBob);
+  context.globalAlpha *= 1 - lift;
+  context.fillStyle = 'rgba(25,17,24,0.22)';
+  context.beginPath();
+  context.ellipse(2, 7, 34 - lift * 7, 7 - lift * 1.5, 0, 0, Math.PI * 2);
+  context.fill();
+  context.fillStyle = 'rgba(121,77,43,0.1)';
+  context.beginPath();
+  context.ellipse(-3, 5, 23 - lift * 5, 3.5, 0, 0, Math.PI * 2);
+  context.fill();
   context.restore();
 }
 
@@ -331,6 +350,26 @@ function drawBody(context, palette, variant) {
   context.ellipse(0, -39, 23, 39, 0, 0, Math.PI * 2);
   context.fill();
 
+  context.fillStyle = palette.bodyShadow;
+  context.globalAlpha = 0.2;
+  context.beginPath();
+  context.moveTo(4, -78);
+  context.bezierCurveTo(24, -68, 29, -27, 22, -6);
+  context.quadraticCurveTo(12, 1, 4, 2);
+  context.quadraticCurveTo(12, -37, 4, -78);
+  context.closePath();
+  context.fill();
+  context.globalAlpha = 1;
+
+  context.fillStyle = 'rgba(245,199,119,0.14)';
+  context.beginPath();
+  context.moveTo(-22, -17);
+  context.quadraticCurveTo(0, 5, 22, -17);
+  context.quadraticCurveTo(17, -4, 0, 3);
+  context.quadraticCurveTo(-17, -4, -22, -17);
+  context.closePath();
+  context.fill();
+
   const rows = variant === 'pet' ? 4 : 5;
   for (let row = 0; row < rows; row += 1) {
     const count = row % 2 === 0 ? 4 : 3;
@@ -344,6 +383,9 @@ function drawBody(context, palette, variant) {
       context.quadraticCurveTo(x, y + 8, x + 5, y - 4);
       context.quadraticCurveTo(x, y, x - 5, y - 4);
       context.fill();
+      context.strokeStyle = row % 2 ? 'rgba(48,39,52,0.18)' : 'rgba(255,244,218,0.16)';
+      context.lineWidth = 0.85;
+      context.stroke();
     }
   }
   context.globalAlpha = 1;
@@ -352,6 +394,13 @@ function drawBody(context, palette, variant) {
   context.beginPath();
   context.moveTo(-17, -70);
   context.quadraticCurveTo(-6, -79, 0, -68);
+  context.stroke();
+
+  context.strokeStyle = 'rgba(255,242,205,0.28)';
+  context.lineWidth = 1.1;
+  context.beginPath();
+  context.moveTo(-18, -73);
+  context.bezierCurveTo(-27, -53, -25, -26, -18, -9);
   context.stroke();
 }
 
@@ -405,6 +454,22 @@ function drawHead(context, palette, variant, motion) {
   context.bezierCurveTo(6, -109, 21, -109, 25, -94);
   context.bezierCurveTo(21, -78, 7, -74, 0, -64);
   context.bezierCurveTo(-7, -74, -21, -78, -25, -94);
+  context.closePath();
+  context.fill();
+
+  context.fillStyle = 'rgba(255,250,229,0.28)';
+  context.beginPath();
+  context.moveTo(-22, -99);
+  context.bezierCurveTo(-16, -110, -6, -108, -2, -96);
+  context.quadraticCurveTo(-10, -89, -20, -91, -22, -99);
+  context.closePath();
+  context.fill();
+  context.fillStyle = 'rgba(71,57,68,0.16)';
+  context.beginPath();
+  context.moveTo(2, -96);
+  context.bezierCurveTo(8, -108, 20, -108, 24, -94);
+  context.quadraticCurveTo(20, -78, 7, -74, 1, -65);
+  context.quadraticCurveTo(8, -84, 2, -96, 2, -96);
   context.closePath();
   context.fill();
 

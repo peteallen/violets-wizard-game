@@ -126,6 +126,28 @@ describe('Game dialogue controls', () => {
   });
 });
 
+describe('Game development reset', () => {
+  it('returns to the beginning from Alt+Shift+R in debug mode', () => {
+    const game = Object.create(Game.prototype);
+    game.debug = true;
+    game.resetGame = vi.fn();
+    const event = {
+      repeat: false,
+      ctrlKey: false,
+      metaKey: false,
+      altKey: true,
+      shiftKey: true,
+      key: 'R',
+      preventDefault: vi.fn(),
+    };
+
+    game.onKeyDown(event);
+
+    expect(event.preventDefault).toHaveBeenCalledOnce();
+    expect(game.resetGame).toHaveBeenCalledOnce();
+  });
+});
+
 describe('Game lifecycle', () => {
   it('releases the room renderer when the game is destroyed', () => {
     const game = Object.create(Game.prototype);
@@ -136,7 +158,9 @@ describe('Game lifecycle', () => {
       saveManager: { destroy: vi.fn() },
       sound: { destroy: vi.fn() },
       roomRenderer: { destroy: vi.fn() },
+      setPieceRenderer: { destroy: vi.fn() },
       saveTransferDialog: { destroy: vi.fn() },
+      petNameDialog: { destroy: vi.fn() },
       motionQuery: { removeEventListener: vi.fn() },
       canvas: { removeEventListener: vi.fn() },
       debug: false,
@@ -155,6 +179,8 @@ describe('Game lifecycle', () => {
     game.destroy();
 
     expect(game.roomRenderer.destroy).toHaveBeenCalledOnce();
+    expect(game.setPieceRenderer.destroy).toHaveBeenCalledOnce();
+    expect(game.petNameDialog.destroy).toHaveBeenCalledOnce();
     expect(game.destroyed).toBe(true);
     expect(game.running).toBe(false);
   });

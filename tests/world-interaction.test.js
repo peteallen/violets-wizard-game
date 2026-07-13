@@ -70,15 +70,20 @@ describe('one-tap world interactions', () => {
     settle(world, 2);
 
     expect(world.flags['ch1.letterOpened']).toBe(true);
+    expect(world.setPieces.active?.requestedId).toBe('sp.letterOpen');
+    expect(world.dialogue.active).toBe(false);
+    expect(world.player.x).toBe(760);
+
+    settle(world, 3.4);
+
     expect(world.dialogue.active).toBe(true);
     expect(world.dialogue.scriptId).toBe('ch1.letter.read');
-    expect(world.player.x).toBe(760);
   });
 
-  it('uses one tap for an exit that does not need an approach walk', () => {
+  it('lets Violet follow Hagrid by tapping Hagrid once instead of finding a clipped door target', () => {
     const world = createWorld({ flags: { 'ch1.guideMet': true } });
 
-    const result = world.tap({ x: 80, y: 475 });
+    const result = world.tap({ x: 250, y: 455 });
 
     expect(result.id).toBe('bedroom.exit');
     expect(world.roomId).toBe('ch1.leaky');

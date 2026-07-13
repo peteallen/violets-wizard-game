@@ -26,6 +26,7 @@ export const UI_REVIEW_SCENES = Object.freeze([
   'ui-dialogue-review',
   'ui-choices-review',
   'ui-satchel-map-review',
+  'ui-satchel-cards-review',
   'ui-objective-review',
   'ui-chapter-card-review',
 ]);
@@ -104,6 +105,16 @@ export class UIRenderer {
         objective: { mapStar: { room: 'ch1.diagonStreet', hotspot: 'street.menagerieDoor' } },
         cards: [],
       });
+    } else if (scene === 'ui-satchel-cards-review') {
+      this.drawSatchel(context, {
+        overlay: { surface: 'satchel', tab: 'cards' },
+        unlockedRooms: ['ch1.ollivanders', 'ch1.malkins', 'ch1.menagerie'],
+        objective: { mapStar: { room: 'ch1.diagonStreet', hotspot: 'street.menagerieDoor' } },
+        cards: ['morgana'],
+      }, [
+        { id: 'morgana', name: 'Morgana', portraitAsset: null },
+        { id: 'dumbledore', name: 'Dumbledore', portraitAsset: null },
+      ]);
     } else if (scene === 'ui-objective-review') {
       this.drawObjective(
         context,
@@ -264,7 +275,7 @@ export class UIRenderer {
     context.fillStyle = '#5d4b3d';
     context.textAlign = 'center';
     context.font = '700 17px "Andika", "Trebuchet MS", sans-serif';
-    context.fillText(parentGateProgress > 0 ? 'Keep holding…' : 'Grown-ups', 746, 258);
+    context.fillText(parentGateProgress > 0 ? 'Keep holding…' : 'Hold for grown-ups', 902, 198);
 
     if (activeTab === 'cards') this.drawCardAlbumContent(context, state, cardDefinitions);
     else this.drawMapContent(context, state);
@@ -466,7 +477,9 @@ export class UIRenderer {
     context.fillStyle = '#6b4f38';
     context.font = '31px "Andika", "Trebuchet MS", sans-serif';
     context.fillText(card?.subtitle ?? 'Next time: the Hogwarts Express!', WORLD.width / 2, 465);
-    drawInvitationButton(context, card?.buttonLabel ?? 'See what is next', { x: 425, y: 506, width: 430, height: 91 });
+    if (card?.buttonLabel !== null) {
+      drawInvitationButton(context, card?.buttonLabel ?? 'See what is next', { x: 425, y: 506, width: 430, height: 91 });
+    }
   }
 
   drawTitle(context, time, hasSave, reducedMotion = false) {
