@@ -91,6 +91,22 @@ export const UI_RECTS = Object.freeze({
 });
 
 const DIALOGUE_FRAME = Object.freeze({ y: 548, height: 155, maximumWidth: 900, margin: 32, speakerGap: 38 });
+const VISIBLE_UI_WORD = /[\p{L}\p{N}]+(?:[’'-][\p{L}\p{N}]+)*/gu;
+
+export function isAllowedChildFacingUiText(text, role) {
+  const value = String(text ?? '').trim();
+  if (!value) return false;
+  if (role === 'parent' || role === 'story-object' || role === 'proper-name') return true;
+
+  const wordCount = value.match(VISIBLE_UI_WORD)?.length ?? 0;
+  if (role === 'symbol') return wordCount === 0;
+  return (role === 'caption' || role === 'action') && wordCount <= 3;
+}
+
+function childFacingUiText(text, role) {
+  const value = String(text ?? '').trim();
+  return isAllowedChildFacingUiText(value, role) ? value : '';
+}
 
 export function dialogueSceneContext(state, dialogue = state?.dialogue) {
   const night = state?.roomVariant === 'dusk' || state?.roomVariant === 'night';
@@ -296,10 +312,8 @@ export class UIRenderer {
       );
     } else {
       this.drawChapterCard(context, {
-        eyebrow: 'Chapter One Complete',
         title: 'Platform Nine and Three-Quarters',
-        subtitle: 'Next time: the Hogwarts Express!',
-        buttonLabel: 'See what is next',
+        buttonLabel: 'Continue',
       }, time, { reducedMotion });
     }
     return true;
@@ -360,7 +374,12 @@ export class UIRenderer {
       context.restore();
     }
 
-    drawDialogueCaption(context, captionRect, dialogue.caption ?? 'Listen', Boolean(scene.night));
+    drawDialogueCaption(
+      context,
+      captionRect,
+      childFacingUiText(dialogue.caption ?? 'Listen', 'caption'),
+      Boolean(scene.night),
+    );
 
     drawWaxIcon(context, controlX, frame.y + 47, 31, 'speaker', {
       iconColor: scene.night ? '#f8e4b4' : '#fff8e8',
@@ -368,7 +387,7 @@ export class UIRenderer {
     context.fillStyle = scene.night ? '#f2d89f' : '#513b2f';
     context.textAlign = 'center';
     context.font = '700 18px "Andika", "Trebuchet MS", sans-serif';
-    context.fillText('Again', controlX, frame.y + 95);
+    context.fillText(childFacingUiText('Again', 'action'), controlX, frame.y + 95);
 
     const animationTime = reducedMotion ? 0 : time;
     const pulse = reducedMotion ? 1 : 1 + Math.sin(animationTime * 4) * 0.08;
@@ -384,8 +403,7 @@ export class UIRenderer {
     context.fillRect(0, 0, WORLD.width, WORLD.height);
     drawReadableInvitation(context);
     drawParchmentAction(context, UI_RECTS.letterContinue, {
-      label: 'Hear the letter',
-      detail: 'Read it aloud',
+      label: childFacingUiText('Hear the letter', 'action'),
       icon: vectorControlIcon('speaker'),
       selected: true,
     });
@@ -400,12 +418,6 @@ export class UIRenderer {
   }
 
   drawChoices(context, choices) {
-    drawDeckledParchment(context, { x: 335, y: 122, width: 610, height: 88 }, { ornament: false });
-    drawVectorIcon(context, 'owl', 390, 166, 56, { color: '#6b4a31', secondary: '#d8b56f' });
-    context.fillStyle = '#382a24';
-    context.textAlign = 'center';
-    context.font = '700 34px "Andika", "Trebuchet MS", sans-serif';
-    context.fillText('What should Violet choose?', 665, 178);
     const width = 262;
     const gap = 28;
     const total = choices.length * width + (choices.length - 1) * gap;
@@ -418,7 +430,13 @@ export class UIRenderer {
       context.fillStyle = '#382a24';
       context.textAlign = 'center';
       context.font = '700 29px "Andika", "Trebuchet MS", sans-serif';
-      fitText(context, choice.caption, rect.x + width / 2, rect.y + 134, width - 34);
+      fitText(
+        context,
+        childFacingUiText(choice.caption, 'caption'),
+        rect.x + width / 2,
+        rect.y + 134,
+        width - 34,
+      );
     });
   }
 
@@ -429,16 +447,23 @@ export class UIRenderer {
   } = {}) {
     const activeTab = state.overlay?.tab === 'cards' ? 'cards' : 'map';
     drawStorybookSpread(context, { x: 72, y: 32, width: 1136, height: 652 }, {
-      title: 'Violet’s Satchel',
-      subtitle: activeTab === 'cards' ? 'Chocolate Frog cards and magical keepsakes.' : 'A map that remembers where Violet needs to go.',
+      title: childFacingUiText('Violet’s Satchel', 'proper-name'),
     });
-    drawSatchelTab(context, UI_RECTS.satchelMapTab, 'map', 'Map', activeTab === 'map');
-    drawSatchelTab(context, UI_RECTS.satchelCardsTab, 'cards', 'Cards', activeTab === 'cards');
+    drawSatchelTab(
+      context,
+      UI_RECTS.satchelMapTab,
+      'map',
+      childFacingUiText('Map', 'caption'),
+      activeTab === 'map',
+    );
+    drawSatchelTab(
+      context,
+      UI_RECTS.satchelCardsTab,
+      'cards',
+      childFacingUiText('Cards', 'caption'),
+      activeTab === 'cards',
+    );
     drawHoldGear(context, UI_RECTS.satchelGear, parentGateProgress, vectorControlIcon('gear'));
-    context.fillStyle = '#5d4b3d';
-    context.textAlign = 'center';
-    context.font = '700 17px "Andika", "Trebuchet MS", sans-serif';
-    context.fillText(parentGateProgress > 0 ? 'Keep holding…' : 'Hold for grown-ups', 902, 198);
 
     if (activeTab === 'cards') this.drawCardAlbumContent(context, state, cardDefinitions);
     else this.drawMapContent(context, state, time, { reducedMotion });
@@ -492,10 +517,7 @@ export class UIRenderer {
       }
       context.fillStyle = '#382a24';
       context.font = '700 27px "Andika", "Trebuchet MS", sans-serif';
-      context.fillText(location.label, location.x, location.y + 49);
-      context.fillStyle = current ? '#6b385b' : '#765d48';
-      context.font = '700 17px "Andika", "Trebuchet MS", sans-serif';
-      context.fillText(current ? 'Violet goes here' : unlocked ? 'Tap to travel' : 'Still hidden', location.x, location.y + 78);
+      context.fillText(childFacingUiText(location.label, 'caption'), location.x, location.y + 49);
       context.globalAlpha = 1;
     }
     state.__mapLocations = locations;
@@ -504,12 +526,6 @@ export class UIRenderer {
 
   drawCardAlbumContent(context, state, cardDefinitions) {
     const entries = buildCardAlbumEntries(cardDefinitions, state.cards ?? []);
-    const found = entries.filter((entry) => entry.earned).length;
-    context.textAlign = 'center';
-    context.fillStyle = '#382a24';
-    context.font = '700 25px "Andika", "Trebuchet MS", sans-serif';
-    context.fillText(`${found} of ${entries.length} cards found`, WORLD.width / 2, 270);
-
     for (const entry of entries) this.drawAlbumCard(context, entry);
     state.__cardSlots = entries;
     state.__mapLocations = [];
@@ -531,13 +547,16 @@ export class UIRenderer {
       else drawPortraitLoading(context, portrait);
     } else drawLockedPortrait(context, portrait);
 
-    context.textAlign = 'center';
-    context.fillStyle = PALETTE.parchment;
-    context.font = '700 31px "Andika", "Trebuchet MS", sans-serif';
-    context.fillText(entry.earned ? entry.name : 'Not found', rect.x + rect.width / 2, rect.y + 327);
-    context.fillStyle = entry.earned ? PALETTE.interactive : '#d2c5d7';
-    context.font = '22px "Andika", "Trebuchet MS", sans-serif';
-    context.fillText(entry.earned ? 'Tap to listen' : 'A secret still waiting', rect.x + rect.width / 2, rect.y + 361);
+    if (entry.earned) {
+      context.textAlign = 'center';
+      context.fillStyle = PALETTE.parchment;
+      context.font = '700 31px "Andika", "Trebuchet MS", sans-serif';
+      context.fillText(
+        childFacingUiText(entry.name, 'proper-name'),
+        rect.x + rect.width / 2,
+        rect.y + 327,
+      );
+    }
     context.restore();
   }
 
@@ -562,8 +581,7 @@ export class UIRenderer {
 
   drawSelection(context, selection) {
     drawStorybookSpread(context, { x: 72, y: 32, width: 1136, height: 652 }, {
-      title: selection.title,
-      subtitle: selection.subtitle,
+      title: childFacingUiText(selection.title, 'caption'),
     });
     const count = selection.options.length;
     const width = Math.min(248, (940 - (count - 1) * 26) / count);
@@ -587,10 +605,13 @@ export class UIRenderer {
       context.textAlign = 'center';
       context.fillStyle = '#382a24';
       context.font = '700 29px "Andika", "Trebuchet MS", sans-serif';
-      fitText(context, option.label, rect.x + width / 2, rect.y + 189, width - 28);
-      context.fillStyle = '#765d48';
-      context.font = '19px "Andika", "Trebuchet MS", sans-serif';
-      context.fillText('Tap to choose', rect.x + width / 2, rect.y + 220);
+      fitText(
+        context,
+        childFacingUiText(option.label, 'caption'),
+        rect.x + width / 2,
+        rect.y + 189,
+        width - 28,
+      );
     });
     drawClose(context);
   }
@@ -608,9 +629,11 @@ export class UIRenderer {
     context.textAlign = 'center';
     context.fillStyle = '#382a24';
     context.font = '700 42px "Andika", "Trebuchet MS", sans-serif';
-    context.fillText(objective?.caption ?? 'Explore!', WORLD.width / 2, 400);
-    context.font = '28px "Andika", "Trebuchet MS", sans-serif';
-    wrapText(context, objective?.text ?? '', 355, 452, 570, 36, 2, 'center');
+    context.fillText(
+      childFacingUiText(objective?.caption ?? 'Explore!', 'caption'),
+      WORLD.width / 2,
+      400,
+    );
     drawVectorIcon(context, 'owl', 297, 492, 62, { color: '#805d3d', secondary: '#d4b174' });
     drawVectorIcon(context, 'owl', 983, 492, 62, { color: '#805d3d', secondary: '#d4b174' });
     drawClose(context);
@@ -633,24 +656,24 @@ export class UIRenderer {
     context.fill();
     drawVectorIcon(context, 'owl', 975 + drift, 183, 104, { color: '#69472f', secondary: '#d9b876' });
     drawVectorIcon(context, 'owl', 292 - drift * 0.35, 180, 68, { color: '#815d3b', secondary: '#d9b876' });
-    context.textAlign = 'center';
-    context.fillStyle = '#66405f';
-    traceRoundedRect(context, 425, 126, 430, 58, 24);
-    context.fill();
-    context.strokeStyle = PALETTE.candle;
-    context.lineWidth = 3;
-    context.stroke();
-    context.fillStyle = '#fff8e8';
-    context.font = '700 31px "Andika", "Trebuchet MS", sans-serif';
-    context.fillText(card?.eyebrow ?? 'Chapter One Complete', WORLD.width / 2, 165);
     context.fillStyle = '#382a24';
     context.font = '700 64px "Andika", "Trebuchet MS", sans-serif';
-    wrapText(context, card?.title ?? 'Platform Nine and Three-Quarters', 250, 276, 780, 73, 2, 'center');
-    context.fillStyle = '#6b4f38';
-    context.font = '31px "Andika", "Trebuchet MS", sans-serif';
-    context.fillText(card?.subtitle ?? 'Next time: the Hogwarts Express!', WORLD.width / 2, 465);
+    wrapText(
+      context,
+      childFacingUiText(card?.title ?? 'Platform Nine and Three-Quarters', 'proper-name'),
+      250,
+      276,
+      780,
+      73,
+      2,
+      'center',
+    );
     if (card?.buttonLabel !== null) {
-      drawInvitationButton(context, card?.buttonLabel ?? 'See what is next', { x: 425, y: 506, width: 430, height: 91 });
+      drawInvitationButton(
+        context,
+        childFacingUiText(card?.buttonLabel ?? 'Continue', 'action'),
+        { x: 425, y: 506, width: 430, height: 91 },
+      );
     }
   }
 
@@ -701,16 +724,17 @@ export class UIRenderer {
       reducedMotion,
     }, animationTime);
 
-    drawTitleMasthead(context, hasSave);
-    drawInvitationButton(context, hasSave ? 'Return to Hogwarts' : 'Open Violet’s letter', {
+    drawTitleMasthead(context);
+    drawInvitationButton(context, childFacingUiText(
+      hasSave ? 'Return to Hogwarts' : 'Open Violet’s letter',
+      'action',
+    ), {
       x: 394, y: 379, width: 492, height: 142,
     }, {
       largeSeal: true,
       time: animationTime,
       reducedMotion,
-      eyebrow: hasSave ? 'VIOLET’S STORY' : 'OWL POST FOR VIOLET',
     });
-    drawTitleSoundCue(context);
   }
 
   drawDebugReset(context) {
@@ -880,20 +904,12 @@ export class UIRenderer {
 
   drawYearbook(context, entries, index = 0) {
     drawStorybookSpread(context, { x: 72, y: 32, width: 1136, height: 652 }, {
-      title: 'Violet’s Yearbook',
-      subtitle: entries.length === 1 ? 'One magical memory so far.' : `${entries.length} magical memories so far.`,
+      title: childFacingUiText('Violet’s Yearbook', 'proper-name'),
     });
     drawClose(context);
 
     if (entries.length === 0) {
       drawWaxMedallion(context, WORLD.width / 2, 340, 76, vectorControlIcon('cards'));
-      context.fillStyle = '#49382e';
-      context.textAlign = 'center';
-      context.font = '700 34px "Andika", "Trebuchet MS", sans-serif';
-      context.fillText('The first picture is still ahead', WORLD.width / 2, 465);
-      context.fillStyle = '#6b5744';
-      context.font = '24px "Andika", "Trebuchet MS", sans-serif';
-      context.fillText('Golden moments will appear here as Violet explores.', WORLD.width / 2, 510);
       return;
     }
 
@@ -913,13 +929,18 @@ export class UIRenderer {
     context.fillStyle = '#382a24';
     context.textAlign = 'center';
     context.font = '700 29px "Andika", "Trebuchet MS", sans-serif';
-    context.fillText(entry.caption, WORLD.width / 2, 585);
-    context.fillStyle = '#6b5744';
-    context.font = '21px "Andika", "Trebuchet MS", sans-serif';
-    context.fillText(`${safeIndex + 1} of ${entries.length}`, WORLD.width / 2, 620);
+    context.fillText(childFacingUiText(entry.caption, 'caption'), WORLD.width / 2, 585);
     if (entries.length > 1) {
-      drawParchmentAction(context, UI_RECTS.yearbookPrevious, { label: 'Previous', icon: '‹', compact: true });
-      drawParchmentAction(context, UI_RECTS.yearbookNext, { label: 'Next', icon: '›', compact: true });
+      drawYearbookPageDots(context, entries.length, safeIndex);
+      drawParchmentAction(context, UI_RECTS.yearbookPrevious, {
+        icon: childFacingUiText('‹', 'symbol'),
+        compact: true,
+      });
+      drawParchmentAction(context, UI_RECTS.yearbookNext, {
+        label: childFacingUiText('Next', 'action'),
+        icon: childFacingUiText('›', 'symbol'),
+        compact: true,
+      });
     }
   }
 
@@ -933,6 +954,63 @@ export class UIRenderer {
     this.yearbookImages.set(entry.id, image);
     return image;
   }
+}
+
+export function drawYearbookPageDots(context, count, activeIndex) {
+  const spacing = 22;
+  const startX = WORLD.width / 2 - ((count - 1) * spacing) / 2;
+  context.save();
+  for (let index = 0; index < count; index += 1) {
+    context.fillStyle = index === activeIndex ? '#66405f' : '#b9a17d';
+    traceYearbookPageDot(
+      context,
+      startX + index * spacing,
+      624,
+      index === activeIndex ? 7 : 5,
+      index,
+    );
+    context.fill();
+  }
+  context.restore();
+}
+
+function traceYearbookPageDot(context, x, y, radius, index) {
+  const wobble = [-0.09, 0.04, 0.11][index % 3];
+  context.beginPath();
+  context.moveTo(x - radius * (0.92 + wobble), y - radius * 0.14);
+  context.bezierCurveTo(
+    x - radius * (0.82 - wobble),
+    y - radius * (0.72 + wobble),
+    x - radius * (0.22 + wobble),
+    y - radius * (1.04 - wobble),
+    x + radius * (0.38 - wobble),
+    y - radius * (0.88 + wobble),
+  );
+  context.bezierCurveTo(
+    x + radius * (0.92 + wobble),
+    y - radius * (0.58 - wobble),
+    x + radius * (1.02 - wobble),
+    y + radius * (0.06 + wobble),
+    x + radius * (0.78 + wobble),
+    y + radius * (0.54 - wobble),
+  );
+  context.bezierCurveTo(
+    x + radius * (0.45 - wobble),
+    y + radius * (1.02 + wobble),
+    x - radius * (0.17 - wobble),
+    y + radius * (0.96 - wobble),
+    x - radius * (0.66 + wobble),
+    y + radius * (0.68 + wobble),
+  );
+  context.bezierCurveTo(
+    x - radius * (1.02 - wobble),
+    y + radius * (0.38 - wobble),
+    x - radius * (1.04 + wobble),
+    y + radius * (0.06 - wobble),
+    x - radius * (0.92 + wobble),
+    y - radius * 0.14,
+  );
+  context.closePath();
 }
 
 export function buildCardAlbumEntries(cardDefinitions, earnedCardIds) {
@@ -1063,10 +1141,10 @@ function drawClose(context) {
   drawWaxIcon(context, 1090, 120, 45, 'close');
 }
 
-function drawInvitationButton(context, label, rect, { largeSeal = false, time = 0, eyebrow = null } = {}) {
+function drawInvitationButton(context, label, rect, { largeSeal = false, time = 0 } = {}) {
   const { x, y, width, height } = rect;
   if (largeSeal) {
-    drawTitleLetter(context, label, rect, { time, eyebrow });
+    drawTitleLetter(context, label, rect, { time });
     return;
   }
   const sealRadius = largeSeal ? 47 : 34;
@@ -1187,25 +1265,9 @@ function drawTitleCastle(context) {
   context.restore();
 }
 
-function drawTitleMasthead(context, hasSave) {
-  drawDisplayTitle(context, 'Violet', 485, 183, 101);
-  drawDisplayTitle(context, 'at Hogwarts', 505, 258, 67);
-
-  context.fillStyle = 'rgba(226,190,101,0.88)';
-  drawTrackedText(context, 'THE LETTER & DIAGON ALLEY', 505, 302, 18, 2.7, '700 18px "Andika", "Trebuchet MS", sans-serif');
-  context.strokeStyle = 'rgba(226,190,101,0.5)';
-  context.lineWidth = 1.4;
-  context.beginPath();
-  context.moveTo(292, 317);
-  context.lineTo(718, 317);
-  context.stroke();
-  context.fillStyle = '#f0d28a';
-  drawTitleStar(context, 505, 317, 4.2);
-
-  context.fillStyle = 'rgba(244,228,195,0.86)';
-  context.textAlign = 'center';
-  context.font = '25px "Andika", "Trebuchet MS", sans-serif';
-  context.fillText(hasSave ? 'Your place at Hogwarts is waiting.' : 'A Hogwarts letter has arrived for Violet.', 505, 354);
+function drawTitleMasthead(context) {
+  drawDisplayTitle(context, childFacingUiText('Violet', 'proper-name'), 485, 183, 101);
+  drawDisplayTitle(context, childFacingUiText('at Hogwarts', 'proper-name'), 505, 258, 67);
 }
 
 function drawDisplayTitle(context, text, x, y, size) {
@@ -1228,7 +1290,7 @@ function drawDisplayTitle(context, text, x, y, size) {
   context.restore();
 }
 
-function drawTitleLetter(context, label, rect, { time = 0, eyebrow = 'OWL POST FOR VIOLET' } = {}) {
+function drawTitleLetter(context, label, rect, { time = 0 } = {}) {
   const { x, y, width, height } = rect;
   const pulse = 1 + Math.sin(time * 2.1) * 0.018;
   context.save();
@@ -1269,12 +1331,10 @@ function drawTitleLetter(context, label, rect, { time = 0, eyebrow = 'OWL POST F
     sealContext.fillText('V', sealX, sealY + 16);
   });
 
-  context.fillStyle = '#76582f';
-  drawTrackedText(context, eyebrow, x + 306, y + 48, 15, 1.8, '700 15px "Andika", "Trebuchet MS", sans-serif');
   context.fillStyle = '#33241f';
   context.textAlign = 'center';
   context.font = '700 31px "Andika", "Trebuchet MS", sans-serif';
-  fitText(context, label, x + 306, y + 94, width - 160);
+  fitText(context, label, x + 306, y + height / 2 + 10, width - 160);
   context.restore();
 }
 
@@ -1292,26 +1352,6 @@ function traceTitleLetter(context, x, y, width, height) {
   context.closePath();
 }
 
-function drawTitleSoundCue(context) {
-  context.save();
-  context.strokeStyle = 'rgba(217,185,112,0.54)';
-  context.lineWidth = 1.5;
-  context.beginPath();
-  context.moveTo(345, 566);
-  context.quadraticCurveTo(405, 558, 466, 566);
-  context.moveTo(814, 566);
-  context.quadraticCurveTo(875, 558, 935, 566);
-  context.stroke();
-  context.fillStyle = '#d9b970';
-  drawTitleStar(context, 334, 566, 3.6);
-  drawTitleStar(context, 946, 566, 3.6);
-  context.fillStyle = 'rgba(240,227,200,0.82)';
-  context.textAlign = 'center';
-  context.font = '19px "Andika", "Trebuchet MS", sans-serif';
-  context.fillText('Sound on · voices, music, and owl post', WORLD.width / 2, 573);
-  context.restore();
-}
-
 function drawTitleStar(context, x, y, radius) {
   context.beginPath();
   context.moveTo(x, y - radius);
@@ -1324,20 +1364,6 @@ function drawTitleStar(context, x, y, radius) {
   context.lineTo(x - radius * 0.28, y - radius * 0.28);
   context.closePath();
   context.fill();
-}
-
-function drawTrackedText(context, text, centerX, baselineY, size, tracking, font) {
-  context.save();
-  context.font = font;
-  context.textAlign = 'left';
-  const glyphWidths = [...text].map((character) => context.measureText(character).width);
-  const totalWidth = glyphWidths.reduce((sum, width) => sum + width, 0) + Math.max(0, text.length - 1) * tracking;
-  let x = centerX - totalWidth / 2;
-  [...text].forEach((character, index) => {
-    context.fillText(character, x, baselineY);
-    x += glyphWidths[index] + tracking;
-  });
-  context.restore();
 }
 
 function drawPanelNotice(context, notice) {
