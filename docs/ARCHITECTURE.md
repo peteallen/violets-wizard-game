@@ -149,7 +149,7 @@ GitHub Pages, mirroring the siblings:
 - `vite.config.js` `base: './'`; all asset paths through `assetUrl()` (`import.meta.env.BASE_URL` + `?v=<SHA>`).
 - CI on push to `main`: tests + content lint + `check:assets` + build → Pages **artifact** workflow (soccer's `pages.yml`). If artifact deploys flake, fall back to the gh-pages branch force-push workflow (robotgame's proven plan B).
 - `version.json` written at build (SHA + timestamp); `VersionWatcher` polls it and offers reload — beats Pages' stale-HTML caching (the robotgame war).
-- Deploy verification is five layers, never just a green push: workflow green → gh-pages advanced → Pages build status `built` → live `version.json` matches SHA → live HTML references the new bundle hash.
+- Deploy verification, day to day: CI green is trusted (it gates on the full test/lint/asset battery). The five-layer checklist (workflow green → deployment advanced → Pages status → live `version.json` matches SHA → live HTML references the new bundle) is a **debugging tool for when a deploy looks wrong**, plus a one-time proof at pipeline setup — not a per-push ritual (D32).
 - iPad meta: `viewport-fit=cover`, `apple-mobile-web-app-capable`, home-screen icon + title, `user-scalable=no`.
 
 ## Dev workflow

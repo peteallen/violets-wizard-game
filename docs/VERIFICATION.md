@@ -4,12 +4,12 @@ The hard problem this doc solves: engineers on this project are largely AI agent
 
 ## The verification pyramid
 
+> **D32 (2026-07-13): no human approval gates.** This is a family project; velocity beats ceremony. Everything below is agent-automated and free. Pete's feedback comes from *playing the deployed game* whenever he likes, delivered conversationally — never from processing a review queue. Agents are therefore the last line of visual defense and must self-review strictly.
+
 1. **Headless sim tests** (Vitest) — logic: quest graphs, encounters, saves, geometry. Fast, exhaustive, no pixels.
 2. **Content lint** — the data contract police (see ARCHITECTURE.md §Testing).
-3. **Harness keyframe review** — agents capture deterministic frames of visual work and *look at them* against written illusion checklists. **VERIFIED: the Read tool renders PNGs visually — agents genuinely see their work.**
-4. **Golden regression** — approved keyframes become per-environment goldens; perceptual pixel-diff catches unintended drift forever after.
-5. **Human taste gate** — dad reviews the GIF/strip for every set piece; agents verify consistency, humans verify *magic*. This gate is load-bearing: easing glitches and tempo problems can hide between sampled keyframes.
-6. **Device gate** — the real iPad, every milestone. Goldens certify Chromium only; iPad Safari renders with a different rasterizer and DPR. Nothing replaces playing it on the actual glass.
+3. **Harness keyframe self-review** — agents capture deterministic frames of visual work and *look at them* against written illusion checklists (including the Storybook Standard section). **VERIFIED: the Read tool renders PNGs visually — agents genuinely see their work.**
+4. **Play it** — Pete and Violet, on the deployed game and the actual iPad. iPad Safari renders with a different rasterizer and DPR than the capture harness; nothing replaces the actual glass. Feedback arrives as conversation and lands in DECISIONS.md.
 
 ## Determinism requirements (engine-level, non-negotiable, built FIRST)
 
@@ -41,24 +41,20 @@ Retrofitting determinism is brutally expensive, so these land in WP-01/WP-02 bef
 |---|---|
 | `scripts/snap.mjs` | `--scene <id> --times 0,0.25,0.5,1,2 --seed 42` → starts Vite **programmatically** (`createServer()` — no port races or orphan processes when agents run captures concurrently), loads the harness once, iterates `__renderAt(t)` + `__snapshot()`, writes `review/<scene>/seed42_t00250.png` (zero-padded ms so globs sort chronologically) |
 | `scripts/flipbook.mjs` | ffmpeg (v8.1.2, **VERIFIED**: `palettegen stats_mode=diff` + `paletteuse dither=bayer`) → `review/<scene>/flipbook.gif` at dense steps (0.1s, 10fps) + `sheet.png` contact strip (`tile=Nx1`) |
-| `scripts/diff.mjs` | pixelmatch vs `goldens/<scene>/` — **perceptual threshold 0.1, fail at >0.5% differing pixels, never exact-match** (absorbs sub-pixel AA drift); writes `diff_<frame>.png` heatmaps the agent Reads to localize regressions |
-| `scripts/bless.mjs` | copies reviewed keyframes into `goldens/<scene>/` — **human-triggered only**; agents never bless their own work |
-| `review/index.html` | static gallery of every scene's strip + GIF for human browsing; `review/` is gitignored, `goldens/` is committed (640×360 stylized frames ≈ 5–50KB; plain git, no LFS needed below ~50MB total) |
+| `scripts/diff.mjs` / `scripts/bless.mjs` | **Optional tools, not process** (D32): pixelmatch comparison against `goldens/<scene>/` snapshots an agent may take for itself mid-refactor (perceptual threshold 0.1, >0.5% fail — never exact). No blessing ritual, no committed goldens requirement, not wired into CI. |
+| `review/index.html` | static gallery of every scene's strip + GIF — browse it if you're curious, ignore it if you're not; `review/` is gitignored |
 
 ## The agent review loop (per visual change)
 
 1. **Implement** the set piece per its SET_PIECES.md spec.
 2. **Capture**: `snap.mjs` at the spec's keyframe times (chosen to hit anticipation / impact / settle). Multi-seed spot-check (`--seed 1,42,1337`) to catch seed-dependent bugs.
-3. **Self-review**: Read the PNGs against the set piece's illusion checklist. Checklists are **geometric and countable** ("no tile crosses another into visual mush at t=1.4", "name legible at 640×360", "particle count 20–40") — never vibes; keyframe judgment of subtle motion is the weakest link, so the checklist carries the burden. Iterate until it passes.
-4. **Regression guard**: `diff.mjs --all`; any drift on scenes you didn't intend to touch is a regression — Read the heatmaps and fix.
-5. **Motion artifact**: `flipbook.mjs` → GIF + contact sheet; add to `review/index.html`.
-6. **Flag for human**: append to `review/PENDING.md` (scene, seed, what changed, checklist verdict, GIF path) and say so in your report. GIFs are for *motion* judgment; 256-color quantization hides art subtleties — PNGs are ground truth.
-7. **Human review**: dad watches the GIF, optionally scrubs the harness live, and (for anything already past its chapter's device gate) checks the iPad.
-8. **Bless**: on explicit approval, `bless.mjs` locks the look. Future changes that move those pixels require re-review — which is exactly the intended workflow.
+3. **Self-review**: Read the PNGs against the set piece's illusion checklist. Checklists are **geometric and countable** ("no tile crosses another into visual mush at t=1.4", "name legible at 640×360", "particle count 20–40") — never vibes; keyframe judgment of subtle motion is the weakest link, so the checklist carries the burden. Generate the `flipbook.mjs` GIF and read the contact strip for motion sanity. Iterate until it passes — **you are the last reviewer** (D32); merge when green.
+
+There is no approval queue, no PENDING.md, no blessing step, and no golden gate (D32 retired them). If a change is genuinely taste-risky — a new character design, a signature moment's feel — say so plainly in your report so Pete knows to look at it in the deployed game; that's a heads-up, not a blocking request.
 
 ## What this machinery does NOT cover (and what does)
 
-- **Cross-platform fidelity**: goldens are per-environment. Chromium-vs-iPad pixel comparison is explicitly not attempted (different rasterizers, fonts, AA — a guaranteed false-positive machine). The device gate covers it.
-- **Motion feel between keyframes**: dense GIFs help; the human gate decides.
-- **Art taste** (is the room beautiful? does Violet's hair read as *hers*?): contact sheets + dad. Agents check consistency (palette, outline weight, light direction per ART_DIRECTION), not beauty.
+- **Cross-platform fidelity**: captures certify Chromium only; iPad Safari differs (rasterizer, fonts, AA, DPR). Playing on the actual iPad covers it.
+- **Motion feel between keyframes**: dense GIFs help agents; Pete feels it in play.
+- **Art taste** (is the room beautiful? does Violet's hair read as *hers*?): agents check consistency against the Storybook Standard and the character reference sheets (palette, outline weight, light direction, ≥2-tone form); beauty gets judged in play.
 - **Fun**: Violet. There is no script for this one.

@@ -31,14 +31,37 @@ The puppets are the largest quality gap and Violet-the-puppet is on every screen
 - **One face construction shared by puppet and portrait** (two detail tiers, same bones) so a character standing next to their own dialogue portrait no longer reads as two different games.
 - Order: **Violet first** (VU-01), then Hagrid + shopkeepers + owl + pets (VU-02). The in-flight hair-wisp work folds into VU-01.
 
-## Workstream 2 — One affordance language (VU-03)
+## Workstream 2 — Affordances: one language, a salience hierarchy, and a lifecycle (VU-03)
 
-Kill the dashed marching-ant rings and scattered diamond sparkles everywhere. Replace with the single language ART_DIRECTION always specified:
+Pete's playtest feedback (2026-07-13) sharpened this workstream: the dashed rings aren't just ugly — they're *confusing*. They appear everywhere at equal strength (five at once in Diagon Alley), they don't distinguish "your next step" from "optional fun," and they sometimes persist after the interaction is spent. That's three distinct defects: a style problem, a missing **salience hierarchy**, and a missing **affordance lifecycle**. All three are VU-03.
 
-- **Tappable = warm gold shimmer on the object itself**: a soft pre-rendered glow halo hugging the object's bounds + 2–3 slow orbiting sparkle motes. The object glows; no abstract overlay shapes.
-- **Objective emphasis** (hint-ladder rung 3+) intensifies the same shimmer — one language, two intensities, zero new symbols.
-- **Hidden frog cards get a tell**: a periodic faint glint (2s every ~8s), and the pet occasionally wanders toward and paws at a hidden card (the richness-layer affordance GAME_DESIGN promised — currently unimplemented).
-- **The map objective is an actual glowing star** on the destination — always present for the current objective (fixes the "tap the golden star" / no star contradiction).
+### The language (style)
+
+Kill the dashed marching-ant rings and scattered diamond sparkles everywhere. One language, per ART_DIRECTION: **warm gold shimmer on the object itself** — a soft pre-rendered glow halo hugging the object's bounds + slow orbiting sparkle motes. The object glows; no abstract overlay shapes, ever.
+
+### The hierarchy (attention budget)
+
+Three salience tiers, strictly enforced:
+
+1. **The golden thread** — the current objective's target. The strongest shimmer, and **exactly one on screen at any time**. If the objective's target is in another room, the room's exit/door carries the thread instead. She should always be able to answer "what's next?" by looking for the brightest gold thing.
+2. **Discoverables** — optional interactables (shop browsing, flavor props, characters with idle lines). **No persistent glow.** They advertise via an occasional soft glint (~1.5s, staggered so no two glint simultaneously) and light up with the shimmer only on press-down (the arm-on-down input pattern already in the engine). Curiosity gets rewarded, not solicited.
+3. **Secrets** (hidden frog cards) — rarer, fainter glint (~2s every ~8s), plus the pet occasionally wandering over and pawing at the spot (the GAME_DESIGN richness-layer affordance, currently unimplemented).
+
+**Budget rule, checklist-enforced:** one golden thread + at most two visible glints in any 3-second window. A screen with five simultaneous advertisements is a defect by definition, regardless of how pretty each one is.
+
+### The lifecycle (state correctness)
+
+Affordance state derives from quest/flag state — mechanically, not by hand-authoring:
+
+- **Spent hotspots go quiet.** When a hotspot's quest step completes or its script is exhausted to repeat-flavor, it drops out of the advertisement system entirely (still tappable for flavor — never advertised). Fixes "the ring is still there after I'm done."
+- The golden thread **moves the instant the objective advances** (same event that updates the quest star and map star).
+- The hint ladder plugs in as intensity, not new symbols: idle escalation brightens the existing golden thread and (rung 3+) sends the sparkle trail toward it.
+- While dialogue, set pieces, or walking are active, all affordances quiet to nothing — the world doesn't blink for attention while someone is talking.
+- Headless-testable: `World.snapshot()` exposes per-hotspot salience tier, so tests assert the budget ("exactly one thread; spent hotspots tier-none") across full chapter walkthroughs — this is a sim feature wearing art clothes.
+
+### Map
+
+The map objective is an actual glowing star on the destination — always present for the current objective (fixes the "tap the golden star" / no-star contradiction), and it's the same golden-thread visual language.
 
 ## Workstream 3 — Diegetic UI (VU-04, VU-05)
 
@@ -69,15 +92,14 @@ The "doesn't make sense" list, fixed in one sweep (all engine/content, parallel-
 
 ## Prerequisite: land the in-flight diff (VU-pre)
 
-Before the pass starts, the working tree goes green and empty: decide the Nimbus caption (recommend: revert to a vocabulary caption — "So fast!" — and save "Nimbus 2000" for a voiced line, which keeps canon flavor out of the sight-word layer), decide the on-screen title (**recommend adopting "Violet at Hogwarts"** — it's simply a better name — and aligning index.html's `<title>`/app-title), re-capture changed scenes, add the PENDING.md entry, log both decisions, commit.
+Before the pass starts, the working tree goes green and empty: the Nimbus caption and on-screen title are decided (D30 — "Flying broom!" and **Violet at Hogwarts**, aligned in index.html), changed scenes re-captured and self-reviewed, decisions logged, committed.
 
-## Process changes (VU-09 — so this can't happen twice)
+## Process changes (VU-09 — velocity-first, per D32)
 
 1. **Checklists gain the Storybook Standard section** — countable checks: every fill region ≥2 tones; outline colors within the ink range; no perfect-geometry primitives on player-facing surfaces; palette sampled within room-palette distance; element passes the squint test vs. its reference sheet.
-2. **Side-by-side protocol**: character/UI captures are reviewed next to their reference art in the same image strip.
-3. **Pete's GIF review becomes a hard merge gate for visual work**: PENDING.md entry + recorded approval *before* merge, not after.
-4. **Goldens go live**: after Pete approves the pass's surfaces, bless them (`scripts/bless.mjs`), commit `goldens/`, and wire `diff:goldens` into CI — arming the regression layer that's currently inert.
-5. Log the drift batch this pass resolves in DECISIONS.md as it lands (dashed-ring removal, text rule, map rebuild replacing the hardcoded renderer bypass, etc.).
+2. **Side-by-side self-review**: agents capture character/UI work next to its reference art in the same image strip and judge the match themselves — a tool for hitting the bar, not an approval step.
+3. **No human gates anywhere** (D32): no GIF approvals, no PENDING queue, no golden blessing. Agents self-review strictly, merge when green, and ship; CI (tests + content lint + asset checks) is the only gate. Taste-risky changes get a plain-language heads-up in the report so Pete knows what to look at *in the deployed game*.
+4. Log the drift batch this pass resolves in DECISIONS.md as it lands (dashed-ring removal, text rule, map rebuild replacing the hardcoded renderer bypass, etc.).
 
 ## Order and gating
 
@@ -89,11 +111,11 @@ VU-pre (land in-flight diff, tree green)
       ├─ VU-04 dialogue panel → VU-05 satchel/map         (UI track)
       └─ VU-08 clarity bugs                               (parallel, engine/content)
   → VU-06 title v3 + VU-07 text purge     ← after the language/UI tracks settle
-  → VU-09 process: checklists, goldens blessed, diff:goldens in CI
-  → deploy → **Violet's first playtest** (the real M2 gate, at last)
+  → VU-09 checklist upgrades land in docs/tests
+  → deploy continuously → **Violet's first playtest** (the real M2 gate, at last)
 ```
 
-Every VU work package follows the standing review loop (VERIFICATION.md): implement → capture → self-review against the upgraded checklist → GIF + PENDING entry → **Pete approves** → merge → bless.
+Every VU work package follows the standing loop (VERIFICATION.md): implement → capture → self-review against the upgraded checklist → merge when green. Commit and push **every green increment** (D33) — several pushes per session — so the GitHub Pages build is always current; Pete tests there continuously and feedback arrives as conversation.
 
 ## Non-goals
 
