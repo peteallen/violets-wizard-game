@@ -478,7 +478,7 @@ const dialogueGraphs = [
         speaker: 'npc.violet',
         voice: 'voice/ch1/violet/broom',
         text: 'That broom looks fast!',
-        caption: 'So fast!',
+        caption: 'Flying broom!',
         next: 'finish',
         portraitPose: 'wonder',
       }),

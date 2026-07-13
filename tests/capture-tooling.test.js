@@ -3,6 +3,7 @@ import { PNG } from 'pngjs';
 import { APPROVED_CAPTURE_ENVIRONMENT } from '../src/harness/environment.js';
 import {
   captureFileName,
+  collectFontIdentities,
   decodePngDataUrl,
   parseSnapArgs,
   scenarioDirectoryName,
@@ -78,6 +79,16 @@ describe('snap command helpers', () => {
     expect(decodePngDataUrl(`data:image/png;base64,${signature.toString('base64')}`)).toEqual(signature);
     expect(() => decodePngDataUrl('data:text/plain;base64,SGk=')).toThrow(/PNG data URL/);
   });
+
+  it('derives bundled font identities from file bytes instead of trusting configured hashes', () => {
+    const configured = [{ path: 'font.woff2', sha256: '0'.repeat(64) }];
+    const identities = collectFontIdentities(configured, (fontPath) => Buffer.from(`bytes:${fontPath}`), '/project');
+    expect(identities).toEqual([{
+      path: 'font.woff2',
+      sha256: 'd2497242c728a3fa59d7a28aebb98d9f402713479a6f2b3714dbe990904a1f16',
+    }]);
+    expect(identities[0].sha256).not.toBe(configured[0].sha256);
+  });
 });
 
 describe('flipbook command helpers', () => {
@@ -91,8 +102,8 @@ describe('flipbook command helpers', () => {
   });
 
   it('pins ffmpeg and rejects cadences that cannot align with 60 fps', () => {
-    expect(assertFfmpegVersion('ffmpeg version 8.1.1 Copyright')).toBe('8.1.1');
-    expect(() => assertFfmpegVersion('ffmpeg version 7.0 Copyright')).toThrow(/8\.1\.1 is required/);
+    expect(assertFfmpegVersion('ffmpeg version 8.1.2 Copyright')).toBe('8.1.2');
+    expect(() => assertFfmpegVersion('ffmpeg version 7.0 Copyright')).toThrow(/8\.1\.2 is required/);
     expect(() => parseFlipbookArgs(['--scene', 'foundation', '--fps', '7'])).toThrow(/divide evenly/);
   });
 });

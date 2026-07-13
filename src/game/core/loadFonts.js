@@ -1,6 +1,7 @@
 const GAME_FONT_FACES = Object.freeze([
   '400 24px "Andika"',
   '700 24px "Andika"',
+  '700 72px "Almendra"',
 ]);
 
 export async function loadGameFonts(documentRef = globalThis.document) {

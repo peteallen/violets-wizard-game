@@ -14,6 +14,14 @@
   src: url("./assets/fonts/Andika-Bold.woff2") format("woff2");
 }
 
+@font-face {
+  font-family: "Almendra";
+  font-style: normal;
+  font-weight: 700;
+  font-display: block;
+  src: url("./assets/fonts/Almendra-Bold.woff2") format("woff2");
+}
+
 :root {
   color-scheme: dark;
   font-family: "Andika", "Trebuchet MS", "Avenir Next", system-ui, sans-serif;

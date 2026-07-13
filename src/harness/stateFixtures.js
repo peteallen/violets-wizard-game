@@ -149,6 +149,11 @@ registry
     { chapter: 0, scene: 'foundation' },
     createSave(),
   ))
+  .register('foundation-saved-review', createFixture(
+    'The title screen with meaningful progress, showing the returning-player invitation.',
+    { chapter: 0, scene: 'foundation-saved-review' },
+    createSave({ questFlags: { 'ch1.owlTapped': true } }),
+  ))
   .register('ch1-start', createFixture(
     'Chapter 1 at the bedroom letter scene before Violet has acted.',
     { chapter: 1, scene: 'ch1.letter' },
@@ -343,6 +348,10 @@ registry
   .register('ui-dialogue-review', characterReviewFixture(
     'ui-dialogue-review',
     'The illustrated dialogue parchment, animated Hagrid cameo, short caption, and replay control.',
+  ))
+  .register('ui-broom-caption-review', characterReviewFixture(
+    'ui-broom-caption-review',
+    'Violet’s broom reaction with its complete spoken line and short knowledge-independent caption.',
   ))
   .register('ui-letter-reading-review', characterReviewFixture(
     'ui-letter-reading-review',

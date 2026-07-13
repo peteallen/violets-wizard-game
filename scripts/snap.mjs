@@ -3,6 +3,7 @@ import './check-node.mjs';
 import { createHash } from 'node:crypto';
 import { execFileSync } from 'node:child_process';
 import { createRequire } from 'node:module';
+import { readFileSync } from 'node:fs';
 import { mkdir, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import process from 'node:process';
@@ -160,6 +161,13 @@ export function decodePngDataUrl(dataUrl) {
   return png;
 }
 
+export function collectFontIdentities(fonts, readFile = readFileSync, rootDirectory = ROOT_DIRECTORY) {
+  return fonts.map(({ path: fontPath }) => ({
+    path: fontPath,
+    sha256: createHash('sha256').update(readFile(path.resolve(rootDirectory, fontPath))).digest('hex'),
+  }));
+}
+
 export function localCaptureEnvironment() {
   const playwrightDirectory = path.dirname(require.resolve('playwright'));
   const playwrightCoreDirectory = path.dirname(require.resolve('playwright-core'));
@@ -175,6 +183,7 @@ export function localCaptureEnvironment() {
   identity.runtime.node = process.versions.node;
   identity.browser.playwright = require(path.join(playwrightDirectory, 'package.json')).version;
   identity.browser.revision = chromium.revision;
+  identity.rendering.fonts = collectFontIdentities(identity.rendering.fonts);
   identity.id = environmentIdentityId(identity);
   return assertEnvironmentIdentity(identity);
 }

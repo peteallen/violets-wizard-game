@@ -13,6 +13,8 @@ World/Game split running (fixed-timestep); rooms, tap-walk, hotspots, dialogue (
 ### M2 — Chapter 1 full production ⭐ first Violet playtest
 Painted rooms, character puppets, real voice (narrator, Guide, Wandmaker + QA loop), music cues, SFX, the letter-opening moment polished to perfection, pet choice + follow. **Gate: Violet plays Chapter 1. This is the real test of every UX assumption — tap-to-walk comprehension, dialogue pacing, caption reading, hint ladder timing. Everything downstream gets tuned by what we watch her do.**
 
+> **Status 2026-07-13:** production landed but Pete's review found a three-tier fidelity mismatch (rooms ≫ puppets ≫ UI) and a clarity-bug batch. The **Visual Unification Pass** ([VISUAL_UNIFICATION.md](VISUAL_UNIFICATION.md), D26–D29) now completes M2: VU-pre → VU-00 refs/standard → character + affordance + UI + clarity tracks → title v3 + text purge → goldens blessed → deploy → **then** Violet's first playtest closes the gate.
+
 ### M3 — Chapters 2–3
 Sorting (needs O1 answered), house theming, icon choices; spellbook + casting + first incantation assemblies (learning layer debut — watch her reaction to letter tiles *closely*; this is the "did we ruin it?" checkpoint, and the parent dial exists if we did), quest chains, side quests, frog card album. **Gate: Violet playtest #2.**
 

@@ -23,9 +23,15 @@ import { drawVectorOwl } from './OwlRenderer.js';
 import { drawReadableInvitation } from './SetPieceRenderer.js';
 
 const STORY_GRADIENTS = new WeakMap();
+const TITLE_STARS = Object.freeze([
+  [76, 82, 2.2], [166, 137, 3.2], [286, 91, 1.8], [372, 338, 2.4],
+  [468, 67, 2], [598, 112, 3.1], [728, 74, 1.8], [848, 330, 2.3],
+  [916, 68, 2.7], [1194, 96, 2.1], [1168, 360, 1.8], [104, 402, 2.4],
+]);
 
 export const UI_REVIEW_SCENES = Object.freeze([
   'ui-dialogue-review',
+  'ui-broom-caption-review',
   'ui-letter-reading-review',
   'ui-choices-review',
   'ui-satchel-map-review',
@@ -90,6 +96,11 @@ export class UIRenderer {
     context.fillRect(0, 0, WORLD.width, WORLD.height);
     if (scene === 'ui-letter-reading-review') {
       this.drawLetterReading(context);
+    } else if (scene === 'ui-broom-caption-review') {
+      this.drawDialogue(context, {
+        type: 'line', speaker: 'npc.violet', speakerLabel: 'Violet', portraitPose: 'wonder',
+        caption: 'Flying broom!', text: 'That broom looks fast!',
+      }, time, false, reducedMotion);
     } else if (scene === 'ui-dialogue-review') {
       this.drawDialogue(context, {
         type: 'line', speaker: 'npc.guide', speakerLabel: 'Hagrid', portraitPose: 'talk',
@@ -504,30 +515,20 @@ export class UIRenderer {
     const animationTime = reducedMotion ? 0 : time;
     context.fillStyle = storyGradient(context);
     context.fillRect(0, 0, WORLD.width, WORLD.height);
-    context.fillStyle = PALETTE.interactive;
-    for (let index = 0; index < 28; index += 1) {
-      const x = ((index * 197) % WORLD.width) + Math.sin(animationTime * 0.6 + index) * (reducedMotion ? 0 : 7);
-      const y = 60 + ((index * 83) % 410);
-      const alpha = reducedMotion ? 0.32 : 0.22 + (Math.sin(animationTime * 2 + index) + 1) * 0.18;
-      context.globalAlpha = alpha;
-      context.beginPath();
-      context.arc(x, y, 2 + (index % 3), 0, Math.PI * 2);
-      context.fill();
-    }
-    context.globalAlpha = 1;
-    const moonX = 1058 + Math.sin(animationTime * 0.22) * (reducedMotion ? 0 : 3);
-    context.fillStyle = 'rgba(244,213,141,0.16)';
+    drawTitleNight(context, animationTime, reducedMotion);
+    const moonX = 1082 + Math.sin(animationTime * 0.22) * (reducedMotion ? 0 : 2.5);
+    context.fillStyle = 'rgba(244,213,141,0.1)';
     context.beginPath();
-    context.arc(moonX, 142, 104, 0, Math.PI * 2);
+    context.arc(moonX, 137, 105, 0, Math.PI * 2);
     context.fill();
-    context.fillStyle = '#f5dfaa';
+    context.fillStyle = '#ecd59c';
     context.beginPath();
-    context.arc(moonX, 142, 73, 0, Math.PI * 2);
+    context.arc(moonX, 137, 78, 0, Math.PI * 2);
     context.fill();
-    context.fillStyle = 'rgba(130,102,69,0.2)';
-    for (const [dx, dy, radius] of [[-24, -16, 10], [17, 12, 13], [7, -31, 7]]) {
+    context.fillStyle = 'rgba(110,82,58,0.15)';
+    for (const [dx, dy, radius] of [[-25, -17, 10], [18, 13, 14], [8, -33, 7]]) {
       context.beginPath();
-      context.arc(moonX + dx, 142 + dy, radius, 0, Math.PI * 2);
+      context.arc(moonX + dx, 137 + dy, radius, 0, Math.PI * 2);
       context.fill();
     }
     const titleOwlX = moonX - 2 + Math.sin(animationTime * 0.45) * (reducedMotion ? 0 : 3);
@@ -536,14 +537,14 @@ export class UIRenderer {
     context.strokeStyle = '#8f673e';
     context.lineWidth = 5;
     context.beginPath();
-    context.moveTo(moonX - 52, 198);
-    context.quadraticCurveTo(moonX - 4, 207, moonX + 50, 197);
+    context.moveTo(moonX - 66, 200);
+    context.quadraticCurveTo(moonX - 5, 210, moonX + 69, 197);
     context.stroke();
     context.strokeStyle = 'rgba(255,240,194,0.42)';
     context.lineWidth = 1.4;
     context.beginPath();
-    context.moveTo(moonX - 44, 196);
-    context.quadraticCurveTo(moonX - 3, 202, moonX + 42, 195);
+    context.moveTo(moonX - 57, 198);
+    context.quadraticCurveTo(moonX - 4, 204, moonX + 58, 195);
     context.stroke();
     drawVectorOwl(context, {
       variant: 'post',
@@ -557,22 +558,16 @@ export class UIRenderer {
       reducedMotion,
     }, animationTime);
 
-    drawTitleFlourish(context, WORLD.width / 2, 172);
-    context.textAlign = 'center';
-    context.fillStyle = PALETTE.parchment;
-    context.font = '700 73px "Andika", "Trebuchet MS", sans-serif';
-    context.fillText("Violet’s Wizard Game", WORLD.width / 2, 254);
-    context.fillStyle = PALETTE.honey;
-    context.font = '34px "Andika", "Trebuchet MS", sans-serif';
-    context.fillText(hasSave ? 'Your adventure remembers you.' : 'Your letter is waiting.', WORLD.width / 2, 316);
-    drawInvitationButton(context, hasSave ? 'Continue Violet’s story' : 'Open Violet’s letter', {
+    drawTitleMasthead(context, hasSave);
+    drawInvitationButton(context, hasSave ? 'Return to Hogwarts' : 'Open Violet’s letter', {
       x: 394, y: 379, width: 492, height: 142,
-    }, { largeSeal: true, time: animationTime, reducedMotion });
-    context.fillStyle = 'rgba(240,227,200,0.78)';
-    context.font = '24px "Andika", "Trebuchet MS", sans-serif';
-    context.fillText('Best with sound on', WORLD.width / 2, 568);
-    drawVectorIcon(context, 'owl', 520, 561, 38, { color: '#d7bd82', secondary: '#6b536d' });
-    drawVectorIcon(context, 'speaker', 760, 561, 35, { color: '#d7bd82', secondary: '#6b536d' });
+    }, {
+      largeSeal: true,
+      time: animationTime,
+      reducedMotion,
+      eyebrow: hasSave ? 'VIOLET’S STORY' : 'OWL POST FOR VIOLET',
+    });
+    drawTitleSoundCue(context);
   }
 
   drawDebugReset(context) {
@@ -904,8 +899,12 @@ function drawClose(context) {
   drawWaxIcon(context, 1090, 120, 45, 'close');
 }
 
-function drawInvitationButton(context, label, rect, { largeSeal = false, time = 0 } = {}) {
+function drawInvitationButton(context, label, rect, { largeSeal = false, time = 0, eyebrow = null } = {}) {
   const { x, y, width, height } = rect;
+  if (largeSeal) {
+    drawTitleLetter(context, label, rect, { time, eyebrow });
+    return;
+  }
   const sealRadius = largeSeal ? 47 : 34;
   const sealX = x + (largeSeal ? 72 : 58);
   const sealY = y + height / 2;
@@ -953,18 +952,227 @@ function drawInvitationButton(context, label, rect, { largeSeal = false, time = 
   context.restore();
 }
 
-function drawTitleFlourish(context, x, y) {
+function drawTitleNight(context, time, reducedMotion) {
   context.save();
-  context.strokeStyle = 'rgba(244,213,141,0.72)';
-  context.lineWidth = 3;
+  context.fillStyle = '#d8b965';
+  for (let index = 0; index < TITLE_STARS.length; index += 1) {
+    const [x, y, radius] = TITLE_STARS[index];
+    const shimmer = reducedMotion ? 0.48 : 0.38 + (Math.sin(time * 1.35 + index * 1.71) + 1) * 0.14;
+    context.globalAlpha = shimmer;
+    drawTitleStar(context, x, y, radius);
+  }
+  context.globalAlpha = 1;
+
+  context.fillStyle = 'rgba(15,12,32,0.18)';
   context.beginPath();
-  context.moveTo(x - 250, y);
-  context.bezierCurveTo(x - 185, y - 28, x - 126, y + 27, x - 61, y);
-  context.bezierCurveTo(x - 34, y - 13, x - 20, y - 12, x, y);
-  context.bezierCurveTo(x + 20, y - 12, x + 34, y - 13, x + 61, y);
-  context.bezierCurveTo(x + 126, y + 27, x + 185, y - 28, x + 250, y);
+  context.moveTo(0, 625);
+  context.bezierCurveTo(180, 570, 335, 608, 510, 584);
+  context.bezierCurveTo(720, 552, 880, 606, 1280, 548);
+  context.lineTo(1280, 720);
+  context.lineTo(0, 720);
+  context.closePath();
+  context.fill();
+
+  drawTitleCastle(context);
+  context.restore();
+}
+
+function drawTitleCastle(context) {
+  context.save();
+  context.fillStyle = 'rgba(15,12,29,0.48)';
+  context.beginPath();
+  context.moveTo(0, 720);
+  context.lineTo(0, 660);
+  context.lineTo(85, 660);
+  context.lineTo(85, 626);
+  context.lineTo(112, 626);
+  context.lineTo(126, 574);
+  context.lineTo(140, 626);
+  context.lineTo(168, 626);
+  context.lineTo(168, 650);
+  context.lineTo(236, 650);
+  context.lineTo(236, 618);
+  context.lineTo(265, 618);
+  context.lineTo(279, 555);
+  context.lineTo(294, 618);
+  context.lineTo(326, 618);
+  context.lineTo(326, 671);
+  context.lineTo(913, 671);
+  context.lineTo(913, 634);
+  context.lineTo(944, 634);
+  context.lineTo(960, 577);
+  context.lineTo(976, 634);
+  context.lineTo(1009, 634);
+  context.lineTo(1009, 656);
+  context.lineTo(1094, 656);
+  context.lineTo(1094, 610);
+  context.lineTo(1124, 610);
+  context.lineTo(1141, 536);
+  context.lineTo(1157, 610);
+  context.lineTo(1188, 610);
+  context.lineTo(1188, 660);
+  context.lineTo(1280, 660);
+  context.lineTo(1280, 720);
+  context.closePath();
+  context.fill();
+
+  context.fillStyle = 'rgba(236,197,104,0.34)';
+  for (const [x, y] of [[111, 641], [137, 642], [257, 637], [284, 639], [936, 652], [963, 651], [1117, 633], [1147, 632], [1170, 642]]) {
+    context.fillRect(x, y, 6, 10);
+  }
+  context.restore();
+}
+
+function drawTitleMasthead(context, hasSave) {
+  drawDisplayTitle(context, 'Violet', 485, 183, 101);
+  drawDisplayTitle(context, 'at Hogwarts', 505, 258, 67);
+
+  context.fillStyle = 'rgba(226,190,101,0.88)';
+  drawTrackedText(context, 'THE LETTER & DIAGON ALLEY', 505, 302, 18, 2.7, '700 18px "Andika", "Trebuchet MS", sans-serif');
+  context.strokeStyle = 'rgba(226,190,101,0.5)';
+  context.lineWidth = 1.4;
+  context.beginPath();
+  context.moveTo(292, 317);
+  context.lineTo(718, 317);
   context.stroke();
-  drawVectorIcon(context, 'owl', x, y, 52, { color: '#f4d58d', secondary: '#604566' });
+  context.fillStyle = '#f0d28a';
+  drawTitleStar(context, 505, 317, 4.2);
+
+  context.fillStyle = 'rgba(244,228,195,0.86)';
+  context.textAlign = 'center';
+  context.font = '25px "Andika", "Trebuchet MS", sans-serif';
+  context.fillText(hasSave ? 'Your place at Hogwarts is waiting.' : 'A Hogwarts letter has arrived for Violet.', 505, 354);
+}
+
+function drawDisplayTitle(context, text, x, y, size) {
+  context.save();
+  context.textAlign = 'center';
+  context.textBaseline = 'alphabetic';
+  context.lineJoin = 'round';
+  context.miterLimit = 2;
+  context.font = `700 ${size}px "Almendra", Georgia, serif`;
+  context.strokeStyle = 'rgba(23,15,31,0.82)';
+  context.lineWidth = Math.max(7, size * 0.095);
+  context.strokeText(text, x + 2, y + 4);
+  context.strokeStyle = '#9e7838';
+  context.lineWidth = Math.max(2, size * 0.026);
+  context.strokeText(text, x, y);
+  context.fillStyle = '#f6e6ba';
+  context.fillText(text, x, y);
+  context.fillStyle = 'rgba(255,250,218,0.34)';
+  context.fillText(text, x - 0.8, y - 1.2);
+  context.restore();
+}
+
+function drawTitleLetter(context, label, rect, { time = 0, eyebrow = 'OWL POST FOR VIOLET' } = {}) {
+  const { x, y, width, height } = rect;
+  const pulse = 1 + Math.sin(time * 2.1) * 0.018;
+  context.save();
+  context.translate(x + width / 2, y + height / 2);
+  context.scale(pulse, pulse);
+  context.translate(-(x + width / 2), -(y + height / 2));
+
+  context.fillStyle = 'rgba(13,10,24,0.48)';
+  traceTitleLetter(context, x + 9, y + 12, width, height);
+  context.fill();
+  context.fillStyle = '#ead7ad';
+  traceTitleLetter(context, x, y, width, height);
+  context.fill();
+  context.strokeStyle = '#c89a43';
+  context.lineWidth = 5;
+  context.stroke();
+  context.strokeStyle = 'rgba(255,244,207,0.64)';
+  context.lineWidth = 1.5;
+  traceTitleLetter(context, x + 8, y + 7, width - 16, height - 14);
+  context.stroke();
+
+  context.strokeStyle = 'rgba(112,78,48,0.56)';
+  context.lineWidth = 2.4;
+  context.beginPath();
+  context.moveTo(x + 12, y + 12);
+  context.lineTo(x + width / 2, y + height * 0.58);
+  context.lineTo(x + width - 12, y + 12);
+  context.moveTo(x + 14, y + height - 13);
+  context.lineTo(x + width * 0.4, y + height * 0.5);
+  context.moveTo(x + width - 14, y + height - 13);
+  context.lineTo(x + width * 0.6, y + height * 0.5);
+  context.stroke();
+
+  drawWaxMedallion(context, x + 73, y + height / 2, 44, (sealContext, sealX, sealY) => {
+    sealContext.fillStyle = '#fff1c6';
+    sealContext.textAlign = 'center';
+    sealContext.font = '700 49px "Almendra", Georgia, serif';
+    sealContext.fillText('V', sealX, sealY + 16);
+  });
+
+  context.fillStyle = '#76582f';
+  drawTrackedText(context, eyebrow, x + 306, y + 48, 15, 1.8, '700 15px "Andika", "Trebuchet MS", sans-serif');
+  context.fillStyle = '#33241f';
+  context.textAlign = 'center';
+  context.font = '700 31px "Andika", "Trebuchet MS", sans-serif';
+  fitText(context, label, x + 306, y + 94, width - 160);
+  context.restore();
+}
+
+function traceTitleLetter(context, x, y, width, height) {
+  context.beginPath();
+  context.moveTo(x + 18, y);
+  context.lineTo(x + width - 14, y + 3);
+  context.quadraticCurveTo(x + width, y + 5, x + width - 2, y + 21);
+  context.lineTo(x + width - 5, y + height - 17);
+  context.quadraticCurveTo(x + width - 7, y + height, x + width - 24, y + height - 1);
+  context.lineTo(x + 15, y + height - 4);
+  context.quadraticCurveTo(x, y + height - 7, x + 3, y + height - 23);
+  context.lineTo(x + 1, y + 18);
+  context.quadraticCurveTo(x + 3, y + 3, x + 18, y);
+  context.closePath();
+}
+
+function drawTitleSoundCue(context) {
+  context.save();
+  context.strokeStyle = 'rgba(217,185,112,0.54)';
+  context.lineWidth = 1.5;
+  context.beginPath();
+  context.moveTo(345, 566);
+  context.quadraticCurveTo(405, 558, 466, 566);
+  context.moveTo(814, 566);
+  context.quadraticCurveTo(875, 558, 935, 566);
+  context.stroke();
+  context.fillStyle = '#d9b970';
+  drawTitleStar(context, 334, 566, 3.6);
+  drawTitleStar(context, 946, 566, 3.6);
+  context.fillStyle = 'rgba(240,227,200,0.82)';
+  context.textAlign = 'center';
+  context.font = '19px "Andika", "Trebuchet MS", sans-serif';
+  context.fillText('Sound on · voices, music, and owl post', WORLD.width / 2, 573);
+  context.restore();
+}
+
+function drawTitleStar(context, x, y, radius) {
+  context.beginPath();
+  context.moveTo(x, y - radius);
+  context.lineTo(x + radius * 0.28, y - radius * 0.28);
+  context.lineTo(x + radius, y);
+  context.lineTo(x + radius * 0.28, y + radius * 0.28);
+  context.lineTo(x, y + radius);
+  context.lineTo(x - radius * 0.28, y + radius * 0.28);
+  context.lineTo(x - radius, y);
+  context.lineTo(x - radius * 0.28, y - radius * 0.28);
+  context.closePath();
+  context.fill();
+}
+
+function drawTrackedText(context, text, centerX, baselineY, size, tracking, font) {
+  context.save();
+  context.font = font;
+  context.textAlign = 'left';
+  const glyphWidths = [...text].map((character) => context.measureText(character).width);
+  const totalWidth = glyphWidths.reduce((sum, width) => sum + width, 0) + Math.max(0, text.length - 1) * tracking;
+  let x = centerX - totalWidth / 2;
+  [...text].forEach((character, index) => {
+    context.fillText(character, x, baselineY);
+    x += glyphWidths[index] + tracking;
+  });
   context.restore();
 }
 

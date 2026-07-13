@@ -48,6 +48,9 @@ registry
     'Tap the foundation call to action after its initial animation settles.',
     [{ frame: 30, type: 'tap', target: 'foundation.start' }],
   ))
+  .register('foundation-saved-review', createFixture(
+    'Hold the returning-player title for deterministic visual review.',
+  ))
   .register('ch1-start', createFixture(
     'Open the Chapter 1 letter and hold its player-paced reading surface.',
     [
@@ -160,6 +163,9 @@ registry
   ))
   .register('ui-dialogue-review', createFixture(
     'Hold the illustrated voiced-dialogue frame and replay control.',
+  ))
+  .register('ui-broom-caption-review', createFixture(
+    'Hold Violet’s broom reaction and caption for deterministic visual review.',
   ))
   .register('ui-letter-reading-review', createFixture(
     'Hold the readable invitation and its explicit hear-the-letter action.',

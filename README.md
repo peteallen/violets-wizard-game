@@ -15,6 +15,7 @@ A private, non-commercial fan game for Violet (6): she goes to Hogwarts as a fir
 | [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) | Tech stack, module layout, data contracts, performance playbook + device-reality rules, testing, deploy |
 | [docs/VERIFICATION.md](docs/VERIFICATION.md) | How AI agents prove visual work looks right: deterministic harness, keyframe review, goldens, human gate |
 | [docs/BUILD_PLAN.md](docs/BUILD_PLAN.md) | Work packages with contracts and acceptance criteria — ready for engineers to fan out |
+| [docs/VISUAL_UNIFICATION.md](docs/VISUAL_UNIFICATION.md) | The active pass: one storybook fidelity tier for characters, UI, and affordances + the clarity-bug batch |
 | [docs/DECISIONS.md](docs/DECISIONS.md) | Running decision log — every choice, its reasoning, and open questions |
 | [docs/ROADMAP.md](docs/ROADMAP.md) | Build order, milestones, and Violet playtest checkpoints |
 

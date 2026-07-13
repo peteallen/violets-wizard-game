@@ -40,7 +40,7 @@ Retrofitting determinism is brutally expensive, so these land in WP-01/WP-02 bef
 | Script | Does |
 |---|---|
 | `scripts/snap.mjs` | `--scene <id> --times 0,0.25,0.5,1,2 --seed 42` → starts Vite **programmatically** (`createServer()` — no port races or orphan processes when agents run captures concurrently), loads the harness once, iterates `__renderAt(t)` + `__snapshot()`, writes `review/<scene>/seed42_t00250.png` (zero-padded ms so globs sort chronologically) |
-| `scripts/flipbook.mjs` | ffmpeg (v8.1.1, **VERIFIED**: `palettegen stats_mode=diff` + `paletteuse dither=bayer`) → `review/<scene>/flipbook.gif` at dense steps (0.1s, 10fps) + `sheet.png` contact strip (`tile=Nx1`) |
+| `scripts/flipbook.mjs` | ffmpeg (v8.1.2, **VERIFIED**: `palettegen stats_mode=diff` + `paletteuse dither=bayer`) → `review/<scene>/flipbook.gif` at dense steps (0.1s, 10fps) + `sheet.png` contact strip (`tile=Nx1`) |
 | `scripts/diff.mjs` | pixelmatch vs `goldens/<scene>/` — **perceptual threshold 0.1, fail at >0.5% differing pixels, never exact-match** (absorbs sub-pixel AA drift); writes `diff_<frame>.png` heatmaps the agent Reads to localize regressions |
 | `scripts/bless.mjs` | copies reviewed keyframes into `goldens/<scene>/` — **human-triggered only**; agents never bless their own work |
 | `review/index.html` | static gallery of every scene's strip + GIF for human browsing; `review/` is gitignored, `goldens/` is committed (640×360 stylized frames ≈ 5–50KB; plain git, no LFS needed below ~50MB total) |

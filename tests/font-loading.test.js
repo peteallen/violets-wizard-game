@@ -3,6 +3,7 @@ import { GAME_FONT_FACES, loadGameFonts } from '../src/game/core/loadFonts.js';
 
 describe('game font preload', () => {
   it('loads and warms every canvas weight before the first rendered frame', async () => {
+    expect(GAME_FONT_FACES).toContain('700 72px "Almendra"');
     const load = vi.fn(async () => ['loaded']);
     const fillText = vi.fn();
     const context = { font: '', fillText };

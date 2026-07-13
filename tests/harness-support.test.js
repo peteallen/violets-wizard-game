@@ -63,6 +63,7 @@ describe('state fixtures', () => {
   it('registers deterministic progression and visual-review states as immutable data', () => {
     expect(STATE_FIXTURE_IDS).toEqual([
       'foundation',
+      'foundation-saved-review',
       'ch1-start',
       'ch1-follow-hagrid-review',
       'ch1-wand-chosen',
@@ -87,6 +88,7 @@ describe('state fixtures', () => {
       'character-portraits-review',
       'owl-motion-review',
       'ui-dialogue-review',
+      'ui-broom-caption-review',
       'ui-letter-reading-review',
       'ui-choices-review',
       'ui-satchel-map-review',
@@ -230,7 +232,7 @@ describe('capture environment identity', () => {
   it('pins every rendering-sensitive foundation dependency', () => {
     expect(validateEnvironmentIdentity(APPROVED_CAPTURE_ENVIRONMENT)).toBe(APPROVED_CAPTURE_ENVIRONMENT);
     expect(APPROVED_CAPTURE_ENVIRONMENT.id).toBe(
-      'macos-26.5-arm64-node22.17.0-pw1.58.2-chromium1208-headless-srgb-en-us-utc-fonts-none',
+      'macos-26.5.2-arm64-node22.17.0-pw1.58.2-chromium1208-headless-srgb-en-us-utc-fonts-2bb44ff2.50841fc9.6b73917d',
     );
     expect(Object.isFrozen(APPROVED_CAPTURE_ENVIRONMENT.rendering.fonts)).toBe(true);
   });

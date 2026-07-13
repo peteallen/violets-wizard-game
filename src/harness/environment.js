@@ -106,10 +106,19 @@ export function assertEnvironmentIdentity(actual, expected = APPROVED_CAPTURE_EN
 const approvedDefinition = {
   schemaVersion: 1,
   id: '',
-  os: { name: 'macos', version: '26.5', architecture: 'arm64' },
+  os: { name: 'macos', version: '26.5.2', architecture: 'arm64' },
   runtime: { node: '22.17.0' },
   browser: { name: 'chromium', revision: '1208', playwright: '1.58.2', headless: true },
-  rendering: { colorSpace: 'srgb', locale: 'en-US', timezone: 'UTC', fonts: [] },
+  rendering: {
+    colorSpace: 'srgb',
+    locale: 'en-US',
+    timezone: 'UTC',
+    fonts: [
+      { path: 'src/assets/fonts/Andika-Regular.woff2', sha256: '50841fc9db96758f504a1776c700a585a774d172ac172e97b77fff5b75deff7b' },
+      { path: 'src/assets/fonts/Andika-Bold.woff2', sha256: '6b73917d10eda36aa87b423b05100dd461ea23f88882edabcb8e5001fde80f2b' },
+      { path: 'src/assets/fonts/Almendra-Bold.woff2', sha256: '2bb44ff2a9ac9b458b6183e029a785d4f5c36da6e7f488f675e1d2c102abf84b' },
+    ],
+  },
 };
 
 approvedDefinition.id = environmentIdentityId(approvedDefinition);

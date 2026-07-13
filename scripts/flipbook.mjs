@@ -86,7 +86,7 @@ export function sheetArguments({ fps, inputPattern, frameCount, outputFile }) {
 export function assertFfmpegVersion(output) {
   const match = /^ffmpeg version (\S+)/.exec(output);
   if (!match) throw new Error('Unable to read the ffmpeg version.');
-  if (match[1] !== '8.1.1') throw new Error(`ffmpeg 8.1.1 is required; found ${match[1]}.`);
+  if (match[1] !== '8.1.2') throw new Error(`ffmpeg 8.1.2 is required; found ${match[1]}.`);
   return match[1];
 }
 
