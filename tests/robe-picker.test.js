@@ -122,8 +122,8 @@ describe('touch-first robe picker', () => {
 
     expect(world.selectRobeTrim('emerald')).toBe(true);
     expect(world.overlay.selectedTrim).toBe('emerald');
-    expect(save.character.appearance.robeTrim).toBe('emerald');
-    expect(world.player.robeTrim).toBe('#397052');
+    expect(save.character.appearance.robeTrim).toBe('rose');
+    expect(world.player.robeTrim).toBe('#b95873');
     expect(world.player.outfit).toBe('robes');
     expect(world.flags['ch1.trimChosen']).not.toBe(true);
 
@@ -138,7 +138,7 @@ describe('touch-first robe picker', () => {
     });
   });
 
-  it('starts Violet in normal clothes and changes her into robes only when a trim exists', () => {
+  it('keeps Violet in normal clothes while she previews and gives her robes only on confirmation', () => {
     const { save, world } = createRobeWorld(null);
     expect(save.character.appearance.robeTrim).toBeNull();
     expect(world.player.outfit).toBe('casual');
@@ -146,6 +146,12 @@ describe('touch-first robe picker', () => {
     world.runAction({ type: 'ui.open', surface: 'robe-picker' });
     expect(world.player.outfit).toBe('casual');
     world.selectRobeTrim('lavender');
+
+    expect(world.overlay.selectedTrim).toBe('lavender');
+    expect(save.character.appearance.robeTrim).toBeNull();
+    expect(world.player.outfit).toBe('casual');
+
+    world.confirmRobeTrim();
 
     expect(save.character.appearance.robeTrim).toBe('lavender');
     expect(world.player.outfit).toBe('robes');

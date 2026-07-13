@@ -451,8 +451,8 @@ export class World {
   selectRobeTrim(trimId) {
     const option = robeTrimOption(trimId);
     if (this.overlay?.surface !== 'robe-picker' || !option) return false;
+    this.noteMeaningfulInput();
     this.overlay = { ...this.overlay, selectedTrim: option.id };
-    this.runAction({ type: 'character.set', field: 'appearance.robeTrim', value: option.id });
     return true;
   }
 
