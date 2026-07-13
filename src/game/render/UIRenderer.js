@@ -1,7 +1,8 @@
 import { INPUT, PALETTE, WORLD } from '../config.js';
+import { chapter1Map } from '../content/chapters/ch1.js';
+import { buildMapState } from '../core/MapState.js';
 import { CharacterRenderer } from './CharacterRenderer.js';
 import {
-  drawHoldGear,
   drawParchmentAction,
   drawReplayRibbon,
   drawRibbonTab,
@@ -12,12 +13,13 @@ import {
 } from './uiPrimitives.js';
 import {
   drawBrassCameoFrame,
+  drawBrassKeyhole,
   drawBrassWandHolster,
   drawCompassQuest,
   drawDeckledParchment,
   drawDialogueScroll,
+  drawLeatherBookmark,
   drawLeatherSatchel,
-  drawMapObjectiveStar,
   drawVectorIcon,
   drawWaxIcon,
 } from './uiIllustrations.js';
@@ -27,6 +29,10 @@ import {
   drawAffordancePresentation,
   worldAffordanceState,
 } from './WorldAffordanceRenderer.js';
+import {
+  createIllustratedMapPresentation,
+  IllustratedMapRenderer,
+} from './IllustratedMapRenderer.js';
 
 const STORY_GRADIENTS = new WeakMap();
 const NIGHT_DIALOGUE_GRADIENTS = new WeakMap();
@@ -58,7 +64,7 @@ export const UI_RECTS = Object.freeze({
   debugReset: { x: 510, y: 18, width: 260, height: 88 },
   satchelMapTab: { x: 205, y: 145, width: 210, height: 88 },
   satchelCardsTab: { x: 435, y: 145, width: 210, height: 88 },
-  satchelGear: { x: 698, y: 141, width: 96, height: 96 },
+  satchelKeyhole: { x: 698, y: 141, width: 96, height: 96 },
   close: { x: 1046, y: 76, width: 88, height: 88 },
   replayExit: { x: 430, y: 18, width: 420, height: 88 },
   parentPlayTab: { x: 175, y: 142, width: 230, height: 88 },
@@ -199,9 +205,14 @@ function speakerDimensions(speaker) {
 }
 
 export class UIRenderer {
-  constructor({ resolveAsset = () => null, characterRenderer = new CharacterRenderer() } = {}) {
+  constructor({
+    resolveAsset = () => null,
+    characterRenderer = new CharacterRenderer(),
+    mapRenderer = new IllustratedMapRenderer(),
+  } = {}) {
     this.resolveAsset = resolveAsset;
     this.characterRenderer = characterRenderer;
+    this.mapRenderer = mapRenderer;
     this.images = new Map();
     this.failedImages = new Set();
     this.yearbookImages = new Map();
@@ -289,8 +300,19 @@ export class UIRenderer {
     } else if (scene === 'ui-satchel-map-review') {
       this.drawSatchel(context, {
         overlay: { surface: 'satchel', tab: 'map' },
+        roomId: 'ch1.diagonStreet',
         unlockedRooms: ['ch1.ollivanders', 'ch1.malkins', 'ch1.menagerie'],
         objective: { mapStar: { room: 'ch1.diagonStreet', hotspot: 'street.menagerieDoor' } },
+        affordances: {
+          quiet: true,
+          thread: {
+            targetId: 'street.menagerieDoor',
+            worldTargetId: 'street.menagerieDoor',
+            mapTargetId: 'street.menagerieDoor',
+            channel: 'world',
+            intensity: 'normal',
+          },
+        },
         cards: [],
       }, [], { time, reducedMotion });
     } else if (scene === 'ui-satchel-cards-review') {
@@ -449,6 +471,13 @@ export class UIRenderer {
     drawStorybookSpread(context, { x: 72, y: 32, width: 1136, height: 652 }, {
       title: childFacingUiText('Violet’s Satchel', 'proper-name'),
     });
+
+    const content = activeTab === 'cards'
+      ? this.drawCardAlbumContent(context, state, cardDefinitions)
+      : this.drawMapContent(context, state, time, { reducedMotion });
+
+    // Leather tabs, the grown-up keyhole, and the close seal belong to the
+    // satchel itself, so they stay above the illustrated page content.
     drawSatchelTab(
       context,
       UI_RECTS.satchelMapTab,
@@ -463,72 +492,34 @@ export class UIRenderer {
       childFacingUiText('Cards', 'caption'),
       activeTab === 'cards',
     );
-    drawHoldGear(context, UI_RECTS.satchelGear, parentGateProgress, vectorControlIcon('gear'));
-
-    if (activeTab === 'cards') this.drawCardAlbumContent(context, state, cardDefinitions);
-    else this.drawMapContent(context, state, time, { reducedMotion });
+    drawBrassKeyhole(context, UI_RECTS.satchelKeyhole, { progress: parentGateProgress });
     drawClose(context);
+    return content;
   }
 
   drawMap(context, state) {
-    this.drawSatchel(context, state, []);
+    return this.drawSatchel(context, state, []);
   }
 
   drawMapContent(context, state, time = 0, { reducedMotion = false } = {}) {
-    const locations = [
-      { id: 'ch1.ollivanders', hotspot: 'street.ollivandersDoor', label: 'Wands', icon: 'wand', x: 300, y: 427 },
-      { id: 'ch1.malkins', hotspot: 'street.malkinsDoor', label: 'Robes', icon: 'rose', x: 640, y: 350 },
-      { id: 'ch1.menagerie', hotspot: 'street.menagerieDoor', label: 'Pets', icon: 'owl', x: 980, y: 447 },
-    ];
-    context.save();
-    context.strokeStyle = '#8b6845';
-    context.lineWidth = 9;
-    context.setLineDash([2, 18]);
-    context.lineCap = 'round';
-    context.beginPath();
-    context.moveTo(295, 437);
-    context.bezierCurveTo(420, 240, 535, 262, 640, 350);
-    context.bezierCurveTo(770, 456, 850, 528, 980, 447);
-    context.stroke();
-    context.setLineDash([]);
-    context.restore();
+    const mapState = buildMapState(chapter1Map, state);
+    return this.mapRenderer.draw(context, mapState, state, time, { reducedMotion });
+  }
 
-    context.textAlign = 'center';
-    for (const location of locations) {
-      const unlocked = state.unlockedRooms?.includes(location.id);
-      const current = state.objective?.mapStar?.hotspot === location.hotspot || state.objectiveRoom === location.id;
-      const rect = { x: location.x - 106, y: location.y - 92, width: 212, height: 184 };
-      location.__rect = rect;
-      context.globalAlpha = unlocked ? 1 : 0.42;
-      drawDeckledParchment(context, rect, {
-        fill: current ? '#fff0ba' : '#ead9b7',
-        edge: current ? PALETTE.interactive : '#8a6b44',
-        ornament: false,
-      });
-      drawWaxIcon(context, location.x, location.y - 28, 39, unlocked ? location.icon : 'close', { selected: current });
-      if (current) {
-        drawMapObjectiveStar(
-          context,
-          location.x + 76,
-          location.y - 73,
-          time,
-          { reducedMotion },
-        );
-      }
-      context.fillStyle = '#382a24';
-      context.font = '700 27px "Andika", "Trebuchet MS", sans-serif';
-      context.fillText(childFacingUiText(location.label, 'caption'), location.x, location.y + 49);
-      context.globalAlpha = 1;
-    }
-    state.__mapLocations = locations;
-    state.__cardSlots = [];
+  mapPresentation(state, time = 0, { reducedMotion = false } = {}) {
+    return createIllustratedMapPresentation(
+      buildMapState(chapter1Map, state),
+      state,
+      time,
+      { reducedMotion },
+    );
   }
 
   drawCardAlbumContent(context, state, cardDefinitions) {
     const entries = buildCardAlbumEntries(cardDefinitions, state.cards ?? []);
     for (const entry of entries) this.drawAlbumCard(context, entry);
     state.__cardSlots = entries;
-    state.__mapLocations = [];
+    return entries;
   }
 
   drawAlbumCard(context, entry) {
@@ -1034,19 +1025,7 @@ export function buildCardAlbumEntries(cardDefinitions, earnedCardIds) {
 
 function drawSatchelTab(context, rect, icon, label, active) {
   context.save();
-  context.fillStyle = active ? '#66405f' : '#8f765a';
-  context.beginPath();
-  context.moveTo(rect.x + 15, rect.y);
-  context.lineTo(rect.x + rect.width - 15, rect.y);
-  context.lineTo(rect.x + rect.width, rect.y + rect.height / 2);
-  context.lineTo(rect.x + rect.width - 15, rect.y + rect.height);
-  context.lineTo(rect.x + 15, rect.y + rect.height);
-  context.lineTo(rect.x, rect.y + rect.height / 2);
-  context.closePath();
-  context.fill();
-  context.strokeStyle = active ? PALETTE.interactive : '#5f4d3e';
-  context.lineWidth = active ? 5 : 3;
-  context.stroke();
+  drawLeatherBookmark(context, rect, { active });
   drawVectorIcon(context, icon, rect.x + 47, rect.y + rect.height / 2, 51, {
     color: active ? '#fff8e8' : '#30261f',
     secondary: active ? '#f4d58d' : '#c8a876',

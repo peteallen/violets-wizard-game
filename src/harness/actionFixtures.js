@@ -107,7 +107,7 @@ registry
     [{ frame: 250, type: 'tap', target: 'hud.quest' }],
   ))
   .register('parent-panel', createFixture(
-    'Open the satchel and hold its grown-up gear for the full three-second gate.',
+    'Open the satchel and hold its grown-up brass keyhole for the full three-second gate.',
     [
       { frame: 30, type: 'tap', target: 'hud.satchel' },
       { frame: 60, type: 'hold', target: 'satchel.grownups', durationFrames: 180 },
@@ -197,10 +197,10 @@ registry
     'Hold a complete set of authored vector choice cards.',
   ))
   .register('ui-satchel-map-review', createFixture(
-    'Hold the open satchel map with an objective destination.',
+    'Hold the code-only illustrated satchel map with soft fog and a D31 objective destination.',
   ))
   .register('ui-satchel-cards-review', createFixture(
-    'Hold the card album with the grown-up gate and collection count visible.',
+    'Hold the card album with the grown-up brass keyhole above the keepsakes.',
   ))
   .register('ui-objective-review', createFixture(
     'Hold the illustrated quest-compass objective page.',

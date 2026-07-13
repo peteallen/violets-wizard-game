@@ -1,0 +1,224 @@
+import { describe, expect, it } from 'vitest';
+import { chapter1Map } from '../src/game/content/chapters/ch1.js';
+import { buildMapState, MAP_FOG_STATES } from '../src/game/core/MapState.js';
+import {
+  createIllustratedMapPresentation,
+  ILLUSTRATED_MAP_RENDERER_STATUS,
+  IllustratedMapRenderer,
+} from '../src/game/render/IllustratedMapRenderer.js';
+
+function recordingContext() {
+  const calls = [];
+  const assignments = [];
+  let depth = 0;
+  const methods = new Set([
+    'arc', 'beginPath', 'bezierCurveTo', 'clip', 'closePath', 'ellipse', 'fill',
+    'fillRect', 'fillText', 'lineTo', 'moveTo', 'quadraticCurveTo', 'rect', 'restore',
+    'rotate', 'roundRect', 'save', 'scale', 'setLineDash', 'stroke', 'strokeRect',
+    'translate',
+  ]);
+  const target = {
+    assignments,
+    calls,
+    globalAlpha: 1,
+    get depth() { return depth; },
+  };
+  return new Proxy(target, {
+    get(object, property) {
+      if (methods.has(property)) {
+        return (...args) => {
+          calls.push([property, ...args]);
+          if (property === 'save') depth += 1;
+          if (property === 'restore') depth -= 1;
+        };
+      }
+      return object[property];
+    },
+    set(object, property, value) {
+      assignments.push([property, value]);
+      object[property] = value;
+      return true;
+    },
+  });
+}
+
+function mapSnapshot({
+  hotspot = 'street.malkinsDoor',
+  room = 'ch1.diagonStreet',
+  unlockedRooms = ['ch1.diagonStreet', 'ch1.ollivanders'],
+} = {}) {
+  return {
+    roomId: 'ch1.diagonStreet',
+    unlockedRooms,
+    objective: { mapStar: { room, hotspot } },
+  };
+}
+
+function worldSnapshot({
+  mapTargetId = 'street.malkinsDoor',
+  intensity = 'normal',
+  quiet = true,
+} = {}) {
+  return {
+    overlay: { surface: 'satchel', tab: 'map' },
+    affordances: {
+      quiet,
+      thread: {
+        targetId: 'hud.satchel',
+        worldTargetId: null,
+        mapTargetId,
+        channel: 'hud',
+        intensity,
+      },
+    },
+  };
+}
+
+describe('code-only illustrated map renderer foundation', () => {
+  it('builds a deterministic frozen presentation and stable hit targets without snapshot mutation', () => {
+    const snapshot = mapSnapshot();
+    const originalSnapshot = structuredClone(snapshot);
+    const model = buildMapState(chapter1Map, snapshot);
+    const replayedModel = buildMapState(chapter1Map, snapshot);
+    const state = worldSnapshot();
+    const originalState = structuredClone(state);
+
+    const first = createIllustratedMapPresentation(model, state, 3.25);
+    const replayed = createIllustratedMapPresentation(model, state, 3.25);
+
+    expect(ILLUSTRATED_MAP_RENDERER_STATUS).toBe('code-only-foundation');
+    expect(first).toEqual(replayed);
+    expect(first.kind).toBe('code-only-foundation');
+    expect(first.locations).toHaveLength(chapter1Map.locations.length);
+    expect(first.routes).toHaveLength(chapter1Map.routes.length);
+    expect(new Set(first.locations.map(({ kind }) => kind))).toEqual(
+      new Set(['street', 'wand-shop', 'robes-shop', 'pet-shop']),
+    );
+    expect(first.hitTargets).toHaveLength(first.locations.length);
+    for (const target of first.hitTargets) {
+      const location = first.locations.find(({ id }) => id === target.id);
+      expect(target.hitArea).toEqual({ shape: 'rect', ...location.vignette });
+      expect(target.enabled).toBe(location.unlocked);
+      expect(target.travelIntent).toEqual(location.travelIntent);
+      expect(Object.isFrozen(target)).toBe(true);
+      expect(Object.isFrozen(target.hitArea)).toBe(true);
+    }
+    expect(first.locations
+      .filter(({ fogState }) => fogState === MAP_FOG_STATES.soft)
+      .every(({ fogWisps }) => fogWisps.length === 4)).toBe(true);
+    expect(first.locations
+      .filter(({ fogState }) => fogState === MAP_FOG_STATES.clear)
+      .every(({ fogWisps }) => fogWisps.length === 0)).toBe(true);
+    expect(Object.isFrozen(first)).toBe(true);
+    expect(Object.isFrozen(first.locations)).toBe(true);
+    expect(Object.isFrozen(first.routes[0].points)).toBe(true);
+    expect(snapshot).toEqual(originalSnapshot);
+    expect(state).toEqual(originalState);
+    expect(model).toEqual(replayedModel);
+  });
+
+  it('uses the exact D31 map target and intensity on an explicitly active map surface', () => {
+    const model = buildMapState(chapter1Map, mapSnapshot());
+    const state = worldSnapshot({ intensity: 'hint', quiet: true });
+    const presentation = createIllustratedMapPresentation(model, state, 4.5);
+
+    expect(presentation.objective).toMatchObject({
+      targetId: 'street.malkinsDoor',
+      locationId: 'map.ch1.malkins',
+      target: {
+        id: 'street.malkinsDoor',
+        salience: { tier: 'thread', visible: 'thread', intensity: 'hint' },
+      },
+      affordance: { kind: 'gold-shimmer', intensity: 'hint' },
+    });
+    expect(presentation.objective.affordance.motes).toHaveLength(3);
+
+    const noMapThread = createIllustratedMapPresentation(
+      model,
+      worldSnapshot({ mapTargetId: null }),
+      4.5,
+    );
+    expect(model.objectiveLocationId).toBe('map.ch1.malkins');
+    expect(noMapThread.objective).toBeNull();
+
+    const unknownMapThread = createIllustratedMapPresentation(
+      model,
+      worldSnapshot({ mapTargetId: 'street.notTheObjective' }),
+      4.5,
+    );
+    expect(unknownMapThread.objective).toBeNull();
+
+    const explicitlyQuiet = createIllustratedMapPresentation(model, state, 4.5, { quiet: true });
+    expect(explicitlyQuiet.objective).toBeNull();
+  });
+
+  it('keeps reduced-motion D31 shimmer stable while full motion uses the shared time-based treatment', () => {
+    const model = buildMapState(chapter1Map, mapSnapshot());
+    const state = worldSnapshot();
+    const reducedStart = createIllustratedMapPresentation(model, state, 0, { reducedMotion: true });
+    const reducedLater = createIllustratedMapPresentation(model, state, 9, { reducedMotion: true });
+    const fullStart = createIllustratedMapPresentation(model, state, 0);
+    const fullLater = createIllustratedMapPresentation(model, state, 9);
+
+    expect(reducedLater.objective.affordance).toEqual(reducedStart.objective.affordance);
+    expect(fullLater.objective.affordance).not.toEqual(fullStart.objective.affordance);
+  });
+
+  it('draws organic multi-tone vignettes, continuous quill routes, and warm fog without geometry badges', () => {
+    const lockedModel = buildMapState(chapter1Map, mapSnapshot());
+    const unlockedModel = buildMapState(chapter1Map, mapSnapshot({
+      unlockedRooms: chapter1Map.locations.map(({ to }) => to.room),
+    }));
+    const state = worldSnapshot();
+    const lockedContext = recordingContext();
+    const replayedContext = recordingContext();
+    const unlockedContext = recordingContext();
+    const renderer = new IllustratedMapRenderer();
+
+    const lockedPresentation = renderer.draw(lockedContext, lockedModel, state, 2.75);
+    renderer.draw(replayedContext, lockedModel, state, 2.75);
+    renderer.draw(unlockedContext, unlockedModel, state, 2.75);
+
+    expect(lockedContext.calls).toEqual(replayedContext.calls);
+    expect(lockedContext.assignments).toEqual(replayedContext.assignments);
+    expect(lockedPresentation.hitTargets).toHaveLength(4);
+    expect(lockedContext.calls.filter(([name]) => name === 'fill').length).toBeGreaterThan(45);
+    expect(lockedContext.calls.filter(([name]) => name === 'quadraticCurveTo').length)
+      .toBeGreaterThan(120);
+    expect(lockedContext.calls.some(([name]) => name === 'bezierCurveTo')).toBe(true);
+    expect(lockedContext.calls.filter(([name]) => name === 'fill').length)
+      .toBeGreaterThan(unlockedContext.calls.filter(([name]) => name === 'fill').length);
+
+    const forbidden = new Set([
+      'arc', 'ellipse', 'fillRect', 'fillText', 'rect', 'roundRect', 'setLineDash', 'strokeRect',
+    ]);
+    expect(lockedContext.calls.some(([name]) => forbidden.has(name))).toBe(false);
+    expect(lockedContext.calls
+      .flatMap(([, ...args]) => args)
+      .filter((value) => typeof value === 'number')
+      .every(Number.isFinite)).toBe(true);
+    expect(lockedContext.depth).toBe(0);
+    expect(replayedContext.depth).toBe(0);
+    expect(unlockedContext.depth).toBe(0);
+  });
+
+  it('scales authored hit layouts without changing their identity or travel intent', () => {
+    const model = buildMapState(chapter1Map, mapSnapshot());
+    const full = createIllustratedMapPresentation(model, worldSnapshot(), 1);
+    const inset = createIllustratedMapPresentation(model, worldSnapshot(), 1, {
+      frame: { x: 64, y: 36, width: 640, height: 360 },
+    });
+
+    for (let index = 0; index < full.hitTargets.length; index += 1) {
+      const original = full.hitTargets[index];
+      const scaled = inset.hitTargets[index];
+      expect(scaled.id).toBe(original.id);
+      expect(scaled.enabled).toBe(original.enabled);
+      expect(scaled.travelIntent).toEqual(original.travelIntent);
+      expect(scaled.hitArea.x).toBeCloseTo(64 + original.hitArea.x * 0.5);
+      expect(scaled.hitArea.y).toBeCloseTo(36 + original.hitArea.y * 0.5);
+      expect(scaled.hitArea.width).toBeCloseTo(original.hitArea.width * 0.5);
+      expect(scaled.hitArea.height).toBeCloseTo(original.hitArea.height * 0.5);
+    }
+  });
+});

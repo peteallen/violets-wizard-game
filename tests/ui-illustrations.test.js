@@ -1,12 +1,13 @@
 import { describe, expect, it } from 'vitest';
 import {
   drawBrassCameoFrame,
+  drawBrassKeyhole,
   drawBrassWandHolster,
   drawCompassQuest,
   drawDeckledParchment,
   drawDialogueScroll,
+  drawLeatherBookmark,
   drawLeatherSatchel,
-  drawMapObjectiveStar,
   drawVectorIcon,
   drawWaxIcon,
   traceDeckledRect,
@@ -49,7 +50,7 @@ describe('illustrated interface primitives', () => {
   it('draws every authored choice icon deterministically without text glyph stand-ins', () => {
     const icons = [
       'owl', 'cat', 'toad', 'wand', 'eyes', 'map', 'cards', 'replay', 'quill', 'satchel',
-      'quest', 'close', 'check', 'speaker', 'gear', 'name-biscuit', 'name-pip', 'name-star',
+      'quest', 'close', 'check', 'speaker', 'name-biscuit', 'name-pip', 'name-star',
       'heart', 'rose', 'circle', 'star',
     ];
     for (const icon of icons) {
@@ -72,10 +73,10 @@ describe('illustrated interface primitives', () => {
     drawDialogueScroll(context, { x: 20, y: 548, width: 760, height: 155 }, { night: true });
     drawWaxIcon(context, 80, 80, 38, 'owl');
     drawBrassCameoFrame(context, 100, 100, 70);
+    drawBrassKeyhole(context, { x: 20, y: 20, width: 96, height: 96 }, { progress: 0.65 });
+    drawLeatherBookmark(context, { x: 20, y: 20, width: 210, height: 88 }, { active: true });
     drawLeatherSatchel(context, { x: 20, y: 20, width: 108, height: 108 });
     drawCompassQuest(context, { x: 20, y: 20, width: 104, height: 104 }, 1.25, { pulse: true });
-    drawMapObjectiveStar(context, 180, 90, 1.25);
-    drawMapObjectiveStar(context, 180, 90, 8, { reducedMotion: true });
     drawBrassWandHolster(context, { x: 20, y: 20, width: 108, height: 108 }, { time: 1.25 });
     expect(context.calls.length).toBeGreaterThan(150);
     expect(context.depth).toBe(0);
@@ -95,5 +96,34 @@ describe('illustrated interface primitives', () => {
     expect(first.calls.filter(([name]) => name === 'quadraticCurveTo').length).toBeGreaterThan(15);
     expect(first.depth).toBe(0);
     expect(night.depth).toBe(0);
+  });
+
+  it('draws the grown-up control as an organic brass keyhole rather than a software gear', () => {
+    const context = recordingContext();
+    drawBrassKeyhole(context, { x: 20, y: 20, width: 96, height: 96 }, { progress: 0.65 });
+
+    expect(context.calls.filter(([name]) => name === 'fill').length).toBeGreaterThan(8);
+    expect(context.calls.some(([name]) => name === 'bezierCurveTo')).toBe(true);
+    expect(context.calls.some(([name]) => ['arc', 'ellipse', 'fillRect', 'rect', 'setLineDash'].includes(name)))
+      .toBe(false);
+    expect(context.depth).toBe(0);
+  });
+
+  it('draws satchel tabs as stitched, multi-tone organic leather bookmarks', () => {
+    const active = recordingContext();
+    const inactive = recordingContext();
+    drawLeatherBookmark(active, { x: 20, y: 20, width: 210, height: 88 }, { active: true });
+    drawLeatherBookmark(inactive, { x: 20, y: 20, width: 210, height: 88 });
+
+    expect(active.calls.filter(([name]) => name === 'fill').length).toBeGreaterThanOrEqual(4);
+    expect(active.calls.filter(([name]) => name === 'stroke').length).toBeGreaterThan(12);
+    expect(active.calls.some(([name]) => name === 'bezierCurveTo')).toBe(true);
+    expect(active.calls.some(([name]) => [
+      'arc', 'ellipse', 'fillRect', 'lineTo', 'rect', 'setLineDash',
+    ].includes(name)))
+      .toBe(false);
+    expect(active.calls).not.toEqual(inactive.calls);
+    expect(active.depth).toBe(0);
+    expect(inactive.depth).toBe(0);
   });
 });

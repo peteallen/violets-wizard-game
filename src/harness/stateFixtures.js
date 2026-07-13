@@ -468,11 +468,11 @@ registry
   ))
   .register('ui-satchel-map-review', characterReviewFixture(
     'ui-satchel-map-review',
-    'The open storybook satchel and its objective-aware Diagon Alley map.',
+    'The open storybook satchel with the code-only illustrated Diagon Alley map, soft locked-place fog, and its D31 objective shimmer.',
   ))
   .register('ui-satchel-cards-review', characterReviewFixture(
     'ui-satchel-cards-review',
-    'The satchel card album with its grown-up hold control and collection count visibly separated.',
+    'The satchel card album with its grown-up brass keyhole above the keepsakes.',
   ))
   .register('ui-objective-review', characterReviewFixture(
     'ui-objective-review',

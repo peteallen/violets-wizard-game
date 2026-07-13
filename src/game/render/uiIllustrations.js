@@ -1,6 +1,7 @@
 import { PALETTE } from '../config.js';
 import { traceRoundedRect } from './uiPrimitives.js';
 
+const TAU = Math.PI * 2;
 const INK = '#382a24';
 const OUTLINE = '#3a2d22';
 const BRASS = '#c89d45';
@@ -245,6 +246,151 @@ export function drawBrassCameoFrame(context, x, y, radius, { active = true } = {
   context.restore();
 }
 
+export function drawBrassKeyhole(context, rect, { progress = 0 } = {}) {
+  const centerX = rect.x + rect.width / 2;
+  const centerY = rect.y + rect.height / 2;
+  const radius = Math.min(rect.width, rect.height) * 0.37;
+  const phase = 0.314159;
+  context.save();
+
+  context.fillStyle = 'rgba(42, 27, 25, 0.42)';
+  traceBrassKeyholePlate(context, centerX + 5, centerY + 7, radius * 1.12, phase + 0.2);
+  context.fill();
+
+  context.fillStyle = BRASS_DARK;
+  traceBrassKeyholePlate(context, centerX, centerY, radius * 1.12, phase);
+  context.fill();
+  context.strokeStyle = OUTLINE;
+  context.lineWidth = 4.6;
+  context.stroke();
+
+  context.fillStyle = BRASS;
+  traceBrassKeyholePlate(context, centerX, centerY - 1, radius * 0.94, phase + 0.13);
+  context.fill();
+  context.strokeStyle = BRASS_LIGHT;
+  context.lineWidth = 2.5;
+  context.stroke();
+
+  context.fillStyle = 'rgba(248, 218, 139, 0.38)';
+  context.beginPath();
+  context.moveTo(centerX - radius * 0.62, centerY - radius * 0.46);
+  context.bezierCurveTo(
+    centerX - radius * 0.24,
+    centerY - radius * 0.9,
+    centerX + radius * 0.45,
+    centerY - radius * 0.72,
+    centerX + radius * 0.62,
+    centerY - radius * 0.28,
+  );
+  context.bezierCurveTo(
+    centerX + radius * 0.15,
+    centerY - radius * 0.43,
+    centerX - radius * 0.21,
+    centerY - radius * 0.24,
+    centerX - radius * 0.62,
+    centerY - radius * 0.46,
+  );
+  context.closePath();
+  context.fill();
+
+  context.fillStyle = '#342823';
+  traceKeyholeCutout(context, centerX, centerY, radius * 0.72);
+  context.fill();
+  context.strokeStyle = '#6f4b29';
+  context.lineWidth = 2.4;
+  context.stroke();
+
+  context.fillStyle = 'rgba(240, 207, 121, 0.24)';
+  traceKeyholeCutout(context, centerX - radius * 0.08, centerY - radius * 0.09, radius * 0.33);
+  context.fill();
+
+  const clampedProgress = Math.max(0, Math.min(1, progress));
+  const litPetals = Math.ceil(clampedProgress * 10);
+  for (let index = 0; index < litPetals; index += 1) {
+    const petalProgress = Math.max(0, Math.min(1, clampedProgress * 10 - index));
+    const angle = -Math.PI / 2 + index * TAU / 10;
+    context.save();
+    context.translate(
+      centerX + Math.cos(angle) * radius * 1.28,
+      centerY + Math.sin(angle) * radius * 1.28,
+    );
+    context.rotate(angle);
+    context.globalAlpha = 0.4 + petalProgress * 0.6;
+    context.fillStyle = PALETTE.interactive;
+    traceBrassProgressPetal(context, radius * 0.19, index);
+    context.fill();
+    context.restore();
+  }
+  context.restore();
+}
+
+function traceBrassKeyholePlate(context, x, y, radius, phase) {
+  const points = [];
+  for (let index = 0; index < 14; index += 1) {
+    const angle = index * TAU / 14;
+    const wobble = 0.94 + Math.sin(phase * 17 + index * 1.93) * 0.045;
+    points.push({
+      x: x + Math.cos(angle) * radius * wobble,
+      y: y + Math.sin(angle) * radius * 1.08 * (2 - wobble),
+    });
+  }
+  traceSoftLoop(context, points);
+}
+
+function traceKeyholeCutout(context, x, y, radius) {
+  context.beginPath();
+  context.moveTo(x, y - radius * 0.78);
+  context.bezierCurveTo(
+    x - radius * 0.62,
+    y - radius * 0.76,
+    x - radius * 0.67,
+    y - radius * 0.05,
+    x - radius * 0.22,
+    y + radius * 0.08,
+  );
+  context.quadraticCurveTo(x - radius * 0.33, y + radius * 0.55, x - radius * 0.39, y + radius);
+  context.quadraticCurveTo(x, y + radius * 0.88, x + radius * 0.39, y + radius);
+  context.quadraticCurveTo(x + radius * 0.33, y + radius * 0.55, x + radius * 0.22, y + radius * 0.08);
+  context.bezierCurveTo(
+    x + radius * 0.67,
+    y - radius * 0.05,
+    x + radius * 0.62,
+    y - radius * 0.76,
+    x,
+    y - radius * 0.78,
+  );
+  context.closePath();
+}
+
+function traceBrassProgressPetal(context, size, index) {
+  const lean = index % 2 === 0 ? 1 : -1;
+  context.beginPath();
+  context.moveTo(-size * 0.7, 0);
+  context.quadraticCurveTo(-size * 0.1, -size * (0.55 + lean * 0.08), size * 0.78, 0);
+  context.quadraticCurveTo(-size * 0.05, size * (0.48 - lean * 0.06), -size * 0.7, 0);
+  context.closePath();
+}
+
+function traceSoftLoop(context, points) {
+  const first = {
+    x: (points.at(-1).x + points[0].x) / 2,
+    y: (points.at(-1).y + points[0].y) / 2,
+  };
+  context.beginPath();
+  context.moveTo(first.x, first.y);
+  for (let index = 0; index < points.length; index += 1) {
+    const point = points[index];
+    const next = points[(index + 1) % points.length];
+    context.quadraticCurveTo(
+      point.x,
+      point.y,
+      (point.x + next.x) / 2,
+      (point.y + next.y) / 2,
+    );
+  }
+  context.closePath();
+}
+
 export function drawWaxIcon(context, x, y, radius, icon, {
   danger = false,
   selected = false,
@@ -299,12 +445,179 @@ export function drawVectorIcon(context, icon, x, y, size, {
   else if (normalized === 'close') drawCloseIcon(context, color, secondary);
   else if (normalized === 'check') drawCheckIcon(context, color, secondary);
   else if (normalized === 'speaker') drawSpeakerIcon(context, color, secondary);
-  else if (normalized === 'gear') drawGearIcon(context, color, secondary);
   else if (normalized === 'name') drawNameIcon(context, color, secondary);
   else if (normalized === 'heart') drawHeartIcon(context, color);
   else if (normalized === 'rose') drawRoseIcon(context, color, secondary);
   else if (normalized === 'circle') drawOrbIcon(context, color, secondary);
   else drawStarIcon(context, color, secondary);
+  context.restore();
+}
+
+export function drawLeatherBookmark(context, rect, { active = false } = {}) {
+  const phase = active ? 0.41 : 0.17;
+  context.save();
+
+  context.fillStyle = 'rgba(42, 26, 25, 0.4)';
+  traceLeatherBookmark(context, {
+    ...rect,
+    x: rect.x + 5,
+    y: rect.y + 7,
+  }, phase + 0.23);
+  context.fill();
+
+  context.fillStyle = active ? '#593846' : '#60432f';
+  traceLeatherBookmark(context, rect, phase);
+  context.fill();
+  context.strokeStyle = '#382820';
+  context.lineWidth = 5;
+  context.stroke();
+
+  context.fillStyle = active ? '#765064' : '#805c3d';
+  traceBookmarkUpperHide(context, rect, phase);
+  context.fill();
+  context.fillStyle = active ? '#432d39' : '#493326';
+  traceBookmarkFold(context, rect, phase);
+  context.fill();
+
+  context.strokeStyle = active ? BRASS_LIGHT : '#c59a59';
+  context.lineWidth = active ? 3.2 : 2.2;
+  traceLeatherBookmark(context, {
+    x: rect.x + 5,
+    y: rect.y + 5,
+    width: rect.width - 10,
+    height: rect.height - 10,
+  }, phase + 0.09);
+  context.stroke();
+
+  drawBookmarkStitches(context, rect, active);
+  context.restore();
+}
+
+function traceLeatherBookmark(context, rect, phase) {
+  const wobble = (index) => Math.sin(phase * 31 + index * 1.89) * 2.2;
+  const notch = Math.min(rect.width * 0.09, rect.height * 0.25);
+  context.beginPath();
+  context.moveTo(rect.x + 13, rect.y + wobble(0));
+  context.quadraticCurveTo(
+    rect.x + rect.width * 0.33,
+    rect.y + wobble(1),
+    rect.x + rect.width * 0.63,
+    rect.y + wobble(2),
+  );
+  context.quadraticCurveTo(
+    rect.x + rect.width - 12,
+    rect.y + wobble(3),
+    rect.x + rect.width + wobble(4),
+    rect.y + rect.height * 0.28,
+  );
+  context.quadraticCurveTo(
+    rect.x + rect.width + wobble(5),
+    rect.y + rect.height * 0.73,
+    rect.x + rect.width - notch,
+    rect.y + rect.height + wobble(6),
+  );
+  context.quadraticCurveTo(
+    rect.x + rect.width - notch * 1.34,
+    rect.y + rect.height - notch * 0.18,
+    rect.x + rect.width - notch * 1.75,
+    rect.y + rect.height - notch * 0.5,
+  );
+  context.quadraticCurveTo(
+    rect.x + rect.width * 0.56,
+    rect.y + rect.height + wobble(7),
+    rect.x + rect.width * 0.28,
+    rect.y + rect.height + wobble(8),
+  );
+  context.quadraticCurveTo(
+    rect.x + wobble(9),
+    rect.y + rect.height + wobble(10),
+    rect.x + wobble(11),
+    rect.y + rect.height * 0.54,
+  );
+  context.quadraticCurveTo(
+    rect.x + wobble(12),
+    rect.y + rect.height * 0.12,
+    rect.x + 13,
+    rect.y + wobble(0),
+  );
+  context.closePath();
+}
+
+function traceBookmarkUpperHide(context, rect, phase) {
+  const drift = Math.sin(phase * 23) * 2;
+  context.beginPath();
+  context.moveTo(rect.x + 8, rect.y + 7);
+  context.quadraticCurveTo(
+    rect.x + rect.width * 0.37,
+    rect.y - 2 + drift,
+    rect.x + rect.width * 0.72,
+    rect.y + 5 - drift,
+  );
+  context.quadraticCurveTo(
+    rect.x + rect.width * 0.92,
+    rect.y + 8,
+    rect.x + rect.width * 0.91,
+    rect.y + rect.height * 0.33,
+  );
+  context.bezierCurveTo(
+    rect.x + rect.width * 0.66,
+    rect.y + rect.height * 0.24,
+    rect.x + rect.width * 0.38,
+    rect.y + rect.height * 0.39,
+    rect.x + 8,
+    rect.y + rect.height * 0.29,
+  );
+  context.closePath();
+}
+
+function traceBookmarkFold(context, rect, phase) {
+  const drift = Math.cos(phase * 19) * 2;
+  context.beginPath();
+  context.moveTo(rect.x + rect.width * 0.05, rect.y + rect.height * 0.73);
+  context.bezierCurveTo(
+    rect.x + rect.width * 0.31,
+    rect.y + rect.height * 0.65 + drift,
+    rect.x + rect.width * 0.56,
+    rect.y + rect.height * 0.86 - drift,
+    rect.x + rect.width * 0.87,
+    rect.y + rect.height * 0.69,
+  );
+  context.quadraticCurveTo(
+    rect.x + rect.width * 0.88,
+    rect.y + rect.height * 0.8,
+    rect.x + rect.width * 0.82,
+    rect.y + rect.height * 0.87,
+  );
+  context.quadraticCurveTo(
+    rect.x + rect.width * 0.48,
+    rect.y + rect.height * 0.93,
+    rect.x + rect.width * 0.06,
+    rect.y + rect.height * 0.89,
+  );
+  context.closePath();
+}
+
+function drawBookmarkStitches(context, rect, active) {
+  context.save();
+  context.strokeStyle = active ? '#e0bc76' : '#d2ad70';
+  context.lineWidth = 1.8;
+  context.lineCap = 'round';
+  for (let index = 0; index < 9; index += 1) {
+    const x = rect.x + 19 + index * (rect.width - 48) / 8;
+    const y = rect.y + 13 + (index % 3 - 1) * 1.2;
+    context.beginPath();
+    context.moveTo(x - 4, y);
+    context.quadraticCurveTo(x, y - 1.5, x + 4, y + 0.5);
+    context.stroke();
+  }
+  for (let index = 0; index < 8; index += 1) {
+    const x = rect.x + 19 + index * (rect.width - 62) / 7;
+    const y = rect.y + rect.height - 14 + (index % 2 ? 1 : -1);
+    context.beginPath();
+    context.moveTo(x - 3.5, y);
+    context.quadraticCurveTo(x, y + 1.5, x + 3.5, y);
+    context.stroke();
+  }
   context.restore();
 }
 
@@ -404,27 +717,6 @@ export function drawCompassQuest(context, rect, time = 0, { pulse = false } = {}
   context.restore();
 }
 
-export function drawMapObjectiveStar(context, x, y, time = 0, { reducedMotion = false } = {}) {
-  const pulse = reducedMotion ? 0.5 : 0.5 + Math.sin(time * 2.15) * 0.5;
-  const scale = 1 + pulse * 0.08;
-  context.save();
-  context.translate(x, y);
-  context.scale(scale, scale);
-  for (let layer = 2; layer >= 0; layer -= 1) {
-    context.globalAlpha = 0.08 + (2 - layer) * 0.07;
-    context.fillStyle = layer === 0 ? '#fff0a8' : PALETTE.interactive;
-    context.beginPath();
-    context.arc(layer * 1.5 - 1.5, layer - 1, 34 + layer * 9, 0, Math.PI * 2);
-    context.fill();
-  }
-  context.globalAlpha = 1;
-  drawVectorIcon(context, 'star', 0, 0, 58, {
-    color: '#fff5bd',
-    secondary: PALETTE.interactive,
-  });
-  context.restore();
-}
-
 export function drawBrassWandHolster(context, rect, { enabled = true, time = 0 } = {}) {
   const { x, y, width, height } = rect;
   context.save();
@@ -489,7 +781,6 @@ function normalizeIcon(icon) {
   if (value.includes('close') || value === '×') return 'close';
   if (value.includes('check') || value === '✓') return 'check';
   if (value.includes('speaker') || value.includes('listen')) return 'speaker';
-  if (value.includes('gear') || value === '⚙') return 'gear';
   if (value.includes('biscuit') || value.includes('name')) return 'name';
   if (value === 'rose' || value.includes('heart')) return 'heart';
   if (value === 'teal' || value === 'circle') return 'circle';
@@ -820,31 +1111,6 @@ function drawSpeakerIcon(context, color, secondary) {
   context.moveTo(16, -31);
   context.arc(14, 0, 34, -0.85, 0.85);
   context.stroke();
-}
-
-function drawGearIcon(context, color, secondary) {
-  context.strokeStyle = color;
-  context.fillStyle = secondary;
-  context.lineWidth = 10;
-  for (let index = 0; index < 10; index += 1) {
-    const angle = (index * Math.PI) / 5;
-    context.beginPath();
-    context.moveTo(Math.cos(angle) * 29, Math.sin(angle) * 29);
-    context.lineTo(Math.cos(angle) * 43, Math.sin(angle) * 43);
-    context.stroke();
-  }
-  context.beginPath();
-  context.arc(0, 0, 31, 0, Math.PI * 2);
-  context.fill();
-  context.stroke();
-  context.fillStyle = color;
-  context.beginPath();
-  context.arc(0, 0, 11, 0, Math.PI * 2);
-  context.fill();
-  context.fillStyle = '#fff8e8';
-  context.beginPath();
-  context.arc(-4, -4, 3, 0, Math.PI * 2);
-  context.fill();
 }
 
 function drawNameIcon(context, color, secondary) {

@@ -68,8 +68,8 @@ describe('grown-up long-press gate', () => {
     game.world.overlay = { surface: 'satchel', tab: 'map' };
     game.pointer = {
       id: 1,
-      point: center(UI_RECTS.satchelGear),
-      latestPoint: center(UI_RECTS.satchelGear),
+      point: center(UI_RECTS.satchelKeyhole),
+      latestPoint: center(UI_RECTS.satchelKeyhole),
       holdTarget: 'parent-panel',
       holdTriggered: false,
       holdCancelled: false,
@@ -93,7 +93,7 @@ describe('grown-up long-press gate', () => {
   it('cancels progress when the finger drifts beyond tap slop', () => {
     const game = parentGame();
     game.world.overlay = { surface: 'satchel', tab: 'map' };
-    const start = center(UI_RECTS.satchelGear);
+    const start = center(UI_RECTS.satchelKeyhole);
     game.pointer = {
       id: 7, point: start, latestPoint: start, holdTarget: 'parent-panel',
       holdTriggered: false, holdCancelled: false,

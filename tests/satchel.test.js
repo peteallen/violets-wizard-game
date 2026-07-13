@@ -4,7 +4,7 @@ import { cards } from '../src/game/content/cards.js';
 import { chapter1Map } from '../src/game/content/chapters/ch1.js';
 import { resolveAsset } from '../src/game/core/assetManifest.js';
 import { buildMapState, MAP_FOG_STATES } from '../src/game/core/MapState.js';
-import { buildCardAlbumEntries, UI_RECTS } from '../src/game/render/UIRenderer.js';
+import { buildCardAlbumEntries, UIRenderer, UI_RECTS } from '../src/game/render/UIRenderer.js';
 
 function center(rect) {
   return { x: rect.x + rect.width / 2, y: rect.y + rect.height / 2 };
@@ -20,6 +20,9 @@ function gameStub() {
   };
   game.sound = { playSfx: vi.fn(), speak: vi.fn() };
   game.updateStatus = vi.fn();
+  game.uiRenderer = new UIRenderer({ characterRenderer: {} });
+  game.simTime = 0;
+  game.reducedMotion = false;
   return game;
 }
 
@@ -66,16 +69,68 @@ describe('satchel card album', () => {
 
   it('preserves unlocked map travel from the map tab', () => {
     const game = gameStub();
-    const locationRect = { x: 225, y: 285, width: 210, height: 180 };
     const state = {
       overlay: { surface: 'satchel', tab: 'map' },
+      roomId: 'ch1.diagonStreet',
       unlockedRooms: ['ch1.ollivanders'],
-      __mapLocations: [{ id: 'ch1.ollivanders', __rect: locationRect }],
     };
-    game.handleOverlayTap(center(locationRect), state);
+    const originalState = structuredClone(state);
+    const presentation = game.uiRenderer.mapPresentation(state);
+    const location = presentation.hitTargets.find(({ id }) => id === 'map.ch1.ollivanders');
+
+    game.handleOverlayTap(center(location.hitArea), state);
+
     expect(game.world.closeOverlay).toHaveBeenCalledOnce();
     expect(game.world.runActions).toHaveBeenCalledWith(chapter1Map.locations[1].onSelect);
     expect(game.sound.playSfx).toHaveBeenCalledWith('sfx/ui/travel', 'flourish');
+    expect(state).toEqual(originalState);
+  });
+
+  it('keeps softly fogged map destinations non-travelling but still tappable', () => {
+    const game = gameStub();
+    const state = {
+      overlay: { surface: 'satchel', tab: 'map' },
+      roomId: 'ch1.diagonStreet',
+      unlockedRooms: ['ch1.ollivanders'],
+    };
+    const presentation = game.uiRenderer.mapPresentation(state);
+    const location = presentation.hitTargets.find(({ id }) => id === 'map.ch1.menagerie');
+
+    expect(location.enabled).toBe(false);
+    game.handleOverlayTap(center(location.hitArea), state);
+
+    expect(game.world.runActions).not.toHaveBeenCalled();
+    expect(game.world.closeOverlay).not.toHaveBeenCalled();
+    expect(game.sound.playSfx).toHaveBeenCalledWith('sfx/ui/locked', 'fizzle');
+  });
+
+  it('exposes the frozen map layout through stable harness semantic targets', () => {
+    const game = gameStub();
+    const state = {
+      overlay: { surface: 'satchel', tab: 'map' },
+      roomId: 'ch1.diagonStreet',
+      unlockedRooms: ['ch1.ollivanders'],
+      targets: [],
+      cameraX: 0,
+      dialogue: null,
+    };
+    game.screen = 'playing';
+    game.lastRenderState = state;
+    game.resumeRecap = null;
+    game.world.snapshot = () => state;
+    game.shouldShowDebugReset = () => false;
+    game.shouldShowReplayExit = () => false;
+
+    const mapTargets = game.semanticTargets()
+      .filter(({ id }) => id.startsWith('satchel.map.ch1.'));
+
+    expect(mapTargets.map(({ id }) => id)).toEqual([
+      'satchel.map.ch1.diagonStreet',
+      'satchel.map.ch1.ollivanders',
+      'satchel.map.ch1.malkins',
+      'satchel.map.ch1.menagerie',
+    ]);
+    expect(mapTargets.every(({ x, y }) => Number.isFinite(x) && Number.isFinite(y))).toBe(true);
   });
 });
 

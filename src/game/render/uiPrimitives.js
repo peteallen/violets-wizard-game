@@ -166,23 +166,6 @@ export function drawReplayRibbon(context, rect, label = 'Return') {
   context.restore();
 }
 
-export function drawHoldGear(context, rect, progress = 0, icon = '⚙') {
-  const x = rect.x + rect.width / 2;
-  const y = rect.y + rect.height / 2;
-  const radius = Math.min(rect.width, rect.height) * 0.38;
-  context.save();
-  drawWaxMedallion(context, x, y, radius, icon);
-  if (progress > 0) {
-    context.strokeStyle = '#fff8e8';
-    context.lineWidth = 9;
-    context.lineCap = 'round';
-    context.beginPath();
-    context.arc(x, y, radius + 8, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * Math.min(1, progress));
-    context.stroke();
-  }
-  context.restore();
-}
-
 export function drawWaxMedallion(context, x, y, radius, glyph, { danger = false } = {}) {
   context.save();
   context.fillStyle = danger ? '#642a35' : WAX_DARK;

@@ -251,23 +251,24 @@ export class Game {
     if (this.pointer !== null || this.roomTransition) return;
     this.canvas.setPointerCapture?.(event.pointerId);
     const point = this.toWorld(event);
-    const holdsParentGear = this.isParentGearAvailable() && pointInUiRect(point, UI_RECTS.satchelGear);
+    const holdsParentKeyhole = this.isParentKeyholeAvailable()
+      && pointInUiRect(point, UI_RECTS.satchelKeyhole);
     const worldState = this.world?.snapshot?.() ?? null;
     this.pointer = {
       id: event.pointerId,
       point,
       latestPoint: point,
-      holdTarget: holdsParentGear ? 'parent-panel' : null,
+      holdTarget: holdsParentKeyhole ? 'parent-panel' : null,
       holdTriggered: false,
       holdCancelled: false,
-      worldTargetId: !holdsParentGear
+      worldTargetId: !holdsParentKeyhole
         && this.world
         && !this.world.blocked
         && !worldState?.affordances?.quiet
         ? this.world.targetAt(point)?.id ?? null
         : null,
     };
-    if (holdsParentGear) {
+    if (holdsParentKeyhole) {
       this.parentGateProgress = 0;
       this.sound.unlock().catch(() => {});
     }
@@ -283,7 +284,7 @@ export class Game {
       this.pointer.holdTarget === 'parent-panel'
       && (
         distance(this.pointer.point, this.pointer.latestPoint) > INPUT.tapSlop
-        || !pointInUiRect(this.pointer.latestPoint, UI_RECTS.satchelGear)
+        || !pointInUiRect(this.pointer.latestPoint, UI_RECTS.satchelKeyhole)
       )
     ) {
       this.pointer.holdCancelled = true;
@@ -317,7 +318,7 @@ export class Game {
       || pointer.holdTarget !== 'parent-panel'
       || pointer.holdTriggered
       || pointer.holdCancelled
-      || !this.isParentGearAvailable()
+      || !this.isParentKeyholeAvailable()
     ) return;
 
     this.parentGateProgress = clamp(this.parentGateProgress + dt / INPUT.parentHoldSeconds, 0, 1);
@@ -328,7 +329,7 @@ export class Game {
     this.sound.playSfx('sfx/ui/parchment', 'chime');
   }
 
-  isParentGearAvailable() {
+  isParentKeyholeAvailable() {
     return Boolean(this.world?.overlay?.surface === 'satchel');
   }
 
@@ -541,13 +542,20 @@ export class Game {
         this.updateStatus(card.text);
         return;
       }
-      const location = state.__mapLocations?.find((candidate) => candidate.__rect && pointInUiRect(point, candidate.__rect));
+      const mapPresentation = this.uiRenderer.mapPresentation(
+        state,
+        this.simTime,
+        { reducedMotion: this.reducedMotion },
+      );
+      const location = mapPresentation.hitTargets.find(
+        (candidate) => pointInUiRect(point, candidate.hitArea),
+      );
       if (!location) return;
-      if (!state.unlockedRooms.includes(location.id)) {
+      if (!location.enabled) {
         this.sound.playSfx('sfx/ui/locked', 'fizzle');
         return;
       }
-      const contentLocation = chapter1Map.locations.find((candidate) => candidate.id.endsWith(location.id.split('.').at(-1)));
+      const contentLocation = chapter1Map.locations.find((candidate) => candidate.id === location.id);
       if (!contentLocation) return;
       this.world.closeOverlay();
       this.nextTransitionEffect = 'sparkle';
@@ -1564,17 +1572,25 @@ export class Game {
       targets.push(
         { id: 'satchel.map', x: UI_RECTS.satchelMapTab.x + UI_RECTS.satchelMapTab.width / 2, y: UI_RECTS.satchelMapTab.y + UI_RECTS.satchelMapTab.height / 2 },
         { id: 'satchel.cards', x: UI_RECTS.satchelCardsTab.x + UI_RECTS.satchelCardsTab.width / 2, y: UI_RECTS.satchelCardsTab.y + UI_RECTS.satchelCardsTab.height / 2 },
-        semanticRect('satchel.grownups', UI_RECTS.satchelGear),
+        semanticRect('satchel.grownups', UI_RECTS.satchelKeyhole),
       );
-      for (const slot of state.__cardSlots ?? []) {
-        targets.push({ id: `satchel.card.${slot.id}`, x: slot.__rect.x + slot.__rect.width / 2, y: slot.__rect.y + slot.__rect.height / 2 });
-      }
-      for (const location of state.__mapLocations ?? []) {
-        targets.push({
-          id: `satchel.map.${location.id}`,
-          x: location.__rect.x + location.__rect.width / 2,
-          y: location.__rect.y + location.__rect.height / 2,
-        });
+      if (state.overlay.tab === 'cards') {
+        for (const slot of state.__cardSlots ?? []) {
+          targets.push({ id: `satchel.card.${slot.id}`, x: slot.__rect.x + slot.__rect.width / 2, y: slot.__rect.y + slot.__rect.height / 2 });
+        }
+      } else {
+        const mapPresentation = this.uiRenderer.mapPresentation(
+          state,
+          this.simTime,
+          { reducedMotion: this.reducedMotion },
+        );
+        for (const location of mapPresentation.hitTargets) {
+          targets.push({
+            id: `satchel.map.${location.id.replace(/^map\./, '')}`,
+            x: location.hitArea.x + location.hitArea.width / 2,
+            y: location.hitArea.y + location.hitArea.height / 2,
+          });
+        }
       }
     }
     if (state.overlay?.surface === 'letter-reading') {

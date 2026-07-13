@@ -118,10 +118,11 @@ describe('player-visible copy', () => {
         name: 'satchel map',
         draw: (context) => renderer.drawSatchel(context, {
           overlay: { surface: 'satchel', tab: 'map' },
+          roomId: 'ch1.diagonStreet',
           unlockedRooms: ['ch1.ollivanders', 'ch1.malkins'],
-          objective: { mapStar: { hotspot: 'street.malkinsDoor' } },
+          objective: { mapStar: { room: 'ch1.diagonStreet', hotspot: 'street.malkinsDoor' } },
         }, [], { reducedMotion: true }),
-        expected: ['Violet’s Satchel', 'Map', 'Cards', 'Wands', 'Robes', 'Pets'],
+        expected: ['Violet’s Satchel', 'Map', 'Cards'],
         roles: { properNames: ['Violet’s Satchel'] },
       },
       {
@@ -133,7 +134,7 @@ describe('player-visible copy', () => {
           { id: 'morgana', name: 'Morgana', portraitAsset: null },
           { id: 'dumbledore', name: 'Dumbledore', portraitAsset: null },
         ]),
-        expected: ['Violet’s Satchel', 'Map', 'Cards', 'Morgana'],
+        expected: ['Violet’s Satchel', 'Morgana', 'Map', 'Cards'],
         roles: { properNames: ['Violet’s Satchel', 'Morgana'] },
       },
       {
