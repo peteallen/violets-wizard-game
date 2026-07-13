@@ -19,6 +19,7 @@ import {
   drawVectorIcon,
   drawWaxIcon,
 } from './uiIllustrations.js';
+import { drawVectorOwl } from './OwlRenderer.js';
 import { drawReadableInvitation } from './SetPieceRenderer.js';
 
 const STORY_GRADIENTS = new WeakMap();
@@ -514,7 +515,7 @@ export class UIRenderer {
       context.fill();
     }
     context.globalAlpha = 1;
-    const moonX = 1010 + Math.sin(animationTime * 0.22) * (reducedMotion ? 0 : 4);
+    const moonX = 1058 + Math.sin(animationTime * 0.22) * (reducedMotion ? 0 : 3);
     context.fillStyle = 'rgba(244,213,141,0.16)';
     context.beginPath();
     context.arc(moonX, 142, 104, 0, Math.PI * 2);
@@ -529,15 +530,32 @@ export class UIRenderer {
       context.arc(moonX + dx, 142 + dy, radius, 0, Math.PI * 2);
       context.fill();
     }
-    const owlFlight = Math.sin(animationTime * 1.7) * (reducedMotion ? 0 : 0.08);
-    context.save();
-    context.translate(
-      1003 + Math.sin(animationTime * 0.45) * (reducedMotion ? 0 : 18),
-      130 + Math.sin(animationTime * 1.2) * (reducedMotion ? 0 : 7),
-    );
-    context.rotate(owlFlight);
-    drawVectorIcon(context, 'owl', 0, 0, 118, { color: '#352a35', secondary: '#6f5c62' });
-    context.restore();
+    const titleOwlX = moonX - 2 + Math.sin(animationTime * 0.45) * (reducedMotion ? 0 : 3);
+    const titleOwlLookX = -0.58 + Math.sin(animationTime * 0.55) * (reducedMotion ? 0 : 0.1);
+    const titleOwlLookY = 0.18 + Math.sin(animationTime * 0.4 + 0.7) * (reducedMotion ? 0 : 0.07);
+    context.strokeStyle = '#8f673e';
+    context.lineWidth = 5;
+    context.beginPath();
+    context.moveTo(moonX - 52, 198);
+    context.quadraticCurveTo(moonX - 4, 207, moonX + 50, 197);
+    context.stroke();
+    context.strokeStyle = 'rgba(255,240,194,0.42)';
+    context.lineWidth = 1.4;
+    context.beginPath();
+    context.moveTo(moonX - 44, 196);
+    context.quadraticCurveTo(moonX - 3, 202, moonX + 42, 195);
+    context.stroke();
+    drawVectorOwl(context, {
+      variant: 'post',
+      pose: 'perch',
+      x: titleOwlX,
+      y: 202,
+      scale: 0.94,
+      phase: 4.9,
+      lookX: titleOwlLookX,
+      lookY: titleOwlLookY,
+      reducedMotion,
+    }, animationTime);
 
     drawTitleFlourish(context, WORLD.width / 2, 172);
     context.textAlign = 'center';
