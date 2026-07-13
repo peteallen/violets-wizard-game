@@ -13,9 +13,33 @@ export const VIOLET_STYLE = Object.freeze({
   hairShadow: '#514640',
   hairLight: 'rgba(231, 218, 198, 0.32)',
   hairRim: 'rgba(220, 205, 184, 0.42)',
+  skinBase: '#d9a17b',
+  skinShadow: '#b87968',
+  skinLight: 'rgba(255, 225, 181, 0.28)',
+  cheek: 'rgba(189, 82, 91, 0.24)',
+  eyeWhite: '#f5ead8',
+  iris: '#5a3d28',
+  pupil: '#241a18',
   glasses: '#203d34',
   glassesLight: '#557266',
   lenses: 'rgba(190, 218, 202, 0.08)',
+  robeBase: '#26222e',
+  robeMid: '#383140',
+  robeShadow: '#1d1a24',
+  robeLight: 'rgba(225, 205, 180, 0.18)',
+  lining: '#7a4fc9',
+  liningLight: '#ab8de0',
+  shoeBase: '#6848a8',
+  shoeShadow: '#493371',
+  shoeLight: '#b29ae0',
+  casualJerseyBase: '#70539f',
+  casualJerseyMid: '#8d73ba',
+  casualJerseyShadow: '#4e3c70',
+  casualJerseyLight: 'rgba(226, 209, 234, 0.26)',
+  casualJerseyTrim: '#d8c9e4',
+  casualLeggingBase: '#373342',
+  casualLeggingShadow: '#25232f',
+  casualLeggingLight: 'rgba(196, 184, 209, 0.2)',
 });
 
 export const HAGRID_STYLE = Object.freeze({
@@ -94,31 +118,45 @@ export class CharacterRenderer {
   drawViolet(context, character, time) {
     const scale = character.scale ?? 1;
     const direction = character.facing === 'left' ? -1 : 1;
-    const walking = Boolean(character.walking);
-    const stride = walking ? Math.sin(time * 10.5) : 0;
-    const bob = walking ? -Math.abs(stride) * 3.4 : Math.sin(time * 2.1) * 1.6;
-    const idleSway = walking ? 0 : Math.sin(time * 1.35) * 0.018;
+    const pose = character.pose ?? 'idle';
+    const walking = Boolean(character.walking) || pose === 'walking';
+    const motion = sampleVioletMotion({
+      time,
+      walking,
+      pose,
+      reducedMotion: Boolean(character.reducedMotion),
+    });
     const trim = character.robeTrim ?? PALETTE.violet;
+    const outfit = character.outfit === 'casual' ? 'casual' : 'robes';
     const blinking = isBlinking(time, 0.1);
 
     context.save();
-    context.translate(character.x, character.y + bob);
+    context.translate(character.x, character.y + motion.bob);
     context.scale(direction * scale, scale);
-    context.rotate(idleSway);
+    context.rotate(motion.bodySway);
     prepare(context, 2.25);
 
     drawGroundingShadow(context, 'violet');
-    drawVioletLeg(context, -15, stride * 8, true);
-    drawVioletLeg(context, 15, -stride * 8, false);
-    drawVioletBackHair(context);
-    drawVioletBackArm(context, stride, trim);
-    drawVioletRobe(context, trim, time);
-    drawVioletFrontArm(context, stride, trim, Boolean(character.wand), time);
-    drawVioletHead(context, blinking, time, character.pose);
-    drawVioletCollar(context, trim);
-    drawUpperLeftRim(context, [
-      [-43, -163], [-34, -183], [-10, -194], [12, -191], [34, -176], [43, -151],
-    ], 1.35);
+    drawVioletLeg(context, -15, motion.stride * 8, true, motion, outfit);
+    drawVioletLeg(context, 15, -motion.stride * 8, false, motion, outfit);
+    drawVioletBackHair(context, motion);
+    if (outfit === 'casual') {
+      drawVioletCasualArm(context, motion, -1, true);
+      drawVioletCasualJersey(context, motion);
+      drawVioletCasualArm(context, motion, 1, false, Boolean(character.wand));
+      drawVioletCasualNeckline(context);
+    } else {
+      drawVioletBackArm(context, motion);
+      drawVioletRobe(context, trim, motion);
+      drawVioletFrontArm(context, motion, Boolean(character.wand));
+      drawVioletCollar(context, trim);
+    }
+    context.save();
+    context.translate(0, motion.headBob);
+    context.rotate(motion.headTilt);
+    drawVioletHead(context, blinking, time, pose, motion, character.detail ?? 'world');
+    context.restore();
+    drawVioletWarmRim(context, motion, direction, outfit);
 
     context.restore();
   }
@@ -227,6 +265,8 @@ export class CharacterRenderer {
       this.draw(context, {
         kind: 'violet', x: 0, y: 118, scale: 0.82, facing,
         robeTrim: portrait.robeTrim ?? PALETTE.violet, wand: Boolean(portrait.wand), pose,
+        reducedMotion: Boolean(portrait.reducedMotion), detail: 'portrait',
+        outfit: portrait.outfit ?? 'robes',
       }, time);
     } else {
       const guide = speaker === 'guide';
@@ -305,6 +345,39 @@ export class CharacterRenderer {
       }, time);
     });
   }
+}
+
+export function sampleVioletMotion({
+  time = 0,
+  walking = false,
+  pose = 'idle',
+  reducedMotion = false,
+} = {}) {
+  const safeTime = Number.isFinite(time) ? time : 0;
+  const energy = reducedMotion ? 0.32 : 1;
+  const walkWave = walking ? Math.sin(safeTime * 10.5) : 0;
+  const speaking = pose === 'speaking' || pose === 'talk';
+  const talkWave = speaking ? Math.sin(safeTime * 4.6 + 0.35) : 0;
+  const quietBreath = Math.sin(safeTime * 2.05 + 0.2);
+  const expressiveLift = pose === 'wonder' ? -0.014 : pose === 'proud' ? 0.008 : 0;
+
+  return Object.freeze({
+    stride: walkWave * energy,
+    bob: walking
+      ? -Math.abs(walkWave) * 3.2 * energy
+      : quietBreath * 1.25 * energy - Math.max(0, talkWave) * 0.65 * energy,
+    bodySway: walking
+      ? walkWave * 0.012 * energy
+      : (Math.sin(safeTime * 1.35) * 0.013 + talkWave * 0.006) * energy,
+    armSwing: (walking ? walkWave * 7.2 : speaking ? talkWave * 2.4 : quietBreath * 0.45) * energy,
+    headBob: (walking ? Math.abs(walkWave) * 0.75 : speaking ? talkWave * 0.8 : 0) * energy,
+    headTilt: ((walking ? -walkWave * 0.006 : talkWave * 0.018) + expressiveLift) * energy,
+    hairLift: (walking
+      ? Math.abs(walkWave) * 1.8
+      : speaking ? talkWave * 0.65 : quietBreath * 0.38) * energy,
+    robeSwing: (walking ? walkWave * 2.7 : quietBreath * 0.45) * energy,
+    talkWave: talkWave * energy,
+  });
 }
 
 export function sampleCompanionMotion({ type = 'cat', pose = 'idle', time = 0, reducedMotion = false } = {}) {
@@ -545,345 +618,863 @@ function drawCompanionShadow(context, type, motion) {
   context.restore();
 }
 
-function drawVioletLeg(context, x, stride, behind) {
-  context.save();
-  context.globalAlpha = behind ? 0.9 : 1;
-  context.strokeStyle = '#493b55';
-  context.lineWidth = 11;
-  context.beginPath();
-  context.moveTo(x, -8);
-  context.quadraticCurveTo(x + stride * 0.25, 10, x + stride, 24);
-  context.stroke();
-
+function drawVioletLeg(context, x, stride, behind, motion, outfit) {
   const footX = x + stride;
-  context.fillStyle = '#6f4caf';
-  context.strokeStyle = OUTLINE;
-  context.lineWidth = 3;
+  const lift = Math.abs(motion.stride) * (behind ? 1.4 : 0.7);
+  const casual = outfit === 'casual';
+  const legTop = casual ? -51 : -10;
+  context.save();
+  context.globalAlpha = behind ? 0.88 : 1;
+
+  context.fillStyle = casual ? VIOLET_STYLE.casualLeggingBase : VIOLET_STYLE.robeMid;
   context.beginPath();
-  context.moveTo(footX - 7, 18);
-  context.quadraticCurveTo(footX + 3, 14, footX + 17, 20);
-  context.quadraticCurveTo(footX + 23, 24, footX + 17, 30);
-  context.lineTo(footX - 6, 30);
-  context.quadraticCurveTo(footX - 11, 25, footX - 7, 18);
+  context.moveTo(x - (casual ? 7 : 5), legTop);
+  context.bezierCurveTo(
+    x - (casual ? 8 : 7),
+    casual ? -27 : 1,
+    x + stride * 0.1 - 7,
+    12,
+    footX - 6,
+    22 - lift,
+  );
+  context.bezierCurveTo(footX - 1, 25 - lift, footX + 6, 24 - lift, footX + 7, 19 - lift);
+  context.bezierCurveTo(
+    x + stride * 0.42 + 6,
+    8,
+    x + (casual ? 8 : 5),
+    casual ? -27 : -2,
+    x + (casual ? 7 : 5),
+    legTop,
+  );
+  context.closePath();
+  fillStroke(context, 1.8);
+
+  if (casual) {
+    context.fillStyle = behind ? VIOLET_STYLE.casualLeggingShadow : VIOLET_STYLE.casualLeggingLight;
+    context.beginPath();
+    context.moveTo(x + 1, -48);
+    context.bezierCurveTo(x + 7, -28, x + stride * 0.24 + 5, -5, footX + 3, 18 - lift);
+    context.bezierCurveTo(footX + 6, 18 - lift, footX + 7, 15 - lift, footX + 5, 11 - lift);
+    context.bezierCurveTo(x + stride * 0.2 + 3, -9, x + 5, -33, x + 5, -49);
+    context.closePath();
+    context.fill();
+    context.strokeStyle = 'rgba(214, 202, 222, 0.2)';
+    context.lineWidth = 0.9;
+    context.beginPath();
+    context.moveTo(x - 2, -43);
+    context.bezierCurveTo(x - 4, -24, x + stride * 0.1 - 2, -3, footX - 2, 16 - lift);
+    context.stroke();
+  }
+
+  context.fillStyle = VIOLET_STYLE.shoeBase;
+  context.beginPath();
+  context.moveTo(footX - 8, 16 - lift);
+  context.bezierCurveTo(footX - 2, 14 - lift, footX + 5, 16 - lift, footX + 10, 18 - lift);
+  context.bezierCurveTo(footX + 17, 18 - lift, footX + 23, 21 - lift, footX + 24, 25 - lift);
+  context.bezierCurveTo(footX + 22, 30 - lift, footX + 10, 32 - lift, footX - 5, 30 - lift);
+  context.bezierCurveTo(footX - 11, 27 - lift, footX - 12, 20 - lift, footX - 8, 16 - lift);
+  context.closePath();
+  fillStroke(context, 2.25);
+
+  context.fillStyle = VIOLET_STYLE.shoeShadow;
+  context.beginPath();
+  context.moveTo(footX - 8, 25 - lift);
+  context.bezierCurveTo(footX + 2, 28 - lift, footX + 14, 29 - lift, footX + 23, 25 - lift);
+  context.bezierCurveTo(footX + 21, 31 - lift, footX + 5, 33 - lift, footX - 5, 30 - lift);
+  context.quadraticCurveTo(footX - 9, 28 - lift, footX - 8, 25 - lift);
   context.closePath();
   context.fill();
-  context.stroke();
-  context.strokeStyle = '#ae8de0';
-  context.lineWidth = 2.4;
+
+  context.strokeStyle = VIOLET_STYLE.shoeLight;
+  context.lineWidth = 1.55;
   context.beginPath();
-  context.moveTo(footX + 2, 21);
-  context.quadraticCurveTo(footX + 8, 18, footX + 14, 22);
+  context.moveTo(footX - 3, 20 - lift);
+  context.bezierCurveTo(footX + 3, 17 - lift, footX + 9, 18 - lift, footX + 14, 21 - lift);
+  context.moveTo(footX + 1, 21 - lift);
+  context.quadraticCurveTo(footX + 5, 24 - lift, footX + 10, 21 - lift);
+  context.moveTo(footX + 5, 23 - lift);
+  context.quadraticCurveTo(footX + 9, 25 - lift, footX + 13, 22 - lift);
   context.stroke();
-  context.strokeStyle = '#e9d9f7';
-  context.lineWidth = 1.7;
+  context.strokeStyle = 'rgba(246, 231, 207, 0.66)';
+  context.lineWidth = 1.2;
   context.beginPath();
-  context.moveTo(footX - 2, 26);
-  context.lineTo(footX + 18, 26);
+  context.moveTo(footX - 5, 27 - lift);
+  context.bezierCurveTo(footX + 4, 30 - lift, footX + 15, 29 - lift, footX + 21, 26 - lift);
   context.stroke();
   context.restore();
 }
 
-function drawVioletBackHair(context) {
+function drawVioletBackHair(context, motion) {
+  const lift = motion.hairLift;
+  const swing = motion.robeSwing * 0.35;
   context.fillStyle = VIOLET_STYLE.hairBase;
   context.beginPath();
-  context.moveTo(-34, -168);
-  context.bezierCurveTo(-50, -151, -45, -111, -39, -79);
-  context.quadraticCurveTo(-29, -63, -17, -77);
-  context.quadraticCurveTo(-5, -59, 7, -77);
-  context.quadraticCurveTo(23, -61, 35, -82);
-  context.bezierCurveTo(47, -119, 45, -151, 31, -170);
+  context.moveTo(-35, -169);
+  context.bezierCurveTo(-51, -151, -48, -118, -42 + swing, -84 - lift);
+  context.bezierCurveTo(-38, -72, -28, -66, -20, -78 - lift * 0.35);
+  context.bezierCurveTo(-13, -63, -2, -62, 6, -78 - lift * 0.25);
+  context.bezierCurveTo(16, -64, 28, -67, 37 + swing, -84 - lift * 0.5);
+  context.bezierCurveTo(48, -117, 45, -151, 30, -171);
+  context.bezierCurveTo(12, -188, -17, -187, -35, -169);
   context.closePath();
-  fillStroke(context);
+  fillStroke(context, 2.1);
+
   context.fillStyle = VIOLET_STYLE.hairShadow;
-  context.globalAlpha = 0.58;
   context.beginPath();
-  context.moveTo(5, -184);
-  context.bezierCurveTo(35, -176, 44, -145, 38, -99);
-  context.quadraticCurveTo(31, -73, 18, -68);
-  context.quadraticCurveTo(15, -95, 13, -135, 5, -184);
+  context.moveTo(4, -184);
+  context.bezierCurveTo(31, -180, 44, -154, 40, -119);
+  context.bezierCurveTo(42, -101, 41, -86, 33 + swing, -77 - lift * 0.4);
+  context.bezierCurveTo(24, -67, 16, -70, 11, -82);
+  context.bezierCurveTo(17, -112, 15, -154, 4, -184);
   context.closePath();
   context.fill();
-  context.globalAlpha = 1;
+
   context.fillStyle = VIOLET_STYLE.hairLight;
   context.beginPath();
-  context.moveTo(-29, -162);
-  context.bezierCurveTo(-40, -133, -35, -103, -30, -84);
-  context.quadraticCurveTo(-23, -78, -19, -87);
-  context.bezierCurveTo(-24, -112, -19, -145, -8, -170);
+  context.moveTo(-28, -164);
+  context.bezierCurveTo(-41, -137, -38, -106, -32 + swing, -86 - lift * 0.5);
+  context.bezierCurveTo(-28, -78, -23, -78, -19, -88);
+  context.bezierCurveTo(-24, -115, -19, -146, -8, -171);
+  context.bezierCurveTo(-18, -174, -24, -171, -28, -164);
   context.closePath();
   context.fill();
-  context.strokeStyle = VIOLET_STYLE.hairRim;
-  context.lineWidth = 1.45;
-  for (const [x, bend, end] of [[-28, -6, -91], [-14, 5, -78], [2, -4, -82], [18, 6, -79], [30, 3, -91]]) {
-    context.beginPath();
-    context.moveTo(x, -168 + Math.abs(x) * 0.2);
-    context.bezierCurveTo(x + bend, -143, x - bend * 0.5, -112, x + bend, end);
-    context.stroke();
+
+  context.strokeStyle = VIOLET_STYLE.hairMid;
+  context.lineWidth = 1.65;
+  context.beginPath();
+  for (const [x, bend, end, phase] of [
+    [-29, -7, -90, 0.2], [-16, 5, -79, -0.1], [-2, -4, -81, 0.15], [13, 6, -82, -0.08], [28, 4, -91, 0.12],
+  ]) {
+    context.moveTo(x, -169 + Math.abs(x) * 0.12);
+    context.bezierCurveTo(x + bend, -144, x - bend * 0.45, -111, x + bend + swing * phase, end - lift * phase);
   }
+  context.stroke();
+  context.strokeStyle = VIOLET_STYLE.hairRim;
+  context.lineWidth = 1.05;
+  context.beginPath();
+  context.moveTo(-32, -159);
+  context.bezierCurveTo(-41, -134, -37, -107, -33, -91 - lift * 0.4);
+  context.moveTo(-20, -175);
+  context.bezierCurveTo(-27, -146, -26, -111, -22, -88 - lift * 0.2);
+  context.stroke();
 }
 
-function drawVioletBackArm(context, stride, trim) {
-  const swing = stride * 7;
-  const cuffX = -45 - swing * 0.25;
-  const cuffY = -36 + swing;
-  context.fillStyle = '#292532';
-  context.strokeStyle = OUTLINE;
-  context.lineWidth = 1.9;
+function drawVioletCasualArm(context, motion, side, behind, hasWand = false) {
+  const swing = (side < 0 ? motion.armSwing : -motion.armSwing) * 0.82;
+  const wristX = 43 + swing * 0.2;
+  const wristY = -27 + swing;
+  context.save();
+  context.scale(side, 1);
+  context.globalAlpha = behind ? 0.92 : 1;
+
+  context.fillStyle = VIOLET_STYLE.skinBase;
   context.beginPath();
-  context.moveTo(-30, -96);
-  context.bezierCurveTo(-45, -91, -52, -62 + swing * 0.2, cuffX - 5, cuffY - 5);
-  context.quadraticCurveTo(cuffX, cuffY + 4, cuffX + 9, cuffY + 1);
-  context.bezierCurveTo(-40, -58, -32, -79, -30, -96);
+  context.moveTo(35, -76);
+  context.bezierCurveTo(40, -66, 43, -50, wristX + 5, wristY - 7);
+  context.bezierCurveTo(wristX + 4, wristY + 1, wristX - 3, wristY + 5, wristX - 8, wristY - 1);
+  context.bezierCurveTo(38, -48, 33, -64, 35, -76);
+  context.closePath();
+  fillStroke(context, 1.65);
+
+  context.fillStyle = behind ? VIOLET_STYLE.skinShadow : VIOLET_STYLE.skinLight;
+  context.globalAlpha = behind ? 0.3 : 1;
+  context.beginPath();
+  context.moveTo(39, -72);
+  context.bezierCurveTo(44, -59, 45, -43, wristX + 3, wristY - 6);
+  context.bezierCurveTo(wristX + 1, wristY - 3, wristX - 1, wristY - 2, wristX - 3, wristY - 3);
+  context.bezierCurveTo(39, -48, 36, -62, 39, -72);
   context.closePath();
   context.fill();
-  context.stroke();
-  context.fillStyle = 'rgba(223,195,154,0.1)';
+  context.globalAlpha = behind ? 0.92 : 1;
+
+  context.fillStyle = behind ? VIOLET_STYLE.casualJerseyShadow : VIOLET_STYLE.casualJerseyMid;
   context.beginPath();
-  context.moveTo(-35, -89);
-  context.quadraticCurveTo(-46, -64, cuffX - 1, cuffY - 7);
-  context.lineTo(cuffX + 3, cuffY - 4);
-  context.quadraticCurveTo(-40, -69, -35, -89);
+  context.moveTo(23, -99);
+  context.bezierCurveTo(34, -101, 43, -94, 46, -84);
+  context.bezierCurveTo(47, -78, 45, -71, 41, -67);
+  context.bezierCurveTo(35, -66, 30, -69, 27, -74);
+  context.bezierCurveTo(27, -83, 25, -92, 23, -99);
+  context.closePath();
+  fillStroke(context, 1.75);
+  context.fillStyle = VIOLET_STYLE.casualJerseyLight;
+  context.beginPath();
+  context.moveTo(26, -96);
+  context.bezierCurveTo(33, -96, 39, -91, 41, -84);
+  context.quadraticCurveTo(38, -80, 34, -79);
+  context.bezierCurveTo(31, -86, 29, -92, 26, -96);
   context.closePath();
   context.fill();
-  context.strokeStyle = trim;
-  context.lineWidth = 3.2;
+  context.strokeStyle = VIOLET_STYLE.casualJerseyTrim;
+  context.lineWidth = 2.5;
   context.beginPath();
-  context.moveTo(cuffX - 5, cuffY - 5);
-  context.quadraticCurveTo(cuffX, cuffY - 1, cuffX + 8, cuffY + 1);
+  context.moveTo(41, -68);
+  context.bezierCurveTo(36, -66, 31, -69, 27, -74);
   context.stroke();
-  drawHand(context, -43 - swing * 0.25, -27 + swing, '#d9a17b', 8);
+
+  drawHand(context, wristX, wristY + 7, VIOLET_STYLE.skinBase, 8.2);
+  context.restore();
+  if (hasWand && side > 0) drawVioletWand(context, wristX, wristY + 7);
 }
 
-function drawVioletRobe(context, trim, time = 0) {
-  context.fillStyle = '#25232d';
+function drawVioletCasualJersey(context, motion) {
+  const swing = motion.robeSwing * 0.25;
+  context.fillStyle = VIOLET_STYLE.casualJerseyBase;
   context.beginPath();
-  context.moveTo(-30, -101);
-  context.quadraticCurveTo(-47, -92, -45, -70);
-  context.bezierCurveTo(-46, -43, -55, -14, -59, 1);
-  context.quadraticCurveTo(-27, 14, 0, 8);
-  context.quadraticCurveTo(27, 14, 59, 1);
-  context.bezierCurveTo(55, -17, 45, -46, 45, -71);
-  context.quadraticCurveTo(46, -93, 29, -101);
+  context.moveTo(-27, -103);
+  context.bezierCurveTo(-37, -101, -41, -90, -39, -79);
+  context.bezierCurveTo(-39, -67, -36 - swing * 0.2, -52, -36 - swing, -42);
+  context.bezierCurveTo(-22, -36, -7, -39, 1, -36 + swing * 0.1);
+  context.bezierCurveTo(13, -39, 27, -36, 36 + swing, -43);
+  context.bezierCurveTo(36, -57, 39, -70, 39, -81);
+  context.bezierCurveTo(41, -92, 36, -101, 27, -104);
+  context.bezierCurveTo(10, -109, -11, -108, -27, -103);
   context.closePath();
-  fillStroke(context);
+  fillStroke(context, 2.05);
 
-  context.fillStyle = SHADOW_WASH;
+  context.fillStyle = VIOLET_STYLE.casualJerseyShadow;
   context.beginPath();
-  context.moveTo(7, -94);
-  context.quadraticCurveTo(38, -80, 39, -50);
-  context.quadraticCurveTo(40, -18, 51, 1);
-  context.quadraticCurveTo(28, 9, 5, 6);
+  context.moveTo(4, -105);
+  context.bezierCurveTo(25, -105, 38, -96, 37, -80);
+  context.bezierCurveTo(38, -67, 35, -52, 35 + swing, -43);
+  context.bezierCurveTo(24, -37, 13, -39, 4, -37);
+  context.bezierCurveTo(10, -59, 10, -85, 4, -105);
   context.closePath();
   context.fill();
 
-  context.fillStyle = 'rgba(91,77,102,0.24)';
+  context.fillStyle = VIOLET_STYLE.casualJerseyMid;
   context.beginPath();
-  context.moveTo(-29, -96);
-  context.quadraticCurveTo(-45, -80, -41, -49);
-  context.quadraticCurveTo(-43, -25, -50, -4);
-  context.lineTo(-34, 1);
-  context.quadraticCurveTo(-26, -48, -15, -89, -29, -96);
+  context.moveTo(-25, -100);
+  context.bezierCurveTo(-34, -90, -34, -75, -32, -62);
+  context.bezierCurveTo(-34, -52, -34, -46, -34, -42);
+  context.bezierCurveTo(-25, -38, -17, -39, -11, -39);
+  context.bezierCurveTo(-15, -58, -12, -84, -6, -101);
+  context.bezierCurveTo(-13, -105, -20, -104, -25, -100);
+  context.closePath();
+  context.fill();
+
+  context.fillStyle = VIOLET_STYLE.casualJerseyLight;
+  context.beginPath();
+  context.moveTo(-27, -96);
+  context.bezierCurveTo(-34, -84, -31, -69, -31, -59);
+  context.bezierCurveTo(-33, -52, -34, -47, -33, -44);
+  context.bezierCurveTo(-27, -42, -23, -42, -20, -42);
+  context.bezierCurveTo(-23, -61, -18, -83, -27, -96);
   context.closePath();
   context.fill();
 
   context.fillStyle = WARM_BOUNCE;
   context.beginPath();
-  context.moveTo(-52, -13);
-  context.quadraticCurveTo(-26, -3, 1, 5);
-  context.lineTo(-2, 8);
-  context.quadraticCurveTo(-30, 10, -54, 1);
+  context.moveTo(-34 - swing, -48);
+  context.bezierCurveTo(-19, -42, -8, -38, 1, -37 + swing * 0.1);
+  context.bezierCurveTo(-11, -35, -24, -37, -36 - swing, -42);
+  context.quadraticCurveTo(-37 - swing, -45, -34 - swing, -48);
   context.closePath();
   context.fill();
 
-  context.strokeStyle = trim;
-  context.lineWidth = 7;
+  context.strokeStyle = VIOLET_STYLE.casualJerseyTrim;
+  context.lineWidth = 2.1;
   context.beginPath();
-  context.moveTo(-51, 0);
-  context.quadraticCurveTo(0, 15, 51, 0);
-  context.stroke();
-  context.strokeStyle = 'rgba(255,255,255,0.22)';
-  context.lineWidth = 2;
-  context.beginPath();
-  context.moveTo(-48, -1);
-  context.quadraticCurveTo(-20, 5, 0, 5);
+  context.moveTo(-34 - swing, -43);
+  context.bezierCurveTo(-22, -38, -9, -40, 1, -37 + swing * 0.1);
+  context.bezierCurveTo(13, -40, 25, -37, 34 + swing, -44);
   context.stroke();
 
-  context.strokeStyle = 'rgba(236,224,202,0.28)';
-  context.lineWidth = 1.35;
+  context.strokeStyle = 'rgba(235, 222, 240, 0.34)';
+  context.lineWidth = 1.15;
   context.beginPath();
-  context.moveTo(-21, -88);
-  context.bezierCurveTo(-27, -55, -29, -22, -34, -3);
-  context.moveTo(18, -88);
-  context.bezierCurveTo(24, -54, 27, -22, 32, -3);
-  context.moveTo(0, -92);
-  context.quadraticCurveTo(-3, -47, 0, 4);
+  context.moveTo(-20, -96);
+  context.bezierCurveTo(-25, -79, -24, -59, -26, -44);
+  context.moveTo(18, -97);
+  context.bezierCurveTo(23, -80, 23, -59, 27, -44);
+  context.moveTo(-5, -91);
+  context.bezierCurveTo(-8, -74, -7, -55, -9, -40);
   context.stroke();
 
-  const shimmer = 0.62 + Math.sin(time * 1.8) * 0.12;
-  context.fillStyle = `rgba(244,213,141,${shimmer})`;
-  for (const [x, y, size] of [[-34, -51, 2.4], [29, -35, 1.8], [-16, -18, 1.6]]) {
-    drawFourPointStar(context, x, y, size);
-  }
+  context.strokeStyle = VIOLET_STYLE.casualJerseyShadow;
+  context.lineWidth = 2.3;
+  context.beginPath();
+  context.moveTo(-25, -99);
+  context.bezierCurveTo(-18, -92, -14, -87, -10, -80);
+  context.moveTo(25, -100);
+  context.bezierCurveTo(18, -93, 13, -87, 9, -80);
+  context.stroke();
+
+  context.fillStyle = VIOLET_STYLE.casualJerseyTrim;
+  context.beginPath();
+  context.moveTo(-24, -68);
+  context.bezierCurveTo(-20, -72, -14, -71, -11, -67);
+  context.bezierCurveTo(-14, -62, -20, -62, -24, -66);
+  context.quadraticCurveTo(-25, -67, -24, -68);
+  context.closePath();
+  context.fill();
+  context.fillStyle = VIOLET_STYLE.casualJerseyShadow;
+  context.beginPath();
+  context.moveTo(-20, -69);
+  context.bezierCurveTo(-17, -68, -15, -66, -14, -64);
+  context.bezierCurveTo(-17, -63, -20, -64, -22, -66);
+  context.quadraticCurveTo(-22, -68, -20, -69);
+  context.closePath();
+  context.fill();
 }
 
-function drawVioletFrontArm(context, stride, trim, hasWand, time) {
-  const swing = -stride * 7;
-  const cuffX = 43 + swing * 0.25;
+function drawVioletCasualNeckline(context) {
+  context.fillStyle = VIOLET_STYLE.casualJerseyTrim;
+  context.beginPath();
+  context.moveTo(-20, -102);
+  context.bezierCurveTo(-13, -106, -6, -105, 0, -101);
+  context.bezierCurveTo(7, -106, 14, -106, 21, -102);
+  context.bezierCurveTo(14, -94, 7, -88, 1, -85);
+  context.bezierCurveTo(-6, -88, -14, -94, -20, -102);
+  context.closePath();
+  fillStroke(context, 1.55);
+  context.fillStyle = VIOLET_STYLE.casualJerseyShadow;
+  context.beginPath();
+  context.moveTo(-14, -101);
+  context.bezierCurveTo(-9, -103, -4, -102, 0, -98);
+  context.bezierCurveTo(5, -102, 10, -103, 15, -101);
+  context.bezierCurveTo(10, -96, 5, -91, 1, -89);
+  context.bezierCurveTo(-4, -91, -9, -96, -14, -101);
+  context.closePath();
+  context.fill();
+  context.strokeStyle = 'rgba(250, 236, 214, 0.42)';
+  context.lineWidth = 0.9;
+  context.beginPath();
+  context.moveTo(-17, -101);
+  context.bezierCurveTo(-10, -96, -5, -90, 1, -87);
+  context.bezierCurveTo(7, -90, 12, -96, 18, -101);
+  context.stroke();
+}
+
+function drawVioletBackArm(context, motion) {
+  const swing = motion.armSwing;
+  const cuffX = -45 - swing * 0.25;
   const cuffY = -36 + swing;
-  context.fillStyle = '#302b38';
-  context.strokeStyle = OUTLINE;
-  context.lineWidth = 1.9;
+  context.fillStyle = VIOLET_STYLE.robeBase;
   context.beginPath();
-  context.moveTo(30, -96);
-  context.bezierCurveTo(45, -92, 52, -63 + swing * 0.15, cuffX + 5, cuffY - 5);
-  context.quadraticCurveTo(cuffX, cuffY + 4, cuffX - 9, cuffY + 1);
-  context.bezierCurveTo(40, -59, 33, -79, 30, -96);
+  context.moveTo(-29, -97);
+  context.bezierCurveTo(-43, -94, -51, -72, cuffX - 6, cuffY - 6);
+  context.bezierCurveTo(cuffX - 4, cuffY + 2, cuffX + 3, cuffY + 6, cuffX + 10, cuffY + 1);
+  context.bezierCurveTo(-39, -57, -32, -82, -29, -97);
+  context.closePath();
+  fillStroke(context, 1.9);
+  context.fillStyle = VIOLET_STYLE.robeLight;
+  context.beginPath();
+  context.moveTo(-34, -89);
+  context.bezierCurveTo(-45, -68, cuffX - 4, cuffY - 8, cuffX + 1, cuffY - 5);
+  context.bezierCurveTo(-41, -67, -36, -81, -34, -89);
   context.closePath();
   context.fill();
-  context.stroke();
-  context.fillStyle = 'rgba(24,18,29,0.2)';
+  context.strokeStyle = VIOLET_STYLE.lining;
+  context.lineWidth = 3.4;
   context.beginPath();
-  context.moveTo(36, -89);
-  context.quadraticCurveTo(48, -63, cuffX + 2, cuffY - 6);
-  context.lineTo(cuffX - 3, cuffY - 3);
-  context.quadraticCurveTo(42, -68, 36, -89);
-  context.closePath();
-  context.fill();
-  context.strokeStyle = trim;
-  context.lineWidth = 3.2;
-  context.beginPath();
-  context.moveTo(cuffX - 8, cuffY + 1);
-  context.quadraticCurveTo(cuffX, cuffY - 1, cuffX + 5, cuffY - 5);
+  context.moveTo(cuffX - 5, cuffY - 5);
+  context.bezierCurveTo(cuffX - 1, cuffY - 1, cuffX + 4, cuffY + 2, cuffX + 9, cuffY);
   context.stroke();
-  const handX = 43 + swing * 0.25;
-  const handY = -27 + swing;
-  drawHand(context, handX, handY, '#d9a17b', 8.5);
-
-  if (hasWand) {
-    context.strokeStyle = OUTLINE;
-    context.lineWidth = 7;
-    context.beginPath();
-    context.moveTo(handX + 1, handY - 2);
-    context.lineTo(handX + 39, handY - 55);
-    context.stroke();
-    context.strokeStyle = '#68442e';
-    context.lineWidth = 3.5;
-    context.stroke();
-    context.fillStyle = PALETTE.interactive;
-    context.globalAlpha = 0.78 + Math.sin(time * 4.5) * 0.16;
-    context.beginPath();
-    context.arc(handX + 40, handY - 57, 4.3, 0, Math.PI * 2);
-    context.fill();
-    context.globalAlpha = 1;
-  }
+  drawHand(context, -43 - swing * 0.25, -27 + swing, VIOLET_STYLE.skinBase, 8);
 }
 
-function drawVioletHead(context, blinking, time, pose = 'idle') {
-  drawEar(context, -37, -142, '#d9a17b');
-  drawEar(context, 37, -142, '#d9a17b');
-
-  context.fillStyle = '#d9a17b';
+function drawVioletRobe(context, trim, motion) {
+  const swing = motion.robeSwing;
+  const leftHem = -58 - swing * 0.22;
+  const rightHem = 58 + swing * 0.22;
+  context.fillStyle = VIOLET_STYLE.robeBase;
   context.beginPath();
-  context.ellipse(0, -142, 37, 42, 0, 0, Math.PI * 2);
-  fillStroke(context);
+  context.moveTo(-29, -102);
+  context.bezierCurveTo(-45, -97, -48, -82, -45, -68);
+  context.bezierCurveTo(-47, -43, -54, -16, leftHem, 1);
+  context.bezierCurveTo(-38, 10, -18, 13, 1, 8 + swing * 0.08);
+  context.bezierCurveTo(20, 14, 42, 10, rightHem, 0);
+  context.bezierCurveTo(54, -18, 47, -45, 45, -70);
+  context.bezierCurveTo(47, -86, 41, -98, 29, -103);
+  context.bezierCurveTo(11, -109, -12, -108, -29, -102);
+  context.closePath();
+  fillStroke(context, 2.15);
 
-  context.fillStyle = 'rgba(119,66,61,0.18)';
+  context.fillStyle = VIOLET_STYLE.robeShadow;
   context.beginPath();
-  context.moveTo(10, -181);
-  context.bezierCurveTo(34, -172, 40, -151, 34, -131);
-  context.quadraticCurveTo(25, -108, 8, -103);
-  context.quadraticCurveTo(18, -126, 15, -153, 10, -181);
+  context.moveTo(5, -103);
+  context.bezierCurveTo(27, -103, 43, -89, 42, -67);
+  context.bezierCurveTo(44, -42, 52, -15, rightHem, 0);
+  context.bezierCurveTo(41, 10, 24, 12, 5, 7);
+  context.bezierCurveTo(12, -26, 11, -70, 5, -103);
   context.closePath();
   context.fill();
-  context.fillStyle = 'rgba(255,224,181,0.24)';
-  context.beginPath();
-  context.ellipse(-12, -161, 14, 8, -0.42, 0, Math.PI * 2);
-  context.fill();
 
-  context.fillStyle = 'rgba(189, 82, 91, 0.22)';
+  context.fillStyle = VIOLET_STYLE.robeMid;
   context.beginPath();
-  context.ellipse(-24, -128, 9, 5, -0.12, 0, Math.PI * 2);
-  context.ellipse(24, -128, 9, 5, 0.12, 0, Math.PI * 2);
-  context.fill();
-
-  const gazeX = Math.sin(time * 0.66 + 0.4) * 1.5;
-  const gazeY = Math.sin(time * 0.41 + 1.3) * 0.7;
-  drawIllustratedEyes(context, -13, -145, 13, -145, '#6a482d', blinking, 5.2, gazeX, gazeY, {
-    browLift: Math.sin(time * 0.53) * 0.7,
-  });
-  drawVioletGlasses(context);
-  context.strokeStyle = '#6d4736';
-  context.lineWidth = 1.45;
-  context.beginPath();
-  context.moveTo(0, -142);
-  context.quadraticCurveTo(-2, -132, 3, -133);
-  context.stroke();
-  context.strokeStyle = 'rgba(113,61,51,0.35)';
-  context.lineWidth = 1.1;
-  context.beginPath();
-  context.moveTo(-3, -129);
-  context.quadraticCurveTo(0, -127, 4, -129);
-  context.stroke();
-  drawExpressiveMouth(context, 0, -119, 12, '#9b565d', pose, time);
-
-  context.fillStyle = '#d8a04b';
-  context.strokeStyle = OUTLINE;
-  context.lineWidth = 1.8;
-  drawFourPointStar(context, 27, -174, 5.2);
-  context.stroke();
-
-  context.fillStyle = VIOLET_STYLE.hairBase;
-  context.beginPath();
-  context.moveTo(-36, -154);
-  context.bezierCurveTo(-39, -180, -20, -193, 3, -192);
-  context.bezierCurveTo(27, -192, 40, -176, 37, -151);
-  context.quadraticCurveTo(29, -169, 16, -169);
-  context.quadraticCurveTo(5, -157, -4, -170);
-  context.quadraticCurveTo(-17, -156, -28, -167);
-  context.quadraticCurveTo(-31, -158, -36, -154);
+  context.moveTo(-28, -98);
+  context.bezierCurveTo(-43, -83, -42, -59, -42, -45);
+  context.bezierCurveTo(-47, -25, -50, -10, -51, -2);
+  context.bezierCurveTo(-40, 4, -29, 7, -19, 7);
+  context.bezierCurveTo(-23, -25, -19, -69, -12, -96);
+  context.bezierCurveTo(-18, -102, -23, -102, -28, -98);
   context.closePath();
-  fillStroke(context);
+  context.fill();
 
-  context.fillStyle = VIOLET_STYLE.hairShadow;
-  context.globalAlpha = 0.72;
+  context.fillStyle = VIOLET_STYLE.robeLight;
   context.beginPath();
-  context.moveTo(6, -190);
-  context.bezierCurveTo(28, -189, 40, -173, 37, -151);
-  context.quadraticCurveTo(30, -166, 17, -168);
-  context.quadraticCurveTo(16, -180, 6, -190);
+  context.moveTo(-30, -95);
+  context.bezierCurveTo(-39, -76, -36, -51, -39, -31);
+  context.bezierCurveTo(-42, -19, -45, -8, -47, -2);
+  context.bezierCurveTo(-40, 1, -34, 3, -29, 3);
+  context.bezierCurveTo(-31, -26, -24, -67, -30, -95);
+  context.closePath();
+  context.fill();
+
+  context.fillStyle = VIOLET_STYLE.lining;
+  context.globalAlpha = 0.9;
+  context.beginPath();
+  context.moveTo(-8, -91);
+  context.bezierCurveTo(-4, -69, -6, -38, -10, 3);
+  context.bezierCurveTo(-4, 7, 1, 8, 5, 7);
+  context.bezierCurveTo(2, -30, 3, -63, 8, -93);
+  context.quadraticCurveTo(0, -98, -8, -91);
   context.closePath();
   context.fill();
   context.globalAlpha = 1;
 
-  context.strokeStyle = VIOLET_STYLE.hairMid;
-  context.lineWidth = 6.5;
+  context.fillStyle = WARM_BOUNCE;
   context.beginPath();
-  context.moveTo(-30, -160);
-  context.quadraticCurveTo(-43, -137, -32, -112);
-  context.moveTo(31, -158);
-  context.quadraticCurveTo(42, -136, 31, -111);
+  context.moveTo(leftHem + 5, -8);
+  context.bezierCurveTo(-29, -1, -13, 7, 1, 8);
+  context.bezierCurveTo(-18, 13, -40, 9, leftHem, 1);
+  context.quadraticCurveTo(leftHem - 1, -3, leftHem + 5, -8);
+  context.closePath();
+  context.fill();
+
+  context.strokeStyle = trim;
+  context.lineWidth = 4.8;
+  context.beginPath();
+  context.moveTo(leftHem + 4, 0);
+  context.bezierCurveTo(-35, 9, -16, 12, 1, 8 + swing * 0.08);
+  context.bezierCurveTo(19, 13, 39, 9, rightHem - 4, 0);
   context.stroke();
-  context.strokeStyle = VIOLET_STYLE.hairRim;
-  context.lineWidth = 1.35;
+  context.strokeStyle = VIOLET_STYLE.liningLight;
+  context.lineWidth = 1.15;
   context.beginPath();
-  context.moveTo(-28, -179);
-  context.quadraticCurveTo(-13, -188, 2, -186);
-  context.moveTo(-31, -151);
-  context.quadraticCurveTo(-26, -164, -17, -168);
-  context.moveTo(9, -183);
-  context.quadraticCurveTo(20, -181, 29, -169);
+  context.moveTo(leftHem + 8, -1);
+  context.bezierCurveTo(-31, 6, -14, 9, 0, 7);
   context.stroke();
 
-  drawVioletFlyaway(context, -30, -174, -48, -184 + Math.sin(time * 3.1) * 2, -42, -159);
-  drawVioletFlyaway(context, -17, -190, -31, -198 + Math.sin(time * 3.5) * 2, -33, -181);
-  drawVioletFlyaway(context, 11, -189, 27, -196 + Math.sin(time * 2.8) * 1.8, 32, -176);
+  context.strokeStyle = 'rgba(228, 212, 190, 0.25)';
+  context.lineWidth = 1.25;
+  context.beginPath();
+  context.moveTo(-21, -88);
+  context.bezierCurveTo(-27, -58, -27, -25, -32, -3);
+  context.moveTo(20, -89);
+  context.bezierCurveTo(25, -59, 27, -25, 33, -3);
+  context.moveTo(-1, -87);
+  context.bezierCurveTo(-4, -55, -4, -25, -6, 2);
+  context.stroke();
+  context.strokeStyle = 'rgba(18, 15, 24, 0.46)';
+  context.lineWidth = 1.5;
+  context.beginPath();
+  context.moveTo(10, -83);
+  context.bezierCurveTo(13, -57, 13, -28, 18, 5);
+  context.stroke();
+}
+
+function drawVioletFrontArm(context, motion, hasWand) {
+  const swing = -motion.armSwing;
+  const cuffX = 43 + swing * 0.25;
+  const cuffY = -36 + swing;
+  context.fillStyle = VIOLET_STYLE.robeMid;
+  context.beginPath();
+  context.moveTo(29, -98);
+  context.bezierCurveTo(44, -95, 51, -74, cuffX + 6, cuffY - 6);
+  context.bezierCurveTo(cuffX + 4, cuffY + 2, cuffX - 3, cuffY + 6, cuffX - 10, cuffY + 1);
+  context.bezierCurveTo(39, -58, 32, -82, 29, -98);
+  context.closePath();
+  fillStroke(context, 1.9);
+  context.fillStyle = VIOLET_STYLE.robeShadow;
+  context.globalAlpha = 0.72;
+  context.beginPath();
+  context.moveTo(35, -90);
+  context.bezierCurveTo(46, -69, cuffX + 4, cuffY - 8, cuffX - 1, cuffY - 5);
+  context.bezierCurveTo(41, -67, 36, -81, 35, -90);
+  context.closePath();
+  context.fill();
+  context.globalAlpha = 1;
+  context.strokeStyle = VIOLET_STYLE.lining;
+  context.lineWidth = 3.4;
+  context.beginPath();
+  context.moveTo(cuffX + 5, cuffY - 5);
+  context.bezierCurveTo(cuffX + 1, cuffY - 1, cuffX - 4, cuffY + 2, cuffX - 9, cuffY);
+  context.stroke();
+  const handX = 43 + swing * 0.25;
+  const handY = -27 + swing;
+  drawHand(context, handX, handY, VIOLET_STYLE.skinBase, 8.5);
+  if (hasWand) drawVioletWand(context, handX, handY);
+}
+
+function drawVioletWand(context, handX, handY) {
+  context.fillStyle = '#68442e';
+  context.beginPath();
+  context.moveTo(handX - 3, handY + 2);
+  context.bezierCurveTo(handX + 8, handY - 14, handX + 27, handY - 42, handX + 39, handY - 58);
+  context.bezierCurveTo(handX + 42, handY - 60, handX + 44, handY - 57, handX + 41, handY - 53);
+  context.bezierCurveTo(handX + 28, handY - 35, handX + 13, handY - 11, handX + 3, handY + 3);
+  context.bezierCurveTo(handX + 1, handY + 5, handX - 2, handY + 4, handX - 3, handY + 2);
+  context.closePath();
+  fillStroke(context, 1.5);
+  context.fillStyle = '#4a3027';
+  context.beginPath();
+  context.moveTo(handX + 18, handY - 24);
+  context.bezierCurveTo(handX + 27, handY - 39, handX + 35, handY - 51, handX + 41, handY - 57);
+  context.bezierCurveTo(handX + 36, handY - 45, handX + 28, handY - 32, handX + 18, handY - 24);
+  context.closePath();
+  context.fill();
+  context.strokeStyle = 'rgba(242, 202, 132, 0.38)';
+  context.lineWidth = 1;
+  context.beginPath();
+  context.moveTo(handX + 1, handY + 1);
+  context.bezierCurveTo(handX + 13, handY - 14, handX + 27, handY - 39, handX + 38, handY - 54);
+  context.stroke();
+}
+
+function drawVioletHead(context, blinking, time, pose = 'idle', motion, detail = 'world') {
+  drawVioletEar(context, -37, -143, -1);
+  drawVioletEar(context, 38, -142, 1);
+
+  context.fillStyle = VIOLET_STYLE.skinBase;
+  context.beginPath();
+  context.moveTo(-5, -184);
+  context.bezierCurveTo(-26, -185, -39, -169, -37, -147);
+  context.bezierCurveTo(-41, -125, -25, -105, -5, -101);
+  context.bezierCurveTo(12, -98, 31, -109, 38, -131);
+  context.bezierCurveTo(43, -153, 34, -177, 13, -184);
+  context.bezierCurveTo(7, -187, 1, -187, -5, -184);
+  context.closePath();
+  fillStroke(context, 2.15);
+
+  context.fillStyle = VIOLET_STYLE.skinShadow;
+  context.globalAlpha = 0.3;
+  context.beginPath();
+  context.moveTo(8, -183);
+  context.bezierCurveTo(31, -178, 40, -158, 36, -136);
+  context.bezierCurveTo(33, -117, 20, -103, 6, -101);
+  context.bezierCurveTo(14, -123, 15, -156, 8, -183);
+  context.closePath();
+  context.fill();
+  context.globalAlpha = 1;
+
+  context.fillStyle = VIOLET_STYLE.skinLight;
+  context.beginPath();
+  context.moveTo(-27, -170);
+  context.bezierCurveTo(-20, -181, -7, -184, 3, -179);
+  context.bezierCurveTo(-9, -170, -15, -158, -17, -145);
+  context.bezierCurveTo(-26, -146, -33, -159, -27, -170);
+  context.closePath();
+  context.fill();
+
+  drawVioletCheek(context, -24, -127, -1);
+  drawVioletCheek(context, 24, -126, 1);
+
+  const gazeX = Math.sin(time * 0.66 + 0.4) * 1.25;
+  const gazeY = Math.sin(time * 0.41 + 1.3) * 0.55;
+  drawVioletEyes(context, blinking, gazeX, gazeY, pose, time, detail);
+  drawVioletGlasses(context);
+  drawVioletNose(context);
+  drawVioletMouth(context, pose, time);
+  drawVioletFrontHair(context, time, motion, detail);
+}
+
+function drawVioletEar(context, x, y, side) {
+  context.fillStyle = VIOLET_STYLE.skinBase;
+  context.beginPath();
+  context.moveTo(x - side * 2, y - 8);
+  context.bezierCurveTo(x + side * 8, y - 10, x + side * 10, y + 4, x + side * 3, y + 10);
+  context.bezierCurveTo(x - side * 5, y + 8, x - side * 7, y - 3, x - side * 2, y - 8);
+  context.closePath();
+  fillStroke(context, 1.7);
+  context.strokeStyle = 'rgba(120, 67, 65, 0.36)';
+  context.lineWidth = 1.15;
+  context.beginPath();
+  context.moveTo(x + side, y - 4);
+  context.bezierCurveTo(x + side * 6, y - 2, x + side * 5, y + 5, x, y + 6);
+  context.stroke();
+}
+
+function drawVioletCheek(context, x, y, side) {
+  context.fillStyle = VIOLET_STYLE.cheek;
+  context.beginPath();
+  context.moveTo(x - 8, y - 1);
+  context.bezierCurveTo(x - 5, y - 6 - side, x + 5, y - 6 + side, x + 9, y);
+  context.bezierCurveTo(x + 5, y + 5, x - 5, y + 5 + side, x - 8, y - 1);
+  context.closePath();
+  context.fill();
+}
+
+function drawVioletEyes(context, blinking, gazeX, gazeY, pose, time, detail) {
+  const wonder = pose === 'wonder';
+  const proud = pose === 'proud';
+  const speaking = pose === 'speaking' || pose === 'talk';
+  const browPulse = speaking ? Math.sin(time * 4.6 + 0.35) * 0.8 : 0;
+  const eyes = [
+    { x: -13.2, y: -146.2, side: -1, width: wonder ? 7.5 : 7.1, height: wonder ? 6.2 : 5.5 },
+    { x: 13.4, y: -145.5, side: 1, width: wonder ? 7.2 : 6.8, height: wonder ? 6 : 5.2 },
+  ];
+
+  for (const eye of eyes) {
+    if (blinking) {
+      context.fillStyle = VIOLET_STYLE.skinShadow;
+      context.globalAlpha = 0.42;
+      context.beginPath();
+      context.moveTo(eye.x - eye.width, eye.y + 0.3);
+      context.bezierCurveTo(eye.x - 3, eye.y - 2.1, eye.x + 3.2, eye.y - 1.8, eye.x + eye.width, eye.y + 0.2);
+      context.bezierCurveTo(eye.x + 3, eye.y + 2.5, eye.x - 3.4, eye.y + 2.7, eye.x - eye.width, eye.y + 0.3);
+      context.closePath();
+      context.fill();
+      context.globalAlpha = 1;
+      context.strokeStyle = OUTLINE;
+      context.lineWidth = 1.7;
+      context.beginPath();
+      context.moveTo(eye.x - eye.width, eye.y + 0.2);
+      context.bezierCurveTo(eye.x - 2.5, eye.y + 2.4, eye.x + 3.1, eye.y + 2.2, eye.x + eye.width, eye.y);
+      context.stroke();
+      continue;
+    }
+
+    context.fillStyle = VIOLET_STYLE.eyeWhite;
+    context.beginPath();
+    context.moveTo(eye.x - eye.width, eye.y + 0.2);
+    context.bezierCurveTo(eye.x - 3.2, eye.y - eye.height, eye.x + 3.5, eye.y - eye.height + eye.side * 0.25, eye.x + eye.width, eye.y - 0.3);
+    context.bezierCurveTo(eye.x + 3.1, eye.y + eye.height * 0.72, eye.x - 3.4, eye.y + eye.height * 0.8, eye.x - eye.width, eye.y + 0.2);
+    context.closePath();
+    fillStroke(context, 1.45);
+
+    const irisX = eye.x + gazeX;
+    const irisY = eye.y + gazeY;
+    context.fillStyle = VIOLET_STYLE.iris;
+    context.beginPath();
+    context.moveTo(irisX - 0.4, irisY - 4.4);
+    context.bezierCurveTo(irisX + 4, irisY - 3.8, irisX + 4.4, irisY + 2.5, irisX + 0.3, irisY + 4.3);
+    context.bezierCurveTo(irisX - 3.8, irisY + 3.5, irisX - 4.2, irisY - 2.9, irisX - 0.4, irisY - 4.4);
+    context.closePath();
+    context.fill();
+    context.fillStyle = VIOLET_STYLE.pupil;
+    context.beginPath();
+    context.moveTo(irisX, irisY - 2.55);
+    context.bezierCurveTo(irisX + 2.15, irisY - 2, irisX + 2.35, irisY + 1.65, irisX + 0.15, irisY + 2.5);
+    context.bezierCurveTo(irisX - 2.1, irisY + 2, irisX - 2.3, irisY - 1.7, irisX, irisY - 2.55);
+    context.closePath();
+    context.fill();
+    context.fillStyle = 'rgba(250, 236, 207, 0.94)';
+    context.beginPath();
+    context.moveTo(irisX - 2.2, irisY - 2.6);
+    context.bezierCurveTo(irisX - 0.9, irisY - 3.4, irisX + 0.2, irisY - 2.4, irisX - 0.2, irisY - 1.2);
+    context.bezierCurveTo(irisX - 1.5, irisY - 0.9, irisX - 2.5, irisY - 1.5, irisX - 2.2, irisY - 2.6);
+    context.closePath();
+    context.fill();
+
+    context.strokeStyle = 'rgba(73, 55, 46, 0.62)';
+    context.lineWidth = 1.15;
+    context.beginPath();
+    context.moveTo(eye.x - eye.width, eye.y + 0.2);
+    context.bezierCurveTo(eye.x - 3.1, eye.y - eye.height, eye.x + 3.5, eye.y - eye.height + eye.side * 0.25, eye.x + eye.width, eye.y - 0.3);
+    context.stroke();
+    if (detail === 'portrait') {
+      context.strokeStyle = 'rgba(107, 72, 51, 0.38)';
+      context.lineWidth = 0.8;
+      context.beginPath();
+      context.moveTo(irisX - 2.8, irisY + 1.6);
+      context.quadraticCurveTo(irisX, irisY + 3.6, irisX + 2.7, irisY + 1.3);
+      context.stroke();
+    }
+  }
+
+  const leftLift = (wonder ? 3.2 : proud ? -0.2 : 0.8) + browPulse;
+  const rightLift = (wonder ? 2.2 : proud ? 1.7 : 0.4) - browPulse * 0.35;
+  context.strokeStyle = VIOLET_STYLE.hairShadow;
+  context.lineWidth = 2.35;
+  context.beginPath();
+  context.moveTo(-21, -158 - leftLift);
+  context.bezierCurveTo(-17, -162 - leftLift, -10, -162.5 - leftLift, -6, -158 - leftLift * 0.8);
+  context.moveTo(6, -158 - rightLift);
+  context.bezierCurveTo(10, -161.5 - rightLift, 17, -162 - rightLift, 22, -157.5 - rightLift * 0.8);
+  context.stroke();
+}
+
+function drawVioletNose(context) {
+  context.fillStyle = 'rgba(178, 113, 91, 0.18)';
+  context.beginPath();
+  context.moveTo(-1, -143);
+  context.bezierCurveTo(-4, -135, -5, -130, -1, -128);
+  context.bezierCurveTo(2, -126, 6, -128, 6, -131);
+  context.bezierCurveTo(4, -136, 3, -141, -1, -143);
+  context.closePath();
+  context.fill();
+  context.strokeStyle = '#8d5d4e';
+  context.lineWidth = 1.1;
+  context.beginPath();
+  context.moveTo(0, -141);
+  context.bezierCurveTo(-2, -135, -2, -131, 3, -130);
+  context.stroke();
+  context.strokeStyle = VIOLET_STYLE.skinLight;
+  context.lineWidth = 0.9;
+  context.beginPath();
+  context.moveTo(-1, -139);
+  context.quadraticCurveTo(-2, -135, 0, -133);
+  context.stroke();
+}
+
+function drawVioletMouth(context, pose, time) {
+  const speaking = pose === 'speaking' || pose === 'talk';
+  const wonder = pose === 'wonder';
+  if (speaking || wonder) {
+    const open = wonder ? 4.3 : 3.1 + Math.abs(Math.sin(time * 8.4)) * 3.2;
+    context.fillStyle = '#8f4d58';
+    context.beginPath();
+    context.moveTo(-7, -120);
+    context.bezierCurveTo(-3, -123 - open * 0.18, 4, -123 - open * 0.1, 7, -119.5);
+    context.bezierCurveTo(5, -114 + open * 0.45, -3, -113 + open * 0.5, -7, -120);
+    context.closePath();
+    fillStroke(context, 1.25);
+    context.fillStyle = 'rgba(239, 151, 151, 0.68)';
+    context.beginPath();
+    context.moveTo(-4.5, -116.7 + open * 0.28);
+    context.bezierCurveTo(-1, -114 + open * 0.48, 3.2, -114 + open * 0.4, 5, -117 + open * 0.24);
+    context.quadraticCurveTo(0, -116 + open * 0.2, -4.5, -116.7 + open * 0.28);
+    context.closePath();
+    context.fill();
+    return;
+  }
+
+  context.strokeStyle = '#8f4d58';
+  context.lineWidth = 1.9;
+  context.beginPath();
+  if (pose === 'curious') {
+    context.moveTo(-8, -119);
+    context.bezierCurveTo(-3, -117.5, 2, -121, 8, -119.5);
+  } else if (pose === 'proud') {
+    context.moveTo(-9, -121);
+    context.bezierCurveTo(-4, -115.5, 2, -114.5, 9, -120);
+  } else {
+    context.moveTo(-8, -120);
+    context.bezierCurveTo(-3, -116.5, 3, -116, 8, -120.5);
+  }
+  context.stroke();
+  context.strokeStyle = 'rgba(255, 214, 192, 0.34)';
+  context.lineWidth = 0.8;
+  context.beginPath();
+  context.moveTo(-5, -119.5);
+  context.quadraticCurveTo(-1, -117.5, 3, -118.2);
+  context.stroke();
+}
+
+function drawVioletFrontHair(context, time, motion, detail) {
+  context.fillStyle = VIOLET_STYLE.hairBase;
+  context.beginPath();
+  context.moveTo(-36, -154);
+  context.bezierCurveTo(-41, -178, -23, -194, 1, -193);
+  context.bezierCurveTo(25, -194, 41, -177, 38, -151);
+  context.bezierCurveTo(31, -166, 22, -170, 15, -168);
+  context.bezierCurveTo(10, -165, 7, -158, 1, -157);
+  context.bezierCurveTo(-5, -158, -8, -169, -14, -169);
+  context.bezierCurveTo(-20, -168, -24, -160, -29, -166);
+  context.quadraticCurveTo(-32, -158, -36, -154);
+  context.closePath();
+  fillStroke(context, 2.05);
+
+  context.fillStyle = VIOLET_STYLE.hairShadow;
+  context.beginPath();
+  context.moveTo(5, -191);
+  context.bezierCurveTo(28, -190, 40, -174, 38, -151);
+  context.bezierCurveTo(31, -164, 24, -169, 16, -168);
+  context.bezierCurveTo(17, -179, 12, -188, 5, -191);
+  context.closePath();
+  context.fill();
+
+  context.fillStyle = VIOLET_STYLE.hairMid;
+  context.beginPath();
+  context.moveTo(-34, -158);
+  context.bezierCurveTo(-42, -144, -41, -125, -34, -109);
+  context.bezierCurveTo(-29, -106, -26, -111, -28, -118);
+  context.bezierCurveTo(-33, -136, -27, -156, -20, -167);
+  context.bezierCurveTo(-26, -169, -31, -164, -34, -158);
+  context.closePath();
+  context.fill();
+  context.beginPath();
+  context.moveTo(33, -159);
+  context.bezierCurveTo(41, -143, 40, -124, 33, -108);
+  context.bezierCurveTo(28, -106, 25, -112, 27, -119);
+  context.bezierCurveTo(32, -136, 27, -156, 20, -168);
+  context.bezierCurveTo(26, -169, 31, -165, 33, -159);
+  context.closePath();
+  context.fill();
+
+  context.fillStyle = VIOLET_STYLE.hairLight;
+  context.beginPath();
+  context.moveTo(-28, -177);
+  context.bezierCurveTo(-21, -188, -8, -192, 2, -188);
+  context.bezierCurveTo(-9, -183, -16, -174, -20, -164);
+  context.bezierCurveTo(-28, -164, -33, -170, -28, -177);
+  context.closePath();
+  context.fill();
+
+  context.strokeStyle = VIOLET_STYLE.hairRim;
+  context.lineWidth = 1.25;
+  context.beginPath();
+  context.moveTo(-29, -178);
+  context.bezierCurveTo(-18, -189, -3, -192, 9, -187);
+  context.moveTo(-31, -153);
+  context.bezierCurveTo(-28, -163, -22, -168, -15, -169);
+  context.moveTo(9, -185);
+  context.bezierCurveTo(20, -182, 29, -172, 32, -160);
+  context.stroke();
+
+  context.strokeStyle = VIOLET_STYLE.hairShadow;
+  context.lineWidth = detail === 'portrait' ? 1.05 : 0.9;
+  context.beginPath();
+  context.moveTo(-18, -188);
+  context.bezierCurveTo(-10, -184, -7, -176, -5, -166);
+  context.moveTo(1, -191);
+  context.bezierCurveTo(8, -185, 11, -178, 13, -169);
+  context.moveTo(21, -184);
+  context.bezierCurveTo(27, -177, 29, -168, 29, -159);
+  context.stroke();
+
+  const lift = motion.hairLift;
+  drawVioletWisp(context, -31, -174, -46, -184 - lift, -43, -160 + lift * 0.25, 2.6);
+  drawVioletWisp(context, -17, -190, -31, -199 - lift * 0.8, -32, -181 + lift * 0.2, 2.3);
+  drawVioletWisp(context, 9, -191, 25, -199 - lift * 0.7, 31, -178 + lift * 0.2, 2.35);
+  drawVioletWisp(context, 31, -172, 45, -181 - lift * 0.55, 40, -153 + lift * 0.18, 2.45);
+
+  if (detail === 'portrait') {
+    context.strokeStyle = 'rgba(236, 224, 205, 0.22)';
+    context.lineWidth = 0.75;
+    context.beginPath();
+    context.moveTo(-25, -182);
+    context.bezierCurveTo(-16, -187, -8, -185, -2, -178);
+    context.moveTo(14, -187);
+    context.bezierCurveTo(23, -182, 28, -175, 31, -166);
+    context.stroke();
+  }
+}
+
+function drawVioletWisp(context, startX, startY, controlX, controlY, endX, endY, width) {
+  const side = controlX < startX ? -1 : 1;
+  context.fillStyle = VIOLET_STYLE.hairBase;
+  context.beginPath();
+  context.moveTo(startX, startY);
+  context.bezierCurveTo(controlX, controlY, controlX + side * 2, endY - 7, endX, endY);
+  context.bezierCurveTo(endX - side * width, endY + 1.5, controlX - side * width, controlY + 4, startX + side * width, startY + 2);
+  context.bezierCurveTo(startX + side * 1.2, startY + 1, startX, startY + 0.5, startX, startY);
+  context.closePath();
+  fillStroke(context, 0.95);
+  context.strokeStyle = VIOLET_STYLE.hairRim;
+  context.lineWidth = 0.7;
+  context.beginPath();
+  context.moveTo(startX + side * 0.5, startY + 0.5);
+  context.bezierCurveTo(controlX + side, controlY + 1, controlX + side, endY - 5, endX, endY - 0.5);
+  context.stroke();
 }
 
 export function drawVioletGlasses(context) {
   context.save();
   context.fillStyle = VIOLET_STYLE.lenses;
   context.strokeStyle = VIOLET_STYLE.glasses;
-  context.lineWidth = 3.5;
+  context.lineWidth = 3.35;
   context.lineJoin = 'round';
   context.lineCap = 'round';
 
@@ -895,23 +1486,23 @@ export function drawVioletGlasses(context) {
   context.stroke();
 
   context.beginPath();
-  context.moveTo(-1.5, -147);
-  context.quadraticCurveTo(0, -149.5, 1.5, -147);
+  context.moveTo(-1.5, -147.2);
+  context.bezierCurveTo(-0.7, -149.6, 0.8, -149.5, 1.7, -147.1);
   context.stroke();
   context.beginPath();
-  context.moveTo(-32, -149);
-  context.quadraticCurveTo(-36, -150, -38, -146);
-  context.moveTo(32, -149);
-  context.quadraticCurveTo(36, -150, 38, -146);
+  context.moveTo(-31.5, -149.2);
+  context.bezierCurveTo(-35, -151, -37.4, -149.3, -38.7, -145.7);
+  context.moveTo(32, -148.8);
+  context.bezierCurveTo(35.4, -150.4, 37.5, -148.8, 38.5, -145.2);
   context.stroke();
 
   context.strokeStyle = VIOLET_STYLE.glassesLight;
-  context.lineWidth = 1.25;
+  context.lineWidth = 1.15;
   context.beginPath();
   context.moveTo(-28, -152.5);
-  context.quadraticCurveTo(-18, -155.5, -7, -152.5);
-  context.moveTo(5, -152.5);
-  context.quadraticCurveTo(16, -155.5, 28, -152.5);
+  context.bezierCurveTo(-21, -155.3, -13, -155.2, -7, -152.6);
+  context.moveTo(5, -152.4);
+  context.bezierCurveTo(12, -155.1, 21, -154.9, 28, -152.2);
   context.stroke();
   context.restore();
 }
@@ -919,32 +1510,54 @@ export function drawVioletGlasses(context) {
 function traceVioletLens(context, x, y, width, height, skew) {
   context.beginPath();
   context.moveTo(x + 4 + skew, y);
-  context.quadraticCurveTo(x + 1, y, x, y + 4);
-  context.lineTo(x + 1 - skew * 0.3, y + height - 4);
-  context.quadraticCurveTo(x + 1, y + height, x + 5, y + height);
-  context.lineTo(x + width - 4, y + height - 1);
-  context.quadraticCurveTo(x + width, y + height - 1, x + width, y + height - 5);
-  context.lineTo(x + width - 1 + skew, y + 4);
-  context.quadraticCurveTo(x + width - 1, y + 1, x + width - 5, y + 1);
+  context.bezierCurveTo(x + 1.2, y - 0.3, x - 0.2, y + 1.4, x, y + 4);
+  context.bezierCurveTo(x + 0.2 - skew * 0.2, y + 9, x + 0.4 - skew * 0.25, y + height - 6, x + 3.5, y + height - 3);
+  context.bezierCurveTo(x + 8, y + height + 0.3, x + width - 8, y + height, x + width - 4, y + height - 1);
+  context.bezierCurveTo(x + width - 0.5, y + height - 1.2, x + width + 0.2, y + height - 4, x + width, y + height - 6);
+  context.bezierCurveTo(x + width - 0.2 + skew, y + 12, x + width - 0.2 + skew, y + 6, x + width - 1 + skew, y + 4);
+  context.bezierCurveTo(x + width - 2, y + 0.8, x + width - 6, y + 0.5, x + 4 + skew, y);
   context.closePath();
 }
 
 function drawVioletCollar(context, trim) {
+  context.fillStyle = VIOLET_STYLE.lining;
+  context.beginPath();
+  context.moveTo(-27, -101);
+  context.bezierCurveTo(-18, -106, -9, -107, 0, -102);
+  context.bezierCurveTo(9, -108, 19, -106, 27, -101);
+  context.bezierCurveTo(20, -91, 11, -84, 2, -81);
+  context.bezierCurveTo(-8, -84, -19, -92, -27, -101);
+  context.closePath();
+  fillStroke(context, 2);
+
   context.fillStyle = '#efe3cc';
   context.beginPath();
-  context.moveTo(-25, -100);
-  context.lineTo(-3, -81);
-  context.lineTo(0, -99);
-  context.lineTo(3, -81);
-  context.lineTo(25, -100);
-  context.quadraticCurveTo(0, -111, -25, -100);
+  context.moveTo(-23, -101);
+  context.bezierCurveTo(-15, -104, -8, -103, -1, -99);
+  context.bezierCurveTo(-4, -93, -5, -87, -5, -83);
+  context.bezierCurveTo(-13, -87, -20, -94, -23, -101);
   context.closePath();
-  fillStroke(context, 2.4);
-  context.strokeStyle = trim;
-  context.lineWidth = 6;
+  fillStroke(context, 1.2);
   context.beginPath();
-  context.moveTo(-25, -96);
-  context.quadraticCurveTo(0, -77, 25, -96);
+  context.moveTo(23, -101);
+  context.bezierCurveTo(15, -104, 8, -103, 1, -99);
+  context.bezierCurveTo(4, -93, 5, -87, 5, -83);
+  context.bezierCurveTo(13, -87, 20, -94, 23, -101);
+  context.closePath();
+  fillStroke(context, 1.2);
+  context.strokeStyle = VIOLET_STYLE.liningLight;
+  context.lineWidth = 1.25;
+  context.beginPath();
+  context.moveTo(-24, -99);
+  context.bezierCurveTo(-16, -91, -8, -84, 0, -82);
+  context.bezierCurveTo(8, -84, 16, -91, 24, -99);
+  context.stroke();
+  context.strokeStyle = trim;
+  context.lineWidth = 0.9;
+  context.beginPath();
+  context.moveTo(-20, -99);
+  context.bezierCurveTo(-12, -104, -5, -102, 0, -99);
+  context.bezierCurveTo(6, -103, 13, -104, 20, -99);
   context.stroke();
 }
 
@@ -3233,18 +3846,6 @@ function drawFourPointStar(context, x, y, radius) {
   context.fill();
 }
 
-function drawVioletFlyaway(context, x1, y1, controlX, controlY, x2, y2) {
-  context.strokeStyle = OUTLINE;
-  context.lineWidth = 3.4;
-  context.beginPath();
-  context.moveTo(x1, y1);
-  context.quadraticCurveTo(controlX, controlY, x2, y2);
-  context.stroke();
-  context.strokeStyle = VIOLET_STYLE.hairBase;
-  context.lineWidth = 1.6;
-  context.stroke();
-}
-
 function drawFlyaway(context, x1, y1, x2, y2, color = '#8b6b4a') {
   context.strokeStyle = OUTLINE;
   context.lineWidth = 5;
@@ -3267,6 +3868,39 @@ function drawUpperLeftRim(context, points, width) {
     else context.lineTo(x, y);
   });
   context.stroke();
+}
+
+function drawVioletWarmRim(context, motion, facingDirection, outfit) {
+  context.save();
+  if (facingDirection < 0) context.scale(-1, 1);
+  context.strokeStyle = 'rgba(255, 224, 158, 0.44)';
+  context.lineWidth = 1.45;
+  context.beginPath();
+  context.moveTo(-42, -153);
+  context.bezierCurveTo(-43, -174, -28, -191, -9, -195 - motion.hairLift * 0.2);
+  context.bezierCurveTo(-4, -196, 1, -196, 6, -194);
+  if (outfit === 'casual') {
+    context.moveTo(-38, -94);
+    context.bezierCurveTo(-45, -88, -47, -76, -41, -68);
+    context.moveTo(-39, -66);
+    context.bezierCurveTo(-39, -56, -37 - motion.robeSwing * 0.1, -47, -36 - motion.robeSwing * 0.25, -42);
+    context.bezierCurveTo(-31, -39, -26, -42, -22, -47);
+    context.moveTo(-22, -46);
+    context.bezierCurveTo(-24, -27, -23, -3, -21, 17);
+  } else {
+    context.moveTo(-45, -91);
+    context.bezierCurveTo(-52, -70, -55, -35, -59 - motion.robeSwing * 0.15, -3);
+    context.bezierCurveTo(-49, 3, -39, 7, -29, 9);
+  }
+  context.stroke();
+
+  context.strokeStyle = VIOLET_STYLE.hairRim;
+  context.lineWidth = 0.8;
+  context.beginPath();
+  context.moveTo(-37, -157);
+  context.bezierCurveTo(-38, -176, -24, -190, -8, -192 - motion.hairLift * 0.12);
+  context.stroke();
+  context.restore();
 }
 
 function drawWandmakerWarmRim(context) {

@@ -7,6 +7,7 @@ import {
   WANDMAKER_STYLE,
   drawVioletGlasses,
   sampleCompanionMotion,
+  sampleVioletMotion,
 } from '../src/game/render/CharacterRenderer.js';
 
 function recordingContext() {
@@ -203,31 +204,171 @@ describe('illustrated character renderer', () => {
     expect(portrait.depth).toBe(0);
   });
 
-  it('keeps Violet photo-matched with ash hair and hand-drawn dark-green glasses', () => {
+  it('builds Violet from her full storybook palette and hand-drawn dark-green glasses', () => {
     expect(VIOLET_STYLE).toMatchObject({
       hairBase: '#806f62',
       hairShadow: '#514640',
+      skinBase: '#d9a17b',
+      cheek: 'rgba(189, 82, 91, 0.24)',
+      iris: '#5a3d28',
       glasses: '#203d34',
+      robeBase: '#26222e',
+      lining: '#7a4fc9',
+      shoeBase: '#6848a8',
+      casualJerseyBase: '#70539f',
+      casualJerseyTrim: '#d8c9e4',
+      casualLeggingBase: '#373342',
     });
     const first = recordingContext();
     const repeated = recordingContext();
     drawVioletGlasses(first);
     drawVioletGlasses(repeated);
     expect(first.calls).toEqual(repeated.calls);
-    expect(first.calls.filter(([name]) => name === 'quadraticCurveTo').length).toBeGreaterThanOrEqual(10);
+    expect(first.calls.filter(([name]) => name === 'bezierCurveTo').length).toBeGreaterThanOrEqual(17);
+    expect(first.calls.some(([name]) => [
+      'arc', 'ellipse', 'fillRect', 'lineTo', 'rect', 'roundRect', 'strokeRect',
+    ].includes(name))).toBe(false);
     expect(first.calls.some(([name]) => name === 'fill')).toBe(true);
     expect(first.calls.filter(([name]) => name === 'stroke').length).toBeGreaterThanOrEqual(4);
     expect(first.depth).toBe(0);
+  });
 
-    const worldPuppet = recordingContext();
-    const dialoguePortrait = recordingContext();
+  it('gives Violet an organic casual soccer outfit without changing her identity or robe default', () => {
     const renderer = new CharacterRenderer();
-    renderer.draw(worldPuppet, { kind: 'violet', x: 0, y: 0, facing: 'right' }, 0.75);
-    renderer.drawPortrait(dialoguePortrait, { speaker: 'Violet', x: 0, y: 0 }, 0.75);
-    for (const surface of [worldPuppet, dialoguePortrait]) {
-      expect(surface.styles).toContainEqual(['fillStyle', VIOLET_STYLE.hairBase]);
-      expect(surface.styles).toContainEqual(['strokeStyle', VIOLET_STYLE.glasses]);
+    const casual = recordingContext();
+    const replayedCasual = recordingContext();
+    const casualPortrait = recordingContext();
+    const defaultRobes = recordingContext();
+    const explicitRobes = recordingContext();
+    const casualCharacter = {
+      kind: 'violet', x: 0, y: 0, facing: 'right', outfit: 'casual', pose: 'walking', walking: true,
+    };
+
+    renderer.draw(casual, casualCharacter, 1.125);
+    renderer.draw(replayedCasual, casualCharacter, 1.125);
+    renderer.drawPortrait(casualPortrait, {
+      speaker: 'Violet', pose: 'speaking', outfit: 'casual', x: 0, y: 0,
+    }, 1.125);
+    renderer.draw(defaultRobes, { kind: 'violet', x: 0, y: 0, facing: 'right' }, 1.125);
+    renderer.draw(explicitRobes, {
+      kind: 'violet', x: 0, y: 0, facing: 'right', outfit: 'robes',
+    }, 1.125);
+
+    expect(casual.calls).toEqual(replayedCasual.calls);
+    expect(defaultRobes.calls).toEqual(explicitRobes.calls);
+    expect(casual.calls).not.toEqual(defaultRobes.calls);
+    expect(casual.calls.filter(([name]) => name === 'bezierCurveTo').length).toBeGreaterThan(145);
+    expect(casual.calls.some(([name]) => [
+      'arc', 'ellipse', 'fillRect', 'rect', 'roundRect', 'strokeRect',
+    ].includes(name))).toBe(false);
+    expect(casual.calls.every(([, ...values]) => values.every(
+      (value) => typeof value !== 'number' || Number.isFinite(value),
+    ))).toBe(true);
+    expect(casual.depth).toBe(0);
+    expect(casualPortrait.depth).toBe(0);
+
+    for (const surface of [casual, casualPortrait]) {
+      for (const [property, style] of [
+        ['fillStyle', VIOLET_STYLE.casualJerseyBase],
+        ['fillStyle', VIOLET_STYLE.casualJerseyMid],
+        ['fillStyle', VIOLET_STYLE.casualJerseyShadow],
+        ['fillStyle', VIOLET_STYLE.casualLeggingBase],
+        ['fillStyle', VIOLET_STYLE.hairBase],
+        ['fillStyle', VIOLET_STYLE.iris],
+        ['strokeStyle', VIOLET_STYLE.glasses],
+        ['fillStyle', VIOLET_STYLE.shoeBase],
+      ]) expect(surface.styles).toContainEqual([property, style]);
+      expect(surface.styles).not.toContainEqual(['fillStyle', VIOLET_STYLE.robeBase]);
+      expect(surface.styles).not.toContainEqual(['fillStyle', VIOLET_STYLE.lining]);
+      expect(surface.styles.filter(([, style]) => style === VIOLET_STYLE.iris)).toHaveLength(2);
     }
+    expect(casual.styles.filter(([, style]) => style === VIOLET_STYLE.hairBase))
+      .toHaveLength(defaultRobes.styles.filter(([, style]) => style === VIOLET_STYLE.hairBase).length);
+  });
+
+  it('shares Violet’s expressive organic construction between gameplay and dialogue', () => {
+    const renderer = new CharacterRenderer();
+    const worldPuppet = recordingContext();
+    const replayedWorld = recordingContext();
+    const dialoguePortrait = recordingContext();
+    const character = {
+      kind: 'violet', x: 0, y: 0, facing: 'right', pose: 'speaking', walking: true, wand: true,
+    };
+    renderer.draw(worldPuppet, character, 0.75);
+    renderer.draw(replayedWorld, character, 0.75);
+    renderer.drawPortrait(dialoguePortrait, { speaker: 'Violet', pose: 'speaking', x: 0, y: 0 }, 0.75);
+
+    expect(worldPuppet.calls).toEqual(replayedWorld.calls);
+    expect(worldPuppet.calls.filter(([name]) => name === 'bezierCurveTo').length).toBeGreaterThan(125);
+    expect(worldPuppet.calls.some(([name]) => [
+      'arc', 'ellipse', 'fillRect', 'rect', 'roundRect', 'strokeRect',
+    ].includes(name))).toBe(false);
+    expect(worldPuppet.calls.every(([, ...values]) => values.every(
+      (value) => typeof value !== 'number' || Number.isFinite(value),
+    ))).toBe(true);
+    expect(worldPuppet.depth).toBe(0);
+    expect(dialoguePortrait.depth).toBe(0);
+
+    for (const surface of [worldPuppet, dialoguePortrait]) {
+      for (const [property, style] of [
+        ['fillStyle', VIOLET_STYLE.hairBase],
+        ['fillStyle', VIOLET_STYLE.hairShadow],
+        ['fillStyle', VIOLET_STYLE.skinBase],
+        ['fillStyle', VIOLET_STYLE.cheek],
+        ['fillStyle', VIOLET_STYLE.iris],
+        ['fillStyle', VIOLET_STYLE.pupil],
+        ['strokeStyle', VIOLET_STYLE.glasses],
+        ['fillStyle', VIOLET_STYLE.robeBase],
+        ['fillStyle', VIOLET_STYLE.shoeBase],
+      ]) expect(surface.styles).toContainEqual([property, style]);
+      expect(surface.styles.filter(([, style]) => style === VIOLET_STYLE.iris)).toHaveLength(2);
+      expect(surface.styles.filter(([, style]) => style === VIOLET_STYLE.pupil)).toHaveLength(2);
+    }
+
+    const customTrim = recordingContext();
+    renderer.draw(customTrim, {
+      kind: 'violet', x: 0, y: 0, facing: 'right', robeTrim: '#2b7770',
+    }, 0.75);
+    expect(customTrim.styles).toContainEqual(['strokeStyle', '#2b7770']);
+    expect(customTrim.styles).toContainEqual(['fillStyle', VIOLET_STYLE.lining]);
+    expect(customTrim.styles).toContainEqual(['strokeStyle', VIOLET_STYLE.lining]);
+
+    const facingLeft = recordingContext();
+    renderer.draw(facingLeft, { kind: 'violet', x: 0, y: 0, facing: 'left' }, 0.75);
+    expect(facingLeft.calls.filter((call) => (
+      call[0] === 'scale' && call[1] === -1 && call[2] === 1
+    )).length).toBeGreaterThanOrEqual(2);
+  });
+
+  it('uses shaped lids for Violet’s blink and deterministic whole-puppet motion', () => {
+    const idle = sampleVioletMotion({ time: 0.25, pose: 'idle' });
+    const speaking = sampleVioletMotion({ time: 0.25, pose: 'speaking' });
+    const walking = sampleVioletMotion({ time: 0.25, pose: 'walking', walking: true });
+    const replayed = sampleVioletMotion({ time: 0.25, pose: 'walking', walking: true });
+    const reduced = sampleVioletMotion({
+      time: 0.25, pose: 'walking', walking: true, reducedMotion: true,
+    });
+    const sanitized = sampleVioletMotion({ time: Number.NaN, pose: 'speaking' });
+
+    expect(replayed).toEqual(walking);
+    expect(Object.values(walking).every(Number.isFinite)).toBe(true);
+    expect(Object.values(sanitized).every(Number.isFinite)).toBe(true);
+    expect(speaking.talkWave).not.toBe(0);
+    expect(idle.talkWave).toBe(0);
+    expect(Math.abs(reduced.stride)).toBeLessThan(Math.abs(walking.stride));
+    expect(Math.abs(reduced.armSwing)).toBeLessThan(Math.abs(walking.armSwing));
+    expect(Math.abs(walking.armSwing)).toBeGreaterThan(Math.abs(idle.armSwing));
+
+    const renderer = new CharacterRenderer();
+    const openEyes = recordingContext();
+    const blink = recordingContext();
+    renderer.draw(openEyes, { kind: 'violet', x: 0, y: 0, facing: 'right' }, 1);
+    renderer.draw(blink, { kind: 'violet', x: 0, y: 0, facing: 'right' }, 6.1);
+    expect(blink.calls).not.toEqual(openEyes.calls);
+    expect(blink.calls.filter(([name]) => name === 'bezierCurveTo').length).toBeGreaterThan(100);
+    expect(blink.calls.some(([name]) => name === 'arc' || name === 'ellipse')).toBe(false);
+    expect(blink.styles.filter(([, style]) => style === VIOLET_STYLE.iris)).toHaveLength(0);
+    expect(blink.depth).toBe(0);
   });
 
   it('keeps cat and toad follow motion deterministic, bounded, and calmer in reduced motion', () => {
