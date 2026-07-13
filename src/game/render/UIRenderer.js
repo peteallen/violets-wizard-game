@@ -17,11 +17,16 @@ import {
   drawDeckledParchment,
   drawDialogueScroll,
   drawLeatherSatchel,
+  drawMapObjectiveStar,
   drawVectorIcon,
   drawWaxIcon,
 } from './uiIllustrations.js';
 import { drawVectorOwl } from './OwlRenderer.js';
 import { drawReadableInvitation } from './SetPieceRenderer.js';
+import {
+  drawAffordancePresentation,
+  worldAffordanceState,
+} from './WorldAffordanceRenderer.js';
 
 const STORY_GRADIENTS = new WeakMap();
 const NIGHT_DIALOGUE_GRADIENTS = new WeakMap();
@@ -271,7 +276,7 @@ export class UIRenderer {
         unlockedRooms: ['ch1.ollivanders', 'ch1.malkins', 'ch1.menagerie'],
         objective: { mapStar: { room: 'ch1.diagonStreet', hotspot: 'street.menagerieDoor' } },
         cards: [],
-      });
+      }, [], { time, reducedMotion });
     } else if (scene === 'ui-satchel-cards-review') {
       this.drawSatchel(context, {
         overlay: { surface: 'satchel', tab: 'cards' },
@@ -305,6 +310,10 @@ export class UIRenderer {
     const animationTime = reducedMotion ? 0 : time;
     drawQuestButton(context, UI_RECTS.quest, animationTime, Boolean(state.newObjective) && !reducedMotion);
     drawSatchelButton(context, UI_RECTS.satchel);
+    drawAffordancePresentation(
+      context,
+      hudGoldenThreadPresentation(state, time, { reducedMotion }),
+    );
     drawWandButton(context, UI_RECTS.wand, Boolean(state.hasWand), animationTime);
   }
 
@@ -413,7 +422,11 @@ export class UIRenderer {
     });
   }
 
-  drawSatchel(context, state, cardDefinitions = [], { parentGateProgress = 0 } = {}) {
+  drawSatchel(context, state, cardDefinitions = [], {
+    parentGateProgress = 0,
+    time = 0,
+    reducedMotion = false,
+  } = {}) {
     const activeTab = state.overlay?.tab === 'cards' ? 'cards' : 'map';
     drawStorybookSpread(context, { x: 72, y: 32, width: 1136, height: 652 }, {
       title: 'Violet’s Satchel',
@@ -428,7 +441,7 @@ export class UIRenderer {
     context.fillText(parentGateProgress > 0 ? 'Keep holding…' : 'Hold for grown-ups', 902, 198);
 
     if (activeTab === 'cards') this.drawCardAlbumContent(context, state, cardDefinitions);
-    else this.drawMapContent(context, state);
+    else this.drawMapContent(context, state, time, { reducedMotion });
     drawClose(context);
   }
 
@@ -436,7 +449,7 @@ export class UIRenderer {
     this.drawSatchel(context, state, []);
   }
 
-  drawMapContent(context, state) {
+  drawMapContent(context, state, time = 0, { reducedMotion = false } = {}) {
     const locations = [
       { id: 'ch1.ollivanders', hotspot: 'street.ollivandersDoor', label: 'Wands', icon: 'wand', x: 300, y: 427 },
       { id: 'ch1.malkins', hotspot: 'street.malkinsDoor', label: 'Robes', icon: 'rose', x: 640, y: 350 },
@@ -468,6 +481,15 @@ export class UIRenderer {
         ornament: false,
       });
       drawWaxIcon(context, location.x, location.y - 28, 39, unlocked ? location.icon : 'close', { selected: current });
+      if (current) {
+        drawMapObjectiveStar(
+          context,
+          location.x + 76,
+          location.y - 73,
+          time,
+          { reducedMotion },
+        );
+      }
       context.fillStyle = '#382a24';
       context.font = '700 27px "Andika", "Trebuchet MS", sans-serif';
       context.fillText(location.label, location.x, location.y + 49);
@@ -1010,6 +1032,27 @@ function drawQuestButton(context, rect, time, pulse) {
 
 function drawSatchelButton(context, rect) {
   drawLeatherSatchel(context, rect);
+}
+
+export function hudGoldenThreadPresentation(state, time, { reducedMotion = false } = {}) {
+  const thread = state?.affordances?.thread;
+  if (
+    state?.affordances?.quiet
+    || thread?.channel !== 'hud'
+    || thread.targetId !== 'hud.satchel'
+  ) return null;
+  return worldAffordanceState({
+    id: 'hud.satchel',
+    kind: 'hud',
+    hitArea: { shape: 'rect', ...UI_RECTS.satchel },
+    presentation: { icon: 'satchel', glow: 'objective' },
+    salience: {
+      tier: 'thread',
+      visible: 'thread',
+      intensity: thread.intensity,
+      glint: null,
+    },
+  }, time, { reducedMotion });
 }
 
 function drawWandButton(context, rect, enabled, time = 0) {

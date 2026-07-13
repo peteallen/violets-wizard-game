@@ -116,5 +116,14 @@ describe('illustrated character renderer', () => {
       expect(Math.abs(reduced.tilt)).toBeLessThan(Math.abs(full.tilt));
       expect(reduced.hop).toBeLessThan(full.hop);
     }
+
+    const idleCat = sampleCompanionMotion({ type: 'cat', pose: 'idle', time: 0.25 });
+    const pawingCat = sampleCompanionMotion({ type: 'cat', pose: 'paw', time: 0.25 });
+    const reducedPawingCat = sampleCompanionMotion({
+      type: 'cat', pose: 'paw', time: 0.25, reducedMotion: true,
+    });
+    expect(idleCat.pawLift).toBe(0);
+    expect(pawingCat.pawLift).toBeGreaterThan(0.4);
+    expect(reducedPawingCat.pawLift).toBeLessThan(pawingCat.pawLift);
   });
 });

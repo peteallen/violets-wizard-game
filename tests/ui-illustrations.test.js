@@ -6,6 +6,7 @@ import {
   drawDeckledParchment,
   drawDialogueScroll,
   drawLeatherSatchel,
+  drawMapObjectiveStar,
   drawVectorIcon,
   drawWaxIcon,
   traceDeckledRect,
@@ -22,6 +23,12 @@ function recordingContext() {
   const target = { calls, globalAlpha: 1, get depth() { return depth; } };
   return new Proxy(target, {
     get(object, property) {
+      if (property === 'createLinearGradient' || property === 'createRadialGradient') {
+        return (...args) => {
+          calls.push([property, ...args]);
+          return { addColorStop: (...stop) => calls.push(['addColorStop', ...stop]) };
+        };
+      }
       if (methods.has(property)) {
         return (...args) => {
           calls.push([property, ...args]);
@@ -67,6 +74,8 @@ describe('illustrated interface primitives', () => {
     drawBrassCameoFrame(context, 100, 100, 70);
     drawLeatherSatchel(context, { x: 20, y: 20, width: 108, height: 108 });
     drawCompassQuest(context, { x: 20, y: 20, width: 104, height: 104 }, 1.25, { pulse: true });
+    drawMapObjectiveStar(context, 180, 90, 1.25);
+    drawMapObjectiveStar(context, 180, 90, 8, { reducedMotion: true });
     drawBrassWandHolster(context, { x: 20, y: 20, width: 108, height: 108 }, { time: 1.25 });
     expect(context.calls.length).toBeGreaterThan(150);
     expect(context.depth).toBe(0);

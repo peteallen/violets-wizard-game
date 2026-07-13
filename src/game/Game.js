@@ -18,6 +18,7 @@ import {
   dialogueScrollLayout,
   pointInUiRect,
 } from './render/UIRenderer.js';
+import { WorldAffordanceRenderer } from './render/WorldAffordanceRenderer.js';
 import { WorldPropRenderer } from './render/WorldPropRenderer.js';
 import { Save, YEARBOOK_MAX_BYTES, createSaveV1 } from './systems/Save.js';
 import { World } from './world/World.js';
@@ -83,6 +84,7 @@ export class Game {
     this.characterRenderer = new CharacterRenderer();
     this.uiRenderer = new UIRenderer({ resolveAsset });
     this.setPieceRenderer = new SetPieceRenderer({ resolveAsset });
+    this.worldAffordanceRenderer = new WorldAffordanceRenderer();
     this.particles = new Particles(new SeededRandom(this.saveData.worldSeed).fork('particles'), { reducedMotion: this.reducedMotion });
     this.world = null;
     this.screen = options.startImmediately ? 'playing' : 'title';
@@ -248,6 +250,7 @@ export class Game {
     this.canvas.setPointerCapture?.(event.pointerId);
     const point = this.toWorld(event);
     const holdsParentGear = this.isParentGearAvailable() && pointInUiRect(point, UI_RECTS.satchelGear);
+    const worldState = this.world?.snapshot?.() ?? null;
     this.pointer = {
       id: event.pointerId,
       point,
@@ -255,6 +258,12 @@ export class Game {
       holdTarget: holdsParentGear ? 'parent-panel' : null,
       holdTriggered: false,
       holdCancelled: false,
+      worldTargetId: !holdsParentGear
+        && this.world
+        && !this.world.blocked
+        && !worldState?.affordances?.quiet
+        ? this.world.targetAt(point)?.id ?? null
+        : null,
     };
     if (holdsParentGear) {
       this.parentGateProgress = 0;
@@ -265,6 +274,9 @@ export class Game {
   onPointerMove(event) {
     if (!this.pointer || this.pointer.id !== event.pointerId) return;
     this.pointer.latestPoint = this.toWorld(event);
+    if (distance(this.pointer.point, this.pointer.latestPoint) > INPUT.tapSlop) {
+      this.pointer.worldTargetId = null;
+    }
     if (
       this.pointer.holdTarget === 'parent-panel'
       && (
@@ -1360,8 +1372,8 @@ export class Game {
       if (behindCastSetPieceActive) {
         this.setPieceRenderer.draw(context, state.setPiece, state, { reducedMotion: this.reducedMotion });
       }
-      if (!state.setPiece) this.drawWorldTargets(context, state);
       this.drawCharacters(context, state);
+      if (!state.setPiece) this.drawWorldTargets(context, state);
       this.particles.draw(context);
     }
 
@@ -1390,7 +1402,11 @@ export class Game {
         );
       }
       if (state.overlay?.surface === 'satchel') {
-        this.uiRenderer.drawSatchel(context, state, cards, { parentGateProgress: this.parentGateProgress });
+        this.uiRenderer.drawSatchel(context, state, cards, {
+          parentGateProgress: this.parentGateProgress,
+          time: this.simTime,
+          reducedMotion: this.reducedMotion,
+        });
       }
       if (state.overlay?.surface === 'letter-reading') this.uiRenderer.drawLetterReading(context);
       if (state.overlay?.surface === 'objective') {
@@ -1425,32 +1441,10 @@ export class Game {
   }
 
   drawWorldTargets(context, state) {
-    for (const target of state.targets) {
-      const area = target.hitArea;
-      if (!area || target.presentation?.glow === 'hidden') continue;
-      const x = area.x - state.cameraX + (area.shape === 'rect' ? area.width / 2 : 0);
-      const y = area.y + (area.shape === 'rect' ? area.height / 2 : 0);
-      const radius = area.shape === 'rect' ? Math.max(area.width, area.height) * 0.42 : area.radius;
-      const pulse = 1 + Math.sin(this.simTime * 3.2 + x * 0.01) * 0.08;
-      context.save();
-      context.globalAlpha = target.presentation?.glow === 'objective' ? 0.82 : 0.45;
-      context.strokeStyle = PALETTE.interactive;
-      context.lineWidth = target.presentation?.glow === 'objective' ? 8 : 5;
-      context.setLineDash([13, 11]);
-      context.beginPath();
-      context.arc(x, y, radius * pulse, 0, Math.PI * 2);
-      context.stroke();
-      context.setLineDash([]);
-      context.fillStyle = PALETTE.parchment;
-      context.beginPath();
-      context.arc(x, y - radius - 24, 19, 0, Math.PI * 2);
-      context.fill();
-      context.fillStyle = PALETTE.violet;
-      context.textAlign = 'center';
-      context.font = '700 24px "Andika", "Trebuchet MS", sans-serif';
-      context.fillText(target.kind === 'exit' ? '→' : '✦', x, y - radius - 16);
-      context.restore();
-    }
+    this.worldAffordanceRenderer.draw(context, state, this.simTime, {
+      reducedMotion: this.reducedMotion,
+      pressedTargetId: this.pointer?.worldTargetId ?? null,
+    });
   }
 
   drawCharacters(context, state) {
@@ -1470,11 +1464,11 @@ export class Game {
         this.characterRenderer.drawPet(context, {
           ...state.pet,
           x: state.pet.x - state.cameraX,
-          facing: state.player.facing,
+          facing: state.pet.facing ?? state.player.facing,
           variant: state.pet.type === 'owl' ? 'pet' : undefined,
-          pose: state.player.walking ? 'pet-follow' : 'idle',
+          pose: state.pet.pose ?? (state.player.walking ? 'pet-follow' : 'idle'),
           reducedMotion: this.reducedMotion,
-          lookX: state.player.facing === 'right' ? 0.45 : -0.45,
+          lookX: (state.pet.facing ?? state.player.facing) === 'right' ? 0.45 : -0.45,
         }, this.simTime);
       } else {
         const { occupant } = actor;

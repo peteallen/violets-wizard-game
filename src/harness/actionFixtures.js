@@ -61,6 +61,15 @@ registry
   .register('ch1-follow-hagrid-review', createFixture(
     'Hold the post-introduction bedroom with Hagrid as the single obvious progression target.',
   ))
+  .register('world-shimmer-review', createFixture(
+    'Hold Ollivanders across the globally staggered discoverable and secret glint schedule.',
+  ))
+  .register('world-shimmer-hint-review', createFixture(
+    'Hold Ollivanders with only the first-wand golden thread escalated by the hint ladder.',
+  ))
+  .register('world-secret-pet-review', createFixture(
+    'Hold Ollivanders across the pet’s deterministic wander, paw, and return cue for the hidden card.',
+  ))
   .register('ch1-wand-chosen', createFixture(
     'Hold the post-choice wand state without introducing another interaction.',
   ))

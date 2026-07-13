@@ -404,6 +404,27 @@ export function drawCompassQuest(context, rect, time = 0, { pulse = false } = {}
   context.restore();
 }
 
+export function drawMapObjectiveStar(context, x, y, time = 0, { reducedMotion = false } = {}) {
+  const pulse = reducedMotion ? 0.5 : 0.5 + Math.sin(time * 2.15) * 0.5;
+  const scale = 1 + pulse * 0.08;
+  context.save();
+  context.translate(x, y);
+  context.scale(scale, scale);
+  for (let layer = 2; layer >= 0; layer -= 1) {
+    context.globalAlpha = 0.08 + (2 - layer) * 0.07;
+    context.fillStyle = layer === 0 ? '#fff0a8' : PALETTE.interactive;
+    context.beginPath();
+    context.arc(layer * 1.5 - 1.5, layer - 1, 34 + layer * 9, 0, Math.PI * 2);
+    context.fill();
+  }
+  context.globalAlpha = 1;
+  drawVectorIcon(context, 'star', 0, 0, 58, {
+    color: '#fff5bd',
+    secondary: PALETTE.interactive,
+  });
+  context.restore();
+}
+
 export function drawBrassWandHolster(context, rect, { enabled = true, time = 0 } = {}) {
   const { x, y, width, height } = rect;
   context.save();

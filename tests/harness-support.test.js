@@ -24,6 +24,7 @@ import {
 } from '../src/harness/environment.js';
 import {
   SET_PIECE_REVIEW_SCENES,
+  WORLD_AFFORDANCE_REVIEW_SCENES,
   actionsThroughFrame,
   parseHarnessRequest,
   resolveHarnessScenario,
@@ -66,6 +67,9 @@ describe('state fixtures', () => {
       'foundation-saved-review',
       'ch1-start',
       'ch1-follow-hagrid-review',
+      'world-shimmer-review',
+      'world-shimmer-hint-review',
+      'world-secret-pet-review',
       'ch1-wand-chosen',
       'ch1-complete',
       'ch2-placeholder',
@@ -202,6 +206,19 @@ describe('registered harness scenarios', () => {
     expect(getActionFixture('sp-ch2-ticket-review').actions).toEqual([
       { frame: 250, type: 'tap', target: 'hud.quest' },
     ]);
+  });
+
+  it('registers normal and hint-escalated world-shimmer review scenes', () => {
+    expect(WORLD_AFFORDANCE_REVIEW_SCENES).toEqual({
+      'world-shimmer-review': null,
+      'world-shimmer-hint-review': 'ollivanders.wand1',
+      'world-secret-pet-review': null,
+    });
+    for (const id of Object.keys(WORLD_AFFORDANCE_REVIEW_SCENES)) {
+      expect(STATE_FIXTURE_IDS).toContain(id);
+      expect(ACTION_FIXTURE_IDS).toContain(id);
+      expect(parseHarnessRequest(`?scene=${id}`)).toMatchObject({ scene: id, state: id, actions: id });
+    }
   });
 
   it('defaults manual scene URLs to matching immutable state and action fixtures', () => {

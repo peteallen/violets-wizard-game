@@ -260,6 +260,7 @@ export function sampleCompanionMotion({ type = 'cat', pose = 'idle', time = 0, r
   const energy = reducedMotion ? 0.32 : 1;
   const stepWave = Math.sin(time * (type === 'toad' ? 4.2 : 6.1) + phase);
   const following = pose === 'follow' || pose === 'pet-follow';
+  const pawing = pose === 'paw';
   const hopWave = following ? Math.max(0, stepWave) ** 2 : 0;
   const breath = Math.sin(time * (type === 'toad' ? 1.45 : 2.05) + phase);
   return Object.freeze({
@@ -270,6 +271,7 @@ export function sampleCompanionMotion({ type = 'cat', pose = 'idle', time = 0, r
     breathScale: 1 + breath * (type === 'toad' ? 0.022 : 0.012) * energy,
     tailSway: Math.sin(time * 2.7 + phase) * (following ? 0.34 : 0.2) * energy,
     throatPulse: type === 'toad' ? Math.max(0, Math.sin(time * 1.33 + 0.8)) * energy : 0,
+    pawLift: pawing ? (0.58 + Math.sin(time * 4.2) * 0.18) * energy : 0,
   });
 }
 
@@ -1727,11 +1729,12 @@ function drawCat(context, time, motion) {
 
   const step = motion.step * 3;
   for (const side of [-1, 1]) {
+    const pawLift = side > 0 ? motion.pawLift * 24 : 0;
     context.fillStyle = side < 0 ? '#9a7255' : '#7e5c48';
     context.beginPath();
     context.moveTo(side * 5, -25);
-    context.bezierCurveTo(side * 18, -24, side * (23 + step), -13, side * (20 + step), -2);
-    context.quadraticCurveTo(side * (14 + step), 4, side * (7 + step), -2);
+    context.bezierCurveTo(side * 18, -24, side * (23 + step), -13 - pawLift, side * (20 + step), -2 - pawLift);
+    context.quadraticCurveTo(side * (14 + step), 4 - pawLift, side * (7 + step), -2);
     context.quadraticCurveTo(side * 12, -14, side * 5, -25);
     context.closePath();
     fillStroke(context, 1.8);
@@ -1899,7 +1902,7 @@ function drawCat(context, time, motion) {
     context.quadraticCurveTo((x1 + x2) / 2, y1 - 3, x2, y2);
     context.stroke();
   }
-  drawPetPaws(context, '#a98061');
+  drawCatPaws(context, motion);
   drawUpperLeftRim(context, [[-23, -76], [-15, -90], [-3, -92], [8, -87]], 2.2);
 }
 
@@ -1998,12 +2001,35 @@ function drawToad(context, time, motion) {
   drawUpperLeftRim(context, [[-31, -28], [-24, -44], [-15, -55], [0, -51]], 2.1);
 }
 
-function drawPetPaws(context, color) {
-  context.fillStyle = color;
+function drawCatPaws(context, motion) {
+  context.fillStyle = '#a98061';
   context.beginPath();
   context.ellipse(-14, -2, 12, 6, 0, 0, Math.PI * 2);
-  context.ellipse(14, -2, 12, 6, 0, 0, Math.PI * 2);
+  if (motion.pawLift <= 0) context.ellipse(14, -2, 12, 6, 0, 0, Math.PI * 2);
   fillStroke(context, 2.2);
+
+  if (motion.pawLift <= 0) return;
+  const pawY = -13 - motion.pawLift * 50;
+  context.fillStyle = '#9a7255';
+  context.beginPath();
+  context.moveTo(7, -22);
+  context.bezierCurveTo(11, -31, 15, pawY + 14, 23, pawY + 7);
+  context.quadraticCurveTo(31, pawY - 2, 39, pawY + 1);
+  context.quadraticCurveTo(45, pawY + 7, 39, pawY + 13);
+  context.quadraticCurveTo(33, pawY + 18, 26, pawY + 12);
+  context.bezierCurveTo(21, pawY + 19, 19, -22, 15, -10);
+  context.quadraticCurveTo(9, -10, 7, -22);
+  context.closePath();
+  fillStroke(context, 2);
+
+  context.strokeStyle = 'rgba(87,58,47,0.52)';
+  context.lineWidth = 1.2;
+  context.beginPath();
+  context.moveTo(32, pawY + 1);
+  context.quadraticCurveTo(34, pawY + 5, 31, pawY + 9);
+  context.moveTo(38, pawY + 3);
+  context.quadraticCurveTo(40, pawY + 7, 36, pawY + 11);
+  context.stroke();
 }
 
 function drawSmile(context, x, y, radius, color) {

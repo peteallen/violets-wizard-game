@@ -558,7 +558,7 @@ const questGraph = {
         voice: 'voice/ch1/objective/useMap',
         text: 'Open your satchel and tap the golden star.',
         caption: 'Open your map!',
-        mapStar: null,
+        mapStar: { room: 'ch1.diagonStreet', hotspot: 'street.ollivandersDoor' },
       },
       doneWhen: when({ allFlags: ['ch1.mapUsed'] }),
       hints: { lookTarget: 'hud.satchel', repeatVoice: 'voice/ch1/objective/useMap', trailTarget: 'hud.satchel', assistActions: [{ type: 'ui.open', surface: 'satchel', tab: 'map' }] },

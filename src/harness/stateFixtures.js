@@ -174,6 +174,70 @@ registry
       },
     }),
   ))
+  .register('world-shimmer-review', createFixture(
+    'Ollivanders with one golden thread on the current wand, a staggered exit glint, and a rare hidden Frog-card glint.',
+    { chapter: 1, scene: 'world-shimmer-review' },
+    createSave({
+      scene: 'ch1.wandShopping',
+      room: 'ch1.ollivanders',
+      spawn: 'ollivanders.entry',
+      questFlags: {
+        'ch1.owlTapped': true,
+        'ch1.letterOpened': true,
+        'ch1.letterRead': true,
+        'ch1.guideMet': true,
+        'ch1.leakyReached': true,
+        'ch1.courtyardReached': true,
+        'ch1.wallOpened': true,
+        'ch1.diagonReached': true,
+        'ch1.satchelReceived': true,
+        'ch1.mapUsed': true,
+      },
+    }),
+  ))
+  .register('world-shimmer-hint-review', createFixture(
+    'The same Ollivanders moment with only the existing golden thread strengthened by the hint ladder.',
+    { chapter: 1, scene: 'world-shimmer-hint-review' },
+    createSave({
+      scene: 'ch1.wandShopping',
+      room: 'ch1.ollivanders',
+      spawn: 'ollivanders.entry',
+      questFlags: {
+        'ch1.owlTapped': true,
+        'ch1.letterOpened': true,
+        'ch1.letterRead': true,
+        'ch1.guideMet': true,
+        'ch1.leakyReached': true,
+        'ch1.courtyardReached': true,
+        'ch1.wallOpened': true,
+        'ch1.diagonReached': true,
+        'ch1.satchelReceived': true,
+        'ch1.mapUsed': true,
+      },
+    }),
+  ))
+  .register('world-secret-pet-review', createFixture(
+    'Ollivanders with Violet’s cat present to wander toward and paw at the still-hidden Frog card.',
+    { chapter: 1, scene: 'world-secret-pet-review' },
+    createSave({
+      scene: 'ch1.wandShopping',
+      room: 'ch1.ollivanders',
+      spawn: 'ollivanders.entry',
+      pet: { type: 'cat', name: 'Biscuit' },
+      questFlags: {
+        'ch1.owlTapped': true,
+        'ch1.letterOpened': true,
+        'ch1.letterRead': true,
+        'ch1.guideMet': true,
+        'ch1.leakyReached': true,
+        'ch1.courtyardReached': true,
+        'ch1.wallOpened': true,
+        'ch1.diagonReached': true,
+        'ch1.satchelReceived': true,
+        'ch1.mapUsed': true,
+      },
+    }),
+  ))
   .register('ch1-wand-chosen', createFixture(
     'Chapter 1 in Ollivanders immediately after the third wand chooses Violet.',
     { chapter: 1, scene: 'ch1.wandShopping' },

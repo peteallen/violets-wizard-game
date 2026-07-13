@@ -4,7 +4,20 @@ import { SeededRandom } from '../core/rng.js';
 import { Dialogue } from '../systems/Dialogue.js';
 import { Quests } from '../systems/Quests.js';
 import { SetPieces } from '../systems/SetPieces.js';
+import {
+  GlintActivationLedger,
+  affordanceSeenReceipt,
+  createAffordancePlan,
+  createAffordanceSnapshot,
+} from './AffordanceSalience.js';
 import { resolveRoomVariant } from './roomVariant.js';
+
+const PET_HOME_DISTANCE = 65;
+const PET_LEADING_DISTANCE = 85;
+const PET_EDGE_CLEARANCE = 110;
+const PET_HINT_CORRIDOR_CLEARANCE = 70;
+const PET_HINT_CORRIDOR_MARGIN = 35;
+const PET_HINT_CORRIDOR_END = 0.16;
 
 export class World {
   constructor({ chapters, save, seed, clock = () => '2000-01-01T00:00:00.000Z', onDirty = () => {} }) {
@@ -31,6 +44,8 @@ export class World {
     this.selection = null;
     this.pendingPetType = null;
     this.newObjective = true;
+    this.glintActivations = new GlintActivationLedger();
+    this.dialogueSourceTarget = null;
 
     const chapterId = save.resume?.chapter ?? 'ch1';
     this.chapter = chapters[chapterId] ?? chapters.ch1;
@@ -53,6 +68,7 @@ export class World {
     this.bindSystems();
     this.quests.update();
     this.syncScene(true);
+    this.updateAffordanceActivations();
   }
 
   get room() {
@@ -137,13 +153,14 @@ export class World {
     this.quests.update();
     this.syncScene();
     this.updateHintLadder(dt);
+    this.updateAffordanceActivations();
   }
 
   tap(point) {
     if (this.setPieces.active) return { kind: 'blocked', reason: 'set-piece' };
     if (this.dialogue.active) return { kind: 'dialogue' };
     const worldPoint = { x: point.x + this.cameraX, y: point.y };
-    const target = this.targets().find((candidate) => hitTest(worldPoint, candidate.hitArea));
+    const target = this.targetAt(point);
     if (target) {
       this.interactTarget(target);
       return target;
@@ -161,6 +178,11 @@ export class World {
     const target = this.targets().find((candidate) => candidate.id === id || candidate.semanticId === id);
     if (!target) throw new Error(`No active interaction target named ${id} in ${this.roomId}.`);
     this.interactTarget(target);
+  }
+
+  targetAt(point) {
+    const worldPoint = { x: point.x + this.cameraX, y: point.y };
+    return this.targets().find((candidate) => hitTest(worldPoint, candidate.hitArea)) ?? null;
   }
 
   interactTarget(target) {
@@ -186,7 +208,7 @@ export class World {
     }
     this.cancelPendingInteraction();
     if (approach?.facing) this.player.facing = approach.facing;
-    this.runActions(target.actions);
+    this.runTargetActions(target);
   }
 
   resolvePendingInteraction() {
@@ -207,7 +229,7 @@ export class World {
     this.player.y = approach.y;
     this.player.facing = approach.facing;
     this.player.walking = false;
-    this.runActions(target.actions);
+    this.runTargetActions(target);
     return true;
   }
 
@@ -229,6 +251,9 @@ export class World {
         id: hotspot.id,
         semanticId: hotspot.semanticId,
         kind: hotspot.kind,
+        source: 'hotspot',
+        repeat: hotspot.repeat,
+        advertisementReceipt: affordanceSeenReceipt(this.chapter.id, hotspot.id),
         hitArea: hotspot.hitArea,
         approach: hotspot.approach,
         presentation: hotspot.presentation,
@@ -240,6 +265,8 @@ export class World {
       targets.push({
         id: exit.id,
         kind: 'exit',
+        source: 'exit',
+        repeat: 'always',
         hitArea: exit.hitArea,
         approach: exit.approach,
         presentation: { icon: exit.icon ?? 'arrow', glow: 'interactionGold' },
@@ -254,6 +281,9 @@ export class World {
       targets.push({
         id: `${this.roomId}.${occupant.npc}`,
         kind: 'talk',
+        source: 'occupant',
+        repeat: 'always',
+        advertisementReceipt: affordanceSeenReceipt(this.chapter.id, `${this.roomId}.${occupant.npc}`),
         hitArea: { shape: 'circle', x: occupant.x, y: occupant.y - 85, radius: npc.hitRadius ?? 88 },
         approach: { x: occupant.x + (occupant.facing === 'left' ? -105 : 105), y: occupant.y, facing: occupant.facing === 'left' ? 'right' : 'left' },
         presentation: { icon: 'talk', glow: 'interactionGold' },
@@ -261,6 +291,19 @@ export class World {
       });
     }
     return targets;
+  }
+
+  runTargetActions(target) {
+    const dialogueAction = target.actions?.find((action) => action.type === 'dialogue.start');
+    if (dialogueAction) {
+      this.dialogueSourceTarget = {
+        targetId: target.id,
+        script: dialogueAction.script,
+        repeat: target.repeat,
+        advertisementReceipt: target.advertisementReceipt,
+      };
+    }
+    this.runActions(target.actions);
   }
 
   runActions(actions = []) {
@@ -314,6 +357,7 @@ export class World {
         this.setFlag('ch1.petNamed', true);
         break;
       case 'dialogue.start':
+        if (this.dialogueSourceTarget?.script !== action.script) this.dialogueSourceTarget = null;
         this.dialogue.open(action.script);
         break;
       case 'setPiece.play':
@@ -389,6 +433,7 @@ export class World {
     if (!this.overlay) return;
     this.noteMeaningfulInput();
     this.overlay = null;
+    this.updateAffordanceActivations();
   }
 
   setFlag(flag, value = true) {
@@ -443,6 +488,7 @@ export class World {
     this.emit('room.transitionRequested', { from, to: roomId, spawn: spawnId, effect: transition });
     this.emit('room.entered', { room: roomId, spawn: spawnId });
     this.syncScene(true);
+    this.updateAffordanceActivations();
   }
 
   changeChapter(chapterId, roomId = null, spawnId = null) {
@@ -468,6 +514,7 @@ export class World {
     this.emit('room.transitionRequested', { from, to: this.roomId, spawn: selectedSpawn, effect: 'ink' });
     this.emit('room.entered', { room: this.roomId, spawn: selectedSpawn });
     this.syncScene(true);
+    this.updateAffordanceActivations();
   }
 
   completeChapter(chapterId, nextChapter) {
@@ -586,7 +633,10 @@ export class World {
     this.dialogue = new Dialogue({
       scripts: this.chapter.dialogues,
       save: this.save,
-      emit: (type, payload) => this.emit(type, payload),
+      emit: (type, payload) => {
+        if (type === 'dialogue.closed') this.handleDialogueClosed(payload);
+        this.emit(type, payload);
+      },
       runActions: (actions) => this.runActions(actions),
     });
     this.quests = new Quests({
@@ -600,6 +650,40 @@ export class World {
       runActions: (actions) => this.runActions(actions),
       reducedMotion: Boolean(this.save.settings?.reducedMotion),
     });
+  }
+
+  updateAffordanceActivations() {
+    const targets = this.targets();
+    const quiet = this.blocked || this.player.walking || Boolean(this.pendingInteraction);
+    const { states } = createAffordancePlan({
+      targets,
+      objective: this.objective,
+      activeQuest: this.quests.active(),
+      roomId: this.roomId,
+      save: this.save,
+      hintEscalated: this.hintLookShown || this.hintTrailShown,
+    });
+    this.glintActivations.advance(states, this.time, this.roomId, { quiet });
+  }
+
+  handleDialogueClosed({ script, reason } = {}) {
+    const source = this.dialogueSourceTarget;
+    this.dialogueSourceTarget = null;
+    if (
+      reason === 'completed'
+      && source?.script === script
+      && source.repeat === 'always'
+      && source.advertisementReceipt
+      && this.save.progress.storyChoices[source.advertisementReceipt] !== true
+    ) {
+      this.save.progress.storyChoices[source.advertisementReceipt] = true;
+      this.markDirty('affordance-spent');
+      this.emit('state.changed', {
+        paths: [`progress.storyChoices.${source.advertisementReceipt}`],
+        reason: 'affordance-spent',
+      });
+    }
+    this.updateAffordanceActivations();
   }
 
   syncScene(force = false) {
@@ -618,6 +702,27 @@ export class World {
   }
 
   snapshot() {
+    const baseTargets = this.targets();
+    const basePet = this.save.character.pet?.type ? {
+      ...this.save.character.pet,
+      ...petHomePosition(this.player, this.room),
+    } : null;
+    const activationState = this.glintActivations.snapshot(this.time);
+    const affordances = createAffordanceSnapshot({
+      targets: baseTargets,
+      objective: this.objective,
+      activeQuest: this.quests.active(),
+      roomId: this.roomId,
+      save: this.save,
+      time: this.time,
+      quiet: this.blocked || this.player.walking || Boolean(this.pendingInteraction),
+      hintEscalated: this.hintLookShown || this.hintTrailShown,
+      hasPet: Boolean(basePet),
+      reducedMotion: Boolean(this.save.settings?.reducedMotion),
+      scheduledGlint: activationState.active,
+      glintActivationHistory: activationState.history,
+    });
+    const pet = applyPetHint(basePet, affordances.petHint, this.room, this.player.facing);
     return {
       time: this.time,
       chapterId: this.chapter.id,
@@ -629,13 +734,10 @@ export class World {
       ),
       cameraX: this.cameraX,
       player: { ...this.player },
-      pet: this.save.character.pet?.type ? {
-        ...this.save.character.pet,
-        x: this.player.x + (this.player.facing === 'right' ? -65 : 65),
-        y: this.player.y,
-      } : null,
+      pet,
       occupants: (this.room.occupants ?? []).filter((occupant) => conditionMatches(occupant.when, this.save)),
-      targets: this.targets(),
+      targets: affordances.targets,
+      affordances,
       pendingInteraction: this.pendingInteraction ? {
         targetId: this.pendingInteraction.targetId,
         kind: this.pendingInteraction.kind,
@@ -679,6 +781,66 @@ function hitAreaCenter(hitArea) {
     return { x: hitArea.x + hitArea.width / 2, y: hitArea.y + hitArea.height / 2 };
   }
   return { x: hitArea.x, y: hitArea.y };
+}
+
+function applyPetHint(pet, hint, room, fallbackFacing) {
+  if (!pet || !hint) return pet;
+  const roomWidth = room?.size?.width ?? WORLD.width;
+  const destinationX = Math.max(55, Math.min(roomWidth - 55, hint.x));
+  const path = petHintPath(pet, destinationX, hint.approach, room);
+  const outwardFacing = destinationX < pet.x ? 'left' : destinationX > pet.x ? 'right' : fallbackFacing;
+  const facing = hint.stage === 'return'
+    ? outwardFacing === 'left' ? 'right' : 'left'
+    : outwardFacing;
+  const attentivePose = pet.type === 'cat' ? 'paw' : pet.type === 'owl' ? 'perch' : 'curious';
+  return {
+    ...pet,
+    ...path,
+    facing,
+    pose: hint.stage === 'wander' || hint.stage === 'return'
+      ? 'pet-follow'
+      : hint.stage === 'paw'
+        ? attentivePose
+        : 'curious',
+    secretHint: { ...hint },
+  };
+}
+
+function petHomePosition(player, room) {
+  const roomWidth = room?.size?.width ?? WORLD.width;
+  const trailingDirection = player.facing === 'right' ? -1 : 1;
+  const trailingX = player.x + trailingDirection * PET_HOME_DISTANCE;
+  const tooCloseToRoomEdge = trailingX < PET_EDGE_CLEARANCE || trailingX > roomWidth - PET_EDGE_CLEARANCE;
+  const x = tooCloseToRoomEdge
+    ? player.x - trailingDirection * PET_LEADING_DISTANCE
+    : trailingX;
+  return { x, y: player.y };
+}
+
+function petHintPath(pet, destinationX, approach, room) {
+  const coordinate = Math.max(0, Math.min(1, approach));
+  const horizontalProgress = smoothstepRange(
+    coordinate,
+    PET_HINT_CORRIDOR_END,
+    1 - PET_HINT_CORRIDOR_END,
+  );
+  const enterCorridor = smoothstepRange(coordinate, 0, PET_HINT_CORRIDOR_END);
+  const leaveCorridor = smoothstepRange(1 - coordinate, 0, PET_HINT_CORRIDOR_END);
+  const roomHeight = room?.size?.height ?? WORLD.height;
+  const corridorY = Math.min(
+    roomHeight - PET_HINT_CORRIDOR_MARGIN,
+    pet.y + PET_HINT_CORRIDOR_CLEARANCE,
+  );
+  return {
+    x: pet.x + (destinationX - pet.x) * horizontalProgress,
+    y: pet.y + (corridorY - pet.y) * enterCorridor * leaveCorridor,
+  };
+}
+
+function smoothstepRange(value, start, end) {
+  if (end <= start) return value >= end ? 1 : 0;
+  const progress = Math.max(0, Math.min(1, (value - start) / (end - start)));
+  return progress * progress * (3 - 2 * progress);
 }
 
 function trimColor(trim) {

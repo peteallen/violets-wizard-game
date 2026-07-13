@@ -24,6 +24,12 @@ export const SET_PIECE_REVIEW_SCENES = Object.freeze({
   'sp-ch2-ticket-review': 'sp.ch2.previewTicket',
 });
 
+export const WORLD_AFFORDANCE_REVIEW_SCENES = Object.freeze({
+  'world-shimmer-review': null,
+  'world-shimmer-hint-review': 'ollivanders.wand1',
+  'world-secret-pet-review': null,
+});
+
 function integer(value, path, { min = 0, max = Number.MAX_SAFE_INTEGER } = {}) {
   const parsed = Number(value);
   if (!Number.isSafeInteger(parsed) || parsed < min || parsed > max) {
@@ -158,6 +164,18 @@ export async function prepareSetPieceReview(game, scene) {
   return true;
 }
 
+export function prepareWorldAffordanceReview(game, scene) {
+  if (!Object.hasOwn(WORLD_AFFORDANCE_REVIEW_SCENES, scene) || !game.world) return false;
+  if (game.world.dialogue.active) game.world.dialogue.close('harness-world-affordance-review');
+  if (WORLD_AFFORDANCE_REVIEW_SCENES[scene]) {
+    const active = game.world.quests.active();
+    game.world.hintObjective = active ? { quest: active.quest.id, step: active.stepId } : null;
+    game.world.hintTrailShown = true;
+  }
+  game.processWorldEvents();
+  return true;
+}
+
 export async function bootHarness({
   search = globalThis.location?.search ?? '',
   canvas = globalThis.document?.querySelector('#game'),
@@ -200,6 +218,7 @@ export async function bootHarness({
     if (stateFixture.entry.chapter > 0) {
       game.createWorld(stateFixture.save);
       await prepareSetPieceReview(game, request.scene);
+      prepareWorldAffordanceReview(game, request.scene);
     }
     game.start();
     if (request.scene === 'pet-name-dialog') void game.petNameDialog?.open('Moonbeam');
