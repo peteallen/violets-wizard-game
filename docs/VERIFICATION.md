@@ -52,6 +52,12 @@ Retrofitting determinism is brutally expensive, so these land in WP-01/WP-02 bef
 
 There is no approval queue, no PENDING.md, no blessing step, and no golden gate (D32 retired them). If a change is genuinely taste-risky — a new character design, a signature moment's feel — say so plainly in your report so Pete knows to look at it in the deployed game; that's a heads-up, not a blocking request.
 
+## Mandatory Storybook Standard checklist section
+
+Every chapter set-piece checklist and every registered UI or character review scene ends with the same ordered seven-item Storybook Standard section. The canonical wording and the review-scene checklist registry live in `src/game/content/visualVerification.js`; chapter content uses its helper instead of copying the wording. The test gate enumerates all chapter set pieces and compares the live UI and character renderer scene registrations with that registry, so a missing checklist or an eighth ad hoc version fails rather than silently drifting.
+
+The seven countable checks cover palette harmony with zero pure-black or pure-white artwork colors; soft dark-brown contours with at least two visible line weights; at least two tones plus an upper-left highlight on every material form; one warm upper-left light direction and a lit-side character rim; visible grain or material marks on every player-facing surface; zero perfect rectangles, circles, or ruler-straight edges on those surfaces; and zero elements that separate from the room or reference family under a thumbnail/squint comparison. These checks make omissions and obvious mismatches countable, but they do not turn palette harmony or family resemblance into pixel-computable facts; the agent still judges those two comparisons from review frames.
+
 ## What this machinery does NOT cover (and what does)
 
 - **Cross-platform fidelity**: captures certify Chromium only; iPad Safari differs (rasterizer, fonts, AA, DPR). Playing on the actual iPad covers it.

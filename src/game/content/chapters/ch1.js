@@ -1,4 +1,5 @@
 import { chapter1LetterNarration } from './ch1-letter.js';
+import { storybookChecklist } from '../visualVerification.js';
 
 const noCondition = Object.freeze({});
 
@@ -1125,7 +1126,7 @@ export const chapter1 = {
       reducedMotion: 'reduced.letterDeliveryFade',
       params: { specification: 'SP-01' },
       timeline: { tracks: [sfxCue(0.25, 'sfx/ch1/owlFlap'), sfxCue(0.95, 'sfx/ch1/paperSlide')] },
-      verification: { keyframes: [0, 2, 3.2, 4.8], checklist: ['Violet is legible on the envelope.', 'Delivery ends on the canonical resting-envelope pose.', 'No painting edge is exposed.'] },
+      verification: { keyframes: [0, 2, 3.2, 4.8], checklist: storybookChecklist('Violet is legible on the envelope.', 'Delivery ends on the canonical resting-envelope pose.', 'No painting edge is exposed.') },
       onComplete: [],
     },
     'sp.letterOpen': {
@@ -1142,7 +1143,7 @@ export const chapter1 = {
       timeline: { tracks: [sfxCue(0.2, 'sfx/ch1/sealCrack'), sfxCue(1.05, 'sfx/ch1/paperSlide')] },
       verification: {
         keyframes: [0, 0.35, 0.9, 1.55, 2.25, 3.1, 4.6],
-        checklist: ['Opening frame zero matches the delivered envelope exactly.', 'The closed envelope stays above Violet’s protected head region.', 'The irregular owl seal visibly cracks before restrained wax pieces part.', 'The flap, paper rise, and two folds each have a distinct readable beat.', 'No opaque material layers ghost through one another.', 'No intermediate frame becomes a large blank rectangle.', 'The invitation settles into the exact reading-surface position.'],
+        checklist: storybookChecklist('Opening frame zero matches the delivered envelope exactly.', 'The closed envelope stays above Violet’s protected head region.', 'The irregular owl seal visibly cracks before restrained wax pieces part.', 'The flap, paper rise, and two folds each have a distinct readable beat.', 'No opaque material layers ghost through one another.', 'No intermediate frame becomes a large blank rectangle.', 'The invitation settles into the exact reading-surface position.'),
       },
       onComplete: [],
     },
@@ -1158,7 +1159,7 @@ export const chapter1 = {
       reducedMotion: null,
       params: { specification: 'SP-01', variant: 'reduced-delivery' },
       timeline: { tracks: [sfxCue(0.15, 'sfx/ch1/owlFlap'), sfxCue(0.4, 'sfx/ch1/paperSlide')] },
-      verification: { keyframes: [0, 0.5, 1.9], checklist: ['The owl and envelope crossfade without rapid travel.', 'The delivered letter reaches its normal resting place.'] },
+      verification: { keyframes: [0, 0.5, 1.9], checklist: storybookChecklist('The owl and envelope crossfade without rapid travel.', 'The delivered letter reaches its normal resting place.') },
       onComplete: [],
     },
     'reduced.letterOpenFade': {
@@ -1173,7 +1174,7 @@ export const chapter1 = {
       reducedMotion: null,
       params: { specification: 'SP-01', variant: 'reduced-open' },
       timeline: { tracks: [sfxCue(0.2, 'sfx/ch1/sealCrack'), sfxCue(0.45, 'sfx/ch1/paperSlide')] },
-      verification: { keyframes: [0, 0.5, 1.3], checklist: ['The canonical sealed envelope cuts cleanly to the fully readable invitation without overlapping material.', 'The reading actions appear without a static input lock.'] },
+      verification: { keyframes: [0, 0.5, 1.3], checklist: storybookChecklist('The canonical sealed envelope cuts cleanly to the fully readable invitation without overlapping material.', 'The reading actions appear without a static input lock.') },
       onComplete: [],
     },
     'sp.brickWall': {
@@ -1188,7 +1189,7 @@ export const chapter1 = {
       reducedMotion: 'reduced.wallCrossfade',
       params: { specification: 'SP-02', columns: 10, rows: 8 },
       timeline: { tracks: [sfxCue(0, 'sfx/ch1/wallRumble'), sfxCue(0.45, 'sfx/ch1/brickClack')] },
-      verification: { keyframes: [0, 0.6, 1, 1.4, 1.8, 2.2, 2.6, 3.2], checklist: ['The intact wall has no visible seams.', 'The opening reads from the center outward.', 'The street horizon remains aligned.'] },
+      verification: { keyframes: [0, 0.6, 1, 1.4, 1.8, 2.2, 2.6, 3.2], checklist: storybookChecklist('The intact wall has no visible seams.', 'The opening reads from the center outward.', 'The street horizon remains aligned.') },
       onComplete: [flagSet('ch1.wallOpened'), travel('ch1.diagonStreet', 'street.west')],
     },
     'sp.wandChaos1': {
@@ -1203,7 +1204,7 @@ export const chapter1 = {
       reducedMotion: 'reduced.papersShort',
       params: { specification: 'SP-03', variant: 'papers' },
       timeline: { tracks: [sfxCue(0, 'sfx/ch1/wandPaperWhirl')] },
-      verification: { keyframes: [0, 0.8, 1.5, 2.2], checklist: ['Every paper settles before control returns.'] },
+      verification: { keyframes: [0, 0.8, 1.5, 2.2], checklist: storybookChecklist('Every paper settles before control returns.') },
       onComplete: [],
     },
     'sp.wandChaos2': {
@@ -1218,7 +1219,7 @@ export const chapter1 = {
       reducedMotion: 'reduced.vaseSwap',
       params: { specification: 'SP-03', variant: 'vase' },
       timeline: { tracks: [sfxCue(0, 'sfx/ch1/wandPaperWhirl'), sfxCue(1.05, 'sfx/ch1/vaseShatter')] },
-      verification: { keyframes: [0, 0.8, 1.6, 2.6], checklist: ['Vase shards stay inside the room.', 'Every prop settles before control returns.'] },
+      verification: { keyframes: [0, 0.8, 1.6, 2.6], checklist: storybookChecklist('Vase shards stay inside the room.', 'Every prop settles before control returns.') },
       onComplete: [],
     },
     'sp.wandChosen': {
@@ -1233,7 +1234,7 @@ export const chapter1 = {
       reducedMotion: 'reduced.goldenFade',
       params: { specification: 'SP-03', variant: 'golden-choice', crescendoAt: 1.65 },
       timeline: { tracks: [sfxCue(0, 'sfx/ch1/wandChosen')] },
-      verification: { keyframes: [0, 1, 2, 3], checklist: ['The golden wash does not clip to white.', 'The chosen wand remains visible.'] },
+      verification: { keyframes: [0, 1, 2, 3], checklist: storybookChecklist('The golden wash does not clip to white.', 'The chosen wand remains visible.') },
       onComplete: [],
     },
     'sp.chapterCard': {
@@ -1248,7 +1249,7 @@ export const chapter1 = {
       reducedMotion: 'reduced.staticPage',
       params: { specification: 'chapter-card' },
       timeline: { tracks: [sfxCue(0, 'sfx/ch1/chapterTurn'), musicCue(0.2, 'music/ch1/chapterTriumph')] },
-      verification: { keyframes: [0, 1, 4], checklist: ['The chapter title is legible.', 'The page transition reveals no blank frame.'] },
+      verification: { keyframes: [0, 1, 4], checklist: storybookChecklist('The chapter title is legible.', 'The page transition reveals no blank frame.') },
       onComplete: [dialogueStart('ch1.narrator.chapterEnd')],
     },
   },
