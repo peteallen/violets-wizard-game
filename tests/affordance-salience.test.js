@@ -423,6 +423,29 @@ describe('D31 secret pet hints', () => {
     expect(world.snapshot().affordances.petHint).toBeNull();
   });
 
+  it.each(['cat', 'owl', 'toad'])('gives the %s companion the same hidden-card paw cue', (type) => {
+    const world = createWorld({
+      flags: { ...progression.street, 'ch1.mapUsed': true },
+      room: 'ch1.ollivanders',
+      pet: { type, name: 'Friend' },
+    });
+    settleUntil(
+      world,
+      () => world.snapshot().affordances.petHint?.stage === 'paw',
+      PET_HINT_SCHEDULE.periodSeconds,
+    );
+
+    const snapshot = world.snapshot();
+    expect(snapshot.affordances.petHint).toMatchObject({
+      targetId: 'ollivanders.cardMorgana',
+      stage: 'paw',
+      approach: 1,
+    });
+    expect(snapshot.pet.type).toBe(type);
+    expect(snapshot.pet.secretHint).toEqual(snapshot.affordances.petHint);
+    expect(Math.abs(snapshot.pet.x - 1060)).toBeLessThan(1);
+  });
+
   it('turns the pet cue into a stationary look under reduced motion', () => {
     const world = createWorld({
       flags: { ...progression.street, 'ch1.mapUsed': true },
@@ -443,5 +466,102 @@ describe('D31 secret pet hints', () => {
     expect(snapshot.pet.pose).toBe('curious');
     expect(snapshot.pet.x).toBe(world.player.x + 85);
     expect(snapshot.pet.y).toBe(world.player.y);
+  });
+
+  it('keeps the secret cue deterministic, rare, faint, and inside the shared glint budget', () => {
+    const options = {
+      flags: { ...progression.street, 'ch1.mapUsed': true },
+      room: 'ch1.ollivanders',
+      pet: { type: 'cat', name: 'Biscuit' },
+    };
+    const world = createWorld(options);
+    const replay = createWorld(options);
+    const playerAtRest = {
+      x: world.player.x,
+      y: world.player.y,
+      targetX: world.player.targetX,
+      facing: world.player.facing,
+    };
+    let strongestSecretGlint = 0;
+    let sawPetAndSecretGlintTogether = false;
+
+    for (let elapsed = 0; elapsed < 27; elapsed += 0.1) {
+      world.update(0.1);
+      replay.update(0.1);
+      const snapshot = world.snapshot();
+      const replayed = replay.snapshot();
+      expect(snapshot.affordances.petHint).toEqual(replayed.affordances.petHint);
+      expect(snapshot.pet).toEqual(replayed.pet);
+      expect(snapshot.affordances.glints).toEqual(replayed.affordances.glints);
+      assertGlobalGlintBudget(snapshot);
+
+      const secretGlint = snapshot.affordances.glints.find(({ tier }) => tier === 'secret');
+      if (secretGlint) strongestSecretGlint = Math.max(strongestSecretGlint, secretGlint.alpha);
+      if (secretGlint && snapshot.affordances.petHint) sawPetAndSecretGlintTogether = true;
+    }
+
+    const snapshot = world.snapshot();
+    const secretStarts = snapshot.affordances.glintActivations
+      .filter(({ tier }) => tier === 'secret');
+    expect(secretStarts.length).toBeGreaterThanOrEqual(3);
+    expect(secretStarts.every(({ duration }) => duration === GLINT_SCHEDULE.secretSeconds)).toBe(true);
+    for (let index = 1; index < secretStarts.length; index += 1) {
+      expect(secretStarts[index].startedAt - secretStarts[index - 1].startedAt)
+        .toBeGreaterThanOrEqual(
+          GLINT_SCHEDULE.slotSeconds * GLINT_SCHEDULE.secretEverySlots - 0.2,
+        );
+    }
+    expect(strongestSecretGlint).toBeGreaterThan(0.3);
+    expect(strongestSecretGlint).toBeLessThanOrEqual(0.34);
+    expect(sawPetAndSecretGlintTogether).toBe(true);
+    expect({
+      x: world.player.x,
+      y: world.player.y,
+      targetX: world.player.targetX,
+      facing: world.player.facing,
+    }).toEqual(playerAtRest);
+  });
+
+  it('yields immediately to dialogue, set pieces, and Violet’s own walking command', () => {
+    const options = {
+      flags: { ...progression.street, 'ch1.mapUsed': true },
+      room: 'ch1.ollivanders',
+      pet: { type: 'cat', name: 'Biscuit' },
+    };
+    const activePetWorld = () => {
+      const world = createWorld(options);
+      settleUntil(world, () => Boolean(world.snapshot().affordances.petHint), PET_HINT_SCHEDULE.periodSeconds);
+      return world;
+    };
+
+    const dialogueWorld = activePetWorld();
+    dialogueWorld.dialogue.open('ch1.wandmaker.welcome');
+    const dialogueSnapshot = dialogueWorld.snapshot();
+    expect(dialogueSnapshot.affordances).toMatchObject({ quiet: true, worldSuppressed: true });
+    expect(dialogueSnapshot.affordances.petHint).toBeNull();
+    expect(dialogueSnapshot.affordances.glints).toEqual([]);
+    expect(dialogueSnapshot.pet.secretHint).toBeUndefined();
+
+    const setPieceWorld = activePetWorld();
+    setPieceWorld.setPieces.start('sp.wandChaos1');
+    const setPieceSnapshot = setPieceWorld.snapshot();
+    expect(setPieceSnapshot.affordances).toMatchObject({ quiet: true, worldSuppressed: true });
+    expect(setPieceSnapshot.affordances.petHint).toBeNull();
+    expect(setPieceSnapshot.affordances.glints).toEqual([]);
+    expect(setPieceSnapshot.pet.secretHint).toBeUndefined();
+
+    const walkingWorld = activePetWorld();
+    const beforeWalk = walkingWorld.snapshot();
+    expect(walkingWorld.tap({ x: 500, y: 610 })).toMatchObject({ kind: 'walk', x: 500 });
+    walkingWorld.update(0.1);
+    const walkingSnapshot = walkingWorld.snapshot();
+    expect(walkingSnapshot.player.walking).toBe(true);
+    expect(walkingSnapshot.player.targetX).toBe(500);
+    expect(walkingSnapshot.player.x).toBeGreaterThan(beforeWalk.player.x);
+    expect(walkingSnapshot.affordances).toMatchObject({ quiet: true, worldSuppressed: true });
+    expect(walkingSnapshot.affordances.petHint).toBeNull();
+    expect(walkingSnapshot.affordances.glints).toEqual([]);
+    expect(walkingSnapshot.pet.secretHint).toBeUndefined();
+    assertGlobalGlintBudget(walkingSnapshot);
   });
 });
