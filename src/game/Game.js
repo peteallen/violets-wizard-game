@@ -1501,8 +1501,8 @@ export class Game {
       if (behindCastSetPieceActive) {
         this.setPieceRenderer.draw(context, state.setPiece, state, { reducedMotion: this.reducedMotion });
       }
-      this.drawCharacters(context, state);
       if (!state.setPiece) this.drawWorldTargets(context, state);
+      this.drawCharacters(context, state);
       this.particles.draw(context);
     }
 

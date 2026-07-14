@@ -12,6 +12,17 @@ const VISUAL_PROFILES = Object.freeze({
   'frog-card': Object.freeze([0.46, 0.58, 0, 'letter']),
 });
 const DEFAULT_VISUAL_PROFILE = Object.freeze([0.82, 0.82, 0, 'circle']);
+// Hagrid's authored puppet occupies approximately x -79…79 and y -211…29,
+// and CharacterRenderer applies its 1.5 world scale. The authored talk
+// circle is 190 pixels square, so these ratios put the guide bounds on that
+// live silhouette instead of on the smaller circle around his face and chest.
+const GUIDE_VISUAL_PROFILE = Object.freeze([1.25, 1.9, 0.1, 'guide']);
+const FIGURE_VISUAL_PROFILE = Object.freeze([0.68, 1.45, 0.16, 'figure']);
+const HALO_CONTOURS = Object.freeze([
+  Object.freeze({ padding: 25, width: 9, alpha: 0.48, color: PALETTE.interactive }),
+  Object.freeze({ padding: 18, width: 7, alpha: 0.65, color: PALETTE.interactive }),
+  Object.freeze({ padding: 12, width: 5, alpha: 0.82, color: PALETTE.honey }),
+]);
 
 export class WorldAffordanceRenderer {
   draw(context, state, time, {
@@ -103,23 +114,26 @@ export function drawAffordancePresentation(context, presentation) {
 function drawGoldShimmer(context, presentation) {
   const { bounds, haloAlpha, edgeAlpha, phase } = presentation;
   context.save();
+  context.lineCap = 'round';
+  context.lineJoin = 'round';
 
-  // Several translucent hand-wobbled washes create a soft halo without the
-  // expensive blur APIs that are forbidden on the frame loop.
-  for (let layer = 3; layer >= 0; layer -= 1) {
-    const padding = 4 + layer * 6;
-    context.globalAlpha = haloAlpha * (0.28 + (3 - layer) * 0.11);
-    context.fillStyle = layer === 0 ? PALETTE.honey : PALETTE.interactive;
-    traceTargetShape(context, bounds, padding, phase + layer * 0.19);
-    context.fill();
+  // Nested translucent contours keep every brush mark outside the authored
+  // target instead of washing gold across its face, coat, or painted details.
+  // World targets are composited beneath code-drawn actors in Game, so a
+  // figure naturally masks the inside half of each soft contour.
+  for (let layer = 0; layer < HALO_CONTOURS.length; layer += 1) {
+    const contour = HALO_CONTOURS[layer];
+    context.globalAlpha = haloAlpha * contour.alpha;
+    context.strokeStyle = contour.color;
+    context.lineWidth = contour.width;
+    traceTargetShape(context, bounds, contour.padding, phase + layer * 0.19);
+    context.stroke();
   }
 
   context.globalAlpha = edgeAlpha;
-  context.strokeStyle = PALETTE.interactive;
-  context.lineWidth = 7;
-  context.lineCap = 'round';
-  context.lineJoin = 'round';
-  traceTargetShape(context, bounds, 3, phase);
+  context.strokeStyle = PALETTE.honey;
+  context.lineWidth = 3.5;
+  traceTargetShape(context, bounds, 7, phase);
   context.stroke();
 
   for (const mote of presentation.motes) drawPaintedMote(context, mote);
@@ -180,12 +194,126 @@ function drawScheduledGlint(context, presentation) {
 function traceTargetShape(context, bounds, padding, phase) {
   if (bounds.shape === 'wand') traceOrganicWand(context, bounds, padding, phase);
   else if (bounds.shape === 'door') traceOrganicDoor(context, bounds, padding, phase);
+  else if (bounds.shape === 'guide') traceOrganicGuide(context, bounds, padding, phase);
   else if (bounds.shape === 'figure') traceOrganicFigure(context, bounds, padding, phase);
   else if (bounds.shape === 'robes') traceOrganicRobes(context, bounds, padding, phase);
   else if (bounds.shape === 'owl') traceOrganicOwl(context, bounds, padding, phase);
   else if (bounds.shape === 'rect' || bounds.shape === 'letter') {
     traceOrganicRect(context, bounds, padding, phase);
   } else traceOrganicEllipse(context, bounds, padding, phase);
+}
+
+function traceOrganicGuide(context, bounds, padding, phase) {
+  const left = bounds.x - padding;
+  const right = bounds.x + bounds.width + padding;
+  const top = bounds.y - padding;
+  const bottom = bounds.y + bounds.height + padding;
+  const width = right - left;
+  const height = bottom - top;
+  const wobble = Math.sin(phase * 23) * 1.6;
+
+  // The contour follows Hagrid's broad hair, shoulders, coat, and planted
+  // boots. It deliberately stays a little irregular instead of collapsing
+  // his half-giant silhouette into a generic oval or perfect capsule.
+  context.beginPath();
+  context.moveTo(left + width * 0.48, top - wobble);
+  context.bezierCurveTo(
+    left + width * 0.27,
+    top - wobble * 0.35,
+    left + width * 0.12,
+    top + height * 0.07,
+    left + width * 0.1,
+    top + height * 0.18,
+  );
+  context.bezierCurveTo(
+    left + width * 0.03,
+    top + height * 0.25,
+    left + width * 0.03,
+    top + height * 0.4,
+    left + width * 0.1,
+    top + height * 0.48,
+  );
+  context.bezierCurveTo(
+    left + width * 0.01,
+    top + height * 0.58,
+    left - wobble,
+    top + height * 0.78,
+    left + width * 0.04,
+    top + height * 0.9,
+  );
+  context.bezierCurveTo(
+    left + width * 0.13,
+    top + height * 0.95,
+    left + width * 0.21,
+    top + height * 0.94,
+    left + width * 0.29,
+    top + height * 0.95,
+  );
+  context.bezierCurveTo(
+    left + width * 0.25,
+    top + height * 0.98,
+    left + width * 0.31,
+    bottom + wobble * 0.3,
+    left + width * 0.4,
+    bottom,
+  );
+  context.bezierCurveTo(
+    left + width * 0.45,
+    bottom - height * 0.01,
+    left + width * 0.47,
+    bottom - height * 0.03,
+    left + width * 0.5,
+    bottom - height * 0.035,
+  );
+  context.bezierCurveTo(
+    left + width * 0.54,
+    bottom - height * 0.03,
+    left + width * 0.56,
+    bottom - height * 0.01,
+    left + width * 0.61,
+    bottom,
+  );
+  context.bezierCurveTo(
+    left + width * 0.7,
+    bottom - wobble * 0.25,
+    left + width * 0.75,
+    top + height * 0.98,
+    left + width * 0.71,
+    top + height * 0.95,
+  );
+  context.bezierCurveTo(
+    left + width * 0.79,
+    top + height * 0.94,
+    left + width * 0.88,
+    top + height * 0.95,
+    left + width * 0.96,
+    top + height * 0.89,
+  );
+  context.bezierCurveTo(
+    right + wobble,
+    top + height * 0.76,
+    right - width * 0.01,
+    top + height * 0.57,
+    right - width * 0.1,
+    top + height * 0.47,
+  );
+  context.bezierCurveTo(
+    right - width * 0.03,
+    top + height * 0.38,
+    right - width * 0.04,
+    top + height * 0.24,
+    right - width * 0.11,
+    top + height * 0.16,
+  );
+  context.bezierCurveTo(
+    right - width * 0.16,
+    top + height * 0.06,
+    right - width * 0.31,
+    top + wobble * 0.25,
+    left + width * 0.48,
+    top - wobble,
+  );
+  context.closePath();
 }
 
 function traceOrganicWand(context, bounds, padding, phase) {
@@ -376,7 +504,11 @@ function boundsForHitArea(area, cameraX) {
 
 export function visualBoundsForTarget(target, hitBounds) {
   const icon = target.presentation?.icon;
-  if (target.kind === 'talk') return resizedBounds(hitBounds, 0.68, 1.45, 0.16, 'figure');
+  if (target.kind === 'talk') {
+    const identity = String(target.id ?? target.semanticId ?? '').toLowerCase();
+    const profile = identity.includes('guide') ? GUIDE_VISUAL_PROFILE : FIGURE_VISUAL_PROFILE;
+    return resizedBounds(hitBounds, ...profile);
+  }
   if (hitBounds.shape === 'rect' && icon !== 'door') return hitBounds;
   const profile = VISUAL_PROFILES[icon] ?? DEFAULT_VISUAL_PROFILE;
   return resizedBounds(hitBounds, ...profile);
