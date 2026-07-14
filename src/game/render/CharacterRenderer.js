@@ -44,26 +44,44 @@ export const VIOLET_STYLE = Object.freeze({
   shoeBase: '#6848a8',
   shoeShadow: '#493371',
   shoeLight: '#b29ae0',
-  casualJerseyBase: '#70539f',
-  casualJerseyMid: '#8d73ba',
-  casualJerseyShadow: '#4e3c70',
-  casualJerseyLight: 'rgba(226, 209, 234, 0.26)',
-  casualJerseyTrim: '#d8c9e4',
-  casualLeggingBase: '#373342',
-  casualLeggingShadow: '#25232f',
-  casualLeggingLight: 'rgba(196, 184, 209, 0.2)',
+  casualJerseyBase: '#5369a8',
+  casualJerseyMid: '#7489c2',
+  casualJerseyShadow: '#344571',
+  casualJerseyLight: 'rgba(225, 235, 255, 0.34)',
+  casualJerseyTrim: '#f0dfbd',
+  casualLeggingBase: '#383742',
+  casualLeggingShadow: '#24242c',
+  casualLeggingLight: 'rgba(204, 207, 222, 0.24)',
+  casualShoeBase: '#536d78',
+  casualShoeShadow: '#344851',
+  casualShoeLight: '#b9cbd0',
+  casualShoeAccent: '#846ab2',
+  casualShoeSole: '#e1d6c4',
 });
 
 export const HAGRID_STYLE = Object.freeze({
-  worldScale: 1.72,
-  coatBase: '#584536',
-  coatShadow: '#382d28',
-  coatLight: '#806247',
-  hairBase: '#33251f',
-  hairMid: '#4b3429',
-  hairLight: '#76513a',
+  worldScale: 1.5,
+  coatBase: '#65503d',
+  coatMid: '#786048',
+  coatShadow: '#3d312b',
+  coatDeep: '#2c2623',
+  coatLight: '#997550',
+  coatHighlight: 'rgba(225, 185, 125, 0.24)',
+  hairBase: '#382821',
+  hairMid: '#53392c',
+  hairShadow: '#261d1a',
+  hairLight: '#80583d',
+  beardBase: '#493229',
+  beardMid: '#634333',
+  beardShadow: '#2d211d',
+  beardLight: '#8b6042',
   skin: '#bd7d5e',
+  skinShadow: '#925847',
+  skinLight: 'rgba(255, 218, 166, 0.26)',
   cheek: '#b76858',
+  bootBase: '#382b25',
+  bootShadow: '#241e1c',
+  bootLight: '#74563c',
   rim: 'rgba(244, 198, 126, 0.42)',
 });
 
@@ -243,6 +261,8 @@ export class CharacterRenderer {
   drawViolet(context, character, time) {
     const scale = character.scale ?? 1;
     const direction = character.facing === 'left' ? -1 : 1;
+    const lightSide = character.lightSide === 'right' ? 'right' : 'left';
+    const lightDirection = (lightSide === 'right' ? 1 : -1) * direction;
     const pose = character.pose ?? 'idle';
     const walking = Boolean(character.walking) || pose === 'walking';
     const motion = sampleVioletMotion({
@@ -254,6 +274,8 @@ export class CharacterRenderer {
     const trim = character.robeTrim ?? PALETTE.violet;
     const outfit = character.outfit === 'casual' ? 'casual' : 'robes';
     const blinking = isBlinking(time, 0.1);
+    const casualHeadScale = outfit === 'casual' ? 0.84 : 1;
+    const headAnchorY = -101;
 
     context.save();
     context.translate(character.x, character.y + motion.bob);
@@ -262,13 +284,25 @@ export class CharacterRenderer {
     prepare(context, 2.25);
 
     drawGroundingShadow(context, 'violet');
-    drawVioletLeg(context, -15, motion.stride * 8, true, motion, outfit);
-    drawVioletLeg(context, 15, -motion.stride * 8, false, motion, outfit);
-    drawVioletBackHair(context, motion);
+    drawVioletLeg(context, -15, motion.stride * 8, true, motion, outfit, lightDirection);
+    drawVioletLeg(context, 15, -motion.stride * 8, false, motion, outfit, lightDirection);
+    context.save();
+    context.translate(0, headAnchorY);
+    context.scale(casualHeadScale, casualHeadScale);
+    context.translate(0, -headAnchorY);
+    drawVioletBackHair(context, motion, lightDirection);
+    context.restore();
     if (outfit === 'casual') {
-      drawVioletCasualArm(context, motion, -1, true);
-      drawVioletCasualJersey(context, motion);
-      drawVioletCasualArm(context, motion, 1, false, Boolean(character.wand));
+      drawVioletCasualArm(context, motion, -1, true, false, lightDirection);
+      drawVioletCasualJersey(context, motion, lightDirection);
+      drawVioletCasualArm(
+        context,
+        motion,
+        1,
+        false,
+        Boolean(character.wand),
+        lightDirection,
+      );
       drawVioletCasualNeckline(context);
     } else {
       drawVioletBackArm(context, trim, motion);
@@ -279,9 +313,20 @@ export class CharacterRenderer {
     context.save();
     context.translate(0, motion.headBob);
     context.rotate(motion.headTilt);
-    drawVioletHead(context, blinking, time, pose, motion, character.detail ?? 'world');
+    context.translate(0, headAnchorY);
+    context.scale(casualHeadScale, casualHeadScale);
+    context.translate(0, -headAnchorY);
+    drawVioletHead(
+      context,
+      blinking,
+      time,
+      pose,
+      motion,
+      character.detail ?? 'world',
+      lightDirection,
+    );
     context.restore();
-    drawVioletWarmRim(context, motion, direction, outfit);
+    drawVioletWarmRim(context, motion, direction, outfit, lightSide);
 
     context.restore();
   }
@@ -291,6 +336,8 @@ export class CharacterRenderer {
     const palette = CHARACTER_COLORS[kind];
     const scale = (character.scale ?? 1) * (kind === 'guide' ? HAGRID_STYLE.worldScale : 1.04);
     const direction = character.facing === 'left' ? -1 : 1;
+    const lightSide = character.lightSide === 'right' ? 'right' : 'left';
+    const lightDirection = (lightSide === 'right' ? 1 : -1) * direction;
     const phase = character.phase ?? kind.length * 0.37;
     const walking = character.pose === 'walking';
     const walkCycle = Math.sin(time * 7.6 + phase);
@@ -306,19 +353,22 @@ export class CharacterRenderer {
 
     drawGroundingShadow(context, kind);
     drawNpcLegs(context, kind, palette, character.pose, time + phase);
-    drawNpcBackDetails(context, kind, palette);
-    drawNpcBody(context, kind, palette);
+    drawNpcBackDetails(context, kind, palette, { lightDirection });
+    drawNpcBody(context, kind, palette, { lightDirection });
     drawNpcArms(context, kind, palette, time + phase, character.pose, {
       reducedMotion: Boolean(character.reducedMotion),
+      lightDirection,
     });
     drawNpcHead(context, kind, palette, blinking, time + phase, character.pose, {
       reducedMotion: Boolean(character.reducedMotion),
+      lightDirection,
     });
     drawNpcAccessory(context, kind, palette, time + phase, character.pose, {
       reducedMotion: Boolean(character.reducedMotion),
+      lightDirection,
     });
     if (kind === 'guide') drawGuideMouth(context, character.pose, time + phase);
-    if (kind === 'guide') drawGuideWarmRim(context);
+    if (kind === 'guide') drawGuideWarmRim(context, direction, lightSide);
     else if (kind === 'wandmaker') drawWandmakerWarmRim(context);
     else if (kind === 'tailor') drawTailorWarmRim(context, direction);
     else if (kind === 'keeper') drawKeeperWarmRim(context, direction);
@@ -397,12 +447,13 @@ export class CharacterRenderer {
         robeTrim: portrait.robeTrim ?? PALETTE.violet, wand: Boolean(portrait.wand), pose,
         reducedMotion, detail: 'portrait',
         outfit: portrait.outfit ?? 'robes',
+        lightSide: portrait.lightSide,
       }, time);
     } else {
       const guide = speaker === 'guide';
       this.draw(context, {
         kind: speaker, x: 0, y: guide ? 166 : 116, scale: guide ? 0.76 : 0.84,
-        facing, pose,
+        facing, pose, lightSide: portrait.lightSide,
       }, time);
     }
     context.restore();
@@ -904,13 +955,16 @@ function prepare(context, lineWidth) {
 function drawGroundingShadow(context, kind) {
   const guide = kind === 'guide';
   const violet = kind === 'violet';
-  const width = guide ? 72 : violet ? 49 : 54;
+  const width = guide ? 78 : violet ? 54 : 54;
   context.save();
-  context.fillStyle = 'rgba(27,18,24,0.2)';
-  traceOrganicGroundShadow(context, 4, 26, width, guide ? 13 : 9, 0.08);
+  context.fillStyle = guide ? 'rgba(25,17,18,0.34)' : 'rgba(27,18,24,0.28)';
+  traceOrganicGroundShadow(context, 4, 26, width, guide ? 14 : 10, 0.08);
   context.fill();
-  context.fillStyle = 'rgba(45,27,22,0.18)';
-  traceOrganicGroundShadow(context, -2, 23, width * 0.7, guide ? 7 : 5, -0.11);
+  context.fillStyle = guide ? 'rgba(43,27,22,0.3)' : 'rgba(45,27,22,0.25)';
+  traceOrganicGroundShadow(context, -2, 23, width * 0.72, guide ? 7.5 : 5.5, -0.11);
+  context.fill();
+  context.fillStyle = guide ? 'rgba(20,15,15,0.22)' : 'rgba(24,17,21,0.17)';
+  traceOrganicGroundShadow(context, 1, 21.5, width * 0.43, guide ? 4.5 : 3.5, 0.13);
   context.fill();
   context.restore();
 }
@@ -951,11 +1005,15 @@ function drawCompanionShadow(context, type, motion) {
   context.restore();
 }
 
-function drawVioletLeg(context, x, stride, behind, motion, outfit) {
+function drawVioletLeg(context, x, stride, behind, motion, outfit, lightDirection = -1) {
   const footX = x + stride;
   const lift = Math.abs(motion.stride) * (behind ? 1.4 : 0.7);
   const casual = outfit === 'casual';
   const legTop = casual ? -51 : -10;
+  const shoeBase = casual ? VIOLET_STYLE.casualShoeBase : VIOLET_STYLE.shoeBase;
+  const shoeShadow = casual ? VIOLET_STYLE.casualShoeShadow : VIOLET_STYLE.shoeShadow;
+  const shoeLight = casual ? VIOLET_STYLE.casualShoeLight : VIOLET_STYLE.shoeLight;
+  const lit = Math.sign(x) === lightDirection;
   context.save();
   context.globalAlpha = behind ? 0.88 : 1;
 
@@ -983,7 +1041,7 @@ function drawVioletLeg(context, x, stride, behind, motion, outfit) {
   fillStroke(context, 1.8);
 
   if (casual) {
-    context.fillStyle = behind ? VIOLET_STYLE.casualLeggingShadow : VIOLET_STYLE.casualLeggingLight;
+    context.fillStyle = lit ? VIOLET_STYLE.casualLeggingLight : VIOLET_STYLE.casualLeggingShadow;
     context.beginPath();
     context.moveTo(x + 1, -48);
     context.bezierCurveTo(x + 7, -28, x + stride * 0.24 + 5, -5, footX + 3, 18 - lift);
@@ -999,7 +1057,7 @@ function drawVioletLeg(context, x, stride, behind, motion, outfit) {
     context.stroke();
   }
 
-  context.fillStyle = VIOLET_STYLE.shoeBase;
+  context.fillStyle = shoeBase;
   context.beginPath();
   context.moveTo(footX - 8, 16 - lift);
   context.bezierCurveTo(footX - 2, 14 - lift, footX + 5, 16 - lift, footX + 10, 18 - lift);
@@ -1009,7 +1067,7 @@ function drawVioletLeg(context, x, stride, behind, motion, outfit) {
   context.closePath();
   fillStroke(context, 2.25);
 
-  context.fillStyle = VIOLET_STYLE.shoeShadow;
+  context.fillStyle = shoeShadow;
   context.beginPath();
   context.moveTo(footX - 8, 25 - lift);
   context.bezierCurveTo(footX + 2, 28 - lift, footX + 14, 29 - lift, footX + 23, 25 - lift);
@@ -1018,17 +1076,20 @@ function drawVioletLeg(context, x, stride, behind, motion, outfit) {
   context.closePath();
   context.fill();
 
-  context.strokeStyle = VIOLET_STYLE.shoeLight;
+  context.strokeStyle = shoeLight;
   context.lineWidth = 1.55;
   context.beginPath();
   context.moveTo(footX - 3, 20 - lift);
   context.bezierCurveTo(footX + 3, 17 - lift, footX + 9, 18 - lift, footX + 14, 21 - lift);
+  context.stroke();
+  context.strokeStyle = casual ? VIOLET_STYLE.casualShoeAccent : shoeLight;
+  context.beginPath();
   context.moveTo(footX + 1, 21 - lift);
   context.quadraticCurveTo(footX + 5, 24 - lift, footX + 10, 21 - lift);
   context.moveTo(footX + 5, 23 - lift);
   context.quadraticCurveTo(footX + 9, 25 - lift, footX + 13, 22 - lift);
   context.stroke();
-  context.strokeStyle = 'rgba(246, 231, 207, 0.66)';
+  context.strokeStyle = casual ? VIOLET_STYLE.casualShoeSole : 'rgba(246, 231, 207, 0.66)';
   context.lineWidth = 1.2;
   context.beginPath();
   context.moveTo(footX - 5, 27 - lift);
@@ -1037,7 +1098,7 @@ function drawVioletLeg(context, x, stride, behind, motion, outfit) {
   context.restore();
 }
 
-function drawVioletBackHair(context, motion) {
+function drawVioletBackHair(context, motion, lightDirection = -1) {
   const lift = motion.hairLift;
   const swing = motion.robeSwing * 0.35;
   context.fillStyle = VIOLET_STYLE.hairBase;
@@ -1052,6 +1113,8 @@ function drawVioletBackHair(context, motion) {
   context.closePath();
   fillStroke(context, 2.1);
 
+  context.save();
+  if (lightDirection > 0) context.scale(-1, 1);
   context.fillStyle = VIOLET_STYLE.hairShadow;
   context.beginPath();
   context.moveTo(4, -184);
@@ -1090,66 +1153,94 @@ function drawVioletBackHair(context, motion) {
   context.moveTo(-20, -175);
   context.bezierCurveTo(-27, -146, -26, -111, -22, -88 - lift * 0.2);
   context.stroke();
+  context.restore();
 }
 
-function drawVioletCasualArm(context, motion, side, behind, hasWand = false) {
-  const swing = (side < 0 ? motion.armSwing : -motion.armSwing) * 0.82;
-  const wristX = 43 + swing * 0.2;
-  const wristY = -27 + swing;
+function drawVioletCasualArm(
+  context,
+  motion,
+  side,
+  behind,
+  hasWand = false,
+  lightDirection = -1,
+) {
+  const swing = (side < 0 ? motion.armSwing : -motion.armSwing) * 0.72;
+  const elbowX = 43 + swing * 0.1;
+  const elbowY = -58 + swing * 0.28;
+  const wristX = 37 + swing * 0.12;
+  const wristY = -32 + swing * 0.62;
+  const lit = side === lightDirection;
   context.save();
   context.scale(side, 1);
   context.globalAlpha = behind ? 0.92 : 1;
 
+  // The upper arm tucks under the sleeve cap and overlaps the forearm at a shaped elbow.
   context.fillStyle = VIOLET_STYLE.skinBase;
   context.beginPath();
-  context.moveTo(35, -76);
-  context.bezierCurveTo(40, -66, 43, -50, wristX + 5, wristY - 7);
-  context.bezierCurveTo(wristX + 4, wristY + 1, wristX - 3, wristY + 5, wristX - 8, wristY - 1);
-  context.bezierCurveTo(38, -48, 33, -64, 35, -76);
+  context.moveTo(32, -81);
+  context.bezierCurveTo(39, -78, 44, -70, elbowX + 5, elbowY - 3);
+  context.bezierCurveTo(elbowX + 5, elbowY + 4, elbowX - 1, elbowY + 8, elbowX - 6, elbowY + 3);
+  context.bezierCurveTo(36, -64, 31, -73, 32, -81);
   context.closePath();
   fillStroke(context, 1.65);
 
-  context.fillStyle = behind ? VIOLET_STYLE.skinShadow : VIOLET_STYLE.skinLight;
-  context.globalAlpha = behind ? 0.3 : 1;
+  context.fillStyle = VIOLET_STYLE.skinBase;
   context.beginPath();
-  context.moveTo(39, -72);
-  context.bezierCurveTo(44, -59, 45, -43, wristX + 3, wristY - 6);
-  context.bezierCurveTo(wristX + 1, wristY - 3, wristX - 1, wristY - 2, wristX - 3, wristY - 3);
-  context.bezierCurveTo(39, -48, 36, -62, 39, -72);
+  context.moveTo(elbowX - 5, elbowY - 2);
+  context.bezierCurveTo(elbowX + 3, elbowY - 6, wristX + 7, wristY - 8, wristX + 7, wristY - 2);
+  context.bezierCurveTo(wristX + 5, wristY + 5, wristX - 3, wristY + 7, wristX - 7, wristY + 1);
+  context.bezierCurveTo(wristX - 5, wristY - 8, elbowX - 1, elbowY + 6, elbowX - 5, elbowY - 2);
+  context.closePath();
+  fillStroke(context, 1.6);
+
+  context.fillStyle = lit ? VIOLET_STYLE.skinLight : VIOLET_STYLE.skinShadow;
+  context.globalAlpha = behind ? 0.36 : 1;
+  context.beginPath();
+  context.moveTo(elbowX + 1, elbowY - 1);
+  context.bezierCurveTo(elbowX + 4, elbowY + 4, wristX + 5, wristY - 4, wristX + 3, wristY);
+  context.bezierCurveTo(wristX + 1, wristY + 2, wristX - 1, wristY + 2, wristX - 2, wristY);
+  context.bezierCurveTo(wristX + 1, wristY - 8, elbowX + 2, elbowY + 2, elbowX + 1, elbowY - 1);
   context.closePath();
   context.fill();
   context.globalAlpha = behind ? 0.92 : 1;
 
-  context.fillStyle = behind ? VIOLET_STYLE.casualJerseyShadow : VIOLET_STYLE.casualJerseyMid;
+  context.fillStyle = lit ? VIOLET_STYLE.casualJerseyMid : VIOLET_STYLE.casualJerseyShadow;
   context.beginPath();
-  context.moveTo(23, -99);
-  context.bezierCurveTo(34, -101, 43, -94, 46, -84);
-  context.bezierCurveTo(47, -78, 45, -71, 41, -67);
-  context.bezierCurveTo(35, -66, 30, -69, 27, -74);
-  context.bezierCurveTo(27, -83, 25, -92, 23, -99);
+  context.moveTo(22, -99);
+  context.bezierCurveTo(30, -103, 40, -98, 44, -89);
+  context.bezierCurveTo(47, -83, 45, -76, 40, -72);
+  context.bezierCurveTo(35, -70, 29, -73, 27, -78);
+  context.bezierCurveTo(28, -86, 25, -95, 22, -99);
   context.closePath();
   fillStroke(context, 1.75);
-  context.fillStyle = VIOLET_STYLE.casualJerseyLight;
+  context.fillStyle = lit ? VIOLET_STYLE.casualJerseyLight : 'rgba(31, 39, 67, 0.24)';
   context.beginPath();
-  context.moveTo(26, -96);
-  context.bezierCurveTo(33, -96, 39, -91, 41, -84);
-  context.quadraticCurveTo(38, -80, 34, -79);
-  context.bezierCurveTo(31, -86, 29, -92, 26, -96);
+  context.moveTo(25, -97);
+  context.bezierCurveTo(31, -99, 38, -94, 40, -88);
+  context.quadraticCurveTo(38, -83, 34, -81);
+  context.bezierCurveTo(31, -88, 29, -94, 25, -97);
   context.closePath();
   context.fill();
   context.strokeStyle = VIOLET_STYLE.casualJerseyTrim;
   context.lineWidth = 2.5;
   context.beginPath();
-  context.moveTo(41, -68);
-  context.bezierCurveTo(36, -66, 31, -69, 27, -74);
+  context.moveTo(40, -72);
+  context.bezierCurveTo(35, -70, 29, -73, 27, -78);
   context.stroke();
 
-  drawHand(context, wristX, wristY + 7, VIOLET_STYLE.skinBase, 8.2);
+  context.strokeStyle = 'rgba(126, 75, 65, 0.42)';
+  context.lineWidth = 1;
+  context.beginPath();
+  context.moveTo(elbowX - 3, elbowY + 1);
+  context.quadraticCurveTo(elbowX, elbowY + 4, elbowX + 3, elbowY + 1);
+  context.stroke();
+
+  drawHand(context, wristX, wristY + 6, VIOLET_STYLE.skinBase, 7.8);
   context.restore();
-  if (hasWand && side > 0) drawVioletWand(context, wristX, wristY + 7);
+  if (hasWand && side > 0) drawVioletWand(context, wristX, wristY + 6);
 }
 
-function drawVioletCasualJersey(context, motion) {
+function drawVioletCasualJersey(context, motion, lightDirection = -1) {
   const swing = motion.robeSwing * 0.25;
   context.fillStyle = VIOLET_STYLE.casualJerseyBase;
   context.beginPath();
@@ -1164,6 +1255,8 @@ function drawVioletCasualJersey(context, motion) {
   context.closePath();
   fillStroke(context, 2.05);
 
+  context.save();
+  if (lightDirection > 0) context.scale(-1, 1);
   context.fillStyle = VIOLET_STYLE.casualJerseyShadow;
   context.beginPath();
   context.moveTo(4, -105);
@@ -1203,6 +1296,7 @@ function drawVioletCasualJersey(context, motion) {
   context.quadraticCurveTo(-37 - swing, -45, -34 - swing, -48);
   context.closePath();
   context.fill();
+  context.restore();
 
   context.strokeStyle = VIOLET_STYLE.casualJerseyTrim;
   context.lineWidth = 2.1;
@@ -1467,7 +1561,15 @@ function drawVioletWand(context, handX, handY) {
   context.stroke();
 }
 
-function drawVioletHead(context, blinking, time, pose = 'idle', motion, detail = 'world') {
+function drawVioletHead(
+  context,
+  blinking,
+  time,
+  pose = 'idle',
+  motion,
+  detail = 'world',
+  lightDirection = -1,
+) {
   drawVioletEar(context, -37, -143, -1);
   drawVioletEar(context, 38, -142, 1);
 
@@ -1482,6 +1584,8 @@ function drawVioletHead(context, blinking, time, pose = 'idle', motion, detail =
   context.closePath();
   fillStroke(context, 2.15);
 
+  context.save();
+  if (lightDirection > 0) context.scale(-1, 1);
   context.fillStyle = VIOLET_STYLE.skinShadow;
   context.globalAlpha = 0.3;
   context.beginPath();
@@ -1501,6 +1605,7 @@ function drawVioletHead(context, blinking, time, pose = 'idle', motion, detail =
   context.bezierCurveTo(-26, -146, -33, -159, -27, -170);
   context.closePath();
   context.fill();
+  context.restore();
 
   drawVioletCheek(context, -24, -127, -1);
   drawVioletCheek(context, 24, -126, 1);
@@ -1511,7 +1616,7 @@ function drawVioletHead(context, blinking, time, pose = 'idle', motion, detail =
   drawVioletGlasses(context);
   drawVioletNose(context);
   drawVioletMouth(context, pose, time);
-  drawVioletFrontHair(context, time, motion, detail);
+  drawVioletFrontHair(context, time, motion, detail, lightDirection);
 }
 
 function drawVioletEar(context, x, y, side) {
@@ -1697,7 +1802,7 @@ function drawVioletMouth(context, pose, time) {
   context.stroke();
 }
 
-function drawVioletFrontHair(context, time, motion, detail) {
+function drawVioletFrontHair(context, time, motion, detail, lightDirection = -1) {
   context.fillStyle = VIOLET_STYLE.hairBase;
   context.beginPath();
   context.moveTo(-36, -154);
@@ -1711,6 +1816,8 @@ function drawVioletFrontHair(context, time, motion, detail) {
   context.closePath();
   fillStroke(context, 2.05);
 
+  context.save();
+  if (lightDirection > 0) context.scale(-1, 1);
   context.fillStyle = VIOLET_STYLE.hairShadow;
   context.beginPath();
   context.moveTo(5, -191);
@@ -1768,6 +1875,7 @@ function drawVioletFrontHair(context, time, motion, detail) {
   context.moveTo(21, -184);
   context.bezierCurveTo(27, -177, 29, -168, 29, -159);
   context.stroke();
+  context.restore();
 
   const lift = motion.hairLift;
   drawVioletWisp(context, -31, -174, -46, -184 - lift, -43, -160 + lift * 0.25, 2.6);
@@ -1897,6 +2005,10 @@ function drawVioletCollar(context, trim) {
 }
 
 function drawNpcLegs(context, kind, palette, pose = 'idle', time = 0) {
+  if (kind === 'guide') {
+    drawGuideLegs(context, pose, time);
+    return;
+  }
   if (kind === 'wandmaker') {
     drawWandmakerLegs(context, pose, time);
     return;
@@ -1942,6 +2054,55 @@ function drawNpcLegs(context, kind, palette, pose = 'idle', time = 0) {
   }
 }
 
+function drawGuideLegs(context, pose = 'idle', time = 0) {
+  const stride = pose === 'walking' ? Math.sin(time * 7.6) * 6 : 0;
+  for (const side of [-1, 1]) {
+    const step = stride * side;
+    context.save();
+    context.scale(side, 1);
+    context.globalAlpha = side < 0 ? 0.9 : 1;
+
+    context.fillStyle = HAGRID_STYLE.coatDeep;
+    context.beginPath();
+    context.moveTo(14, -20);
+    context.bezierCurveTo(20, -18, 30, -13, 32 + step * 0.25, 1);
+    context.bezierCurveTo(33 + step * 0.55, 9, 35 + step, 16, 34 + step, 20);
+    context.bezierCurveTo(28 + step, 25, 18 + step, 24, 14 + step, 19);
+    context.bezierCurveTo(16 + step * 0.35, 7, 11, -8, 14, -20);
+    context.closePath();
+    fillStroke(context, 2.15);
+
+    context.fillStyle = HAGRID_STYLE.bootBase;
+    context.beginPath();
+    context.moveTo(13 + step, 9);
+    context.bezierCurveTo(21 + step, 7, 31 + step, 10, 36 + step, 14);
+    context.bezierCurveTo(45 + step, 15, 54 + step, 18, 58 + step, 22);
+    context.bezierCurveTo(56 + step, 27, 41 + step, 29, 21 + step, 28);
+    context.bezierCurveTo(11 + step, 27, 7 + step, 20, 13 + step, 9);
+    context.closePath();
+    fillStroke(context, 2.4);
+
+    context.fillStyle = HAGRID_STYLE.bootShadow;
+    context.beginPath();
+    context.moveTo(10 + step, 22);
+    context.bezierCurveTo(24 + step, 25, 43 + step, 27, 57 + step, 22);
+    context.bezierCurveTo(55 + step, 28, 40 + step, 29, 21 + step, 28);
+    context.bezierCurveTo(14 + step, 28, 10 + step, 25, 10 + step, 22);
+    context.closePath();
+    context.fill();
+
+    context.strokeStyle = HAGRID_STYLE.bootLight;
+    context.lineWidth = 1.7;
+    context.beginPath();
+    context.moveTo(17 + step, 15);
+    context.bezierCurveTo(28 + step, 12, 39 + step, 16, 47 + step, 20);
+    context.moveTo(18 + step, 21);
+    context.bezierCurveTo(29 + step, 19, 39 + step, 22, 47 + step, 25);
+    context.stroke();
+    context.restore();
+  }
+}
+
 function drawWandmakerLegs(context, pose, time) {
   const stride = pose === 'walking' ? Math.sin(time * 7.6) * 5 : 0;
   for (const side of [-1, 1]) {
@@ -1981,7 +2142,11 @@ function drawWandmakerLegs(context, pose, time) {
   }
 }
 
-function drawNpcBackDetails(context, kind, palette) {
+function drawNpcBackDetails(context, kind, palette, { lightDirection = -1 } = {}) {
+  if (kind === 'guide') {
+    drawGuideBackHair(context, lightDirection);
+    return;
+  }
   if (kind === 'tailor') {
     drawTailorBackHair(context);
     return;
@@ -2097,7 +2262,62 @@ function drawNpcBackDetails(context, kind, palette) {
   }
 }
 
-function drawNpcBody(context, kind, palette) {
+function drawGuideBackHair(context, lightDirection = -1) {
+  context.fillStyle = HAGRID_STYLE.hairBase;
+  context.beginPath();
+  context.moveTo(-8, -207);
+  context.bezierCurveTo(-38, -211, -61, -193, -61, -166);
+  context.bezierCurveTo(-70, -151, -68, -131, -58, -118);
+  context.bezierCurveTo(-49, -107, -39, -110, -34, -121);
+  context.bezierCurveTo(-27, -109, -17, -109, -10, -123);
+  context.bezierCurveTo(0, -111, 11, -111, 18, -125);
+  context.bezierCurveTo(29, -111, 43, -112, 51, -126);
+  context.bezierCurveTo(67, -139, 67, -161, 58, -176);
+  context.bezierCurveTo(54, -198, 23, -211, -8, -207);
+  context.closePath();
+  fillStroke(context, 2.4);
+
+  context.save();
+  if (lightDirection > 0) context.scale(-1, 1);
+  context.fillStyle = HAGRID_STYLE.hairShadow;
+  context.beginPath();
+  context.moveTo(5, -207);
+  context.bezierCurveTo(37, -210, 59, -191, 59, -171);
+  context.bezierCurveTo(68, -151, 59, -130, 47, -120);
+  context.bezierCurveTo(37, -111, 27, -115, 20, -128);
+  context.bezierCurveTo(24, -154, 20, -183, 5, -207);
+  context.closePath();
+  context.fill();
+
+  context.fillStyle = HAGRID_STYLE.hairMid;
+  context.beginPath();
+  context.moveTo(-48, -184);
+  context.bezierCurveTo(-60, -165, -57, -140, -46, -124);
+  context.bezierCurveTo(-39, -114, -32, -116, -28, -126);
+  context.bezierCurveTo(-35, -148, -28, -179, -14, -199);
+  context.bezierCurveTo(-28, -202, -42, -196, -48, -184);
+  context.closePath();
+  context.fill();
+
+  context.strokeStyle = HAGRID_STYLE.hairLight;
+  context.lineWidth = 1.65;
+  context.beginPath();
+  for (const [x, bend, endY] of [
+    [-45, -7, -127], [-31, 5, -121], [-16, -5, -126],
+    [2, 6, -126], [20, -5, -128], [39, 6, -126],
+  ]) {
+    context.moveTo(x, -197 + Math.abs(x) * 0.12);
+    context.bezierCurveTo(x + bend, -179, x - bend * 0.45, -148, x + bend * 0.2, endY);
+  }
+  context.stroke();
+  context.restore();
+}
+
+function drawNpcBody(context, kind, palette, { lightDirection = -1 } = {}) {
+  if (kind === 'guide') {
+    drawGuideBody(context, lightDirection);
+    return;
+  }
   if (kind === 'wandmaker') {
     drawWandmakerBody(context);
     return;
@@ -2185,6 +2405,144 @@ function drawNpcBody(context, kind, palette) {
   context.fill();
 
   drawNpcGarmentDetails(context, kind, palette, { shoulder, hem, top });
+}
+
+function drawGuideBody(context, lightDirection = -1) {
+  context.fillStyle = HAGRID_STYLE.coatBase;
+  context.beginPath();
+  context.moveTo(-47, -120);
+  context.bezierCurveTo(-63, -121, -73, -107, -70, -91);
+  context.bezierCurveTo(-75, -70, -79, -36, -78, -8);
+  context.bezierCurveTo(-65, 1, -43, 7, -22, 5);
+  context.bezierCurveTo(-9, 11, 5, 10, 17, 6);
+  context.bezierCurveTo(38, 10, 62, 3, 78, -7);
+  context.bezierCurveTo(79, -35, 74, -70, 70, -93);
+  context.bezierCurveTo(72, -109, 61, -121, 46, -119);
+  context.bezierCurveTo(21, -128, -23, -129, -47, -120);
+  context.closePath();
+  fillStroke(context, 2.35);
+
+  context.save();
+  if (lightDirection > 0) context.scale(-1, 1);
+  context.fillStyle = HAGRID_STYLE.coatShadow;
+  context.beginPath();
+  context.moveTo(5, -124);
+  context.bezierCurveTo(35, -127, 63, -116, 68, -94);
+  context.bezierCurveTo(74, -68, 79, -34, 77, -8);
+  context.bezierCurveTo(62, 2, 39, 8, 17, 5);
+  context.bezierCurveTo(25, -32, 20, -83, 5, -124);
+  context.closePath();
+  context.fill();
+
+  context.fillStyle = HAGRID_STYLE.coatMid;
+  context.beginPath();
+  context.moveTo(-43, -116);
+  context.bezierCurveTo(-61, -105, -66, -81, -63, -58);
+  context.bezierCurveTo(-69, -38, -74, -20, -74, -8);
+  context.bezierCurveTo(-58, -1, -43, 4, -29, 3);
+  context.bezierCurveTo(-32, -31, -29, -81, -14, -121);
+  context.bezierCurveTo(-25, -124, -36, -121, -43, -116);
+  context.closePath();
+  context.fill();
+
+  context.fillStyle = HAGRID_STYLE.coatHighlight;
+  context.beginPath();
+  context.moveTo(-55, -106);
+  context.bezierCurveTo(-66, -87, -63, -61, -67, -39);
+  context.bezierCurveTo(-70, -24, -72, -15, -71, -9);
+  context.bezierCurveTo(-60, -4, -52, -2, -45, -2);
+  context.bezierCurveTo(-48, -35, -43, -79, -55, -106);
+  context.closePath();
+  context.fill();
+  context.restore();
+
+  context.fillStyle = HAGRID_STYLE.coatDeep;
+  context.beginPath();
+  context.moveTo(-34, -114);
+  context.bezierCurveTo(-23, -104, -13, -90, -2, -76);
+  context.bezierCurveTo(8, -91, 20, -104, 34, -114);
+  context.bezierCurveTo(23, -119, 12, -122, 1, -121);
+  context.bezierCurveTo(-11, -123, -23, -120, -34, -114);
+  context.closePath();
+  context.fill();
+
+  context.strokeStyle = HAGRID_STYLE.coatLight;
+  context.lineWidth = 2.3;
+  context.beginPath();
+  context.moveTo(-33, -114);
+  context.bezierCurveTo(-21, -102, -12, -87, -2, -76);
+  context.moveTo(34, -114);
+  context.bezierCurveTo(22, -102, 11, -87, -2, -76);
+  context.stroke();
+
+  context.strokeStyle = HAGRID_STYLE.coatDeep;
+  context.lineWidth = 7;
+  context.beginPath();
+  context.moveTo(-67, -50);
+  context.bezierCurveTo(-31, -45, 30, -43, 69, -50);
+  context.stroke();
+  context.strokeStyle = HAGRID_STYLE.coatLight;
+  context.lineWidth = 1.45;
+  context.beginPath();
+  context.moveTo(-64, -53);
+  context.bezierCurveTo(-28, -48, 28, -47, 66, -53);
+  context.stroke();
+
+  for (const side of [-1, 1]) drawGuideCoatPocket(context, side, lightDirection);
+
+  context.save();
+  if (lightDirection > 0) context.scale(-1, 1);
+  context.strokeStyle = 'rgba(226, 190, 137, 0.3)';
+  context.lineWidth = 1.25;
+  context.beginPath();
+  context.moveTo(-49, -92);
+  context.bezierCurveTo(-55, -63, -53, -30, -57, -6);
+  context.moveTo(-20, -70);
+  context.bezierCurveTo(-25, -49, -22, -21, -27, 4);
+  context.stroke();
+  context.strokeStyle = 'rgba(33, 25, 24, 0.38)';
+  context.lineWidth = 2.3;
+  context.beginPath();
+  context.moveTo(23, -73);
+  context.bezierCurveTo(31, -49, 28, -20, 36, 3);
+  context.moveTo(54, -92);
+  context.bezierCurveTo(63, -64, 61, -32, 66, -7);
+  context.stroke();
+  context.restore();
+
+  context.fillStyle = WARM_BOUNCE;
+  context.beginPath();
+  context.moveTo(-75, -10);
+  context.bezierCurveTo(-43, 2, -15, 5, -2, 7);
+  context.bezierCurveTo(22, 11, 52, 3, 76, -9);
+  context.bezierCurveTo(54, 8, 20, 15, -3, 12);
+  context.bezierCurveTo(-28, 14, -58, 7, -78, -7);
+  context.closePath();
+  context.fill();
+}
+
+function drawGuideCoatPocket(context, side, lightDirection = -1) {
+  context.save();
+  context.scale(side, 1);
+  context.fillStyle = side === lightDirection ? HAGRID_STYLE.coatMid : HAGRID_STYLE.coatShadow;
+  context.beginPath();
+  context.moveTo(30, -37);
+  context.bezierCurveTo(40, -42, 55, -40, 62, -35);
+  context.bezierCurveTo(64, -27, 62, -17, 58, -11);
+  context.bezierCurveTo(47, -7, 36, -10, 31, -16);
+  context.bezierCurveTo(29, -23, 28, -31, 30, -37);
+  context.closePath();
+  context.fill();
+  context.strokeStyle = HAGRID_STYLE.coatLight;
+  context.lineWidth = 1.45;
+  context.stroke();
+  context.strokeStyle = 'rgba(243, 209, 158, 0.22)';
+  context.lineWidth = 0.95;
+  context.beginPath();
+  context.moveTo(34, -34);
+  context.bezierCurveTo(43, -37, 53, -36, 59, -32);
+  context.stroke();
+  context.restore();
 }
 
 function drawWandmakerBody(context) {
@@ -2533,9 +2891,16 @@ function drawNpcGarmentDetails(context, kind, palette, { shoulder, hem, top }) {
   context.restore();
 }
 
-function drawNpcArms(context, kind, palette, time, pose = 'idle', { reducedMotion = false } = {}) {
-  if (kind === 'guide' && pose === 'beckon') {
-    drawGuideBeckonArms(context, palette, time, { reducedMotion });
+function drawNpcArms(
+  context,
+  kind,
+  palette,
+  time,
+  pose = 'idle',
+  { reducedMotion = false, lightDirection = -1 } = {},
+) {
+  if (kind === 'guide') {
+    drawGuideArms(context, time, pose, { reducedMotion, lightDirection });
     return;
   }
   if (kind === 'wandmaker') {
@@ -2595,6 +2960,97 @@ function drawNpcArms(context, kind, palette, time, pose = 'idle', { reducedMotio
     context.stroke();
     context.restore();
     drawHand(context, side * (shoulderX + 7 + sway), handY + 7, palette.skin, broad ? 9 : 7.5);
+  }
+}
+
+function drawGuideArms(
+  context,
+  time,
+  pose = 'idle',
+  { reducedMotion = false, lightDirection = -1 } = {},
+) {
+  const energy = reducedMotion ? 0.32 : 1;
+  const walk = pose === 'walking' ? Math.sin(time * 7.6) * 5 * energy : 0;
+  const beckon = pose === 'beckon'
+    ? (reducedMotion ? 0.5 : 0.5 + Math.sin(time * 3.4) * 0.5)
+    : 0;
+
+  for (const side of [-1, 1]) {
+    const raised = pose === 'beckon' && side > 0;
+    const swing = walk * -side;
+    const elbowX = raised ? 70 : 65;
+    const elbowY = raised ? -91 : -72 + swing * 0.45;
+    const wristX = raised ? 88 + beckon * 4 : 61;
+    const wristY = raised ? -117 - beckon * 5 : -38 + swing;
+    const lit = side === lightDirection;
+
+    context.save();
+    context.scale(side, 1);
+    context.globalAlpha = side < 0 ? 0.94 : 1;
+
+    context.fillStyle = lit ? HAGRID_STYLE.coatMid : HAGRID_STYLE.coatBase;
+    context.beginPath();
+    context.moveTo(36, -112);
+    context.bezierCurveTo(50, -119, 64, -110, elbowX + 7, elbowY - 7);
+    context.bezierCurveTo(elbowX + 11, elbowY, elbowX + 7, elbowY + 9, elbowX, elbowY + 11);
+    context.bezierCurveTo(57, elbowY + 7, 46, -89, 36, -112);
+    context.closePath();
+    fillStroke(context, 2.2);
+
+    context.fillStyle = lit ? HAGRID_STYLE.coatMid : HAGRID_STYLE.coatShadow;
+    context.beginPath();
+    context.moveTo(elbowX - 3, elbowY - 7);
+    context.bezierCurveTo(
+      elbowX + 6,
+      elbowY - 10,
+      wristX + 8,
+      wristY - 8,
+      wristX + 9,
+      wristY - 1,
+    );
+    context.bezierCurveTo(wristX + 7, wristY + 7, wristX - 4, wristY + 9, wristX - 10, wristY + 3);
+    context.bezierCurveTo(
+      wristX - 8,
+      wristY - 7,
+      elbowX - 1,
+      elbowY + 9,
+      elbowX - 3,
+      elbowY - 7,
+    );
+    context.closePath();
+    fillStroke(context, 2.15);
+
+    context.fillStyle = lit ? HAGRID_STYLE.coatHighlight : 'rgba(28, 22, 22, 0.18)';
+    context.beginPath();
+    context.moveTo(42, -109);
+    context.bezierCurveTo(54, -109, 63, -99, elbowX + 4, elbowY - 4);
+    context.bezierCurveTo(elbowX + 5, elbowY + 1, elbowX + 2, elbowY + 4, elbowX - 1, elbowY + 4);
+    context.bezierCurveTo(56, elbowY - 1, 49, -94, 42, -109);
+    context.closePath();
+    context.fill();
+
+    context.strokeStyle = HAGRID_STYLE.coatLight;
+    context.lineWidth = 2.25;
+    context.beginPath();
+    context.moveTo(wristX + 7, wristY);
+    context.bezierCurveTo(wristX + 3, wristY + 6, wristX - 4, wristY + 7, wristX - 9, wristY + 3);
+    context.stroke();
+
+    context.strokeStyle = 'rgba(38, 28, 27, 0.38)';
+    context.lineWidth = 1.05;
+    context.beginPath();
+    context.moveTo(elbowX - 5, elbowY + 2);
+    context.bezierCurveTo(elbowX - 1, elbowY + 6, elbowX + 4, elbowY + 5, elbowX + 7, elbowY + 1);
+    context.stroke();
+
+    drawHand(context, wristX, wristY + 12, HAGRID_STYLE.skin, raised ? 10.5 : 9.6);
+    context.strokeStyle = HAGRID_STYLE.skinLight;
+    context.lineWidth = 1.05;
+    context.beginPath();
+    context.moveTo(wristX - 3, wristY + 9);
+    context.bezierCurveTo(wristX + 1, wristY + 7, wristX + 6, wristY + 9, wristX + 7, wristY + 12);
+    context.stroke();
+    context.restore();
   }
 }
 
@@ -2748,7 +3204,121 @@ function drawGuideBeckonArms(context, palette, time, { reducedMotion = false } =
   }
 }
 
-function drawGuideHead(context, palette, blinking, time) {
+function drawGuideHead(context, palette, blinking, time, lightDirection = -1) {
+  const headY = -158;
+  drawGuideEar(context, -41, headY, palette.skin, -1);
+  drawGuideEar(context, 42, headY + 1, palette.skin, 1);
+
+  context.fillStyle = HAGRID_STYLE.skin;
+  context.beginPath();
+  context.moveTo(-6, -200);
+  context.bezierCurveTo(-30, -202, -44, -187, -44, -165);
+  context.bezierCurveTo(-48, -145, -37, -121, -17, -112);
+  context.bezierCurveTo(-2, -105, 22, -111, 35, -127);
+  context.bezierCurveTo(49, -144, 46, -174, 37, -188);
+  context.bezierCurveTo(27, -201, 9, -204, -6, -200);
+  context.closePath();
+  fillStroke(context, 2.35);
+
+  context.save();
+  if (lightDirection > 0) context.scale(-1, 1);
+  context.fillStyle = HAGRID_STYLE.skinShadow;
+  context.globalAlpha = 0.42;
+  context.beginPath();
+  context.moveTo(7, -198);
+  context.bezierCurveTo(32, -195, 44, -178, 40, -156);
+  context.bezierCurveTo(43, -140, 31, -119, 14, -113);
+  context.bezierCurveTo(19, -137, 17, -174, 7, -198);
+  context.closePath();
+  context.fill();
+  context.globalAlpha = 1;
+
+  context.fillStyle = HAGRID_STYLE.skinLight;
+  context.beginPath();
+  context.moveTo(-29, -184);
+  context.bezierCurveTo(-21, -196, -7, -198, 3, -192);
+  context.bezierCurveTo(-9, -184, -17, -171, -20, -158);
+  context.bezierCurveTo(-29, -160, -34, -174, -29, -184);
+  context.closePath();
+  context.fill();
+  context.restore();
+
+  context.fillStyle = 'rgba(183, 83, 75, 0.25)';
+  for (const side of [-1, 1]) {
+    context.save();
+    context.scale(side, 1);
+    context.beginPath();
+    context.moveTo(17, -141);
+    context.bezierCurveTo(23, -148, 35, -147, 38, -139);
+    context.bezierCurveTo(33, -133, 23, -132, 17, -137);
+    context.bezierCurveTo(15, -139, 15, -140, 17, -141);
+    context.closePath();
+    context.fill();
+    context.restore();
+  }
+
+  drawRuggedEyes(
+    context,
+    headY - 2,
+    blinking,
+    Math.sin(time * 0.62 + 5) * 1.1,
+    Math.sin(time * 0.39 + 3.5) * 0.55,
+  );
+
+  context.fillStyle = HAGRID_STYLE.skinShadow;
+  context.beginPath();
+  context.moveTo(-4, -160);
+  context.bezierCurveTo(-9, -151, -10, -140, -5, -135);
+  context.bezierCurveTo(1, -131, 9, -134, 10, -141);
+  context.bezierCurveTo(8, -148, 5, -157, -4, -160);
+  context.closePath();
+  fillStroke(context, 1.35);
+  context.strokeStyle = HAGRID_STYLE.skinLight;
+  context.lineWidth = 1;
+  context.beginPath();
+  context.moveTo(-3, -156);
+  context.bezierCurveTo(-6, -149, -5, -141, -1, -138);
+  context.stroke();
+
+  context.fillStyle = HAGRID_STYLE.hairBase;
+  context.beginPath();
+  context.moveTo(-44, -166);
+  context.bezierCurveTo(-47, -187, -31, -204, -12, -202);
+  context.bezierCurveTo(-1, -211, 13, -205, 19, -201);
+  context.bezierCurveTo(34, -202, 46, -187, 42, -167);
+  context.bezierCurveTo(34, -176, 27, -177, 22, -168);
+  context.bezierCurveTo(15, -180, 7, -178, 1, -169);
+  context.bezierCurveTo(-8, -182, -17, -178, -23, -167);
+  context.bezierCurveTo(-32, -176, -39, -174, -44, -166);
+  context.closePath();
+  fillStroke(context, 2.15);
+
+  context.save();
+  if (lightDirection > 0) context.scale(-1, 1);
+  drawGuideHairLock(context, -39, -184, -24, -201, -20, -168, HAGRID_STYLE.hairMid);
+  drawGuideHairLock(context, -18, -200, -4, -207, 0, -170, HAGRID_STYLE.hairLight);
+  drawGuideHairLock(context, 9, -202, 29, -198, 24, -168, HAGRID_STYLE.hairShadow);
+  context.restore();
+}
+
+function drawGuideHairLock(context, startX, startY, bendX, bendY, endY, color) {
+  context.fillStyle = color;
+  context.beginPath();
+  context.moveTo(startX, startY);
+  context.bezierCurveTo(bendX, bendY, bendX + 7, endY - 12, startX + 13, endY);
+  context.bezierCurveTo(startX + 6, endY - 3, startX + 1, endY - 10, startX - 4, startY + 5);
+  context.bezierCurveTo(startX - 3, startY + 2, startX - 1, startY + 1, startX, startY);
+  context.closePath();
+  context.fill();
+  context.strokeStyle = HAGRID_STYLE.hairLight;
+  context.lineWidth = 0.85;
+  context.beginPath();
+  context.moveTo(startX + 1, startY + 1);
+  context.bezierCurveTo(bendX + 1, bendY + 3, bendX + 4, endY - 8, startX + 9, endY - 2);
+  context.stroke();
+}
+
+function drawLegacyGuideHead(context, palette, blinking, time) {
   const headY = -157;
 
   drawGuideEar(context, -43, headY, palette.skin, -1);
@@ -2885,29 +3455,35 @@ function drawGuideEar(context, x, y, color, side) {
 
 function drawGuideMouth(context, pose, time) {
   const speaking = pose === 'speaking';
-  const open = speaking ? 2.5 + Math.abs(Math.sin(time * 8.4)) * 3.4 : 0;
+  const open = speaking ? 3 + Math.abs(Math.sin(time * 8.4)) * 3.6 : 0;
   if (speaking) {
-    context.fillStyle = '#6f3d3e';
+    context.fillStyle = '#713e3e';
     context.beginPath();
-    context.moveTo(-9, -126);
-    context.bezierCurveTo(-5, -130 - open * 0.2, 5, -130 - open * 0.1, 10, -126);
-    context.bezierCurveTo(6, -120 + open, -4, -120 + open, -9, -126);
+    context.moveTo(-11, -126);
+    context.bezierCurveTo(-6, -131 - open * 0.2, 6, -131 - open * 0.1, 11, -126);
+    context.bezierCurveTo(7, -119 + open, -5, -119 + open, -11, -126);
     context.closePath();
-    fillStroke(context, 1.3);
-    context.fillStyle = 'rgba(230, 141, 132, 0.64)';
+    fillStroke(context, 1.45);
+    context.fillStyle = 'rgba(238, 153, 139, 0.72)';
     context.beginPath();
-    context.moveTo(-5, -123 + open * 0.45);
-    context.quadraticCurveTo(1, -120 + open, 6, -123 + open * 0.5);
-    context.quadraticCurveTo(0, -121 + open * 0.25, -5, -123 + open * 0.45);
+    context.moveTo(-6, -122 + open * 0.45);
+    context.bezierCurveTo(-2, -119 + open, 3, -119 + open, 7, -122 + open * 0.48);
+    context.bezierCurveTo(2, -120 + open * 0.22, -2, -120 + open * 0.2, -6, -122 + open * 0.45);
     context.closePath();
     context.fill();
     return;
   }
-  context.strokeStyle = '#754641';
-  context.lineWidth = 2;
+  context.strokeStyle = '#874f47';
+  context.lineWidth = 2.5;
   context.beginPath();
-  context.moveTo(-9, -126);
-  context.bezierCurveTo(-3, -121, 4, -121, 10, -127);
+  context.moveTo(-11, -126);
+  context.bezierCurveTo(-5, -119, 5, -119, 11, -127);
+  context.stroke();
+  context.strokeStyle = 'rgba(255, 206, 178, 0.34)';
+  context.lineWidth = 0.9;
+  context.beginPath();
+  context.moveTo(-7, -124);
+  context.bezierCurveTo(-2, -121, 3, -121, 7, -124);
   context.stroke();
 }
 
@@ -2918,10 +3494,10 @@ function drawNpcHead(
   blinking,
   time,
   pose = 'idle',
-  { reducedMotion = false } = {},
+  { reducedMotion = false, lightDirection = -1 } = {},
 ) {
   if (kind === 'guide') {
-    drawGuideHead(context, palette, blinking, time);
+    drawGuideHead(context, palette, blinking, time, lightDirection);
     return;
   }
   if (kind === 'wandmaker') {
@@ -3470,14 +4046,94 @@ function drawNpcHairPlanes(context, kind, palette, headY, rx, ry) {
   context.restore();
 }
 
+function drawGuideFacialHair(context, lightDirection = -1) {
+  context.fillStyle = HAGRID_STYLE.beardBase;
+  context.beginPath();
+  context.moveTo(-34, -143);
+  context.bezierCurveTo(-40, -128, -34, -111, -23, -102);
+  context.bezierCurveTo(-21, -94, -16, -88, -10, -94);
+  context.bezierCurveTo(-7, -87, -2, -82, 2, -91);
+  context.bezierCurveTo(8, -83, 14, -89, 16, -98);
+  context.bezierCurveTo(27, -105, 35, -124, 33, -143);
+  context.bezierCurveTo(23, -135, 13, -134, 3, -137);
+  context.bezierCurveTo(-8, -133, -22, -135, -34, -143);
+  context.closePath();
+  fillStroke(context, 2.05);
+
+  context.save();
+  if (lightDirection > 0) context.scale(-1, 1);
+  context.fillStyle = HAGRID_STYLE.beardShadow;
+  context.beginPath();
+  context.moveTo(2, -136);
+  context.bezierCurveTo(19, -135, 31, -138, 33, -142);
+  context.bezierCurveTo(36, -122, 27, -105, 17, -98);
+  context.bezierCurveTo(13, -88, 8, -84, 2, -91);
+  context.bezierCurveTo(8, -106, 9, -122, 2, -136);
+  context.closePath();
+  context.fill();
+
+  context.fillStyle = HAGRID_STYLE.beardMid;
+  context.beginPath();
+  context.moveTo(-31, -136);
+  context.bezierCurveTo(-34, -121, -28, -108, -20, -101);
+  context.bezierCurveTo(-18, -94, -14, -91, -11, -96);
+  context.bezierCurveTo(-15, -112, -12, -128, -7, -137);
+  context.bezierCurveTo(-16, -133, -24, -133, -31, -136);
+  context.closePath();
+  context.fill();
+
+  context.strokeStyle = HAGRID_STYLE.beardLight;
+  context.lineWidth = 1.45;
+  context.beginPath();
+  for (const [x, bend, endY] of [
+    [-27, -4, -104], [-17, 4, -96], [-7, -3, -91],
+    [4, 3, -92], [14, -3, -98], [25, 4, -106],
+  ]) {
+    context.moveTo(x, -132 + Math.abs(x) * 0.12);
+    context.bezierCurveTo(x + bend, -121, x - bend * 0.4, -108, x + bend * 0.18, endY);
+  }
+  context.stroke();
+  context.restore();
+
+  context.fillStyle = HAGRID_STYLE.beardMid;
+  context.beginPath();
+  context.moveTo(-30, -144);
+  context.bezierCurveTo(-23, -153, -11, -151, -2, -143);
+  context.bezierCurveTo(-9, -134, -21, -132, -29, -137);
+  context.bezierCurveTo(-32, -139, -32, -142, -30, -144);
+  context.closePath();
+  context.moveTo(30, -144);
+  context.bezierCurveTo(23, -153, 11, -151, 2, -143);
+  context.bezierCurveTo(9, -134, 21, -132, 29, -137);
+  context.bezierCurveTo(32, -139, 32, -142, 30, -144);
+  context.closePath();
+  context.fill();
+  context.strokeStyle = HAGRID_STYLE.beardShadow;
+  context.lineWidth = 1.25;
+  context.stroke();
+
+  context.strokeStyle = HAGRID_STYLE.beardLight;
+  context.lineWidth = 0.95;
+  context.beginPath();
+  context.moveTo(-25, -144);
+  context.bezierCurveTo(-18, -148, -10, -146, -4, -141);
+  context.moveTo(25, -144);
+  context.bezierCurveTo(18, -148, 10, -146, 4, -141);
+  context.stroke();
+}
+
 function drawNpcAccessory(
   context,
   kind,
   palette,
   time = 0,
   pose = 'idle',
-  { reducedMotion = false } = {},
+  { reducedMotion = false, lightDirection = -1 } = {},
 ) {
+  if (kind === 'guide') {
+    drawGuideFacialHair(context, lightDirection);
+    return;
+  }
   if (kind === 'tailor') {
     drawTailorAccessories(context, time, pose, { reducedMotion });
     return;
@@ -6106,15 +6762,26 @@ function drawUpperLeftRim(context, points, width) {
   context.stroke();
 }
 
-function drawVioletWarmRim(context, motion, facingDirection, outfit) {
+function drawVioletWarmRim(context, motion, facingDirection, outfit, lightSide = 'left') {
   context.save();
-  if (facingDirection < 0) context.scale(-1, 1);
+  const screenLightDirection = lightSide === 'right' ? 1 : -1;
+  if (screenLightDirection * facingDirection > 0) context.scale(-1, 1);
   context.strokeStyle = 'rgba(255, 224, 158, 0.44)';
   context.lineWidth = 1.45;
+  context.save();
+  if (outfit === 'casual') {
+    context.translate(0, -101);
+    context.scale(0.84, 0.84);
+    context.translate(0, 101);
+  }
   context.beginPath();
   context.moveTo(-42, -153);
   context.bezierCurveTo(-43, -174, -28, -191, -9, -195 - motion.hairLift * 0.2);
   context.bezierCurveTo(-4, -196, 1, -196, 6, -194);
+  context.stroke();
+  context.restore();
+
+  context.beginPath();
   if (outfit === 'casual') {
     context.moveTo(-38, -94);
     context.bezierCurveTo(-45, -88, -47, -76, -41, -68);
@@ -6132,10 +6799,17 @@ function drawVioletWarmRim(context, motion, facingDirection, outfit) {
 
   context.strokeStyle = VIOLET_STYLE.hairRim;
   context.lineWidth = 0.8;
+  context.save();
+  if (outfit === 'casual') {
+    context.translate(0, -101);
+    context.scale(0.84, 0.84);
+    context.translate(0, 101);
+  }
   context.beginPath();
   context.moveTo(-37, -157);
   context.bezierCurveTo(-38, -176, -24, -190, -8, -192 - motion.hairLift * 0.12);
   context.stroke();
+  context.restore();
   context.restore();
 }
 
@@ -6213,7 +6887,10 @@ function drawKeeperWarmRim(context, facingDirection) {
   context.restore();
 }
 
-function drawGuideWarmRim(context) {
+function drawGuideWarmRim(context, facingDirection, lightSide = 'left') {
+  context.save();
+  const screenLightDirection = lightSide === 'right' ? 1 : -1;
+  if (screenLightDirection * facingDirection > 0) context.scale(-1, 1);
   context.strokeStyle = HAGRID_STYLE.rim;
   context.lineWidth = 2.1;
   context.beginPath();
@@ -6233,6 +6910,7 @@ function drawGuideWarmRim(context) {
   context.moveTo(-58, -94);
   context.bezierCurveTo(-65, -68, -68, -35, -69, -12);
   context.stroke();
+  context.restore();
 }
 
 function fillStroke(context, lineWidth = null) {

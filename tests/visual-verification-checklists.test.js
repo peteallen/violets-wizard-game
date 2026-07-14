@@ -32,7 +32,7 @@ describe('visual verification checklists', () => {
     expect(STORYBOOK_STANDARD_CHECKS.join(' ')).toMatch(/Palette.*pure-black.*pure-white/s);
     expect(STORYBOOK_STANDARD_CHECKS.join(' ')).toMatch(/Line.*two line weights/s);
     expect(STORYBOOK_STANDARD_CHECKS.join(' ')).toMatch(/Form.*two tones.*highlight/s);
-    expect(STORYBOOK_STANDARD_CHECKS.join(' ')).toMatch(/Light.*warm upper-left.*rim/s);
+    expect(STORYBOOK_STANDARD_CHECKS.join(' ')).toMatch(/Light.*warm key-light.*matching the room.*rim/s);
     expect(STORYBOOK_STANDARD_CHECKS.join(' ')).toMatch(/Texture.*grain or material marks/s);
     expect(STORYBOOK_STANDARD_CHECKS.join(' ')).toMatch(/Shape.*zero perfect rectangles.*perfect circles.*ruler-straight/s);
     expect(STORYBOOK_STANDARD_CHECKS.join(' ')).toMatch(/Coherence.*thumbnail or squint.*reference/s);
@@ -79,5 +79,16 @@ describe('visual verification checklists', () => {
       expectCanonicalStorybookSection(checklist, scene);
     }
     expect(visualReviewChecklist('unregistered-review-scene')).toBeNull();
+  });
+
+  it('keeps the bedroom character-fidelity corrections in the live review contract', () => {
+    const bedroom = visualReviewChecklist('ui-dialogue-live-review').join(' ');
+    expect(bedroom).toMatch(/Hagrid.*coat sleeves.*hands.*boots.*separate shaded hair and beard/s);
+    expect(bedroom).toMatch(/Casual Violet.*three-tone soccer jersey.*joined shoulder.*elbow.*wrist/s);
+    expect(bedroom).toMatch(/contact shadows.*right-hand window/s);
+
+    const cast = visualReviewChecklist('character-cast-review').join(' ');
+    expect(cast).toMatch(/articulated limbs.*hands and shoes.*contact shadow/s);
+    expect(cast).toMatch(/Hagrid.*visible arms.*broad boots.*shaped coat.*moustache.*beard/s);
   });
 });

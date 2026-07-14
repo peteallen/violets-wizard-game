@@ -436,10 +436,11 @@ export function validateNpc(value, path = 'npc') {
 }
 
 function validateBackground(value, path) {
-  exactObject(value, path, ['layers', 'fit', 'focalPoint', 'variants']);
+  exactObject(value, path, ['layers', 'fit', 'focalPoint', 'variants'], ['keyLight']);
   stringArray(value.layers, `${path}.layers`, { min: 1, unique: true });
   oneOf(value.fit, ['cover', 'contain', 'stretch'], `${path}.fit`);
   validatePoint(value.focalPoint, `${path}.focalPoint`, { normalized: true });
+  if (value.keyLight !== undefined) oneOf(value.keyLight, ['left', 'right'], `${path}.keyLight`);
   record(value.variants, `${path}.variants`, (entry, entryPath) => {
     stringArray(entry, entryPath, { min: 1, unique: true });
   });

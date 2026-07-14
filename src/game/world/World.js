@@ -824,6 +824,7 @@ export class World {
       chapterId: this.chapter.id,
       sceneId: this.currentSceneId,
       roomId: this.roomId,
+      keyLight: this.room.background?.keyLight ?? 'left',
       roomVariant: resolveRoomVariant(
         this.room,
         this.flags['ch1.petNamed'] ? 'dusk' : 'base',

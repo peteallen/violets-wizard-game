@@ -24,6 +24,8 @@ describe('one-tap world interactions', () => {
   it('approaches and activates a highlighted hotspot from one tap', () => {
     const world = createWorld();
 
+    expect(world.snapshot().keyLight).toBe('right');
+
     const result = world.tap({ x: 1060, y: 210 });
 
     expect(result.id).toBe('bedroom.owl');
@@ -140,6 +142,7 @@ describe('one-tap world interactions', () => {
 
     const waiting = world.snapshot();
     expect(waiting.player.x).toBe(160);
+    expect(waiting.keyLight).toBe('left');
     expect(waiting.tapToWalkCue).toMatchObject({ stage: 'departed' });
     expect(waiting.occupants.some(({ npc }) => npc === 'npc.guide')).toBe(false);
     expect(waiting.targets.find(({ id }) => id === 'leaky.courtyardDoor')?.salience)

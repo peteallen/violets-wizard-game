@@ -203,28 +203,110 @@ describe('illustrated character renderer', () => {
 
     expect(world.calls).toEqual(replayed.calls);
     expect(world.depth).toBe(0);
-    expect(HAGRID_STYLE.worldScale).toBeGreaterThanOrEqual(1.7);
+    expect(HAGRID_STYLE.worldScale).toBeGreaterThanOrEqual(1.45);
+    expect(HAGRID_STYLE.worldScale).toBeLessThanOrEqual(1.55);
     expect(world.calls).toContainEqual(['scale', HAGRID_STYLE.worldScale, HAGRID_STYLE.worldScale]);
-    expect(world.calls.filter(([name]) => name === 'bezierCurveTo').length).toBeGreaterThan(80);
-    expect(world.calls.some(([name]) => name === 'ellipse' || name === 'arc')).toBe(false);
+    expect(world.calls.filter(([name]) => name === 'bezierCurveTo').length).toBeGreaterThan(145);
+    expect(world.calls.some(([name]) => [
+      'arc', 'ellipse', 'fillRect', 'lineTo', 'rect', 'roundRect', 'strokeRect',
+    ].includes(name))).toBe(false);
     expect(world.calls
       .filter(([name]) => ['moveTo', 'lineTo', 'quadraticCurveTo', 'bezierCurveTo'].includes(name))
       .every(([, ...values]) => values.every(Number.isFinite))).toBe(true);
     for (const style of [
       HAGRID_STYLE.coatBase,
+      HAGRID_STYLE.coatMid,
       HAGRID_STYLE.coatShadow,
+      HAGRID_STYLE.coatDeep,
+      HAGRID_STYLE.coatHighlight,
       HAGRID_STYLE.hairBase,
       HAGRID_STYLE.hairMid,
+      HAGRID_STYLE.hairShadow,
       HAGRID_STYLE.hairLight,
+      HAGRID_STYLE.beardBase,
+      HAGRID_STYLE.beardMid,
+      HAGRID_STYLE.beardShadow,
+      HAGRID_STYLE.beardLight,
+      HAGRID_STYLE.skin,
+      HAGRID_STYLE.skinShadow,
+      HAGRID_STYLE.skinLight,
+      HAGRID_STYLE.bootBase,
+      HAGRID_STYLE.bootShadow,
+      HAGRID_STYLE.bootLight,
       HAGRID_STYLE.rim,
     ]) expect(world.styles.some(([, value]) => value === style)).toBe(true);
+    expect(world.styles.filter(([property, style]) => (
+      property === 'fillStyle' && style === HAGRID_STYLE.skin
+    )).length).toBeGreaterThanOrEqual(5);
+    expect(world.calls.filter(([name, x, y]) => (
+      name === 'moveTo' && x === 36 && y === -112
+    ))).toHaveLength(2);
+    expect(world.calls.filter(([name, x, y]) => (
+      name === 'moveTo' && x === 62 && y === -79
+    ))).toHaveLength(2);
+    expect(world.calls.filter(([name, x, y]) => (
+      name === 'translate' && x === 61 && y === -26
+    ))).toHaveLength(2);
+    for (const shadow of [
+      'rgba(25,17,18,0.34)', 'rgba(43,27,22,0.3)', 'rgba(20,15,15,0.22)',
+    ]) expect(world.styles).toContainEqual(['fillStyle', shadow]);
 
     const portrait = recordingContext();
     renderer.drawPortrait(portrait, { speaker: 'Hagrid', pose: 'speaking', x: 80, y: 90 }, 1.375);
-    for (const style of [HAGRID_STYLE.hairBase, HAGRID_STYLE.hairMid, HAGRID_STYLE.rim]) {
+    for (const style of [
+      HAGRID_STYLE.hairBase,
+      HAGRID_STYLE.hairMid,
+      HAGRID_STYLE.beardBase,
+      HAGRID_STYLE.beardMid,
+      HAGRID_STYLE.rim,
+    ]) {
       expect(portrait.styles.some(([, value]) => value === style)).toBe(true);
     }
     expect(portrait.depth).toBe(0);
+  });
+
+  it('mirrors Violet and Hagrid’s painted light masses when the room key light is on the right', () => {
+    const renderer = new CharacterRenderer();
+    for (const character of [
+      { kind: 'violet', x: 0, y: 0, facing: 'right', outfit: 'casual' },
+      { kind: 'violet', x: 0, y: 0, facing: 'left', outfit: 'casual' },
+      { kind: 'guide', x: 0, y: 0, facing: 'right' },
+      { kind: 'guide', x: 0, y: 0, facing: 'left' },
+    ]) {
+      const defaultLeft = recordingContext();
+      const explicitLeft = recordingContext();
+      const right = recordingContext();
+      const replayedRight = recordingContext();
+      renderer.draw(defaultLeft, character, 1.125);
+      renderer.draw(explicitLeft, { ...character, lightSide: 'left' }, 1.125);
+      renderer.draw(right, { ...character, lightSide: 'right' }, 1.125);
+      renderer.draw(replayedRight, { ...character, lightSide: 'right' }, 1.125);
+
+      expect(defaultLeft.calls).toEqual(explicitLeft.calls);
+      expect(right.calls).toEqual(replayedRight.calls);
+      expect(right.calls).not.toEqual(defaultLeft.calls);
+      expect(right.styles).not.toEqual(defaultLeft.styles);
+      const rightMirrors = right.calls.filter(([name, x, y]) => (
+        name === 'scale' && x === -1 && y === 1
+      )).length;
+      const leftMirrors = defaultLeft.calls.filter(([name, x, y]) => (
+        name === 'scale' && x === -1 && y === 1
+      )).length;
+      if (character.facing === 'right') expect(rightMirrors).toBeGreaterThan(leftMirrors);
+      else expect(rightMirrors).toBeLessThan(leftMirrors);
+      expect(right.depth).toBe(0);
+    }
+
+    const leftPortrait = recordingContext();
+    const rightPortrait = recordingContext();
+    renderer.drawPortrait(leftPortrait, {
+      speaker: 'Hagrid', x: 0, y: 0, lightSide: 'left', reducedMotion: true,
+    }, 1.125);
+    renderer.drawPortrait(rightPortrait, {
+      speaker: 'Hagrid', x: 0, y: 0, lightSide: 'right', reducedMotion: true,
+    }, 1.125);
+    expect(rightPortrait.calls).not.toEqual(leftPortrait.calls);
+    expect(rightPortrait.depth).toBe(0);
   });
 
   it('renders the Wandmaker as one organic elderly puppet shared by world and portrait', () => {
@@ -519,9 +601,17 @@ describe('illustrated character renderer', () => {
       robeBase: '#26222e',
       lining: '#7a4fc9',
       shoeBase: '#6848a8',
-      casualJerseyBase: '#70539f',
-      casualJerseyTrim: '#d8c9e4',
-      casualLeggingBase: '#373342',
+      casualJerseyBase: '#5369a8',
+      casualJerseyMid: '#7489c2',
+      casualJerseyShadow: '#344571',
+      casualJerseyTrim: '#f0dfbd',
+      casualLeggingBase: '#383742',
+      casualLeggingShadow: '#24242c',
+      casualShoeBase: '#536d78',
+      casualShoeShadow: '#344851',
+      casualShoeLight: '#b9cbd0',
+      casualShoeAccent: '#846ab2',
+      casualShoeSole: '#e1d6c4',
     });
     const first = recordingContext();
     const repeated = recordingContext();
@@ -563,7 +653,7 @@ describe('illustrated character renderer', () => {
     expect(casual.calls).not.toEqual(defaultRobes.calls);
     expect(casual.calls.filter(([name]) => name === 'bezierCurveTo').length).toBeGreaterThan(145);
     expect(casual.calls.some(([name]) => [
-      'arc', 'ellipse', 'fillRect', 'rect', 'roundRect', 'strokeRect',
+      'arc', 'ellipse', 'fillRect', 'lineTo', 'rect', 'roundRect', 'strokeRect',
     ].includes(name))).toBe(false);
     expect(casual.calls.every(([, ...values]) => values.every(
       (value) => typeof value !== 'number' || Number.isFinite(value),
@@ -576,16 +666,42 @@ describe('illustrated character renderer', () => {
         ['fillStyle', VIOLET_STYLE.casualJerseyBase],
         ['fillStyle', VIOLET_STYLE.casualJerseyMid],
         ['fillStyle', VIOLET_STYLE.casualJerseyShadow],
+        ['fillStyle', VIOLET_STYLE.casualJerseyLight],
+        ['strokeStyle', VIOLET_STYLE.casualJerseyTrim],
         ['fillStyle', VIOLET_STYLE.casualLeggingBase],
+        ['fillStyle', VIOLET_STYLE.casualLeggingShadow],
+        ['fillStyle', VIOLET_STYLE.casualLeggingLight],
         ['fillStyle', VIOLET_STYLE.hairBase],
+        ['fillStyle', VIOLET_STYLE.hairShadow],
+        ['fillStyle', VIOLET_STYLE.hairLight],
+        ['fillStyle', VIOLET_STYLE.skinBase],
+        ['fillStyle', VIOLET_STYLE.skinShadow],
+        ['fillStyle', VIOLET_STYLE.skinLight],
         ['fillStyle', VIOLET_STYLE.iris],
         ['strokeStyle', VIOLET_STYLE.glasses],
-        ['fillStyle', VIOLET_STYLE.shoeBase],
+        ['strokeStyle', VIOLET_STYLE.glassesLight],
+        ['fillStyle', VIOLET_STYLE.casualShoeBase],
+        ['fillStyle', VIOLET_STYLE.casualShoeShadow],
+        ['strokeStyle', VIOLET_STYLE.casualShoeLight],
+        ['strokeStyle', VIOLET_STYLE.casualShoeAccent],
+        ['strokeStyle', VIOLET_STYLE.casualShoeSole],
       ]) expect(surface.styles).toContainEqual([property, style]);
       expect(surface.styles).not.toContainEqual(['fillStyle', VIOLET_STYLE.robeBase]);
       expect(surface.styles).not.toContainEqual(['fillStyle', VIOLET_STYLE.lining]);
       expect(surface.styles.filter(([, style]) => style === VIOLET_STYLE.iris)).toHaveLength(2);
+      expect(surface.calls.filter(([name, x, y]) => (
+        name === 'scale' && x === 0.84 && y === 0.84
+      ))).toHaveLength(4);
     }
+    expect(casual.styles.filter(([property, style]) => (
+      property === 'fillStyle' && style === VIOLET_STYLE.skinBase
+    )).length).toBeGreaterThanOrEqual(9);
+    expect(casual.calls.filter(([name, x, y]) => (
+      name === 'moveTo' && x === 32 && y === -81
+    ))).toHaveLength(2);
+    for (const shadow of [
+      'rgba(27,18,24,0.28)', 'rgba(45,27,22,0.25)', 'rgba(24,17,21,0.17)',
+    ]) expect(casual.styles).toContainEqual(['fillStyle', shadow]);
     expect(casual.styles.filter(([, style]) => style === VIOLET_STYLE.hairBase))
       .toHaveLength(defaultRobes.styles.filter(([, style]) => style === VIOLET_STYLE.hairBase).length);
   });

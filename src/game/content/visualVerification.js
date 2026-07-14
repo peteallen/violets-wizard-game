@@ -2,7 +2,7 @@ export const STORYBOOK_STANDARD_CHECKS = Object.freeze([
   '[Storybook Standard 1/7 · Palette] Every artwork color harmonizes with the room or reference palette, with zero pure-black or pure-white fills or strokes.',
   '[Storybook Standard 2/7 · Line] Every visible contour uses soft dark-brown ink, and each outlined subject shows at least two line weights.',
   '[Storybook Standard 3/7 · Form] Every material form shows at least two tones (base and shadow) plus one highlight where the key light reaches it.',
-  '[Storybook Standard 4/7 · Light] The scene uses exactly one warm upper-left key-light direction, with a lit-side rim on every character that is present.',
+  '[Storybook Standard 4/7 · Light] The scene uses exactly one warm key-light direction matching the room painting, with a lit-side rim on every character that is present.',
   '[Storybook Standard 5/7 · Texture] Every player-facing paper or material surface includes visible grain or material marks, leaving zero flat untextured surfaces.',
   '[Storybook Standard 6/7 · Shape] Player-facing silhouettes and surfaces contain zero perfect rectangles, perfect circles, or ruler-straight edges.',
   '[Storybook Standard 7/7 · Coherence] At thumbnail or squint scale, zero reviewed elements separate from the room or reference family in contrast, edge sharpness, or fidelity.',
@@ -106,6 +106,9 @@ const REVIEW_SCENE_ILLUSION_CHECKS = Object.freeze({
   ],
   'ui-dialogue-live-review': [
     'The live bedroom dialogue keeps Hagrid, his portrait, one parchment caption, and two 88×88 controls mutually separate against the painted room.',
+    'Hagrid reads as a grounded half-giant with visible coat sleeves, hands, boots, separate shaded hair and beard masses, and zero gold painted inside his silhouette.',
+    'Casual Violet reads as a long-limbed child in a three-tone soccer jersey, shaded leggings, and sneakers, with joined shoulder, elbow, wrist, and hand shapes.',
+    'Both bedroom characters cast visible contact shadows and place their highlight and rim on the side lit by the right-hand window.',
   ],
   'ui-dialogue-night-live-review': [
     'The live dusk-street dialogue keeps Hagrid, his portrait, one warm-dark parchment caption, and two 88×88 controls mutually separate and legible.',
@@ -150,6 +153,8 @@ const REVIEW_SCENE_ILLUSION_CHECKS = Object.freeze({
   'character-cast-review': [
     'Exactly five labeled, full-body cast members remain visually separated and readable at gameplay scale.',
     'Each cast member has two readable eyes with iris, pupil, catch-light, and lid shapes; hair and clothing remain distinct masses.',
+    'Every cast member has articulated limbs, readable hands and shoes, layered base-shadow-highlight material planes, and a visible contact shadow beneath the feet.',
+    'Hagrid retains visible arms, broad boots, a shaped coat, and separate shaded hair, moustache, and beard masses instead of one dark silhouette.',
   ],
   'character-pets-review': [
     'Exactly three labeled companions remain visually separated, grounded, and readable at follow-gameplay scale.',

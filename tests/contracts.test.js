@@ -76,6 +76,7 @@ function chapterFixture() {
           layers: ['rooms/ch1/bedroom'],
           fit: 'cover',
           focalPoint: { x: 0.5, y: 0.5 },
+          keyLight: 'right',
           variants: {},
         },
         walkBand: { top: 560, bottom: 640 },
@@ -230,6 +231,7 @@ describe('content contracts', () => {
 
   it.each([
     ['unknown keys', (chapter) => { chapter.unreviewed = true; }],
+    ['unknown room-light directions', (chapter) => { chapter.rooms['ch1.bedroom'].background.keyLight = 'top'; }],
     ['undersized touch targets', (chapter) => { chapter.rooms['ch1.bedroom'].hotspots[0].hitArea.radius = 40; }],
     ['unresolved dialogue edges', (chapter) => { chapter.dialogues['ch1.guide.hello'].nodes.hello.next = 'missing'; }],
     ['learning beats without a completion flag action', (chapter) => { chapter.learningBeats['ch1.nameTap'].onComplete = []; }],

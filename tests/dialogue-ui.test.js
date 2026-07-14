@@ -25,9 +25,15 @@ function rectsOverlap(first, second) {
     && first.y + first.height > second.y;
 }
 
-function dialogueState({ speaker = 'npc.guide', playerX = 1040, roomVariant = 'base' } = {}) {
+function dialogueState({
+  speaker = 'npc.guide',
+  playerX = 1040,
+  roomVariant = 'base',
+  keyLight = 'left',
+} = {}) {
   return {
     cameraX: 0,
+    keyLight,
     roomVariant,
     player: { kind: 'violet', x: playerX, y: 620, facing: 'left' },
     occupants: [{ npc: 'npc.guide', x: 230, y: 620, facing: 'right' }],
@@ -118,6 +124,7 @@ describe('adaptive dialogue card', () => {
     expect(guide.speakerPosition).toEqual({ x: 230, y: 620 });
     expect(guide.speakerBounds).toMatchObject({ left: 108, right: 352, bottom: 655 });
     expect(guide.night).toBe(false);
+    expect(guide.lightSide).toBe('left');
 
     const violetState = dialogueState({ speaker: 'npc.violet', playerX: 1030, roomVariant: 'dusk' });
     violetState.player.outfit = 'casual';
@@ -128,6 +135,7 @@ describe('adaptive dialogue card', () => {
     expect(violet.night).toBe(true);
     expect(violet.violetOutfit).toBe('casual');
     expect(violet.violetRobeTrim).toBe('#a779c8');
+    expect(violet.lightSide).toBe('left');
 
     expect(dialogueSceneContext(dialogueState({ speaker: 'npc.narrator' })).speakerBounds).toBeNull();
   });
@@ -311,7 +319,7 @@ describe('adaptive dialogue card', () => {
   it('keeps Violet’s current outfit in her dialogue portrait', () => {
     const drawPortrait = vi.fn();
     const renderer = new UIRenderer({ characterRenderer: { drawPortrait } });
-    const state = dialogueState({ speaker: 'npc.violet' });
+    const state = dialogueState({ speaker: 'npc.violet', keyLight: 'right' });
     state.player.outfit = 'casual';
     state.player.robeTrim = '#7a4fc9';
 
@@ -326,7 +334,35 @@ describe('adaptive dialogue card', () => {
 
     expect(drawPortrait).toHaveBeenCalledWith(
       expect.anything(),
-      expect.objectContaining({ speaker: 'npc.violet', outfit: 'casual', robeTrim: '#7a4fc9' }),
+      expect.objectContaining({
+        speaker: 'npc.violet',
+        outfit: 'casual',
+        robeTrim: '#7a4fc9',
+        lightSide: 'right',
+      }),
+      0,
+    );
+  });
+
+  it('keeps the bedroom key light on Hagrid’s adjacent dialogue portrait', () => {
+    const drawPortrait = vi.fn();
+    const renderer = new UIRenderer({ characterRenderer: { drawPortrait } });
+    const state = dialogueState({ speaker: 'npc.guide', keyLight: 'right' });
+
+    const scene = dialogueSceneContext(state);
+    expect(scene.lightSide).toBe('right');
+    renderer.drawDialogue(
+      recordingDialogueContext(),
+      state.dialogue,
+      0,
+      true,
+      true,
+      scene,
+    );
+
+    expect(drawPortrait).toHaveBeenCalledWith(
+      expect.anything(),
+      expect.objectContaining({ speaker: 'npc.guide', lightSide: 'right' }),
       0,
     );
   });

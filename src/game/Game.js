@@ -1591,7 +1591,11 @@ export class Game {
 
     for (const actor of actors) {
       if (actor.type === 'violet') {
-        this.characterRenderer.draw(context, { ...state.player, x: state.player.x - state.cameraX }, this.simTime);
+        this.characterRenderer.draw(context, {
+          ...state.player,
+          x: state.player.x - state.cameraX,
+          lightSide: state.keyLight,
+        }, this.simTime);
       } else if (actor.type === 'pet') {
         this.characterRenderer.drawPet(context, {
           ...state.pet,
@@ -1631,6 +1635,7 @@ export class Game {
           kind,
           x: occupant.x - state.cameraX,
           reducedMotion: this.reducedMotion,
+          lightSide: state.keyLight,
         }, this.simTime);
       }
     }

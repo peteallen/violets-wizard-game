@@ -108,7 +108,7 @@ const ROBE_PREVIEW_VIOLET_LOCAL_BOUNDS = Object.freeze({
   x: -68,
   y: -204,
   width: 136,
-  height: 244,
+  height: 245,
 });
 const VISIBLE_UI_WORD = /[\p{L}\p{N}]+(?:[’'-][\p{L}\p{N}]+)*/gu;
 
@@ -129,11 +129,19 @@ function childFacingUiText(text, role) {
 
 export function dialogueSceneContext(state, dialogue = state?.dialogue) {
   const night = state?.roomVariant === 'dusk' || state?.roomVariant === 'night';
+  const lightSide = state?.keyLight === 'right' ? 'right' : 'left';
   const violetOutfit = state?.player?.outfit ?? 'robes';
   const violetRobeTrim = state?.player?.robeTrim ?? PALETTE.violet;
   const speaker = dialogue?.speaker;
   if (!speaker || speaker === 'npc.narrator') {
-    return { night, speakerPosition: null, speakerBounds: null, violetOutfit, violetRobeTrim };
+    return {
+      night,
+      lightSide,
+      speakerPosition: null,
+      speakerBounds: null,
+      violetOutfit,
+      violetRobeTrim,
+    };
   }
 
   const cameraX = state?.cameraX ?? 0;
@@ -141,12 +149,22 @@ export function dialogueSceneContext(state, dialogue = state?.dialogue) {
   if (speaker === 'npc.violet' && state?.player) actor = state.player;
   else if (speaker.startsWith('npc.pet.') && state?.pet) actor = state.pet;
   else actor = state?.occupants?.find((occupant) => occupant.npc === speaker) ?? null;
-  if (!actor) return { night, speakerPosition: null, speakerBounds: null, violetOutfit, violetRobeTrim };
+  if (!actor) {
+    return {
+      night,
+      lightSide,
+      speakerPosition: null,
+      speakerBounds: null,
+      violetOutfit,
+      violetRobeTrim,
+    };
+  }
 
   const position = { x: actor.x - cameraX, y: actor.y };
   const dimensions = speakerDimensions(speaker);
   return {
     night,
+    lightSide,
     violetOutfit,
     violetRobeTrim,
     speakerPosition: position,
@@ -223,7 +241,7 @@ export function robePickerLayout(selectedTrim = 'purple') {
   const selected = normalizeRobeTrim(selectedTrim);
   const preview = Object.freeze({ x: 96, y: 84, width: 438, height: 548 });
   const previewGlass = Object.freeze(dressingMirrorGlassRect(preview));
-  const previewCharacter = Object.freeze({ x: 315, y: 530, scale: 1.6 });
+  const previewCharacter = Object.freeze({ x: 315, y: 528, scale: 1.6 });
   const previewFigure = Object.freeze({
     x: previewCharacter.x + ROBE_PREVIEW_VIOLET_LOCAL_BOUNDS.x * previewCharacter.scale,
     y: previewCharacter.y + ROBE_PREVIEW_VIOLET_LOCAL_BOUNDS.y * previewCharacter.scale,
@@ -540,6 +558,7 @@ export class UIRenderer {
       scale: portrait.scale,
       outfit: dialogue.speaker === 'npc.violet' ? scene.violetOutfit : undefined,
       robeTrim: dialogue.speaker === 'npc.violet' ? scene.violetRobeTrim : undefined,
+      lightSide: scene.lightSide,
     }, animationTime);
 
     drawDialogueCaption(

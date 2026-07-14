@@ -713,6 +713,7 @@ export const chapter1 = {
         layers: ['rooms/ch1/bedroom/sky', 'rooms/ch1/bedroom/base'],
         fit: 'cover',
         focalPoint: { x: 0.5, y: 0.5 },
+        keyLight: 'right',
         variants: {},
       },
       walkBand,
