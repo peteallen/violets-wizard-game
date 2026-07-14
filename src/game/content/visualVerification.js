@@ -72,6 +72,7 @@ const REVIEW_SCENE_ILLUSION_CHECKS = Object.freeze({
   ],
   'sp-ch2-ticket-review': [
     'The illustrated ticket settles before two distinct 88px-or-larger preview choices appear, with neither choice covering the ticket or the other action.',
+    'The ticket reads as layered irregular railway ephemera with a tiny train vignette and has zero generic owl ornament, dashed seam, perfect circle, or ruler-straight edge.',
   ],
   'parent-panel': [
     'The grown-up book presents replay and yearbook as two distinct 88px-or-larger actions, with tabs, content, and close control mutually non-overlapping.',

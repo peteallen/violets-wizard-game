@@ -381,24 +381,18 @@ export class SetPieceRenderer {
     context.fillStyle = '#e7c979';
     ticketPath(context);
     context.fill();
+    drawTicketMaterialPlanes(context);
     context.strokeStyle = '#5d3d2e';
     context.lineWidth = 8;
+    ticketPath(context);
     context.stroke();
     context.strokeStyle = 'rgba(255,244,181,0.72)';
     context.lineWidth = 3;
-    roundRect(context, -278, -122, 556, 244, 17);
+    ticketInsetPath(context);
     context.stroke();
 
-    context.strokeStyle = 'rgba(93,61,46,0.55)';
-    context.lineWidth = 3;
-    context.setLineDash([10, 9]);
-    context.beginPath();
-    context.moveTo(-176, -116);
-    context.lineTo(-176, 116);
-    context.stroke();
-    context.setLineDash([]);
-
-    drawTicketOwl(context, -228, 0);
+    drawTicketPerforation(context);
+    drawTicketRailVignette(context, -228, 1);
     context.fillStyle = '#4e3428';
     context.textAlign = 'center';
     context.font = '700 35px "Andika", "Trebuchet MS", sans-serif';
@@ -1029,50 +1023,228 @@ function drawGoldenRibbons(context, state) {
 
 function ticketPath(context) {
   context.beginPath();
-  context.moveTo(-282, -134);
-  context.lineTo(282, -134);
-  context.quadraticCurveTo(296, -134, 296, -120);
-  context.lineTo(296, -38);
-  context.arc(296, 0, 38, -Math.PI / 2, Math.PI / 2, true);
-  context.lineTo(296, 120);
-  context.quadraticCurveTo(296, 134, 282, 134);
-  context.lineTo(-282, 134);
-  context.quadraticCurveTo(-296, 134, -296, 120);
-  context.lineTo(-296, 38);
-  context.arc(-296, 0, 38, Math.PI / 2, -Math.PI / 2, true);
-  context.lineTo(-296, -120);
-  context.quadraticCurveTo(-296, -134, -282, -134);
+  context.moveTo(-275, -134);
+  context.bezierCurveTo(-166, -137, -52, -131, 54, -135);
+  context.bezierCurveTo(151, -138, 240, -132, 281, -134);
+  context.bezierCurveTo(293, -130, 298, -119, 295, -105);
+  context.bezierCurveTo(293, -82, 297, -57, 294, -39);
+  context.bezierCurveTo(283, -29, 279, -14, 292, -3);
+  context.bezierCurveTo(280, 10, 283, 27, 295, 38);
+  context.bezierCurveTo(297, 59, 292, 91, 296, 113);
+  context.bezierCurveTo(297, 126, 290, 135, 278, 134);
+  context.bezierCurveTo(172, 131, 71, 137, -45, 133);
+  context.bezierCurveTo(-143, 130, -235, 137, -280, 133);
+  context.bezierCurveTo(-293, 133, -299, 124, -296, 111);
+  context.bezierCurveTo(-292, 86, -297, 58, -294, 38);
+  context.bezierCurveTo(-282, 27, -280, 11, -292, 1);
+  context.bezierCurveTo(-280, -13, -283, -29, -295, -39);
+  context.bezierCurveTo(-298, -61, -292, -88, -296, -111);
+  context.bezierCurveTo(-298, -124, -289, -134, -275, -134);
   context.closePath();
 }
 
-function drawTicketOwl(context, x, y) {
+function ticketInsetPath(context) {
+  context.beginPath();
+  context.moveTo(-265, -119);
+  context.bezierCurveTo(-157, -121, -47, -116, 54, -120);
+  context.bezierCurveTo(148, -123, 230, -117, 275, -119);
+  context.bezierCurveTo(282, -107, 279, -75, 281, -48);
+  context.bezierCurveTo(267, -30, 267, -14, 280, 0);
+  context.bezierCurveTo(267, 16, 269, 32, 281, 47);
+  context.bezierCurveTo(279, 74, 282, 105, 274, 118);
+  context.bezierCurveTo(174, 115, 73, 121, -41, 117);
+  context.bezierCurveTo(-142, 114, -229, 121, -266, 117);
+  context.bezierCurveTo(-275, 101, -270, 72, -273, 47);
+  context.bezierCurveTo(-260, 31, -259, 15, -272, 1);
+  context.bezierCurveTo(-259, -15, -261, -32, -274, -48);
+  context.bezierCurveTo(-271, -78, -275, -105, -265, -119);
+  context.closePath();
+}
+
+function drawTicketMaterialPlanes(context) {
   context.save();
-  context.translate(x, y);
-  context.fillStyle = 'rgba(93,61,46,0.19)';
+  ticketPath(context);
+  context.clip();
+
+  context.fillStyle = 'rgba(255,245,190,0.3)';
   context.beginPath();
-  context.moveTo(-34, 13);
-  context.quadraticCurveTo(-40, -22, -18, -47);
-  context.lineTo(-3, -26);
-  context.lineTo(0, -53);
-  context.lineTo(5, -26);
-  context.lineTo(20, -47);
-  context.quadraticCurveTo(41, -22, 34, 13);
-  context.quadraticCurveTo(27, 52, 0, 58);
-  context.quadraticCurveTo(-27, 52, -34, 13);
-  context.fill();
-  context.fillStyle = '#694737';
-  context.beginPath();
-  context.arc(-13, -7, 6, 0, Math.PI * 2);
-  context.arc(13, -7, 6, 0, Math.PI * 2);
-  context.fill();
-  context.fillStyle = '#d39b54';
-  context.beginPath();
-  context.moveTo(-6, 4);
-  context.lineTo(0, 13);
-  context.lineTo(6, 4);
+  context.moveTo(-283, -128);
+  context.bezierCurveTo(-147, -120, -31, -129, 96, -124);
+  context.bezierCurveTo(172, -120, 235, -121, 287, -111);
+  context.bezierCurveTo(214, -96, 128, -101, 42, -93);
+  context.bezierCurveTo(-62, -84, -166, -96, -286, -79);
+  context.bezierCurveTo(-293, -97, -291, -116, -283, -128);
   context.closePath();
   context.fill();
+
+  context.fillStyle = 'rgba(98,61,43,0.18)';
+  context.beginPath();
+  context.moveTo(-292, 67);
+  context.bezierCurveTo(-170, 88, -69, 76, 47, 88);
+  context.bezierCurveTo(139, 97, 222, 84, 294, 72);
+  context.bezierCurveTo(294, 94, 296, 119, 279, 134);
+  context.bezierCurveTo(164, 131, 69, 137, -45, 133);
+  context.bezierCurveTo(-153, 130, -250, 137, -281, 132);
+  context.bezierCurveTo(-293, 117, -294, 91, -292, 67);
+  context.closePath();
+  context.fill();
+
+  context.fillStyle = 'rgba(119,73,47,0.14)';
+  context.beginPath();
+  context.moveTo(-286, -123);
+  context.bezierCurveTo(-250, -119, -208, -122, -181, -116);
+  context.bezierCurveTo(-174, -59, -177, 54, -181, 119);
+  context.bezierCurveTo(-216, 126, -252, 120, -285, 128);
+  context.bezierCurveTo(-292, 74, -286, 28, -293, 1);
+  context.bezierCurveTo(-286, -39, -292, -79, -286, -123);
+  context.closePath();
+  context.fill();
+
+  context.strokeStyle = 'rgba(103,64,42,0.16)';
+  context.lineWidth = 1.4;
+  for (let index = 0; index < 13; index += 1) {
+    const y = -101 + index * 16.7;
+    const start = -263 + (index % 3) * 21;
+    const end = 260 - (index % 4) * 18;
+    context.beginPath();
+    context.moveTo(start, y + (index % 2 ? 1.5 : -1));
+    context.bezierCurveTo(
+      start + (end - start) * 0.31,
+      y - 2 + (index % 3),
+      start + (end - start) * 0.69,
+      y + 2 - (index % 2),
+      end,
+      y + (index % 3 - 1) * 1.2,
+    );
+    context.stroke();
+  }
   context.restore();
+}
+
+function drawTicketPerforation(context) {
+  context.strokeStyle = 'rgba(93,61,46,0.55)';
+  context.lineWidth = 3;
+  context.lineCap = 'round';
+  for (let index = 0; index < 8; index += 1) {
+    const y = -101 + index * 29;
+    const drift = index % 2 ? 1.5 : -1.2;
+    context.beginPath();
+    context.moveTo(-181 + drift, y - 7);
+    context.bezierCurveTo(-177 - drift, y - 3, -174 + drift, y + 3, -179 - drift, y + 8);
+    context.stroke();
+  }
+}
+
+function drawTicketRailVignette(context, x, y) {
+  context.save();
+  context.translate(x, y);
+  context.fillStyle = 'rgba(93,61,46,0.2)';
+  context.beginPath();
+  context.moveTo(-43, 24);
+  context.bezierCurveTo(-42, 3, -32, -10, -15, -13);
+  context.bezierCurveTo(-12, -33, 1, -46, 18, -40);
+  context.bezierCurveTo(30, -35, 33, -18, 31, -6);
+  context.bezierCurveTo(45, 0, 48, 13, 43, 25);
+  context.bezierCurveTo(20, 31, -18, 31, -43, 24);
+  context.closePath();
+  context.fill();
+
+  context.fillStyle = '#694737';
+  context.beginPath();
+  context.moveTo(-38, 13);
+  context.bezierCurveTo(-34, -1, -20, -8, -5, -7);
+  context.bezierCurveTo(6, -5, 21, -8, 36, 1);
+  context.bezierCurveTo(42, 7, 42, 16, 36, 20);
+  context.bezierCurveTo(15, 24, -17, 24, -38, 19);
+  context.bezierCurveTo(-41, 17, -41, 15, -38, 13);
+  context.closePath();
+  context.fill();
+
+  context.fillStyle = '#8d623f';
+  context.beginPath();
+  context.moveTo(-10, -8);
+  context.bezierCurveTo(-7, -23, 2, -34, 15, -34);
+  context.bezierCurveTo(24, -30, 25, -18, 23, -7);
+  context.bezierCurveTo(12, -3, 1, -3, -10, -8);
+  context.closePath();
+  context.fill();
+
+  context.fillStyle = '#4d352b';
+  context.beginPath();
+  context.moveTo(8, -34);
+  context.bezierCurveTo(7, -42, 10, -49, 16, -52);
+  context.bezierCurveTo(21, -49, 23, -41, 21, -33);
+  context.bezierCurveTo(17, -31, 12, -31, 8, -34);
+  context.closePath();
+  context.fill();
+
+  for (const [wheelX, phase] of [[-22, 0.2], [24, 0.7]]) {
+    traceTicketWheel(context, wheelX, 24, 12, phase);
+    context.fillStyle = '#4d352b';
+    context.fill();
+    context.strokeStyle = '#d39b54';
+    context.lineWidth = 2.2;
+    context.stroke();
+    traceTicketWheel(context, wheelX + 0.5, 23.5, 5, phase + 0.31);
+    context.fillStyle = '#d39b54';
+    context.fill();
+  }
+
+  context.strokeStyle = 'rgba(244,213,141,0.66)';
+  context.lineWidth = 2;
+  context.beginPath();
+  context.moveTo(-35, 6);
+  context.bezierCurveTo(-15, 1, 10, 2, 34, 8);
+  context.stroke();
+
+  context.strokeStyle = 'rgba(93,61,46,0.48)';
+  context.lineWidth = 2.4;
+  context.beginPath();
+  context.moveTo(-49, 39);
+  context.bezierCurveTo(-19, 35, 17, 36, 49, 40);
+  context.moveTo(-45, 46);
+  context.bezierCurveTo(-17, 42, 20, 43, 46, 47);
+  context.stroke();
+  context.restore();
+}
+
+function traceTicketWheel(context, x, y, radius, phase) {
+  const wobble = Math.sin(phase * 17) * radius * 0.05;
+  context.beginPath();
+  context.moveTo(x - wobble, y - radius);
+  context.bezierCurveTo(
+    x + radius * 0.63,
+    y - radius * 1.01,
+    x + radius * 1.02,
+    y - radius * 0.45,
+    x + radius,
+    y + wobble,
+  );
+  context.bezierCurveTo(
+    x + radius * 0.98,
+    y + radius * 0.62,
+    x + radius * 0.43,
+    y + radius * 1.03,
+    x - wobble,
+    y + radius,
+  );
+  context.bezierCurveTo(
+    x - radius * 0.66,
+    y + radius * 0.99,
+    x - radius * 1.03,
+    y + radius * 0.42,
+    x - radius,
+    y - wobble,
+  );
+  context.bezierCurveTo(
+    x - radius * 0.98,
+    y - radius * 0.62,
+    x - radius * 0.42,
+    y - radius * 1.01,
+    x - wobble,
+    y - radius,
+  );
+  context.closePath();
 }
 
 export function deliveryLetteringAlpha(progress, { reducedMotion = false } = {}) {

@@ -14,6 +14,43 @@ import {
   wandChosenState,
 } from '../src/game/render/SetPieceRenderer.js';
 
+function recordingTicketContext() {
+  const calls = [];
+  const assignments = [];
+  const texts = [];
+  let depth = 0;
+  const methods = new Set([
+    'arc', 'arcTo', 'beginPath', 'bezierCurveTo', 'clip', 'closePath', 'ellipse', 'fill',
+    'fillRect', 'fillText', 'lineTo', 'moveTo', 'quadraticCurveTo', 'rect', 'restore',
+    'rotate', 'roundRect', 'save', 'scale', 'setLineDash', 'stroke', 'strokeRect', 'translate',
+  ]);
+  const target = {
+    assignments,
+    calls,
+    texts,
+    globalAlpha: 1,
+    get depth() { return depth; },
+  };
+  return new Proxy(target, {
+    get(object, property) {
+      if (methods.has(property)) {
+        return (...args) => {
+          calls.push([property, ...args]);
+          if (property === 'fillText') texts.push(String(args[0]));
+          if (property === 'save') depth += 1;
+          if (property === 'restore') depth -= 1;
+        };
+      }
+      return object[property];
+    },
+    set(object, property, value) {
+      assignments.push([property, value]);
+      object[property] = value;
+      return true;
+    },
+  });
+}
+
 describe('SetPieceRenderer dispatch', () => {
   it('draws the Chapter Two preview ticket regardless of ID casing', () => {
     const renderer = new SetPieceRenderer();
@@ -160,5 +197,45 @@ describe('SetPieceRenderer dispatch', () => {
     expect(ticketPresentationState(0).scale).toBe(0);
     expect(ticketPresentationState(2).scale).toBeGreaterThan(0.99);
     expect(ticketPresentationState(2, 4, { reducedMotion: true }).bob).toBe(0);
+  });
+
+  it('renders the preview ticket as layered railway ephemera without a generic owl or dashed geometry', () => {
+    const renderer = new SetPieceRenderer();
+    const first = recordingTicketContext();
+    const replayed = recordingTicketContext();
+    const active = { time: 2, descriptor: { duration: 4 } };
+
+    renderer.drawTicket(first, active, { reducedMotion: true });
+    renderer.drawTicket(replayed, active, { reducedMotion: true });
+
+    expect(first.calls).toEqual(replayed.calls);
+    expect(first.assignments).toEqual(replayed.assignments);
+    expect(first.texts).toEqual([
+      'HOGWARTS EXPRESS',
+      'LONDON  →  HOGWARTS',
+      'PLATFORM 9 ¾',
+      '1 SEPTEMBER · ELEVEN O’CLOCK',
+    ]);
+    expect(first.calls.filter(([name]) => name === 'fillRect')).toEqual([
+      ['fillRect', 0, 0, 1280, 720],
+    ]);
+    expect(first.calls.some(([name]) => [
+      'arc', 'arcTo', 'ellipse', 'lineTo', 'rect', 'roundRect', 'setLineDash', 'strokeRect',
+    ].includes(name))).toBe(false);
+    expect(first.calls.filter(([name]) => name === 'bezierCurveTo').length)
+      .toBeGreaterThan(95);
+    expect(first.assignments.filter(([property]) => property === 'fillStyle').map(([, value]) => value))
+      .toEqual(expect.arrayContaining([
+        '#e7c979',
+        'rgba(255,245,190,0.3)',
+        'rgba(98,61,43,0.18)',
+        '#694737',
+        '#8d623f',
+        '#4d352b',
+        '#d39b54',
+      ]));
+    expect(first.calls.flatMap(([, ...args]) => args)
+      .filter((value) => typeof value === 'number').every(Number.isFinite)).toBe(true);
+    expect(first.depth).toBe(0);
   });
 });

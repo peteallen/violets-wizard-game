@@ -91,4 +91,9 @@ describe('visual verification checklists', () => {
     expect(cast).toMatch(/articulated limbs.*hands and shoes.*contact shadow/s);
     expect(cast).toMatch(/Hagrid.*visible arms.*broad boots.*shaped coat.*moustache.*beard/s);
   });
+
+  it('keeps the rebuilt preview ticket in the player-facing review contract', () => {
+    expect(visualReviewChecklist('sp-ch2-ticket-review').join(' '))
+      .toMatch(/layered irregular railway ephemera.*tiny train vignette.*zero generic owl.*dashed seam/s);
+  });
 });
