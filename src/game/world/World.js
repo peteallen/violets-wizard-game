@@ -112,6 +112,17 @@ export class World {
     return this.dialogue.active || Boolean(this.setPieces.active) || Boolean(this.overlay) || Boolean(this.selection);
   }
 
+  get affordanceRenderQuiet() {
+    return this.dialogue.active
+      || Boolean(this.setPieces.active)
+      || this.player.walking
+      || Boolean(this.pendingInteraction);
+  }
+
+  get worldAffordancesSuppressed() {
+    return this.affordanceRenderQuiet || Boolean(this.overlay) || Boolean(this.selection);
+  }
+
   emit(type, payload = {}) {
     this.events.push({ seq: ++this.seq, at: this.time, type, payload });
   }
@@ -694,7 +705,6 @@ export class World {
 
   updateAffordanceActivations() {
     const targets = this.targets();
-    const quiet = this.blocked || this.player.walking || Boolean(this.pendingInteraction);
     const { states } = createAffordancePlan({
       targets,
       objective: this.objective,
@@ -703,7 +713,9 @@ export class World {
       save: this.save,
       hintEscalated: this.hintLookShown || this.hintTrailShown,
     });
-    this.glintActivations.advance(states, this.time, this.roomId, { quiet });
+    this.glintActivations.advance(states, this.time, this.roomId, {
+      quiet: this.worldAffordancesSuppressed,
+    });
   }
 
   handleDialogueClosed({ script, reason } = {}) {
@@ -791,7 +803,8 @@ export class World {
       roomId: this.roomId,
       save: this.save,
       time: this.time,
-      quiet: this.blocked || this.player.walking || Boolean(this.pendingInteraction),
+      quiet: this.affordanceRenderQuiet,
+      worldSuppressed: this.worldAffordancesSuppressed,
       hintEscalated: this.hintLookShown || this.hintTrailShown,
       hasPet: Boolean(basePet),
       reducedMotion: Boolean(this.save.settings?.reducedMotion),

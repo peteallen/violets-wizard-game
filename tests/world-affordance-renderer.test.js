@@ -83,6 +83,14 @@ describe('world interaction salience rendering', () => {
       })],
     }, 2, { pressedTargetId: 'ollivanders.wand1' });
     expect(context.calls).toEqual([]);
+
+    renderer.draw(context, {
+      affordances: { quiet: false, worldSuppressed: true },
+      targets: [wandTarget({
+        tier: 'discoverable', visible: 'none', intensity: 'quiet', glint: null,
+      })],
+    }, 2, { pressedTargetId: 'ollivanders.wand1' });
+    expect(context.calls).toEqual([]);
   });
 
   it('carries the active HUD thread onto the satchel and silences it while walking', () => {
@@ -98,6 +106,9 @@ describe('world interaction salience rendering', () => {
     });
     expect(hudGoldenThreadPresentation({
       affordances: { ...active.affordances, quiet: true },
+    }, 1.5)).toBeNull();
+    expect(hudGoldenThreadPresentation({
+      affordances: { ...active.affordances, worldSuppressed: true },
     }, 1.5)).toBeNull();
     expect(hudGoldenThreadPresentation({
       affordances: {

@@ -443,7 +443,8 @@ export class UIRenderer {
         unlockedRooms: ['ch1.ollivanders', 'ch1.malkins', 'ch1.menagerie'],
         objective: { mapStar: { room: 'ch1.diagonStreet', hotspot: 'street.menagerieDoor' } },
         affordances: {
-          quiet: true,
+          quiet: false,
+          worldSuppressed: true,
           thread: {
             targetId: 'street.menagerieDoor',
             worldTargetId: 'street.menagerieDoor',
@@ -481,7 +482,7 @@ export class UIRenderer {
   }
 
   drawHud(context, state, time, reducedMotion = false) {
-    if (state.overlay || state.dialogue || state.screen !== 'playing') return;
+    if (state.overlay || state.dialogue || state.selection || state.screen !== 'playing') return;
     const animationTime = reducedMotion ? 0 : time;
     drawQuestButton(context, UI_RECTS.quest, animationTime, Boolean(state.newObjective) && !reducedMotion);
     drawSatchelButton(context, UI_RECTS.satchel);
@@ -2142,6 +2143,7 @@ export function hudGoldenThreadPresentation(state, time, { reducedMotion = false
   const thread = state?.affordances?.thread;
   if (
     state?.affordances?.quiet
+    || state?.affordances?.worldSuppressed
     || thread?.channel !== 'hud'
     || thread.targetId !== 'hud.satchel'
   ) return null;

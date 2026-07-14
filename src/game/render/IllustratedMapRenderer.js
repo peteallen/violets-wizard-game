@@ -55,7 +55,8 @@ export function createIllustratedMapPresentation(
       ? Object.freeze({ ...location.travelIntent })
       : null,
   }));
-  const objective = quiet
+  const renderQuiet = quiet || Boolean(worldSnapshot?.affordances?.quiet);
+  const objective = renderQuiet
     ? null
     : objectivePresentation(locations, worldSnapshot?.affordances?.thread, time, {
         reducedMotion,
@@ -159,10 +160,9 @@ function objectivePresentation(locations, thread, time, { reducedMotion }) {
     }),
   });
 
-  // Opening the satchel quiets the world by design. The visible map is its own
-  // active surface, so its assigned D31 thread remains visible here. Callers
-  // can still suppress it with createIllustratedMapPresentation({ quiet:true })
-  // during a transition or another genuinely quiet UI state.
+  // The satchel suppresses advertisements in the covered room, but the visible
+  // map is its own active surface and keeps the assigned D31 thread. Genuine
+  // render-quiet states, such as dialogue or walking, suppress it above.
   const affordance = worldAffordanceState(target, time, {
     reducedMotion,
     quiet: false,

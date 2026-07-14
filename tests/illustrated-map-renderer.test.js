@@ -59,12 +59,14 @@ function mapSnapshot({
 function worldSnapshot({
   mapTargetId = 'street.malkinsDoor',
   intensity = 'normal',
-  quiet = true,
+  quiet = false,
+  worldSuppressed = true,
 } = {}) {
   return {
     overlay: { surface: 'satchel', tab: 'map' },
     affordances: {
       quiet,
+      worldSuppressed,
       thread: {
         targetId: 'hud.satchel',
         worldTargetId: null,
@@ -123,8 +125,10 @@ describe('code-only illustrated map renderer foundation', () => {
 
   it('uses the exact D31 map target and intensity on an explicitly active map surface', () => {
     const model = buildMapState(chapter1Map, mapSnapshot());
-    const state = worldSnapshot({ intensity: 'hint', quiet: true });
+    const state = worldSnapshot({ intensity: 'hint' });
     const presentation = createIllustratedMapPresentation(model, state, 4.5);
+
+    expect(state.affordances).toMatchObject({ quiet: false, worldSuppressed: true });
 
     expect(presentation.objective).toMatchObject({
       targetId: 'street.malkinsDoor',
@@ -152,8 +156,15 @@ describe('code-only illustrated map renderer foundation', () => {
     );
     expect(unknownMapThread.objective).toBeNull();
 
-    const explicitlyQuiet = createIllustratedMapPresentation(model, state, 4.5, { quiet: true });
-    expect(explicitlyQuiet.objective).toBeNull();
+    const d31Quiet = createIllustratedMapPresentation(
+      model,
+      worldSnapshot({ quiet: true }),
+      4.5,
+    );
+    expect(d31Quiet.objective).toBeNull();
+
+    const callerQuiet = createIllustratedMapPresentation(model, state, 4.5, { quiet: true });
+    expect(callerQuiet.objective).toBeNull();
   });
 
   it('keeps reduced-motion D31 shimmer stable while full motion uses the shared time-based treatment', () => {

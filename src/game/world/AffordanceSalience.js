@@ -119,6 +119,7 @@ export function createAffordanceSnapshot({
   save = null,
   time = 0,
   quiet = false,
+  worldSuppressed = false,
   hintEscalated = false,
   hasPet = false,
   reducedMotion = false,
@@ -133,7 +134,8 @@ export function createAffordanceSnapshot({
     save,
     hintEscalated,
   });
-  const activeGlint = quiet
+  const worldAdvertisementQuiet = quiet || worldSuppressed;
+  const activeGlint = worldAdvertisementQuiet
     ? null
     : scheduledGlint === undefined
       ? scheduleGlint(states, time, roomId)
@@ -142,7 +144,7 @@ export function createAffordanceSnapshot({
     ...target,
     salience: Object.freeze({
       tier,
-      visible: quiet
+      visible: worldAdvertisementQuiet
         ? 'none'
         : target.id === thread?.worldTargetId
           ? 'thread'
@@ -156,7 +158,7 @@ export function createAffordanceSnapshot({
     }),
   }));
   const secretStates = states.filter(({ tier }) => tier === AFFORDANCE_TIERS.secret);
-  const petHint = quiet || !hasPet
+  const petHint = worldAdvertisementQuiet || !hasPet
     ? null
     : schedulePetHint(secretStates, time, roomId, { reducedMotion });
 
@@ -167,6 +169,7 @@ export function createAffordanceSnapshot({
     glintActivationTimestamps: Object.freeze(glintActivationHistory.map(({ startedAt }) => startedAt)),
     petHint,
     quiet,
+    worldSuppressed,
     budget: Object.freeze({
       threadLimit: 1,
       glintLimit: 2,

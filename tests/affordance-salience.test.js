@@ -238,17 +238,43 @@ describe('D31 golden-thread lifecycle', () => {
     const flags = { ...progression.street, 'ch1.mapUsed': true };
     const dialogueWorld = createWorld({ flags, room: 'ch1.ollivanders' });
     dialogueWorld.dialogue.open('ch1.wandmaker.welcome');
-    expect(dialogueWorld.snapshot().targets.every((target) => target.salience.visible === 'none')).toBe(true);
+    const dialogueSnapshot = dialogueWorld.snapshot();
+    expect(dialogueSnapshot.affordances).toMatchObject({ quiet: true, worldSuppressed: true });
+    expect(dialogueSnapshot.targets.every((target) => target.salience.visible === 'none')).toBe(true);
 
     const setPieceWorld = createWorld({ flags, room: 'ch1.ollivanders' });
     setPieceWorld.setPieces.start('sp.wandChaos1');
-    expect(setPieceWorld.snapshot().targets.every((target) => target.salience.visible === 'none')).toBe(true);
+    const setPieceSnapshot = setPieceWorld.snapshot();
+    expect(setPieceSnapshot.affordances).toMatchObject({ quiet: true, worldSuppressed: true });
+    expect(setPieceSnapshot.targets.every((target) => target.salience.visible === 'none')).toBe(true);
 
     const walkingWorld = createWorld({ flags, room: 'ch1.ollivanders' });
     walkingWorld.interactSemantic('ollivanders.wand1');
     walkingWorld.update(1 / 60);
     expect(walkingWorld.player.walking).toBe(true);
-    expect(walkingWorld.snapshot().targets.every((target) => target.salience.visible === 'none')).toBe(true);
+    const walkingSnapshot = walkingWorld.snapshot();
+    expect(walkingSnapshot.affordances).toMatchObject({ quiet: true, worldSuppressed: true });
+    expect(walkingSnapshot.targets.every((target) => target.salience.visible === 'none')).toBe(true);
+  });
+
+  it('keeps the active map thread truthful while suppressing the covered room', () => {
+    const world = createWorld({ flags: progression.street, room: 'ch1.diagonStreet' });
+    world.runAction({ type: 'ui.open', surface: 'satchel', tab: 'map' });
+
+    const snapshot = world.snapshot();
+    expect(snapshot.overlay).toEqual({ surface: 'satchel', tab: 'map' });
+    expect(snapshot.affordances).toMatchObject({
+      quiet: false,
+      worldSuppressed: true,
+      thread: {
+        targetId: 'hud.satchel',
+        mapTargetId: 'street.ollivandersDoor',
+        channel: 'hud',
+      },
+    });
+    expect(snapshot.targets.every((target) => target.salience.visible === 'none')).toBe(true);
+    expect(snapshot.affordances.glints).toEqual([]);
+    expect(snapshot.affordances.petHint).toBeNull();
   });
 
   it('strengthens only the existing thread when the hint ladder escalates', () => {

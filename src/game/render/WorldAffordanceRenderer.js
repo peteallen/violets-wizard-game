@@ -18,7 +18,9 @@ export class WorldAffordanceRenderer {
     reducedMotion = false,
     pressedTargetId = null,
   } = {}) {
-    const quiet = Boolean(state?.affordances?.quiet);
+    const quiet = Boolean(
+      state?.affordances?.quiet || state?.affordances?.worldSuppressed,
+    );
     if (quiet) return;
     for (const target of state?.targets ?? []) {
       const presentation = worldAffordanceState(target, time, {
