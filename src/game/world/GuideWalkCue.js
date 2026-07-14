@@ -1,22 +1,47 @@
-export const GUIDE_WALK_CUE = Object.freeze({
-  id: 'ch1.guideTapToWalk',
-  chapterId: 'ch1',
-  roomId: 'ch1.bedroom',
-  guideNpc: 'npc.guide',
-  startX: 250,
-  destinationX: 155,
-  y: 610,
-  walkSeconds: 1.6,
-  turnSeconds: 0.35,
-  footprintDelaySeconds: 0.2,
-  footprintRevealSeconds: 1.55,
+export const GUIDE_WALK_CUES = Object.freeze({
+  bedroom: Object.freeze({
+    id: 'ch1.guideLeavesBedroom',
+    chapterId: 'ch1',
+    roomId: 'ch1.bedroom',
+    guideNpc: 'npc.guide',
+    startX: 250,
+    destinationX: 72,
+    y: 610,
+    walkSeconds: 1.55,
+    footprintDelaySeconds: 0.12,
+    footprintRevealSeconds: 1.35,
+    available: (flags) => flags?.['ch1.guideMet'] === true
+      && flags?.['ch1.leakyReached'] !== true,
+  }),
+  leaky: Object.freeze({
+    id: 'ch1.guideLeavesLeaky',
+    chapterId: 'ch1',
+    roomId: 'ch1.leaky',
+    guideNpc: 'npc.guide',
+    startX: 760,
+    destinationX: 1250,
+    y: 610,
+    walkSeconds: 1.9,
+    footprintDelaySeconds: 0.16,
+    footprintRevealSeconds: 1.68,
+    available: (flags) => flags?.['ch1.leakyReached'] === true
+      && flags?.['ch1.courtyardReached'] !== true,
+  }),
 });
 
+// Retained as the bedroom default for focused render tests and existing callers.
+export const GUIDE_WALK_CUE = GUIDE_WALK_CUES.bedroom;
+
+export function resolveGuideWalkCue({ chapterId, roomId, flags } = {}) {
+  return Object.values(GUIDE_WALK_CUES).find((cue) => (
+    chapterId === cue.chapterId
+      && roomId === cue.roomId
+      && cue.available(flags)
+  )) ?? null;
+}
+
 export function guideWalkCueAvailable({ chapterId, roomId, flags } = {}) {
-  return chapterId === GUIDE_WALK_CUE.chapterId
-    && roomId === GUIDE_WALK_CUE.roomId
-    && flags?.['ch1.guideMet'] === true
-    && flags?.['ch1.leakyReached'] !== true;
+  return Boolean(resolveGuideWalkCue({ chapterId, roomId, flags }));
 }
 
 export function createGuideWalkCueSnapshot({
@@ -24,53 +49,56 @@ export function createGuideWalkCueSnapshot({
   startedAt = 0,
   playerStart = null,
   reducedMotion = false,
+  cue = GUIDE_WALK_CUE,
 } = {}) {
   const elapsed = Math.max(0, time - startedAt);
   const rawWalkProgress = reducedMotion
     ? 1
-    : clamp01(elapsed / GUIDE_WALK_CUE.walkSeconds);
+    : clamp01(elapsed / cue.walkSeconds);
   const walkProgress = smoothstep(rawWalkProgress);
-  const guideX = mix(GUIDE_WALK_CUE.startX, GUIDE_WALK_CUE.destinationX, walkProgress);
-  const stage = reducedMotion || elapsed >= GUIDE_WALK_CUE.walkSeconds + GUIDE_WALK_CUE.turnSeconds
-    ? 'beckon'
-    : elapsed >= GUIDE_WALK_CUE.walkSeconds
-      ? 'turn'
-      : 'walk';
+  const guideX = mix(cue.startX, cue.destinationX, walkProgress);
+  const departed = reducedMotion || elapsed >= cue.walkSeconds;
+  const stage = departed ? 'departed' : 'walk';
   const footprintProgress = reducedMotion
     ? 1
     : smoothstep(clamp01(
-      (elapsed - GUIDE_WALK_CUE.footprintDelaySeconds) / GUIDE_WALK_CUE.footprintRevealSeconds,
+      (elapsed - cue.footprintDelaySeconds) / cue.footprintRevealSeconds,
     ));
-  const violetX = Number.isFinite(playerStart?.x) ? playerStart.x : 360;
-  const violetY = Number.isFinite(playerStart?.y) ? playerStart.y : GUIDE_WALK_CUE.y;
-  const direction = Math.sign(GUIDE_WALK_CUE.destinationX - violetX) || -1;
+  const violetX = Number.isFinite(playerStart?.x) ? playerStart.x : cue.startX;
+  const violetY = Number.isFinite(playerStart?.y) ? playerStart.y : cue.y;
+  const direction = Math.sign(cue.destinationX - violetX) || -1;
 
   return Object.freeze({
-    id: GUIDE_WALK_CUE.id,
+    id: cue.id,
+    roomId: cue.roomId,
     stage,
     elapsed,
     progress: walkProgress,
     guide: Object.freeze({
-      npc: GUIDE_WALK_CUE.guideNpc,
+      npc: cue.guideNpc,
       x: guideX,
-      y: GUIDE_WALK_CUE.y,
-      facing: stage === 'walk' ? 'left' : 'right',
-      pose: stage === 'walk' ? 'walking' : stage === 'beckon' ? 'beckon' : 'idle',
-      walking: stage === 'walk',
+      y: cue.y,
+      facing: direction < 0 ? 'left' : 'right',
+      pose: departed ? 'idle' : 'walking',
+      walking: !departed,
+      visible: !departed,
     }),
     footprints: Object.freeze({
       from: Object.freeze({ x: violetX + direction * 24, y: violetY + 7 }),
-      to: Object.freeze({ x: GUIDE_WALK_CUE.destinationX - direction * 48, y: GUIDE_WALK_CUE.y + 7 }),
+      to: Object.freeze({ x: cue.destinationX - direction * 82, y: cue.y + 7 }),
       progress: footprintProgress,
     }),
-    // The authored "This way!" clip will attach here when its voice pass resumes.
-    // Keeping the hook null makes the current code-only cue intentionally silent.
+    // Each departure begins only after Hagrid's existing voiced line completes,
+    // so the movement itself does not repeat or overlap another voice clip.
     voice: null,
   });
 }
 
 export function applyGuideWalkCueToOccupants(occupants, cue) {
   if (!cue) return occupants;
+  if (!cue.guide.visible) {
+    return occupants.filter((occupant) => occupant.npc !== cue.guide.npc);
+  }
   return occupants.map((occupant) => occupant.npc === cue.guide.npc
     ? Object.freeze({
         ...occupant,

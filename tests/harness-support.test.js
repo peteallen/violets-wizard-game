@@ -68,6 +68,7 @@ describe('state fixtures', () => {
       'foundation-saved-review',
       'ch1-start',
       'ch1-follow-hagrid-review',
+      'ch1-follow-hagrid-leaky-review',
       'world-shimmer-review',
       'world-shimmer-hint-review',
       'world-secret-pet-review',
@@ -236,7 +237,10 @@ describe('registered harness scenarios', () => {
   });
 
   it('registers the Hagrid tap-to-walk lesson as a deterministic review scene', () => {
-    expect(GUIDE_WALK_REVIEW_SCENES).toEqual(['ch1-follow-hagrid-review']);
+    expect(GUIDE_WALK_REVIEW_SCENES).toEqual([
+      'ch1-follow-hagrid-review',
+      'ch1-follow-hagrid-leaky-review',
+    ]);
     for (const id of GUIDE_WALK_REVIEW_SCENES) {
       expect(STATE_FIXTURE_IDS).toContain(id);
       expect(ACTION_FIXTURE_IDS).toContain(id);

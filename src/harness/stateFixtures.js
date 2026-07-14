@@ -160,7 +160,7 @@ registry
     createSave(),
   ))
   .register('ch1-follow-hagrid-review', createFixture(
-    'The bedroom tap-to-walk lesson, with Hagrid stepping toward the door before turning back to beckon along a trail of sparkle footprints.',
+    'Hagrid leaving through Violet’s bedroom door after his introduction, with a sparkle-footprint path left behind for her to follow.',
     { chapter: 1, scene: 'ch1-follow-hagrid-review' },
     createSave({
       scene: 'ch1.followHagridReview',
@@ -171,6 +171,22 @@ registry
         'ch1.letterOpened': true,
         'ch1.letterRead': true,
         'ch1.guideMet': true,
+      },
+    }),
+  ))
+  .register('ch1-follow-hagrid-leaky-review', createFixture(
+    'Hagrid preemptively leaving the Leaky Cauldron through the courtyard door after “This way!”, while Violet remains behind to follow his sparkle footprints.',
+    { chapter: 1, scene: 'ch1-follow-hagrid-leaky-review' },
+    createSave({
+      scene: 'ch1.followHagridLeakyReview',
+      room: 'ch1.leaky',
+      spawn: 'leaky.entry',
+      questFlags: {
+        'ch1.owlTapped': true,
+        'ch1.letterOpened': true,
+        'ch1.letterRead': true,
+        'ch1.guideMet': true,
+        'ch1.leakyReached': true,
       },
     }),
   ))

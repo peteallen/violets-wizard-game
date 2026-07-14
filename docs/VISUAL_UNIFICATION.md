@@ -90,7 +90,7 @@ The "doesn't make sense" list, fixed in one sweep (all engine/content, parallel-
 2. **The written letter text = the narrated text, exactly**, original wording only — and "We await your owl." is removed (near-verbatim book fragment; hard IP line).
 3. **Map star exists at the map-teaching step** (see Workstream 2).
 4. **Quest-star pulse means something**: pulses for ~8s when an objective arrives, then settles (`newObjective` currently initialized true and never cleared).
-5. **Tap-to-walk gets taught diegetically**: Hagrid walks ahead to the door, turns, beckons with a voiced "This way!" — sparkle footprints trace the ground between him and Violet.
+5. **Following Hagrid is taught diegetically** (D45): after his bedroom introduction Hagrid walks out through the bedroom door; after his voiced “This way!” in the Leaky Cauldron he walks out through the courtyard door. Violet remains behind with sparkle footprints and the golden-threaded door to follow. The game never asks her to tap Hagrid a second time.
 6. **"Curious…" restored** as the Wandmaker's whispery beat (spec flavor, cheap).
 7. The always-on "Again" replay affordance and pulsing next-arrow stay — they tested fine.
 

@@ -32,6 +32,7 @@ export const WORLD_AFFORDANCE_REVIEW_SCENES = Object.freeze({
 
 export const GUIDE_WALK_REVIEW_SCENES = Object.freeze([
   'ch1-follow-hagrid-review',
+  'ch1-follow-hagrid-leaky-review',
 ]);
 
 function integer(value, path, { min = 0, max = Number.MAX_SAFE_INTEGER } = {}) {
@@ -183,10 +184,12 @@ export function prepareWorldAffordanceReview(game, scene) {
 export function prepareGuideWalkReview(game, scene) {
   if (!GUIDE_WALK_REVIEW_SCENES.includes(scene) || !game.world) return false;
   if (game.world.dialogue.active) game.world.dialogue.close('harness-guide-walk-review');
-  game.world.player.x = 360;
-  game.world.player.targetX = 360;
+  const leaky = scene === 'ch1-follow-hagrid-leaky-review';
+  const playerX = leaky ? 160 : 360;
+  game.world.player.x = playerX;
+  game.world.player.targetX = playerX;
   game.world.player.y = 610;
-  game.world.player.facing = 'left';
+  game.world.player.facing = leaky ? 'right' : 'left';
   game.world.player.walking = false;
   game.world.startGuideWalkCue({ restart: true });
   game.processWorldEvents();

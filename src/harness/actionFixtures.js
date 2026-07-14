@@ -59,7 +59,10 @@ registry
     ],
   ))
   .register('ch1-follow-hagrid-review', createFixture(
-    'Hold the deterministic Hagrid walk, turn, beckon, and sparkle-footprint teaching cue.',
+    'Hold Hagrid’s deterministic bedroom departure and the sparkle-footprint path he leaves for Violet.',
+  ))
+  .register('ch1-follow-hagrid-leaky-review', createFixture(
+    'Hold Hagrid’s deterministic Leaky Cauldron departure and the sparkle-footprint path to the courtyard door.',
   ))
   .register('world-shimmer-review', createFixture(
     'Hold Ollivanders across the globally staggered discoverable and secret glint schedule.',

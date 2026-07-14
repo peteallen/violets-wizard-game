@@ -3,6 +3,7 @@ import { contentRegistry } from '../src/game/content/index.js';
 import { createSaveV1, validateSaveV1 } from '../src/game/systems/Save.js';
 import {
   GUIDE_WALK_CUE,
+  GUIDE_WALK_CUES,
   createGuideWalkCueSnapshot,
 } from '../src/game/world/GuideWalkCue.js';
 import { World } from '../src/game/world/World.js';
@@ -31,8 +32,33 @@ function createBedroomWorld({ guideMet = false, reducedMotion = false } = {}) {
   return world;
 }
 
-describe('Hagrid tap-to-walk teaching cue', () => {
-  it('starts when the arrival dialogue completes, then walks, turns, and beckons silently', () => {
+function createLeakyWorld({ leakyReached = false, reducedMotion = false } = {}) {
+  const save = createSaveV1({
+    now: '2026-07-13T12:00:00.000Z',
+    appVersion: 'guide-cue-test',
+    worldSeed: 42,
+  });
+  save.resume = {
+    chapter: 'ch1',
+    scene: 'ch1.leakyArrival',
+    room: 'ch1.leaky',
+    spawn: 'leaky.entry',
+  };
+  Object.assign(save.progress.questFlags, {
+    'ch1.owlTapped': true,
+    'ch1.letterOpened': true,
+    'ch1.letterRead': true,
+    'ch1.guideMet': true,
+    ...(leakyReached ? { 'ch1.leakyReached': true } : {}),
+  });
+  save.settings.reducedMotion = reducedMotion;
+  const world = new World({ chapters: contentRegistry, save, seed: 42 });
+  world.drainEvents();
+  return world;
+}
+
+describe('Hagrid leads Violet through the first two rooms', () => {
+  it('leaves through the bedroom door after his introduction instead of waiting for a second Hagrid tap', () => {
     const world = createBedroomWorld();
     expect(world.snapshot().tapToWalkCue).toBeNull();
 
@@ -42,10 +68,17 @@ describe('Hagrid tap-to-walk teaching cue', () => {
     const started = world.snapshot().tapToWalkCue;
     expect(world.flags['ch1.guideMet']).toBe(true);
     expect(started).toMatchObject({
-      id: 'ch1.guideTapToWalk',
+      id: 'ch1.guideLeavesBedroom',
+      roomId: 'ch1.bedroom',
       stage: 'walk',
       voice: null,
-      guide: { x: GUIDE_WALK_CUE.startX, facing: 'left', pose: 'walking', walking: true },
+      guide: {
+        x: GUIDE_WALK_CUE.startX,
+        facing: 'left',
+        pose: 'walking',
+        walking: true,
+        visible: true,
+      },
     });
 
     world.update(GUIDE_WALK_CUE.walkSeconds / 2);
@@ -55,20 +88,63 @@ describe('Hagrid tap-to-walk teaching cue', () => {
     expect(walking.footprints.progress).toBeGreaterThan(0);
 
     world.update(GUIDE_WALK_CUE.walkSeconds / 2 + 0.1);
-    expect(world.snapshot().tapToWalkCue).toMatchObject({
-      stage: 'turn',
-      guide: { x: GUIDE_WALK_CUE.destinationX, facing: 'right', pose: 'idle', walking: false },
-    });
-
-    world.update(GUIDE_WALK_CUE.turnSeconds);
-    const beckoning = world.snapshot().tapToWalkCue;
-    expect(beckoning).toMatchObject({
-      stage: 'beckon',
-      guide: { x: GUIDE_WALK_CUE.destinationX, facing: 'right', pose: 'beckon', walking: false },
+    const departed = world.snapshot().tapToWalkCue;
+    expect(departed).toMatchObject({
+      stage: 'departed',
+      guide: {
+        x: GUIDE_WALK_CUE.destinationX,
+        facing: 'left',
+        pose: 'idle',
+        walking: false,
+        visible: false,
+      },
       footprints: { progress: 1 },
     });
+    expect(world.snapshot().occupants.some(({ npc }) => npc === 'npc.guide')).toBe(false);
+    expect(world.snapshot().targets.find(({ id }) => id === 'bedroom.exit')?.salience)
+      .toMatchObject({ tier: 'thread', visible: 'thread' });
     const events = world.drainEvents();
     expect(events.some((event) => event.type === 'audio.command')).toBe(false);
+  });
+
+  it('walks out of the Leaky Cauldron as soon as “This way!” finishes, leaving Violet to follow', () => {
+    const world = createLeakyWorld();
+    expect(world.dialogue.scriptId).toBe('ch1.guide.leaky');
+
+    world.advanceDialogue();
+
+    const started = world.snapshot().tapToWalkCue;
+    expect(world.flags['ch1.leakyReached']).toBe(true);
+    expect(started).toMatchObject({
+      id: 'ch1.guideLeavesLeaky',
+      roomId: 'ch1.leaky',
+      stage: 'walk',
+      guide: {
+        x: GUIDE_WALK_CUES.leaky.startX,
+        facing: 'right',
+        pose: 'walking',
+        walking: true,
+        visible: true,
+      },
+    });
+
+    world.update(GUIDE_WALK_CUES.leaky.walkSeconds / 2);
+    expect(world.snapshot().tapToWalkCue.guide.x).toBeGreaterThan(GUIDE_WALK_CUES.leaky.startX);
+
+    world.update(GUIDE_WALK_CUES.leaky.walkSeconds / 2 + 0.1);
+    const departed = world.snapshot();
+    expect(departed.tapToWalkCue).toMatchObject({
+      stage: 'departed',
+      guide: { x: GUIDE_WALK_CUES.leaky.destinationX, visible: false },
+      footprints: { progress: 1 },
+    });
+    expect(departed.player.x).toBe(160);
+    expect(departed.occupants.some(({ npc }) => npc === 'npc.guide')).toBe(false);
+    expect(departed.targets.find(({ id }) => id === 'leaky.courtyardDoor')?.salience)
+      .toMatchObject({ tier: 'thread', visible: 'thread' });
+
+    world.interactSemantic('leaky.courtyardDoor');
+    expect(world.roomId).toBe('ch1.courtyard');
   });
 
   it('derives a fresh deterministic replay from an ordinary compatible save after reload', () => {
@@ -83,10 +159,10 @@ describe('Hagrid tap-to-walk teaching cue', () => {
     expect(firstReload.snapshot().tapToWalkCue).toEqual(secondReload.snapshot().tapToWalkCue);
     expect(firstReload.snapshot().tapToWalkCue).toMatchObject({ stage: 'walk', progress: 0, voice: null });
 
-    firstReload.update(GUIDE_WALK_CUE.walkSeconds + GUIDE_WALK_CUE.turnSeconds);
+    firstReload.update(GUIDE_WALK_CUE.walkSeconds);
     expect(firstReload.snapshot().tapToWalkCue).toMatchObject({
-      stage: 'beckon',
-      guide: { pose: 'beckon' },
+      stage: 'departed',
+      guide: { pose: 'idle', visible: false },
     });
     expect(firstReload.snapshot().tapToWalkCue.footprints.from.x)
       .toBe(firstReload.player.x - 24);
@@ -98,9 +174,9 @@ describe('Hagrid tap-to-walk teaching cue', () => {
     world.update(5);
     const later = world.snapshot().tapToWalkCue;
     expect(first).toMatchObject({
-      stage: 'beckon',
+      stage: 'departed',
       progress: 1,
-      guide: { x: GUIDE_WALK_CUE.destinationX, pose: 'beckon' },
+      guide: { x: GUIDE_WALK_CUE.destinationX, pose: 'idle', visible: false },
       footprints: { progress: 1 },
     });
     expect(later.guide).toEqual(first.guide);

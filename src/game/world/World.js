@@ -14,7 +14,7 @@ import {
 import {
   applyGuideWalkCueToOccupants,
   createGuideWalkCueSnapshot,
-  guideWalkCueAvailable,
+  resolveGuideWalkCue,
 } from './GuideWalkCue.js';
 import { resolveRoomVariant } from './roomVariant.js';
 
@@ -735,21 +735,26 @@ export class World {
         reason: 'affordance-spent',
       });
     }
-    if (script === 'ch1.guide.arrival' && reason === 'completed') this.startGuideWalkCue();
+    if (
+      reason === 'completed'
+      && ['ch1.guide.arrival', 'ch1.guide.leaky'].includes(script)
+    ) this.startGuideWalkCue();
     this.updateAffordanceActivations();
   }
 
   startGuideWalkCue({ restart = false } = {}) {
-    if (!guideWalkCueAvailable({
+    const cue = resolveGuideWalkCue({
       chapterId: this.chapter.id,
       roomId: this.roomId,
       flags: this.flags,
-    })) {
+    });
+    if (!cue) {
       this.guideWalkCue = null;
       return false;
     }
-    if (this.guideWalkCue && !restart) return false;
+    if (this.guideWalkCue?.cueId === cue.id && !restart) return false;
     this.guideWalkCue = {
+      cueId: cue.id,
       startedAt: this.time,
       playerStart: { x: this.player.x, y: this.player.y },
     };
@@ -757,16 +762,18 @@ export class World {
   }
 
   guideWalkCueSnapshot() {
-    if (!this.guideWalkCue || !guideWalkCueAvailable({
+    const cue = resolveGuideWalkCue({
       chapterId: this.chapter.id,
       roomId: this.roomId,
       flags: this.flags,
-    })) return null;
+    });
+    if (!this.guideWalkCue || !cue || this.guideWalkCue.cueId !== cue.id) return null;
     return createGuideWalkCueSnapshot({
       time: this.time,
       startedAt: this.guideWalkCue.startedAt,
       playerStart: this.guideWalkCue.playerStart,
       reducedMotion: Boolean(this.save.settings?.reducedMotion),
+      cue,
     });
   }
 

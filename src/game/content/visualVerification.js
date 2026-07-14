@@ -64,6 +64,14 @@ const REVIEW_SCENE_ILLUSION_CHECKS = Object.freeze({
   'ui-chapter-card-review': [
     'One chapter painting, one title, and one 88px-or-larger action remain readable and mutually non-overlapping, with zero decorative owl filler.',
   ],
+  'ch1-follow-hagrid-review': [
+    'Hagrid visibly walks out through the bedroom doorway after his introduction, leaves no stationary second Hagrid interaction behind, and the sparkle footprints point from Violet to that door.',
+    'Violet remains inside the bedroom while the departing Hagrid and the golden-threaded door stay visually distinct.',
+  ],
+  'ch1-follow-hagrid-leaky-review': [
+    'Hagrid visibly walks out through the Leaky Cauldron courtyard door after “This way!”, leaves no stationary Hagrid interaction behind, and the sparkle footprints point from Violet to that door.',
+    'Violet remains inside the Leaky Cauldron while the departing Hagrid and the golden-threaded courtyard door stay visually distinct.',
+  ],
   'character-cast-review': [
     'Exactly five labeled, full-body cast members remain visually separated and readable at gameplay scale.',
     'Each cast member has two readable eyes with iris, pupil, catch-light, and lid shapes; hair and clothing remain distinct masses.',

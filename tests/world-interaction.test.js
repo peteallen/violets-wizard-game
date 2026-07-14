@@ -102,14 +102,51 @@ describe('one-tap world interactions', () => {
     expect(world.overlay).toEqual({ surface: 'letter-reading', tab: null });
   });
 
-  it('lets Violet follow Hagrid by tapping Hagrid once instead of finding a clipped door target', () => {
-    const world = createWorld({ flags: { 'ch1.guideMet': true } });
+  it('removes Hagrid after his bedroom introduction so the next tap is unambiguously the door', () => {
+    const world = createWorld({ flags: { 'ch1.letterRead': true } });
+
+    world.interactSemantic('bedroom.guide');
+    settle(world, 1);
+    expect(world.dialogue.scriptId).toBe('ch1.guide.arrival');
+    world.advanceDialogue();
+    settle(world, 2);
+
+    expect(world.flags['ch1.guideMet']).toBe(true);
+    expect(world.snapshot().tapToWalkCue).toMatchObject({ stage: 'departed' });
+    expect(world.snapshot().occupants.some(({ npc }) => npc === 'npc.guide')).toBe(false);
 
     const result = world.tap({ x: 250, y: 455 });
 
     expect(result.id).toBe('bedroom.exit');
     expect(world.roomId).toBe('ch1.leaky');
     expect(world.pendingInteraction).toBeNull();
+  });
+
+  it('has Hagrid leave the Leaky Cauldron first while Violet waits to follow through the door', () => {
+    const world = createWorld({
+      flags: {
+        'ch1.owlTapped': true,
+        'ch1.letterOpened': true,
+        'ch1.letterRead': true,
+        'ch1.guideMet': true,
+      },
+      room: 'ch1.leaky',
+      spawn: 'leaky.entry',
+    });
+
+    expect(world.dialogue.scriptId).toBe('ch1.guide.leaky');
+    world.advanceDialogue();
+    settle(world, 2.1);
+
+    const waiting = world.snapshot();
+    expect(waiting.player.x).toBe(160);
+    expect(waiting.tapToWalkCue).toMatchObject({ stage: 'departed' });
+    expect(waiting.occupants.some(({ npc }) => npc === 'npc.guide')).toBe(false);
+    expect(waiting.targets.find(({ id }) => id === 'leaky.courtyardDoor')?.salience)
+      .toMatchObject({ tier: 'thread', visible: 'thread' });
+
+    world.interactSemantic('leaky.courtyardDoor');
+    expect(world.roomId).toBe('ch1.courtyard');
   });
 
   it('gives Violet the satchel tutorial before asking her to use the map', () => {

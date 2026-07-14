@@ -8,6 +8,7 @@ import {
 } from '../src/game/content/visualVerification.js';
 import { CHARACTER_REVIEW_SCENES } from '../src/game/render/CharacterRenderer.js';
 import { UI_REVIEW_SCENES } from '../src/game/render/UIRenderer.js';
+import { GUIDE_WALK_REVIEW_SCENES } from '../src/harness/boot.js';
 
 function storybookSection(checklist) {
   return checklist.slice(-STORYBOOK_STANDARD_CHECKS.length);
@@ -58,8 +59,12 @@ describe('visual verification checklists', () => {
     }
   });
 
-  it('registers a canonical checklist for every UI and character review scene', () => {
-    const registeredScenes = [...UI_REVIEW_SCENES, ...CHARACTER_REVIEW_SCENES].sort();
+  it('registers a canonical checklist for every UI, character, and guide-departure review scene', () => {
+    const registeredScenes = [
+      ...UI_REVIEW_SCENES,
+      ...CHARACTER_REVIEW_SCENES,
+      ...GUIDE_WALK_REVIEW_SCENES,
+    ].sort();
     expect(Object.keys(VISUAL_REVIEW_CHECKLISTS).sort()).toEqual(registeredScenes);
 
     for (const scene of registeredScenes) {
