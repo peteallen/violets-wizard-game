@@ -58,3 +58,65 @@ strand groupings; fabric has soft fold shading. Picture-book child proportions
 with a large head. Original character design, not any existing actor or film
 character.
 ```
+
+## sheet-v3.png
+
+- Generated 2026-07-13 via OpenRouter, `google/gemini-3.1-flash-lite-image`,
+  cost $0.0338 (requested 16:9/2K; the provider rejected 2K and the call fell
+  back to the chat endpoint at 1408×768). `sheet-v3-clean.png` is the
+  sips-normalized PNG.
+- Prompt: block below — the v2 verdict plus the Hagrid-run lessons encoded as
+  constraints: the closed-eye head keeps the dark-green rectangular glasses
+  and changes ONLY at the eyelids; arms hang STRAIGHT DOWN as exact mirrors;
+  legs are separate mirrored LEFT/RIGHT parts with toes pointing away from
+  each other; the walking pair shares the standing hip-to-floor height;
+  EXACTLY NINE parts, shared swatches, one upper-left key light, finger-width
+  clearances.
+- Art Director verdict: pending at time of writing; recorded here when ruled.
+
+## v3 generation prompt
+
+```text
+Children's storybook illustration, painterly gouache and watercolor, soft 
+edges and gentle paper texture, warm candlelit palette with deep violet 
+accents, RICH color values — never washed out or pastel — soft dark-brown 
+outlines with subtly varying weight. ONE consistent warm key light from the 
+UPPER LEFT on every single part. A cutout puppet part sheet for ONE 
+character, laid out like a paper-doll kit in a neat grid on a plain flat 
+pale-cream background, EXACTLY NINE separate parts and nothing else — no 
+duplicates, no extra pieces, no props; every part fully separated with at 
+least a finger-width of empty background between any two parts, no part 
+overlapping another, all parts at one consistent scale, no drop shadows, no 
+text. The character: an original six-year-old girl with a warm medium-light 
+complexion, long warm light-brown hair, warm brown eyes with two small 
+catchlights, softly expressive eyebrows, rosy cheeks, a small dimensional 
+nose, a bright gentle smile, and DARK-GREEN RECTANGULAR GLASSES. SHARED 
+SWATCHES used identically wherever they appear: jersey = three-tone purple 
+with a white V-collar; leggings = dark plum; sneakers = ONE single purple 
+sneaker design with painted seams. The nine parts: (1) her head and face, 
+eyes OPEN, wearing the dark-green rectangular glasses, hair framing the face 
+with a few soft messy painted-in wisps; (2) the IDENTICAL head with eyes 
+gently closed — an exact copy of part 1 changed ONLY at the eyelids: the SAME 
+dark-green rectangular glasses still on her face, identical hair, identical 
+wisps, identical smile, identical outline, identical size; (3) the 
+back-of-hair piece alone: the long warm light-brown hair mass that hangs 
+behind her body, by itself; (4) her torso wearing the three-tone purple 
+soccer jersey with the white V-collar and short puffed sleeve caps, a defined 
+little shoulder line, standing tall and straight, no arms, no head, a short 
+skin neck stub at the collar; (5) her left arm from shoulder to hand hanging 
+STRAIGHT DOWN and relaxed, bare forearm, a small natural child hand with a 
+visible thumb, fingers relaxed; (6) her right arm: the exact MIRROR IMAGE of 
+part 5, same length, also hanging straight down; (7) her LEFT leg from hip to 
+foot, straight and vertical, dark plum legging, the purple sneaker planted 
+FLAT with the toe turned slightly toward the LEFT edge of the picture; (8) 
+her RIGHT leg: the exact MIRROR IMAGE of part 7, same height, same sneaker 
+design, toe turned slightly toward the RIGHT edge — the two sneakers point 
+AWAY from each other; (9) a walking leg pair with EXACTLY the same 
+hip-to-floor height as parts 7 and 8: both feet pointing the same direction 
+of travel, the LEADING foot planted completely FLAT, the TRAILING heel lifted 
+with toe touching, same plum leggings, same purple sneakers. Every part has 
+base color, soft shadow, and gentle highlight from the one upper-left light; 
+hair has interior strand groupings; fabric has soft fold shading. 
+Picture-book child proportions with a large head. Original character design, 
+not any existing actor or film character.
+```

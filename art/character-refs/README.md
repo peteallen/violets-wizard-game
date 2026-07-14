@@ -10,7 +10,7 @@ The shared style anchors are `../raw/ch1-malkins.png`, `../raw/ch1-menagerie.png
 |---|---|---|---|
 | Violet | `violet.png` | `violet.prompt.md` | Accepted after corrected-hair side-by-side review |
 | Hagrid | `hagrid.png` | `hagrid.prompt.md` | Accepted after direct Storybook Standard review |
-| Wandmaker | `wandmaker.png` | `wandmaker.prompt.md` | Pending |
+| Wandmaker | `wandmaker.png` | `wandmaker.prompt.md` | Under art-director review (D49) |
 | Tailor | `tailor.png` | `tailor.prompt.md` | Pending |
 | Menagerie Keeper | `keeper.png` | `keeper.prompt.md` | Pending |
 | Post owl | `owl-post.png` | `owl-post.prompt.md` | Pending |

@@ -27,6 +27,32 @@ agent (docs/ART_DIRECTOR.md) BEFORE slicing.
   every v1 finding encoded as an explicit constraint (shared swatches, single
   upper-left key light, sleeveless torso ~2.5 heads wide, mirrored two-buckle
   legs, flat-planted lead foot, rich reference-depth values).
+- **Art Director verdict: FAIL — 3 CRITICAL, 3 MAJOR, 4 MINOR. Never sliced.**
+  Craft passed (one key light, per-join color continuity dE 5.7–12.7, mane
+  1.32× head, genuinely sleeveless torso, no touching parts) but the kit is
+  broken: torso only 1.38 head-widths vs ~2.4 spec / 2.08 measured on the
+  reference (C1); the raised beckon arm exists only baked onto an unrequested
+  duplicate torso — the standalone second arm is a low palm-up "offer" pose
+  14% short (C2); three standing boots all toe-right, mirror-IoU test proves
+  no mirrored pair exists (C3); blink head is a whole-head redraw — only 46%
+  of diff pixels fall in the eye band, would shimmer every blink (M1); walk
+  pair columns 9–12% short vs the standing leg (M2); two extra parts
+  (duplicate torso, coat back view) plus bbox overlaps kill rectangle slicing
+  (M3); palette uniformly grayer/cooler than the reference (m2). Verdict:
+  regeneration mandatory; parts 00/02/03/04 alpha-salvageable in the interim.
+
+## sheet-v3.png
+
+- Generated 2026-07-13, same model, cost $0.0352 (requested 16:9/2K; the
+  provider rejected 2K and the call fell back to the chat endpoint at
+  1408×768). `sheet-v3-clean.png` is the sips-normalized PNG.
+- Prompt: third block below — every v2 finding encoded as a constraint:
+  EXACTLY NINE parts with duplicates/back-views banned, the torso as the
+  largest piece at ~2.5 head-widths, a standalone raised beckon arm attached
+  to nothing, LEFT/RIGHT mirrored standing boots pointing away from each
+  other, the walk pair at the standing column height, the blink head changed
+  only at the eyelids, finger-width clearances with no bbox overlaps, and
+  warm reddish (never gray) browns.
 - Art Director verdict: pending at time of writing; recorded here when ruled.
 
 ## v1 generation prompt
@@ -123,4 +149,59 @@ two-buckle boots. Every part shares the one upper-left key light with warm
 highlights and cool shadow sides. Hair, mane, and beard are soft shaded
 masses with interior strand groupings. Original character design, not any
 existing actor or film character.
+```
+
+## v3 generation prompt
+
+```text
+Children's storybook illustration, painterly gouache and watercolor, soft 
+edges, gentle paper texture, RICH DEEP WARM color values: reddish chocolate 
+browns, deep greens, deep plum, glowing like a candlelit oil painting — never 
+washed out, never gray-brown, never pastel. ONE consistent warm key light 
+from the UPPER LEFT on every single part. A cutout puppet part sheet for ONE 
+character, laid out like a paper-doll kit in a neat grid on a plain flat 
+pale-cream background, EXACTLY NINE separate parts and nothing else — no 
+duplicate parts, no back views, no props, no extra pieces; every part fully 
+separated with at least a finger-width of empty background between any two 
+parts, no part overlapping another, all parts at one consistent scale, no 
+drop shadows, no text. The character: an original gentle half-giant 
+groundskeeper, enormous and mighty but friendly, with a wild 
+DARK-CHOCOLATE-BROWN mane, full bushy dark-brown beard and moustache with a 
+visible warm smile, twinkling warm brown eyes under heavy brows, big bulbous 
+nose, rosy weathered cheeks. SHARED SWATCHES used identically wherever they 
+appear: coat = deep weathered chocolate brown with stitched patches; trousers 
+= dark espresso brown; boots = ONE single design, deep brown leather with TWO 
+brass buckles; hair, mane, and beard = one warm very dark brown. The nine 
+parts: (1) head with face: eyes OPEN, beard and moustache attached, shaggy 
+dark fringe; (2) the IDENTICAL head with eyes gently closed — an exact copy of 
+part 1 changed ONLY at the eyelids: identical hair strands, identical fringe, 
+identical beard, identical brows, identical mouth, identical outline, 
+identical size; (3) the back-of-mane alone: a HUGE wild warm dark-brown hair 
+mass, wider and taller than the head; (4) his GIGANTIC torso — THE LARGEST 
+PIECE ON THE SHEET BY FAR, a wide mountain of coat about as wide as it is 
+tall, the chest and hem TWO AND A HALF TIMES AS WIDE AS THE HEAD PART, much 
+wider than the back-of-mane piece, with massive round sloping shoulders: the 
+long deep-brown patched overcoat with brass toggles down the front, open over 
+a deep-green waistcoat and deep-plum scarf, wide dark espresso trousers 
+showing between the coat flaps at the bottom, a short skin neck stub at the 
+collar, COMPLETELY SLEEVELESS with NO arms and clean armhole silhouettes on 
+both sides; (5) one complete arm from SHOULDER to fingertips hanging STRAIGHT 
+DOWN, deep-brown coat sleeve with wide folded cuff in exactly the coat's 
+colors, ending in a huge thick-fingered hand, fingers together, visible 
+thumb; (6) a second complete arm from SHOULDER to fingertips, EXACTLY the 
+same length as part 5, floating on the background attached to NOTHING: bent 
+at the elbow with the big open hand RAISED UP at head height, palm facing 
+out, fingers pointing upward in a friendly follow-me wave; (7) his LEFT 
+standing leg from hip to foot, straight and vertical, wide dark espresso 
+trouser leg, the two-buckle deep-brown boot planted FLAT with the toe turned 
+about 30 degrees toward the LEFT edge of the picture; (8) his RIGHT standing 
+leg: the exact MIRROR IMAGE of part 7, same height, same boot design, toe 
+turned about 30 degrees toward the RIGHT edge of the picture — the two boots 
+point AWAY from each other; (9) a walking leg pair with EXACTLY the same 
+hip-to-floor height as parts 7 and 8: both feet pointing the same direction 
+of travel, the LEADING foot planted completely FLAT, the TRAILING heel lifted 
+with toe touching, same wide espresso trousers, same two-buckle boots. Every 
+trouser leg is thick and wide to match the trousers on the torso. Hair, mane, 
+and beard are soft shaded masses with interior strand groupings. Original 
+character design, not any existing actor or film character.
 ```
