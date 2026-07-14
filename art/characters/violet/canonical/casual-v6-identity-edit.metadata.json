@@ -1,0 +1,31 @@
+{
+  "model": "google/gemini-3.1-flash-image",
+  "created": 0,
+  "raw_file": "casual-v6-identity-edit-raw.png",
+  "media_type": "image/png",
+  "bytes": 1581538,
+  "sha256": "1bee995856ef74956414ea34ae0afa368d2fbaa3e48d115556769fbff885e151",
+  "seconds": 11.37,
+  "usage": {
+    "prompt_tokens": 2862,
+    "completion_tokens": 1120,
+    "total_tokens": 3982,
+    "cost": 0.068631,
+    "is_byok": false,
+    "prompt_tokens_details": {
+      "cached_tokens": 0,
+      "cache_write_tokens": 0,
+      "audio_tokens": 0,
+      "video_tokens": 0
+    },
+    "cost_details": {
+      "upstream_inference_cost": 0.068631,
+      "upstream_inference_prompt_cost": 0.001431,
+      "upstream_inference_completions_cost": 0.0672
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 0,
+      "image_tokens": 1120
+    }
+  }
+}

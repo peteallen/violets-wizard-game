@@ -1593,6 +1593,9 @@ export class Game {
           ...state.player,
           x: state.player.x - state.cameraX,
           lightSide: state.keyLight,
+          // Keep the authored action semantic until a reviewed production rig
+          // explicitly supports it; never disguise it as an old puppet pose.
+          actorAnimation: state.actorAnimations?.['npc.violet'] ?? null,
         }, this.simTime);
       } else if (actor.type === 'pet') {
         this.characterRenderer.drawPet(context, {
@@ -1636,6 +1639,7 @@ export class Game {
           x: occupant.x - state.cameraX,
           reducedMotion: this.reducedMotion,
           lightSide: state.keyLight,
+          actorAnimation: state.actorAnimations?.[occupant.npc] ?? null,
         }, this.simTime);
       }
     }

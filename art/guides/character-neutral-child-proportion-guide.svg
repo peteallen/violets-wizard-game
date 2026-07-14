@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="768" height="1024" viewBox="0 0 768 1024">
+  <rect width="768" height="1024" fill="#f4efe5"/>
+  <g fill="none" stroke="#b7aa96" stroke-width="2" stroke-dasharray="10 10" opacity="0.8">
+    <path d="M70 100H698"/>
+    <path d="M70 340H698"/>
+    <path d="M70 580H698"/>
+    <path d="M70 820H698"/>
+    <path d="M70 880H698"/>
+  </g>
+  <g fill="#756b60" font-family="Arial, sans-serif" font-size="20">
+    <text x="82" y="92">top</text>
+    <text x="82" y="332">1 head</text>
+    <text x="82" y="572">2 heads</text>
+    <text x="82" y="812">3 heads</text>
+    <text x="82" y="872">3.25 heads</text>
+  </g>
+  <g stroke="#3f3433" stroke-width="5" stroke-linejoin="round">
+    <ellipse cx="384" cy="220" rx="118" ry="120" fill="#c99a72"/>
+    <path d="M350 329V365H418V329" fill="#c99a72"/>
+    <path d="M292 360Q384 330 476 360L494 566Q438 594 384 594Q330 594 274 566Z" fill="#67539b"/>
+    <path d="M292 370Q252 378 238 430L264 548Q272 580 256 639" fill="none" stroke="#c99a72" stroke-width="38" stroke-linecap="round"/>
+    <path d="M476 370Q516 378 530 430L504 548Q496 580 512 639" fill="none" stroke="#c99a72" stroke-width="38" stroke-linecap="round"/>
+    <path d="M256 639Q250 653 262 665" fill="none" stroke="#c99a72" stroke-width="25" stroke-linecap="round"/>
+    <path d="M512 639Q518 653 506 665" fill="none" stroke="#c99a72" stroke-width="25" stroke-linecap="round"/>
+    <path d="M322 574Q310 698 318 826" fill="none" stroke="#43304a" stroke-width="70" stroke-linecap="round"/>
+    <path d="M446 574Q458 698 450 826" fill="none" stroke="#43304a" stroke-width="70" stroke-linecap="round"/>
+    <path d="M282 824Q318 812 360 830L352 865Q316 882 272 862Z" fill="#5d586b"/>
+    <path d="M486 824Q450 812 408 830L416 865Q452 882 496 862Z" fill="#5d586b"/>
+  </g>
+  <g fill="#f4efe5" stroke="#3f3433" stroke-width="4">
+    <circle cx="266" cy="490" r="11"/>
+    <circle cx="502" cy="490" r="11"/>
+    <circle cx="318" cy="704" r="11"/>
+    <circle cx="450" cy="704" r="11"/>
+  </g>
+</svg>

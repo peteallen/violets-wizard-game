@@ -1,0 +1,98 @@
+{
+  "generated_on": "2026-07-14",
+  "results": [
+    {
+      "label": "gemini-flash",
+      "model": "google/gemini-3.1-flash-image",
+      "requested_format": "png",
+      "raw_file": "casual-anchor-gemini-flash-raw.png",
+      "media_type": "image/png",
+      "bytes": 1490716,
+      "sha256": "9fa2d0769dabeaeb8fab5d3a66ab2b870f438ac77976255cb7578d84c576645d",
+      "seconds": 14.08,
+      "created": 0,
+      "usage": {
+        "prompt_tokens": 1804,
+        "completion_tokens": 1193,
+        "total_tokens": 2997,
+        "cost": 0.068321,
+        "is_byok": false,
+        "prompt_tokens_details": {
+          "cached_tokens": 0,
+          "cache_write_tokens": 0,
+          "audio_tokens": 0,
+          "video_tokens": 0
+        },
+        "cost_details": {
+          "upstream_inference_cost": 0.068321,
+          "upstream_inference_prompt_cost": 0.000902,
+          "upstream_inference_completions_cost": 0.067419
+        },
+        "completion_tokens_details": {
+          "reasoning_tokens": 0,
+          "image_tokens": 1120
+        }
+      }
+    },
+    {
+      "label": "grok-quality",
+      "model": "x-ai/grok-imagine-image-quality",
+      "requested_format": "png",
+      "raw_file": "casual-anchor-grok-quality-raw.jpg",
+      "media_type": "image/jpeg",
+      "bytes": 220379,
+      "sha256": "b8f9a36fd2ef9d9d8c0399698c11b127d152aec58531b260e7d72a52058ce986",
+      "seconds": 12.22,
+      "created": 1784049687,
+      "usage": {
+        "prompt_tokens": 0,
+        "completion_tokens": 4175,
+        "total_tokens": 4175,
+        "cost": 0.06,
+        "is_byok": false,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        },
+        "cost_details": {
+          "upstream_inference_cost": 0.06,
+          "upstream_inference_prompt_cost": 0.01,
+          "upstream_inference_completions_cost": 0.05
+        },
+        "completion_tokens_details": {
+          "reasoning_tokens": 0,
+          "image_tokens": 4175
+        }
+      }
+    },
+    {
+      "label": "recraft-pro-vector",
+      "model": "recraft/recraft-v4.1-pro-vector",
+      "requested_format": "svg",
+      "raw_file": "casual-anchor-recraft-pro-vector-raw.svg",
+      "media_type": "image/svg+xml",
+      "bytes": 5449356,
+      "sha256": "e8b130a14d5f2985b2808d2caa6011ae38f10d53ce0fae3963a65f160f5f8490",
+      "seconds": 37.02,
+      "created": 1784049711,
+      "usage": {
+        "prompt_tokens": 0,
+        "completion_tokens": 4175,
+        "total_tokens": 4175,
+        "cost": 0.3,
+        "is_byok": false,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        },
+        "cost_details": {
+          "upstream_inference_cost": 0.3,
+          "upstream_inference_prompt_cost": 0,
+          "upstream_inference_completions_cost": 0.3
+        },
+        "completion_tokens_details": {
+          "reasoning_tokens": 0,
+          "image_tokens": 4175
+        }
+      }
+    }
+  ]
+}

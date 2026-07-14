@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="768" height="1024" viewBox="0 0 768 1024">
+  <rect width="768" height="1024" fill="#f4efe5"/>
+  <g fill="none" stroke="#b7aa96" stroke-width="2" stroke-dasharray="10 10" opacity="0.8">
+    <path d="M70 100H698"/>
+    <path d="M70 340H698"/>
+    <path d="M70 580H698"/>
+    <path d="M70 820H698"/>
+  </g>
+  <path d="M60 820H708" stroke="#b44d3b" stroke-width="7"/>
+  <g fill="#756b60" font-family="Arial, sans-serif" font-size="20">
+    <text x="82" y="92">hair top</text>
+    <text x="82" y="332">1 head</text>
+    <text x="82" y="572">2 heads</text>
+    <text x="82" y="812">3 heads — shoe soles stop here</text>
+  </g>
+  <g stroke="#3f3433" stroke-width="5" stroke-linejoin="round">
+    <ellipse cx="384" cy="220" rx="118" ry="120" fill="#c99a72"/>
+    <path d="M350 329V360H418V329" fill="#c99a72"/>
+    <path d="M292 355Q384 330 476 355L490 535Q438 558 384 558Q330 558 278 535Z" fill="#67539b"/>
+    <path d="M292 365Q252 374 242 420L266 515Q275 555 258 620" fill="none" stroke="#c99a72" stroke-width="38" stroke-linecap="round"/>
+    <path d="M476 365Q516 374 526 420L502 515Q493 555 510 620" fill="none" stroke="#c99a72" stroke-width="38" stroke-linecap="round"/>
+    <path d="M258 620Q252 634 264 646" fill="none" stroke="#c99a72" stroke-width="25" stroke-linecap="round"/>
+    <path d="M510 620Q516 634 504 646" fill="none" stroke="#c99a72" stroke-width="25" stroke-linecap="round"/>
+    <path d="M323 540Q315 650 322 778" fill="none" stroke="#43304a" stroke-width="70" stroke-linecap="round"/>
+    <path d="M445 540Q453 650 446 778" fill="none" stroke="#43304a" stroke-width="70" stroke-linecap="round"/>
+    <path d="M286 772Q322 764 360 780L352 813Q318 824 278 812Z" fill="#5d586b"/>
+    <path d="M482 772Q446 764 408 780L416 813Q450 824 490 812Z" fill="#5d586b"/>
+  </g>
+  <g fill="#f4efe5" stroke="#3f3433" stroke-width="4">
+    <circle cx="268" cy="475" r="11"/>
+    <circle cx="500" cy="475" r="11"/>
+    <circle cx="322" cy="650" r="11"/>
+    <circle cx="446" cy="650" r="11"/>
+  </g>
+</svg>

@@ -53,6 +53,7 @@ export class World {
     this.glintActivations = new GlintActivationLedger();
     this.dialogueSourceTarget = null;
     this.guideWalkCue = null;
+    this.actorAnimations = new Map();
 
     const chapterId = save.resume?.chapter ?? 'ch1';
     this.chapter = chapters[chapterId] ?? chapters.ch1;
@@ -137,6 +138,7 @@ export class World {
     this.time += dt;
     const hadSetPiece = Boolean(this.setPieces.active);
     this.setPieces.update(dt);
+    this.expireActorAnimations();
     if (hadSetPiece && !this.setPieces.active && this.afterSetPieceActions.length) {
       const deferred = this.afterSetPieceActions;
       this.afterSetPieceActions = [];
@@ -510,6 +512,7 @@ export class World {
     this.noteProgress();
     this.cancelPendingInteraction();
     this.guideWalkCue = null;
+    this.clearActorAnimations();
     const requestedChapter = roomId.split('.')[0];
     if (requestedChapter !== this.chapter.id && this.chapters[requestedChapter]) {
       this.changeChapter(requestedChapter, roomId, spawnId);
@@ -539,6 +542,7 @@ export class World {
     this.noteProgress();
     this.cancelPendingInteraction();
     this.guideWalkCue = null;
+    this.clearActorAnimations();
     const from = this.roomId;
     this.chapter = chapter;
     this.bindSystems();
@@ -675,6 +679,55 @@ export class World {
     this.player.robeTrim = robeTrimColor(this.save.character.appearance?.robeTrim);
   }
 
+  startActorAnimation(payload) {
+    const setPiece = this.setPieces?.active;
+    if (!setPiece) throw new Error('Actor animation cues require an active set piece.');
+    if (!this.chapter.npcs[payload.actor]) {
+      throw new Error(`Unknown actor ${payload.actor} in chapter ${this.chapter.id}.`);
+    }
+    const animation = {
+      actor: payload.actor,
+      action: payload.action,
+      ...(payload.expression ? { expression: payload.expression } : {}),
+      ...(payload.temporaryProp ? { temporaryProp: payload.temporaryProp } : {}),
+      setPiece: setPiece.requestedId,
+      startedAt: this.time,
+      duration: setPiece.descriptor.duration,
+    };
+    this.actorAnimations.set(payload.actor, animation);
+    return animation;
+  }
+
+  clearActorAnimations(setPieceId = null) {
+    if (setPieceId === null) {
+      this.actorAnimations.clear();
+      return;
+    }
+    for (const [actor, animation] of this.actorAnimations) {
+      if (animation.setPiece === setPieceId) this.actorAnimations.delete(actor);
+    }
+  }
+
+  expireActorAnimations() {
+    for (const [actor, animation] of this.actorAnimations) {
+      if (this.time - animation.startedAt >= animation.duration) this.actorAnimations.delete(actor);
+    }
+  }
+
+  actorAnimationSnapshot() {
+    return Object.fromEntries([...this.actorAnimations].map(([actor, animation]) => {
+      const localTime = Math.max(0, Math.min(
+        animation.duration,
+        this.time - animation.startedAt,
+      ));
+      return [actor, {
+        ...animation,
+        localTime,
+        progress: animation.duration === 0 ? 1 : localTime / animation.duration,
+      }];
+    }));
+  }
+
   bindSystems() {
     this.dialogue = new Dialogue({
       scripts: this.chapter.dialogues,
@@ -697,7 +750,11 @@ export class World {
     });
     this.setPieces = new SetPieces({
       descriptors: this.chapter.setPieces,
-      emit: (type, payload) => this.emit(type, payload),
+      emit: (type, payload) => {
+        if (type === 'actor.animationRequested') this.startActorAnimation(payload);
+        if (type === 'setPiece.completed') this.clearActorAnimations(payload.id);
+        this.emit(type, payload);
+      },
       runActions: (actions) => this.runActions(actions),
       reducedMotion: Boolean(this.save.settings?.reducedMotion),
     });
@@ -831,6 +888,7 @@ export class World {
       ),
       cameraX: this.cameraX,
       player: { ...this.player },
+      actorAnimations: this.actorAnimationSnapshot(),
       pet,
       occupants,
       tapToWalkCue,

@@ -30,6 +30,7 @@ export const WORLD_EVENT_TYPES = Object.freeze([
   'encounter.phaseChanged',
   'setPiece.started',
   'setPiece.completed',
+  'actor.animationRequested',
   'audio.command',
   'particles.emit',
   'camera.command',
@@ -41,6 +42,7 @@ export const WORLD_EVENT_TYPES = Object.freeze([
 ]);
 
 export const TIMELINE_CUE_EVENT_TYPES = Object.freeze([
+  'actor.animationRequested',
   'audio.command',
   'particles.emit',
   'camera.command',
@@ -1126,6 +1128,13 @@ export function validateWorldEventPayload(type, value, path = 'event.payload') {
     case 'setPiece.completed':
       payloadObject(value, path, ['id']);
       id(value.id, `${path}.id`);
+      break;
+    case 'actor.animationRequested':
+      payloadObject(value, path, ['actor', 'action'], ['expression', 'temporaryProp']);
+      id(value.actor, `${path}.actor`);
+      localId(value.action, `${path}.action`);
+      if (value.expression !== undefined) localId(value.expression, `${path}.expression`);
+      if (value.temporaryProp !== undefined) ref(value.temporaryProp, `${path}.temporaryProp`);
       break;
     case 'audio.command':
       validateAudioPayload(value, path);

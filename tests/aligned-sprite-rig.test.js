@@ -3,6 +3,7 @@ import {
   AlignedSpriteRig,
   resolveLocalLightSide,
   sampleAlignedSpriteFrame,
+  transformAlignedSpriteAnchor,
   validateAlignedSpriteManifest,
 } from '../src/game/render/AlignedSpriteRig.js';
 
@@ -105,6 +106,68 @@ describe('aligned sprite rig contract', () => {
     })).toThrow('does not support pose victory');
   });
 
+  it('validates and resolves per-frame layer order, anchors, and bounds', () => {
+    const rig = manifest();
+    Object.assign(rig.clips.walking.frames[1], {
+      layerOrder: ['face', 'body', 'legs'],
+      anchors: { handRight: { x: 70, y: 80 } },
+      bounds: {
+        world: { x: 10, y: 4, width: 82, height: 146 },
+        shadow: { x: 28, y: 146, width: 48, height: 8 },
+      },
+    });
+
+    const sample = sampleAlignedSpriteFrame(rig, {
+      appearance: 'casual', pose: 'walking', localTime: 0.6,
+    });
+    expect(sample.layers.map(({ slot }) => slot)).toEqual(['face', 'body', 'legs']);
+    expect(sample.anchors.handRight).toEqual({ x: 70, y: 80 });
+    expect(sample.anchors.handLeft).toEqual({ x: 24, y: 94 });
+    expect(sample.bounds.world).toEqual({ x: 10, y: 4, width: 82, height: 146 });
+    expect(sample.bounds.portrait).toEqual({ x: 18, y: 6, width: 64, height: 62 });
+    expect(Object.isFrozen(sample.anchors.handRight)).toBe(true);
+    expect(Object.isFrozen(sample.bounds.world)).toBe(true);
+
+    const missingSlot = manifest();
+    missingSlot.clips.walking.frames[0].layerOrder = ['body', 'face'];
+    expect(() => validateAlignedSpriteManifest(missingSlot)).toThrow('exact permutation');
+
+    const repeatedSlot = manifest();
+    repeatedSlot.clips.walking.frames[0].layerOrder = ['legs', 'body', 'body'];
+    expect(() => validateAlignedSpriteManifest(repeatedSlot)).toThrow('exact permutation');
+
+    const unknownAnchor = manifest();
+    unknownAnchor.clips.walking.frames[0].anchors = { wandTip: { x: 50, y: 50 } };
+    expect(() => validateAlignedSpriteManifest(unknownAnchor)).toThrow('not declared in manifest.anchors');
+
+    const unknownBounds = manifest();
+    unknownBounds.clips.walking.frames[0].bounds = {
+      interaction: { x: 10, y: 10, width: 20, height: 20 },
+    };
+    expect(() => validateAlignedSpriteManifest(unknownBounds)).toThrow('not declared in manifest.bounds');
+  });
+
+  it('transforms resolved anchors through the exact drawing transform', () => {
+    const rig = manifest();
+    Object.assign(rig.clips.walking.frames[1], {
+      anchors: { handRight: { x: 60, y: 140 } },
+      root: { x: 10, y: -2, rotation: Math.PI / 2, scaleX: 2, scaleY: 0.5 },
+    });
+    const sample = sampleAlignedSpriteFrame(rig, {
+      appearance: 'casual', pose: 'walking', localTime: 0.6,
+    });
+
+    expect(transformAlignedSpriteAnchor(rig, sample, 'handRight', {
+      x: 300, y: 500, scale: 2, facing: 'left',
+    })).toEqual({ x: 270, y: 536 });
+    expect(transformAlignedSpriteAnchor(rig, sample, sample.anchors.handRight, {
+      x: 300, y: 500, scale: 2, facing: 'right',
+    })).toEqual({ x: 330, y: 536 });
+    expect(() => transformAlignedSpriteAnchor(rig, sample, 'wandTip')).toThrow(
+      'does not define anchor wandTip',
+    );
+  });
+
   it('keeps room lighting in world space when a whole puppet faces left', () => {
     expect(resolveLocalLightSide('left', 'right')).toBe('left');
     expect(resolveLocalLightSide('right', 'right')).toBe('right');
@@ -135,7 +198,9 @@ describe('aligned sprite rig contract', () => {
   it('preloads every required variant and draws aligned layers over a planted shadow', async () => {
     const created = [];
     const imageFactory = (url) => {
-      const image = { url, onload: null, onerror: null };
+      const image = {
+        url, onload: null, onerror: null, naturalWidth: 100, naturalHeight: 160,
+      };
       created.push(image);
       return image;
     };
@@ -157,5 +222,22 @@ describe('aligned sprite rig contract', () => {
     const firstLayer = context.calls.findIndex(([name]) => name === 'drawImage');
     expect(shadowFill).toBeGreaterThan(-1);
     expect(shadowFill).toBeLessThan(firstLayer);
+  });
+
+  it('rejects a layer whose decoded size does not match the aligned canvas', async () => {
+    const created = [];
+    const imageFactory = (url) => {
+      const image = {
+        url, onload: null, onerror: null, naturalWidth: 99, naturalHeight: 160,
+      };
+      created.push(image);
+      return image;
+    };
+    const rig = new AlignedSpriteRig(manifest(), { imageFactory });
+    const loading = rig.preload();
+    created.forEach((image) => image.onload());
+
+    await expect(loading).rejects.toThrow('is 99x160; expected 100x160');
+    expect(rig.ready).toBe(false);
   });
 });

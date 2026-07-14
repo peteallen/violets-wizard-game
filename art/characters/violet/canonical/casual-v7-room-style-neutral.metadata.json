@@ -1,0 +1,82 @@
+{
+  "model": "google/gemini-3.1-flash-image",
+  "endpoint": "https://openrouter.ai/api/v1/images",
+  "created": 0,
+  "raw_file": "casual-v7-room-style-neutral-raw.png",
+  "media_type": "image/png",
+  "bytes": 1176804,
+  "sha256": "fc1be066310a674124a3d1e9af90329e3f283ce54de9ae64fac8c0b778aa1d16",
+  "seconds": 22.09,
+  "request": {
+    "prompt_file": "art/characters/violet/canonical/casual-v7-room-style-neutral.prompt.md",
+    "prompt_sha256": "e8f62b9001f154978fbbde97de66c0f7444e6a170077744a9630edc47d911b9d",
+    "aspect_ratio": "3:4",
+    "resolution": "1K",
+    "n": 1,
+    "output_format": "png",
+    "provider": {
+      "only": [
+        "Google"
+      ],
+      "allow_fallbacks": false
+    },
+    "references": [
+      {
+        "path": "art/characters/violet/canonical/casual-v6-identity-edit-raw.png",
+        "media_type": "image/png",
+        "bytes": 1581538,
+        "sha256": "1bee995856ef74956414ea34ae0afa368d2fbaa3e48d115556769fbff885e151"
+      },
+      {
+        "path": "art/character-refs/violet.png",
+        "media_type": "image/png",
+        "bytes": 2689276,
+        "sha256": "7b43bf91b32b9ff4edbe31db02ca926b4d801a781f547c1fed0d55e8a72a96f2"
+      },
+      {
+        "path": "art/raw/ch1-bedroom.png",
+        "media_type": "image/png",
+        "bytes": 2538610,
+        "sha256": "dbfbdf69b481f4bc563c2c7711e55615d9f838b20bef4f2fb2fd3ba3c02ca1df"
+      },
+      {
+        "path": "art/raw/ch1-malkins.png",
+        "media_type": "image/png",
+        "bytes": 2228921,
+        "sha256": "2ed310c31d0fb5a5205d516ceaa14967a7b8f8717a482aab7ed04da4a3349213"
+      },
+      {
+        "path": "art/raw/ch1-ollivanders.png",
+        "media_type": "image/png",
+        "bytes": 2262906,
+        "sha256": "0ad6d0941b7ca7b4a4ea4ebe31488333b60c5dbb09ed6b8620fe2b073f2385a2"
+      }
+    ]
+  },
+  "response": {
+    "request_id": null,
+    "generation_id": null
+  },
+  "usage": {
+    "prompt_tokens": 6695,
+    "completion_tokens": 1120,
+    "total_tokens": 7815,
+    "cost": 0.0705475,
+    "is_byok": false,
+    "prompt_tokens_details": {
+      "cached_tokens": 0,
+      "cache_write_tokens": 0,
+      "audio_tokens": 0,
+      "video_tokens": 0
+    },
+    "cost_details": {
+      "upstream_inference_cost": 0.0705475,
+      "upstream_inference_prompt_cost": 0.0033475,
+      "upstream_inference_completions_cost": 0.0672
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 0,
+      "image_tokens": 1120
+    }
+  }
+}

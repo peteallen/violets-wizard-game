@@ -1,0 +1,31 @@
+{
+  "model": "google/gemini-3.1-flash-lite-image",
+  "created": 0,
+  "raw_file": "casual-anchor-lite-v3-proportion-raw.jpg",
+  "media_type": "image/jpeg",
+  "bytes": 128690,
+  "sha256": "e78bfb4fead1b6f73653f1d66465b99abe4e03aad029a95ed5d2d91018b22bd8",
+  "seconds": 5.31,
+  "usage": {
+    "prompt_tokens": 1428,
+    "completion_tokens": 1120,
+    "total_tokens": 2548,
+    "cost": 0.033957,
+    "is_byok": false,
+    "prompt_tokens_details": {
+      "cached_tokens": 0,
+      "cache_write_tokens": 0,
+      "audio_tokens": 0,
+      "video_tokens": 0
+    },
+    "cost_details": {
+      "upstream_inference_cost": 0.033957,
+      "upstream_inference_prompt_cost": 0.000357,
+      "upstream_inference_completions_cost": 0.0336
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 0,
+      "image_tokens": 1120
+    }
+  }
+}

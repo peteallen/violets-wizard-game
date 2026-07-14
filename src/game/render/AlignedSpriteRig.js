@@ -48,9 +48,62 @@ function assertKnownSlots(slots, path, layerSlots, assets) {
   }
 }
 
-function validateFrame(frame, path, layerSlots, assets, expressions) {
+function assertLayerOrder(layerOrder, path, manifestLayerOrder, layerSlots) {
+  if (!Array.isArray(layerOrder)) throw new TypeError(`${path} must be an array.`);
+  if (layerOrder.length !== manifestLayerOrder.length) {
+    throw new RangeError(`${path} must be an exact permutation of manifest.layerOrder.`);
+  }
+  const seen = new Set();
+  layerOrder.forEach((slot, index) => {
+    assertId(slot, `${path}[${index}]`);
+    if (!layerSlots.has(slot) || seen.has(slot)) {
+      throw new RangeError(`${path} must be an exact permutation of manifest.layerOrder.`);
+    }
+    seen.add(slot);
+  });
+}
+
+function assertKnownPointOverrides(overrides, path, knownPoints) {
+  assertObject(overrides, path);
+  for (const [name, point] of Object.entries(overrides)) {
+    if (!Object.hasOwn(knownPoints, name)) {
+      throw new RangeError(`${path}.${name} is not declared in manifest.anchors.`);
+    }
+    assertPoint(point, `${path}.${name}`);
+  }
+}
+
+function assertKnownRectOverrides(overrides, path, knownRects) {
+  assertObject(overrides, path);
+  for (const [name, rect] of Object.entries(overrides)) {
+    if (!Object.hasOwn(knownRects, name)) {
+      throw new RangeError(`${path}.${name} is not declared in manifest.bounds.`);
+    }
+    assertRect(rect, `${path}.${name}`);
+  }
+}
+
+function validateFrame(
+  frame,
+  path,
+  manifestLayerOrder,
+  layerSlots,
+  assets,
+  expressions,
+  anchors,
+  bounds,
+) {
   assertObject(frame, path);
   if (frame.slots !== undefined) assertKnownSlots(frame.slots, `${path}.slots`, layerSlots, assets);
+  if (frame.layerOrder !== undefined) {
+    assertLayerOrder(frame.layerOrder, `${path}.layerOrder`, manifestLayerOrder, layerSlots);
+  }
+  if (frame.anchors !== undefined) {
+    assertKnownPointOverrides(frame.anchors, `${path}.anchors`, anchors);
+  }
+  if (frame.bounds !== undefined) {
+    assertKnownRectOverrides(frame.bounds, `${path}.bounds`, bounds);
+  }
   if (frame.expression !== undefined && !Object.hasOwn(expressions, frame.expression)) {
     throw new RangeError(`${path}.expression references unknown expression ${frame.expression}.`);
   }
@@ -110,6 +163,31 @@ export function validateAlignedSpriteManifest(manifest) {
     assertKnownSlots(expression.slots ?? {}, `manifest.expressions.${expressionId}.slots`, layerSlots, assets);
   }
 
+  const anchors = assertObject(manifest.anchors, 'manifest.anchors');
+  for (const [anchor, point] of Object.entries(anchors)) {
+    assertId(anchor, `manifest.anchors.${anchor}`);
+    assertPoint(point, `manifest.anchors.${anchor}`);
+  }
+  if (!Array.isArray(manifest.requiredAnchors) || manifest.requiredAnchors.length === 0) {
+    throw new TypeError('manifest.requiredAnchors must be a non-empty array.');
+  }
+  const requiredAnchors = new Set();
+  manifest.requiredAnchors.forEach((anchor, index) => {
+    assertId(anchor, `manifest.requiredAnchors[${index}]`);
+    if (requiredAnchors.has(anchor)) throw new RangeError(`manifest.requiredAnchors repeats ${anchor}.`);
+    requiredAnchors.add(anchor);
+    if (!Object.hasOwn(anchors, anchor)) throw new RangeError(`manifest.anchors is missing ${anchor}.`);
+  });
+
+  const bounds = assertObject(manifest.bounds, 'manifest.bounds');
+  for (const [name, rect] of Object.entries(bounds)) {
+    assertId(name, `manifest.bounds.${name}`);
+    assertRect(rect, `manifest.bounds.${name}`);
+  }
+  for (const name of REQUIRED_BOUNDS) {
+    if (!Object.hasOwn(bounds, name)) throw new RangeError(`manifest.bounds is missing ${name}.`);
+  }
+
   const clips = assertObject(manifest.clips, 'manifest.clips');
   if (!Object.hasOwn(clips, 'idle')) throw new RangeError('manifest.clips must define idle.');
   for (const [clipId, clip] of Object.entries(clips)) {
@@ -122,9 +200,12 @@ export function validateAlignedSpriteManifest(manifest) {
     clip.frames.forEach((frame, index) => validateFrame(
       frame,
       `manifest.clips.${clipId}.frames[${index}]`,
+      manifest.layerOrder,
       layerSlots,
       assets,
       expressions,
+      anchors,
+      bounds,
     ));
     if (clip.reducedMotionClip !== undefined) assertId(
       clip.reducedMotionClip,
@@ -150,22 +231,6 @@ export function validateAlignedSpriteManifest(manifest) {
     if (!Object.hasOwn(clips, clip)) throw new RangeError(`manifest.aliases.${alias} references unknown clip ${clip}.`);
   }
 
-  const anchors = assertObject(manifest.anchors, 'manifest.anchors');
-  if (!Array.isArray(manifest.requiredAnchors) || manifest.requiredAnchors.length === 0) {
-    throw new TypeError('manifest.requiredAnchors must be a non-empty array.');
-  }
-  manifest.requiredAnchors.forEach((anchor, index) => {
-    assertId(anchor, `manifest.requiredAnchors[${index}]`);
-    if (!Object.hasOwn(anchors, anchor)) throw new RangeError(`manifest.anchors is missing ${anchor}.`);
-    assertPoint(anchors[anchor], `manifest.anchors.${anchor}`);
-  });
-
-  const bounds = assertObject(manifest.bounds, 'manifest.bounds');
-  for (const name of REQUIRED_BOUNDS) {
-    if (!Object.hasOwn(bounds, name)) throw new RangeError(`manifest.bounds is missing ${name}.`);
-    assertRect(bounds[name], `manifest.bounds.${name}`);
-  }
-
   return manifest;
 }
 
@@ -184,6 +249,20 @@ function selectFrameIndex(clip, localTime, actionProgress) {
   const raw = Math.max(0, localTime) * clip.fps;
   if (clip.loop) return Math.floor(raw) % clip.frames.length;
   return Math.min(clip.frames.length - 1, Math.floor(raw));
+}
+
+function resolvedPoints(points, overrides = {}) {
+  return Object.freeze(Object.fromEntries(Object.entries({ ...points, ...overrides }).map(([name, point]) => [
+    name,
+    Object.freeze({ x: point.x, y: point.y }),
+  ])));
+}
+
+function resolvedRects(rects, overrides = {}) {
+  return Object.freeze(Object.fromEntries(Object.entries({ ...rects, ...overrides }).map(([name, rect]) => [
+    name,
+    Object.freeze({ x: rect.x, y: rect.y, width: rect.width, height: rect.height }),
+  ])));
 }
 
 export function sampleAlignedSpriteFrame(manifest, {
@@ -224,7 +303,8 @@ export function sampleAlignedSpriteFrame(manifest, {
     ...(manifest.expressions[expressionId].slots ?? {}),
   };
   const localLightSide = resolveLocalLightSide(lightSide, facing);
-  const layers = manifest.layerOrder.map((slot) => {
+  const layerOrder = frame.layerOrder ?? manifest.layerOrder;
+  const layers = layerOrder.map((slot) => {
     const asset = slots[slot];
     return Object.freeze({ slot, asset, url: manifest.assets[asset][localLightSide] });
   });
@@ -241,6 +321,9 @@ export function sampleAlignedSpriteFrame(manifest, {
   root.y += Math.sin(safeTime * (motion.bobFrequency ?? 0) + phase) * (motion.bobAmplitude ?? 0) * motionScale;
   root.rotation += Math.sin(safeTime * (motion.swayFrequency ?? 0) + phase) * (motion.swayAmplitude ?? 0) * motionScale;
 
+  const anchors = resolvedPoints(manifest.anchors, frame.anchors);
+  const bounds = resolvedRects(manifest.bounds, frame.bounds);
+
   return Object.freeze({
     clip: clipId,
     frameIndex,
@@ -248,6 +331,52 @@ export function sampleAlignedSpriteFrame(manifest, {
     localLightSide,
     layers: Object.freeze(layers),
     root: Object.freeze(root),
+    anchors,
+    bounds,
+  });
+}
+
+export function transformAlignedSpriteAnchor(manifest, sample, anchor, {
+  x = 0,
+  y = 0,
+  scale = 1,
+  facing = 'right',
+} = {}) {
+  assertObject(manifest, 'manifest');
+  const canvas = assertObject(manifest.canvas, 'manifest.canvas');
+  assertPoint(canvas.ground, 'manifest.canvas.ground');
+  assertObject(sample, 'sample');
+  const anchors = assertObject(sample.anchors, 'sample.anchors');
+  const root = assertObject(sample.root, 'sample.root');
+
+  let localAnchor = anchor;
+  if (typeof anchor === 'string') {
+    assertId(anchor, 'anchor');
+    if (!Object.hasOwn(anchors, anchor)) {
+      throw new RangeError(`${manifest.id ?? 'manifest'} sample does not define anchor ${anchor}.`);
+    }
+    localAnchor = anchors[anchor];
+  }
+  assertPoint(localAnchor, 'anchor');
+  for (const key of ['x', 'y', 'rotation', 'scaleX', 'scaleY']) {
+    assertFinite(root[key], `sample.root.${key}`);
+  }
+  if (!SIDES.has(facing)) throw new RangeError(`Unknown facing ${facing}.`);
+  assertFinite(x, 'placement.x');
+  assertFinite(y, 'placement.y');
+  assertFinite(scale, 'placement.scale');
+
+  const localX = (localAnchor.x - canvas.ground.x) * root.scaleX;
+  const localY = (localAnchor.y - canvas.ground.y) * root.scaleY;
+  const cosine = Math.cos(root.rotation);
+  const sine = Math.sin(root.rotation);
+  const movedX = root.x + localX * cosine - localY * sine;
+  const movedY = root.y + localX * sine + localY * cosine;
+  const direction = facing === 'left' ? -1 : 1;
+
+  return Object.freeze({
+    x: x + movedX * direction * scale,
+    y: y + movedY * scale,
   });
 }
 
@@ -265,7 +394,21 @@ export class AlignedSpriteRig {
     const urls = [...new Set(Object.values(this.manifest.assets).flatMap((asset) => [asset.left, asset.right]))];
     this.loading = Promise.all(urls.map((url) => new Promise((resolve, reject) => {
       const image = this.imageFactory(url);
-      image.onload = () => { this.images.set(url, image); resolve(); };
+      image.onload = () => {
+        const hasNaturalDimensions = image.naturalWidth !== undefined || image.naturalHeight !== undefined;
+        if (hasNaturalDimensions && (
+          image.naturalWidth !== this.manifest.canvas.width
+          || image.naturalHeight !== this.manifest.canvas.height
+        )) {
+          reject(new Error(
+            `${this.manifest.id} asset ${url} is ${image.naturalWidth}x${image.naturalHeight}; `
+            + `expected ${this.manifest.canvas.width}x${this.manifest.canvas.height}.`,
+          ));
+          return;
+        }
+        this.images.set(url, image);
+        resolve();
+      };
       image.onerror = () => reject(new Error(`Failed to load ${this.manifest.id} asset ${url}.`));
       image.src = url;
     }))).then(() => { this.ready = true; });
@@ -279,10 +422,10 @@ export class AlignedSpriteRig {
     const y = Number.isFinite(options.y) ? options.y : 0;
     const scale = Number.isFinite(options.scale) ? options.scale : 1;
     const direction = options.facing === 'left' ? -1 : 1;
-    const { canvas, bounds } = this.manifest;
+    const { canvas } = this.manifest;
 
     if (options.shadow !== false) {
-      const shadow = bounds.shadow;
+      const shadow = sample.bounds.shadow;
       context.save();
       context.translate(x, y);
       context.scale(scale, scale);

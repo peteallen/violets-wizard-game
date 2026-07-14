@@ -43,6 +43,20 @@ function sfxCue(at, key) {
   return { type: 'cue', at, event: 'audio.command', payload: { command: 'sfx', key } };
 }
 
+function violetActionCue(action, { expression, temporaryProp } = {}) {
+  return {
+    type: 'cue',
+    at: 0,
+    event: 'actor.animationRequested',
+    payload: {
+      actor: 'npc.violet',
+      action,
+      ...(expression ? { expression } : {}),
+      ...(temporaryProp ? { temporaryProp } : {}),
+    },
+  };
+}
+
 function musicCue(at, key) {
   return { type: 'cue', at, event: 'audio.command', payload: { command: 'music', key, mode: 'crossfade', fadeSeconds: 0.8 } };
 }
@@ -1204,7 +1218,13 @@ export const chapter1 = {
       fallback: 'fallback.papersOnly',
       reducedMotion: 'reduced.papersShort',
       params: { specification: 'SP-03', variant: 'papers' },
-      timeline: { tracks: [sfxCue(0, 'sfx/ch1/wandPaperWhirl')] },
+      timeline: { tracks: [
+        violetActionCue('wrong-wand-one', {
+          expression: 'curious',
+          temporaryProp: 'prop.ch1.wand1',
+        }),
+        sfxCue(0, 'sfx/ch1/wandPaperWhirl'),
+      ] },
       verification: { keyframes: [0, 0.8, 1.5, 2.2], checklist: storybookChecklist('Every paper settles before control returns.') },
       onComplete: [],
     },
@@ -1219,7 +1239,14 @@ export const chapter1 = {
       fallback: 'fallback.papersAndWobble',
       reducedMotion: 'reduced.vaseSwap',
       params: { specification: 'SP-03', variant: 'vase' },
-      timeline: { tracks: [sfxCue(0, 'sfx/ch1/wandPaperWhirl'), sfxCue(1.05, 'sfx/ch1/vaseShatter')] },
+      timeline: { tracks: [
+        violetActionCue('wrong-wand-two', {
+          expression: 'curious',
+          temporaryProp: 'prop.ch1.wand2',
+        }),
+        sfxCue(0, 'sfx/ch1/wandPaperWhirl'),
+        sfxCue(1.05, 'sfx/ch1/vaseShatter'),
+      ] },
       verification: { keyframes: [0, 0.8, 1.6, 2.6], checklist: storybookChecklist('Vase shards stay inside the room.', 'Every prop settles before control returns.') },
       onComplete: [],
     },
@@ -1234,7 +1261,13 @@ export const chapter1 = {
       fallback: 'fallback.goldenWash',
       reducedMotion: 'reduced.goldenFade',
       params: { specification: 'SP-03', variant: 'golden-choice', crescendoAt: 1.65 },
-      timeline: { tracks: [sfxCue(0, 'sfx/ch1/wandChosen')] },
+      timeline: { tracks: [
+        violetActionCue('chosen-wand', {
+          expression: 'wonder',
+          temporaryProp: 'prop.ch1.wandChosen',
+        }),
+        sfxCue(0, 'sfx/ch1/wandChosen'),
+      ] },
       verification: { keyframes: [0, 1, 2, 3], checklist: storybookChecklist('The golden wash does not clip to white.', 'The chosen wand remains visible.') },
       onComplete: [],
     },
