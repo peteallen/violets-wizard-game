@@ -247,6 +247,11 @@ describe('code-only storybook title illustration', () => {
     expect(first.calls).toEqual(replayed.calls);
     expect(first.assignments).toEqual(replayed.assignments);
     expect(first.assignments.some(([property]) => property === 'shadowBlur' || property === 'filter')).toBe(false);
+    expect(first.calls.some(([name]) => [
+      'arc', 'ellipse', 'lineTo', 'rect', 'roundRect', 'setLineDash',
+      'createLinearGradient', 'createRadialGradient',
+    ].includes(name))).toBe(false);
+    expect(first.calls.filter(([name]) => name === 'bezierCurveTo').length).toBeGreaterThan(35);
     expect(titleForegroundLayout(presentation)).toEqual({
       masthead: presentation.safeAreas.masthead,
       action: { x: 212, y: 314.5, width: 246, height: 71 },

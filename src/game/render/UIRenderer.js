@@ -3076,12 +3076,63 @@ function drawTitleLetter(context, label, rect, { time = 0 } = {}) {
   context.lineWidth = 2.4 * scale;
   context.beginPath();
   context.moveTo(x + 12 * scale, y + 12 * scale);
-  context.lineTo(x + width / 2, y + height * 0.58);
-  context.lineTo(x + width - 12 * scale, y + 12 * scale);
+  context.bezierCurveTo(
+    x + width * 0.24,
+    y + height * 0.25,
+    x + width * 0.39,
+    y + height * 0.5,
+    x + width / 2,
+    y + height * 0.58,
+  );
+  context.bezierCurveTo(
+    x + width * 0.62,
+    y + height * 0.48,
+    x + width * 0.78,
+    y + height * 0.24,
+    x + width - 12 * scale,
+    y + 12 * scale,
+  );
   context.moveTo(x + 14 * scale, y + height - 13 * scale);
-  context.lineTo(x + width * 0.4, y + height * 0.5);
+  context.bezierCurveTo(
+    x + width * 0.22,
+    y + height * 0.81,
+    x + width * 0.33,
+    y + height * 0.61,
+    x + width * 0.4,
+    y + height * 0.5,
+  );
   context.moveTo(x + width - 14 * scale, y + height - 13 * scale);
-  context.lineTo(x + width * 0.6, y + height * 0.5);
+  context.bezierCurveTo(
+    x + width * 0.79,
+    y + height * 0.79,
+    x + width * 0.68,
+    y + height * 0.6,
+    x + width * 0.6,
+    y + height * 0.5,
+  );
+  context.stroke();
+
+  context.strokeStyle = 'rgba(120,82,48,0.18)';
+  context.lineWidth = Math.max(0.8, 1.05 * scale);
+  context.beginPath();
+  for (const [startX, startY, length, bend] of [
+    [0.26, 0.2, 0.1, -0.018],
+    [0.48, 0.76, 0.13, 0.015],
+    [0.69, 0.29, 0.09, 0.021],
+    [0.77, 0.7, 0.08, -0.014],
+  ]) {
+    const grainX = x + width * startX;
+    const grainY = y + height * startY;
+    context.moveTo(grainX, grainY);
+    context.bezierCurveTo(
+      grainX + width * length * 0.31,
+      grainY + height * bend,
+      grainX + width * length * 0.7,
+      grainY - height * bend * 0.45,
+      grainX + width * length,
+      grainY + height * bend * 0.2,
+    );
+  }
   context.stroke();
 
   drawWaxMedallion(
@@ -3114,14 +3165,42 @@ function drawTitleLetter(context, label, rect, { time = 0 } = {}) {
 
 function traceTitleLetter(context, x, y, width, height) {
   context.beginPath();
-  context.moveTo(x + 18, y);
-  context.lineTo(x + width - 14, y + 3);
+  context.moveTo(x + 18, y + 1);
+  context.bezierCurveTo(
+    x + width * 0.28,
+    y - 2,
+    x + width * 0.69,
+    y + 5,
+    x + width - 14,
+    y + 3,
+  );
   context.quadraticCurveTo(x + width, y + 5, x + width - 2, y + 21);
-  context.lineTo(x + width - 5, y + height - 17);
+  context.bezierCurveTo(
+    x + width + 1,
+    y + height * 0.32,
+    x + width - 9,
+    y + height * 0.72,
+    x + width - 5,
+    y + height - 17,
+  );
   context.quadraticCurveTo(x + width - 7, y + height, x + width - 24, y + height - 1);
-  context.lineTo(x + 15, y + height - 4);
+  context.bezierCurveTo(
+    x + width * 0.68,
+    y + height + 3,
+    x + width * 0.31,
+    y + height - 7,
+    x + 15,
+    y + height - 4,
+  );
   context.quadraticCurveTo(x, y + height - 7, x + 3, y + height - 23);
-  context.lineTo(x + 1, y + 18);
+  context.bezierCurveTo(
+    x - 2,
+    y + height * 0.71,
+    x + 7,
+    y + height * 0.3,
+    x + 1,
+    y + 18,
+  );
   context.quadraticCurveTo(x + 3, y + 3, x + 18, y);
   context.closePath();
 }
