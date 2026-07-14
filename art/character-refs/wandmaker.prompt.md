@@ -4,31 +4,56 @@ This is a style target for the Wandmaker's painted sprite parts (D48) and the
 identity source for every art-director judgment of his future part sheets. It
 is reference-only material and is never shipped by the game.
 
-## Current file (v4)
+## Current file (v3 — provisional identity anchor, D53)
 
-- Status: **under fresh art-director review (D49)** — accepted only on a PASS
-  verdict; this line is updated when the ruling lands
-- Generated: 2026-07-13
-- Workflow: OpenRouter Image API via the `openrouter-image` skill
-- Model identifier: `black-forest-labs/flux.2-pro` — a deliberate model-family
-  switch after three same-locus failures (hands, full-body shadow cooling,
-  skin/field tooth) across two Gemini tiers; FLUX's prior is strong on
-  texture and hands
-- Cost: $0.03. Requested 16:9; FLUX returned 1024×1024 square (format drift
-  noted for the judge)
-- Reference images: none — text-to-image only
+- Status: **provisional identity anchor per D53** after six generations
+  across three model families failed to produce a full PASS. Part sheets
+  judge IDENTITY and PALETTE against this sheet; CRAFT is judged directly
+  against the Storybook Standard and the room paintings. Outstanding v3
+  craft findings remain on file below (merged-finger hands, warm-only
+  full-body shadows, thin skin tooth); a true-PASS regeneration is deferred
+  until the toolchain can win that fight (e.g. reference-image
+  conditioning or a stronger painterly model).
+- Generated: 2026-07-13, `google/gemini-3.1-flash-image-preview`, $0.0676,
+  16:9 at 1K, restored from `426a5ef`
 - File: `wandmaker.png`
-- SHA-256: `490e92f99502925d11fa76160027ca3feb61daff29a760510e760772f07eecc5`
-- Prompt: v4 block below — rewritten in plainer descriptive language for the
-  new model family, all v3 findings encoded: hands no larger than half the
-  face, resting in contact with the thighs, thumb + curled fingers with
-  shadow gaps (C1); one almost-colorless cool slate-grey iris pigment in both
-  views (C2); violet-blue shadow cooling named per surface on the full-body
-  figure (M1); weave demanded through skin, gold bloom, and the darkest
-  corners (M2/M3); catchlights pinned upper-left (m1); same age both views
-  (m2).
+- SHA-256: `3739379077e2c76e058fb311f931dcaa90ede6c74cafbcd064b67aa91cf19240`
+- What three separate rulings verified it locks: two-view single-skull
+  identity, full wardrobe pigment lock (plum waistcoat, dove-grey cravat,
+  cream rolled sleeves, ticked tape both sides, warm-brown trousers, amber
+  shoes), close-up pale silver-grey eyes with relaxed lids, close-up
+  gold-rim/violet-shadow light story, warm quietly-delighted 6-year-old-safe
+  expression, clean hygiene, no actor likeness.
 
 ## History
+
+- **v5 candidates, author-screened, never judged (2026-07-14):**
+  `bytedance-seed/seedream-4.5` ($0.04, 4096×2304) returned hard-outlined
+  anime with "13" printed down the tape, a lens-flare forehead glow, and a
+  painted candle — off-family entirely, discarded at pre-check;
+  `black-forest-labs/flux.2-pro` with hardened clauses and the tape rewritten
+  as a plain stitched cloth strip ($0.03) removed all text but collapsed the
+  wardrobe identity (laced peasant tunic, fistfuls of sticks, candle stand
+  and bottle scenery), discarded at pre-check. These two discards, on top of
+  the v4 ruling, triggered D53. Prompts in the session scratchpad; not
+  retained.
+
+- **v4** (`black-forest-labs/flux.2-pro`, $0.03, 1024×1024, SHA-256
+  `490e92f99502925d11fa76160027ca3feb61daff29a760510e760772f07eecc5`,
+  committed at `9d9ef56`): **FAILED D49 review — 1 CRITICAL, 6 MAJOR,
+  7 MINOR.** The model-family switch fixed what Gemini never could — canvas
+  tooth measured anchor-comparable in every tone including skin and the
+  darkest corners — but brought its own sins: readable printed numerals
+  down the tape in both views (C1, forbidden text); a hard full-height
+  panel seam at x≈510 slicing the close-up's shoulder (M1); the key light
+  flipped to upper-RIGHT sheet-wide, catchlights included (M2); violet-blue
+  cooling absent from the figure in both views (M3); wide-eyed lids with no
+  lid-over-iris overlap (M4); hands improved but still part-fused with one
+  thumb missing (M5); and contour-drawn technique — the smile a single
+  stroke, fingers/nose/lids circumscribed by lines — instead of painted
+  value masses (M6). Minors: warm-greige irises, eye-region age drift
+  between views, gold-cast hair, square format, undersized close-up, absent
+  rolled sleeves, maroon-drifted waistcoat.
 
 - **v3** (`google/gemini-3.1-flash-image-preview`, $0.0676, SHA-256
   `3739379077e2c76e058fb311f931dcaa90ede6c74cafbcd064b67aa91cf19240`,

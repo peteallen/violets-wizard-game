@@ -4,17 +4,43 @@ This is a style target for the Tailor's painted sprite parts (D48) and the
 identity source for every art-director judgment of her future part sheets.
 Reference-only material; never shipped by the game.
 
-## Current file (v1)
+## Current file (v2)
 
 - Status: **under fresh art-director review (D49)** — accepted only on a PASS
   verdict; this line is updated when the ruling lands
-- Generated: 2026-07-13
-- Workflow: OpenRouter Image API via the `openrouter-image` skill, 16:9 at 1K
-- Model identifier: `google/gemini-3.1-flash-image-preview`
-- Cost: $0.0695
+- Generated: 2026-07-14
+- Workflow: OpenRouter Image API via the `openrouter-image` skill
+- Model identifier: `black-forest-labs/flux.2-pro` (same model-family switch
+  that cured the Wandmaker's craft findings; requested 16:9, FLUX returned
+  1024×1024 square)
+- Cost: $0.03
 - Reference images: none — text-to-image only
 - File: `tailor.png`
-- SHA-256: `a773196cb59007007f58079340f8a4714a3a3b1f620d7b10c9952d6f113b2af7`
+- SHA-256: `64dda62fdb9a3d5e16f8474d6c0396e489cbb4ec4bc34fe187bcc46caaae880d`
+- Prompt: v2 block below — the v1 verdict encoded: dense gouache with weave
+  in every tone and no dot screen (C1), edges modeled by paint value with no
+  drawn contours (M1), violet-blue shadow cooling named per surface on the
+  full-body figure (M2), the pincushion-side hand resting flat with thumb +
+  separated fingers (m1), symmetric narrow apron straps in both views (m2),
+  stance-sized contact shadow (m3), and the dress pigment ruled canon as
+  blue-leaning heather, never magenta plum (m4).
+
+## History
+
+- **v1** (`google/gemini-3.1-flash-image-preview`, $0.0695, SHA-256
+  `a773196cb59007007f58079340f8a4714a3a3b1f620d7b10c9952d6f113b2af7`,
+  committed at `9d9ef56`): **FAILED D49 review — 1 CRITICAL, 2 MAJOR,
+  4 MINOR.** The judge called the character design "genuinely lovable" and
+  measured the identity locked (iris ΔH ≤ 4° across views, catchlights
+  upper-left, tick-marks-only ruler, no actor likeness) — but the rendering
+  was the wrong artist: an airbrushed vignette with a uniform mechanical
+  dot screen instead of woven gouache tooth (FFT peak/median 37–55 vs the
+  anchors' 16–24; field brushwork as little as 1/6 of the anchors'), ~2–3px
+  drawn contour lines tracing sleeves, fingers, soles, and lips (M1), and
+  warm-only full-body shadows while only the close-up cooled to violet-blue
+  (M2). Minors: pincushion-side hand read as a loose fist, apron strap
+  geometry drifted between views, contact shadow spilled 1.3 boot-lengths,
+  and the dress rendered magenta-side plum instead of heather.
 
 ## Design intent
 
