@@ -1,5 +1,15 @@
 # SP-E spike — Violet from AI-painted sprite parts
 
+> **Status addendum (2026-07-14):** `sheet-v2.png` (straightened-pose retry,
+> $0.0337, prompt lessons folded into the D49 brief) was judged by the Art
+> Director and **FAILED pre-slice**: the eyes-closed head is missing her
+> glasses (identity trait would vanish every blink) and the walking leg pair
+> has feet pointing opposite directions with no planted foot. Its usable
+> learnings (straight arms with attached sleeve caps, defined shoulder line)
+> carry into the pending v3 regeneration; v2 was never sliced. The rig
+> mechanics moved from this spike's VioletSpriteRig into the shared
+> `src/game/render/SpriteRig.js`.
+
 Proves the character-medium change: painted sprite parts (generated in the room
 style) assembled on the existing puppet animation grammar, replacing hand-drawn
 bezier path art. Reviewed in harness scene `character-sprite-spike-review`
