@@ -91,7 +91,7 @@ const REVIEW_SCENE_ILLUSION_CHECKS = Object.freeze({
     'The yearbook keeps its mounted keepsake area, caption, page marks, navigation, and close action mutually separate in both empty and populated states.',
   ],
   'save-transfer': [
-    'The grown-up save-transfer dialog keeps its data field, status, primary action, and cancel action visible and mutually non-overlapping above the game.',
+    'The grown-up save-transfer dialog reads as one organically curved parchment sheet with a leather-and-brass owl seal, a paper data field, and two distinct 88px-or-larger actions, with zero clipped polygon corners, flat white fields, or overlap.',
   ],
   'pet-name-dialog': [
     'The parent-assisted naming dialog keeps one text field, one confirmation action, and one cancel action visible, keyboard reachable, and mutually non-overlapping.',
