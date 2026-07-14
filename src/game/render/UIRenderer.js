@@ -13,7 +13,6 @@ import {
   traceRoundedRect,
 } from './uiPrimitives.js';
 import {
-  drawBrassCameoFrame,
   drawBrassKeyhole,
   drawBrassWandHolster,
   drawCompassQuest,
@@ -362,6 +361,9 @@ export class UIRenderer {
   } = {}) {
     this.resolveAsset = resolveAsset;
     this.characterRenderer = characterRenderer;
+    this.dialoguePortraitRenderer = typeof characterRenderer?.drawPortrait === 'function'
+      ? characterRenderer
+      : new CharacterRenderer();
     this.mapRenderer = mapRenderer;
     this.titleRenderer = titleRenderer ?? new StorybookTitleRenderer({ characterRenderer });
     this.images = new Map();
@@ -530,32 +532,15 @@ export class UIRenderer {
       portraitSide: layout.portraitSide,
     });
 
-    const portraitDrawn = typeof this.characterRenderer?.drawPortrait === 'function';
-    if (portraitDrawn) {
-      this.characterRenderer.drawPortrait(context, {
-        speaker: dialogue.speaker,
-        pose: dialogue.portraitPose ?? 'talk',
-        x: portrait.x,
-        y: portrait.y,
-        scale: portrait.scale,
-        outfit: dialogue.speaker === 'npc.violet' ? scene.violetOutfit : undefined,
-        robeTrim: dialogue.speaker === 'npc.violet' ? scene.violetRobeTrim : undefined,
-      }, animationTime);
-    } else {
-      const radius = 49;
-      drawBrassCameoFrame(context, portrait.x, portrait.y, radius);
-      context.save();
-      context.beginPath();
-      context.ellipse(portrait.x, portrait.y, 43, 47, 0, 0, Math.PI * 2);
-      context.clip();
-      context.fillStyle = '#3a3046';
-      context.fillRect(portrait.x - 48, portrait.y - 51, 96, 102);
-      drawVectorIcon(context, dialogue.speaker === 'npc.narrator' ? 'quill' : 'owl', portrait.x, portrait.y, 59, {
-        color: PALETTE.parchment,
-        secondary: PALETTE.candle,
-      });
-      context.restore();
-    }
+    this.dialoguePortraitRenderer.drawPortrait(context, {
+      speaker: dialogue.speaker,
+      pose: dialogue.portraitPose ?? 'talk',
+      x: portrait.x,
+      y: portrait.y,
+      scale: portrait.scale,
+      outfit: dialogue.speaker === 'npc.violet' ? scene.violetOutfit : undefined,
+      robeTrim: dialogue.speaker === 'npc.violet' ? scene.violetRobeTrim : undefined,
+    }, animationTime);
 
     drawDialogueCaption(
       context,

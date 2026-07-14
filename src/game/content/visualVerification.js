@@ -25,6 +25,75 @@ export function storybookChecklist(...illusionChecks) {
 }
 
 const REVIEW_SCENE_ILLUSION_CHECKS = Object.freeze({
+  foundation: [
+    'Before play begins, one illustrated title, one casual-clothes Violet, one owl, and one obvious 88px-or-larger envelope action remain readable without overlapping.',
+  ],
+  'foundation-saved-review': [
+    'The returning-player title keeps Violet, the owl, the castle painting, and one 88px-or-larger continue envelope visually separate.',
+  ],
+  'ch1-start': [
+    'The delivered envelope, opening choreography, readable invitation, and two independent reading actions preserve one continuous letter identity with zero ambiguous next step.',
+  ],
+  'world-shimmer-review': [
+    'Exactly one current-objective golden thread remains strongest, while optional and secret glints stay quieter and never become competing rings or symbols.',
+  ],
+  'world-shimmer-hint-review': [
+    'Hint escalation strengthens only the existing first-wand golden thread, with zero added arrows, rings, labels, or competing objective marks.',
+  ],
+  'world-secret-pet-review': [
+    'The cat’s wander, paw, and return cue remains readable beside the rare secret glint without hiding Violet, the wandmaker, or the active golden thread.',
+  ],
+  'ch1-wand-chosen': [
+    'The chosen wand reads as Violet’s completed interaction, drops out of advertisement, and leaves exactly one visually stronger next objective.',
+  ],
+  'ch1-complete': [
+    'The completed Chapter One free-roam frame keeps Violet, her companion, and exactly one next objective visually distinct, with spent shopping interactions quiet.',
+  ],
+  'ch2-placeholder': [
+    'The Chapter Two preview reads as one intentional illustrated destination with one clear return-or-replay decision and zero false gameplay affordances.',
+  ],
+  'sp-letter-open-review': [
+    'The sealed envelope, opening frame zero, unfolding paper, and settled invitation retain identical material proportions with zero blank or doubled-paper frame.',
+  ],
+  'transition-ink-review': [
+    'The organic ink reveal covers the outgoing room before exposing the courtyard, with zero blank canvas, hard geometric wipe edge, or exposed painting boundary.',
+  ],
+  'transition-sparkle-review': [
+    'Map-travel sparkles remain attached to the organic reveal edge while the destination replaces the street with zero blank canvas or competing objective symbol.',
+  ],
+  'sp-brick-wall-review': [
+    'The intact courtyard wall opens center-out as one readable ten-by-eight brick event, with the street horizon aligned and zero exposed painting edge.',
+  ],
+  'sp-wand-vase-review': [
+    'The wrong-wand vase wobble, break, bounce, and settle remain a single readable mishap, with every shard inside the room and clear of Violet and the controls.',
+  ],
+  'sp-wand-chosen-review': [
+    'The chosen-wand crescendo keeps Violet, wand, and wandmaker readable through one restrained golden focal effect that fully settles before control returns.',
+  ],
+  'sp-ch2-ticket-review': [
+    'The illustrated ticket settles before two distinct 88px-or-larger preview choices appear, with neither choice covering the ticket or the other action.',
+  ],
+  'parent-panel': [
+    'The grown-up book presents replay and yearbook as two distinct 88px-or-larger actions, with tabs, content, and close control mutually non-overlapping.',
+  ],
+  'parent-settings': [
+    'Every grown-up sound, movement, and learning control has one readable label, one visible state, and an 88px-or-larger target that overlaps no neighboring control.',
+  ],
+  'parent-save': [
+    'Save transfer, recovery, and Start Over remain three visually distinct guarded actions with zero overlap between labels, icons, or touch targets.',
+  ],
+  'parent-confirm': [
+    'The Start Over confirmation shows exactly one safe cancel action and one destructive confirmation action as separate 88px-or-larger targets.',
+  ],
+  'parent-yearbook': [
+    'The yearbook keeps its mounted keepsake area, caption, page marks, navigation, and close action mutually separate in both empty and populated states.',
+  ],
+  'save-transfer': [
+    'The grown-up save-transfer dialog keeps its data field, status, primary action, and cancel action visible and mutually non-overlapping above the game.',
+  ],
+  'pet-name-dialog': [
+    'The parent-assisted naming dialog keeps one text field, one confirmation action, and one cancel action visible, keyboard reachable, and mutually non-overlapping.',
+  ],
   'ui-dialogue-review': [
     'One dialogue parchment, one portrait frame, and the two 88×88 replay/advance controls remain mutually separate and leave Hagrid unobscured.',
   ],
@@ -34,6 +103,12 @@ const REVIEW_SCENE_ILLUSION_CHECKS = Object.freeze({
   ],
   'ui-dialogue-center-review': [
     'The centered Violet puppet remains fully readable beside one dialogue parchment and two non-overlapping 88×88 controls.',
+  ],
+  'ui-dialogue-live-review': [
+    'The live bedroom dialogue keeps Hagrid, his portrait, one parchment caption, and two 88×88 controls mutually separate against the painted room.',
+  ],
+  'ui-dialogue-night-live-review': [
+    'The live dusk-street dialogue keeps Hagrid, his portrait, one warm-dark parchment caption, and two 88×88 controls mutually separate and legible.',
   ],
   'ui-broom-caption-review': [
     'The two-word “Flying broom!” caption remains readable, and neither 88×88 dialogue control covers Violet or the caption.',
@@ -89,6 +164,10 @@ const REVIEW_SCENE_ILLUSION_CHECKS = Object.freeze({
     'Full-motion and reduced-motion frames preserve each owl variant’s proportions and material treatment.',
   ],
 });
+
+// A fixture belongs here only when it renders no surface visible to Violet or an assisting grown-up.
+// Each future entry must explain that internal-only purpose; every current harness fixture is visible.
+export const NON_PLAYER_HARNESS_SCENE_EXCLUSIONS = Object.freeze({});
 
 export const VISUAL_REVIEW_CHECKLISTS = Object.freeze(Object.fromEntries(
   Object.entries(REVIEW_SCENE_ILLUSION_CHECKS).map(([scene, checks]) => [

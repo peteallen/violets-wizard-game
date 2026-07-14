@@ -2,6 +2,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { Game } from '../src/game/Game.js';
 import { WORLD } from '../src/game/config.js';
 import { contentRegistry } from '../src/game/content/index.js';
+import { CharacterRenderer } from '../src/game/render/CharacterRenderer.js';
 import {
   UIRenderer,
   dialogueSceneContext,
@@ -67,6 +68,26 @@ function recordingDialogueContext() {
 }
 
 describe('adaptive dialogue card', () => {
+  it('uses the canonical character cameo when an injected renderer lacks portrait support', () => {
+    const drawPortrait = vi.spyOn(CharacterRenderer.prototype, 'drawPortrait').mockImplementation(() => {});
+    try {
+      const renderer = new UIRenderer({ characterRenderer: { draw: vi.fn() } });
+      const context = recordingDialogueContext();
+      renderer.drawDialogue(context, {
+        type: 'line', speaker: 'npc.guide', portraitPose: 'talk', caption: 'This way!',
+      }, 1.25, true, false);
+
+      expect(drawPortrait).toHaveBeenCalledWith(
+        context,
+        expect.objectContaining({ speaker: 'npc.guide', pose: 'talk' }),
+        1.25,
+      );
+      expect(context.calls.some(([name]) => name === 'ellipse')).toBe(false);
+    } finally {
+      drawPortrait.mockRestore();
+    }
+  });
+
   it('keeps the two synthetic pre-Malkin Violet review scenes in her casual clothes', () => {
     const characterRenderer = { draw: vi.fn(), drawPortrait: vi.fn() };
     const renderer = new UIRenderer({ characterRenderer });

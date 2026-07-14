@@ -1,14 +1,14 @@
 import { describe, expect, it } from 'vitest';
 import { contentRegistry } from '../src/game/content/index.js';
 import {
+  NON_PLAYER_HARNESS_SCENE_EXCLUSIONS,
   STORYBOOK_STANDARD_CHECKS,
   VISUAL_REVIEW_CHECKLISTS,
   storybookChecklist,
   visualReviewChecklist,
 } from '../src/game/content/visualVerification.js';
-import { CHARACTER_REVIEW_SCENES } from '../src/game/render/CharacterRenderer.js';
-import { UI_REVIEW_SCENES } from '../src/game/render/UIRenderer.js';
-import { GUIDE_WALK_REVIEW_SCENES } from '../src/harness/boot.js';
+import { ACTION_FIXTURE_IDS } from '../src/harness/actionFixtures.js';
+import { STATE_FIXTURE_IDS } from '../src/harness/stateFixtures.js';
 
 function storybookSection(checklist) {
   return checklist.slice(-STORYBOOK_STANDARD_CHECKS.length);
@@ -59,15 +59,22 @@ describe('visual verification checklists', () => {
     }
   });
 
-  it('registers a canonical checklist for every UI, character, and guide-departure review scene', () => {
-    const registeredScenes = [
-      ...UI_REVIEW_SCENES,
-      ...CHARACTER_REVIEW_SCENES,
-      ...GUIDE_WALK_REVIEW_SCENES,
-    ].sort();
-    expect(Object.keys(VISUAL_REVIEW_CHECKLISTS).sort()).toEqual(registeredScenes);
+  it('registers a canonical checklist for every player-facing harness fixture', () => {
+    expect(ACTION_FIXTURE_IDS).toEqual(STATE_FIXTURE_IDS);
 
-    for (const scene of registeredScenes) {
+    const reviewedScenes = Object.keys(VISUAL_REVIEW_CHECKLISTS);
+    const excludedScenes = Object.keys(NON_PLAYER_HARNESS_SCENE_EXCLUSIONS);
+    expect(Object.isFrozen(NON_PLAYER_HARNESS_SCENE_EXCLUSIONS)).toBe(true);
+    expect(reviewedScenes.filter((scene) => excludedScenes.includes(scene))).toEqual([]);
+    expect([...reviewedScenes, ...excludedScenes].sort()).toEqual([...STATE_FIXTURE_IDS].sort());
+
+    for (const [scene, reason] of Object.entries(NON_PLAYER_HARNESS_SCENE_EXCLUSIONS)) {
+      expect(STATE_FIXTURE_IDS, scene).toContain(scene);
+      expect(reason, scene).toMatch(/^Internal-only: .+\.$/);
+      expect(visualReviewChecklist(scene), scene).toBeNull();
+    }
+
+    for (const scene of reviewedScenes) {
       const checklist = visualReviewChecklist(scene);
       expectCanonicalStorybookSection(checklist, scene);
     }
