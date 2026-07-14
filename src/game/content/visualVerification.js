@@ -171,6 +171,12 @@ const REVIEW_SCENE_ILLUSION_CHECKS = Object.freeze({
     'Post and pet identities remain recognizable in every pose, with two intact eyes and one continuous head/body silhouette per owl.',
     'Full-motion and reduced-motion frames preserve each owl variant’s proportions and material treatment.',
   ],
+  'character-sprite-spike-review': [
+    'Exactly four labeled Violets remain separated on plinths: two code-drawn figures on the left, two painted sprite-part figures on the right, each with a grounded contact shadow.',
+    'Each painted figure reads as one connected child at gameplay scale: head, back hair, torso, both arms, and both legs join with no visible gaps, floating parts, or double edges at idle and mid-stride.',
+    'The painted figures keep the photo-matched identity: dark-green rectangular glasses, warm light-brown hair with soft attached wisps, warm brown eyes with catchlights, and the three-tone purple jersey with white collar.',
+    'Part edges show no pale keying halo and no fragments of neighboring sheet parts; the walking figure’s leg swing pivots at the hips without separating from the torso.',
+  ],
 });
 
 // A fixture belongs here only when it renders no surface visible to Violet or an assisting grown-up.

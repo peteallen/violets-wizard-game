@@ -1,6 +1,7 @@
 import { PALETTE } from '../config.js';
 import { drawVectorOwl } from './OwlRenderer.js';
 import { STORYBOOK_INK, STORYBOOK_LINE_WEIGHT } from './storybookInk.js';
+import { violetSpriteRig } from './VioletSpriteRig.js';
 
 const OUTLINE = STORYBOOK_INK.primary;
 const DEEP_OUTLINE = STORYBOOK_INK.deep;
@@ -207,6 +208,7 @@ export const CHARACTER_REVIEW_SCENES = Object.freeze([
   'character-pets-review',
   'character-portraits-review',
   'owl-motion-review',
+  'character-sprite-spike-review',
 ]);
 
 export const OWL_RUNTIME_REVIEW_POSES = Object.freeze({
@@ -489,8 +491,32 @@ export class CharacterRenderer {
     if (scene === 'character-cast-review') this.drawCastReview(context, time);
     else if (scene === 'character-pets-review') this.drawPetsReview(context, time, reducedMotion);
     else if (scene === 'character-portraits-review') this.drawPortraitReview(context, time);
+    else if (scene === 'character-sprite-spike-review') this.drawSpriteSpikeReview(context, time);
     else this.drawOwlMotionReview(context, time, reducedMotion);
     return true;
+  }
+
+  drawSpriteSpikeReview(context, time) {
+    const rows = [
+      { label: 'Today · idle', x: 210, sprite: false, pose: 'idle' },
+      { label: 'Today · walking', x: 440, sprite: false, pose: 'walking' },
+      { label: 'Painted · idle', x: 810, sprite: true, pose: 'idle' },
+      { label: 'Painted · walking', x: 1050, sprite: true, pose: 'walking' },
+    ];
+    for (const entry of rows) {
+      drawReviewPlinth(context, entry.x, 625, entry.label);
+      if (entry.sprite) {
+        const drew = violetSpriteRig.draw(context, {
+          x: entry.x, y: 595, scale: 1, pose: entry.pose, time: time + entry.x * 0.001,
+        });
+        if (!drew) drawReviewLabel(context, entry.x, 480, 'parts loading');
+      } else {
+        this.draw(context, {
+          kind: 'violet', x: entry.x, y: 595, scale: 1, pose: entry.pose,
+          outfit: 'casual', robeTrim: '#7952b7',
+        }, time + entry.x * 0.001);
+      }
+    }
   }
 
   drawCastReview(context, time) {
@@ -946,6 +972,7 @@ function drawReviewBackground(context, scene) {
     'character-pets-review': 'Companions · follow animation and material detail',
     'character-portraits-review': 'Dialogue cameos · one shared puppet family',
     'owl-motion-review': 'Hero owl · pose and motion library',
+    'character-sprite-spike-review': 'SP-E spike · code-drawn vs painted parts',
   };
   context.fillText(titles[scene], 640, 77);
   context.fillStyle = 'rgba(225,183,89,0.68)';

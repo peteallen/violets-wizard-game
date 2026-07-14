@@ -425,6 +425,10 @@ registry
     'owl-motion-review',
     'The hero owl shown across every shipped pose at gameplay scale.',
   ))
+  .register('character-sprite-spike-review', characterReviewFixture(
+    'character-sprite-spike-review',
+    'SP-E spike: the code-drawn Violet beside the painted sprite-part Violet, idle and walking.',
+  ))
   .register('ui-dialogue-review', characterReviewFixture(
     'ui-dialogue-review',
     'The illustrated dialogue parchment, animated Hagrid cameo, short caption, and replay control.',
