@@ -14,6 +14,7 @@ import {
   sampleKeeperMotion,
   sampleTailorMotion,
   sampleVioletMotion,
+  tracePortraitCameoSilhouette,
 } from '../src/game/render/CharacterRenderer.js';
 
 function recordingContext() {
@@ -83,6 +84,56 @@ describe('illustrated character renderer', () => {
     renderer.drawPortrait(authoredTalk, { speaker: 'Hagrid', pose: 'talk', x: 80, y: 90 }, 0.37);
     renderer.drawPortrait(canonicalSpeaking, { speaker: 'Hagrid', pose: 'speaking', x: 80, y: 90 }, 0.37);
     expect(authoredTalk.calls).toEqual(canonicalSpeaking.calls);
+  });
+
+  it('frames dialogue portraits with one finite organic brass-and-parchment cameo', () => {
+    const silhouette = recordingContext();
+    tracePortraitCameoSilhouette(silhouette, 55);
+    const silhouetteMethods = silhouette.calls.map(([name]) => name);
+    expect(silhouetteMethods).toEqual([
+      'beginPath', 'moveTo',
+      'bezierCurveTo', 'bezierCurveTo', 'bezierCurveTo',
+      'bezierCurveTo', 'bezierCurveTo', 'bezierCurveTo',
+      'closePath',
+    ]);
+    expect(silhouette.calls.every(([, ...values]) => values.every(
+      (value) => typeof value !== 'number' || Number.isFinite(value),
+    ))).toBe(true);
+    expect(silhouetteMethods.some((name) => [
+      'arc', 'ellipse', 'arcTo', 'roundRect', 'rect',
+    ].includes(name))).toBe(false);
+
+    const renderer = new CharacterRenderer();
+    const portrait = recordingContext();
+    renderer.drawPortrait(portrait, {
+      speaker: 'Narrator', x: 80, y: 90, scale: 1.2, reducedMotion: true,
+    }, 2.25);
+
+    const forbiddenPrimitives = new Set(['arc', 'ellipse', 'arcTo', 'roundRect', 'rect']);
+    expect(portrait.calls.some(([name]) => forbiddenPrimitives.has(name))).toBe(false);
+    expect(portrait.calls.every(([, ...values]) => values.every(
+      (value) => typeof value !== 'number' || Number.isFinite(value),
+    ))).toBe(true);
+    expect(portrait.calls.filter(([name]) => name === 'clip').length).toBeGreaterThanOrEqual(2);
+    for (const [index, [name]] of portrait.calls.entries()) {
+      if (name !== 'clip') continue;
+      const pathStart = portrait.calls.findLastIndex(
+        ([method], candidate) => candidate < index && method === 'beginPath',
+      );
+      const clipPathMethods = portrait.calls.slice(pathStart, index).map(([method]) => method);
+      expect(clipPathMethods).toEqual(silhouetteMethods);
+    }
+    expect(portrait.calls.some(([name]) => [
+      'createLinearGradient', 'createRadialGradient',
+    ].includes(name))).toBe(false);
+    for (const color of ['#edca79', '#bd8439', '#805127', '#5a3924', '#f2dda5', '#d8b879', '#aa7f4c']) {
+      expect(portrait.styles.some(([, value]) => value === color)).toBe(true);
+    }
+    expect(portrait.styles.some(([, value]) => value === 'rgba(255, 226, 156, 0.4)')).toBe(true);
+    expect(portrait.depth).toBe(0);
+    expect(portrait.calls.filter(([name]) => name === 'save')).toHaveLength(
+      portrait.calls.filter(([name]) => name === 'restore').length,
+    );
   });
 
   it('gives Hagrid deterministic walking and beckoning poses without leaking canvas state', () => {

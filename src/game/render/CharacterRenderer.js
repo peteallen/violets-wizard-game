@@ -7,6 +7,18 @@ const RIM_LIGHT = 'rgba(255, 224, 158, 0.34)';
 const SHADOW_WASH = 'rgba(37, 26, 35, 0.26)';
 const WARM_BOUNCE = 'rgba(229, 170, 93, 0.18)';
 
+const PORTRAIT_CAMEO_STYLE = Object.freeze({
+  shadow: 'rgba(31, 20, 18, 0.48)',
+  brassDeep: '#5a3924',
+  brassShadow: '#805127',
+  brassBase: '#bd8439',
+  brassLight: '#edca79',
+  parchmentShadow: '#aa7f4c',
+  parchmentBase: '#d8b879',
+  parchmentLight: '#f2dda5',
+  toolMark: 'rgba(82, 50, 28, 0.48)',
+});
+
 export const VIOLET_STYLE = Object.freeze({
   hairBase: '#806f62',
   hairMid: '#695a50',
@@ -351,14 +363,14 @@ export class CharacterRenderer {
     const requestedPose = portrait.pose ?? 'speaking';
     const pose = requestedPose === 'talk' ? 'speaking' : requestedPose;
     const facing = portrait.facing ?? 'right';
+    const reducedMotion = Boolean(portrait.reducedMotion);
 
     context.save();
     context.translate(x, y);
     context.scale(scale, scale);
-    drawPortraitBackdrop(context, speaker, time);
+    drawPortraitBackdrop(context, speaker, time, reducedMotion);
     context.save();
-    context.beginPath();
-    context.arc(0, 0, 55, 0, Math.PI * 2);
+    tracePortraitCameoSilhouette(context, 55);
     context.clip();
 
     if (speaker === 'narrator') drawNarratorPortrait(context, time);
@@ -378,7 +390,7 @@ export class CharacterRenderer {
       this.draw(context, {
         kind: 'violet', x: 0, y: 118, scale: 0.82, facing,
         robeTrim: portrait.robeTrim ?? PALETTE.violet, wand: Boolean(portrait.wand), pose,
-        reducedMotion: Boolean(portrait.reducedMotion), detail: 'portrait',
+        reducedMotion, detail: 'portrait',
         outfit: portrait.outfit ?? 'robes',
       }, time);
     } else {
@@ -389,7 +401,7 @@ export class CharacterRenderer {
       }, time);
     }
     context.restore();
-    drawPortraitFrame(context, speaker, time);
+    drawPortraitFrame(context, time, reducedMotion);
     context.restore();
   }
 
@@ -585,64 +597,195 @@ function resolvePortraitSpeaker(value) {
   return 'narrator';
 }
 
-function drawPortraitBackdrop(context, speaker, time) {
+export function tracePortraitCameoSilhouette(context, radius = 60) {
+  const safeRadius = Number.isFinite(radius) ? Math.max(1, radius) : 60;
+  context.beginPath();
+  context.moveTo(-safeRadius * 0.055, -safeRadius);
+  context.bezierCurveTo(
+    -safeRadius * 0.38, -safeRadius * 1.05,
+    -safeRadius * 0.82, -safeRadius * 0.88,
+    -safeRadius * 0.95, -safeRadius * 0.55,
+  );
+  context.bezierCurveTo(
+    -safeRadius * 1.07, -safeRadius * 0.14,
+    -safeRadius * 0.96, safeRadius * 0.31,
+    -safeRadius * 0.86, safeRadius * 0.6,
+  );
+  context.bezierCurveTo(
+    -safeRadius * 0.68, safeRadius * 0.89,
+    -safeRadius * 0.31, safeRadius * 1.02,
+    -safeRadius * 0.05, safeRadius * 1.01,
+  );
+  context.bezierCurveTo(
+    safeRadius * 0.33, safeRadius * 1.04,
+    safeRadius * 0.73, safeRadius * 0.86,
+    safeRadius * 0.92, safeRadius * 0.56,
+  );
+  context.bezierCurveTo(
+    safeRadius * 1.06, safeRadius * 0.18,
+    safeRadius * 0.97, -safeRadius * 0.35,
+    safeRadius * 0.86, -safeRadius * 0.63,
+  );
+  context.bezierCurveTo(
+    safeRadius * 0.69, -safeRadius * 0.92,
+    safeRadius * 0.28, -safeRadius * 1.04,
+    -safeRadius * 0.055, -safeRadius,
+  );
+  context.closePath();
+}
+
+function drawPortraitBackdrop(context, speaker, time, reducedMotion) {
   const colors = {
     violet: ['#302642', '#8b63aa'], guide: ['#30271f', '#7f6347'], wandmaker: ['#292b40', '#77799a'],
     tailor: ['#4e2943', '#ae688e'], keeper: ['#2f4939', '#66856d'], narrator: ['#33283f', '#8d6ca0'],
     cat: ['#49352b', '#b18464'], owl: ['#38313f', '#8b7a96'], toad: ['#34412d', '#71875c'],
   };
   const [dark, light] = colors[speaker] ?? colors.narrator;
+  const safeTime = Number.isFinite(time) ? time : 0;
+  const shimmer = reducedMotion ? 0.13 : 0.13 + Math.sin(safeTime * 1.1) * 0.025;
   context.save();
+
+  context.save();
+  context.translate(1.8, 2.7);
+  context.fillStyle = PORTRAIT_CAMEO_STYLE.shadow;
+  tracePortraitCameoSilhouette(context, 62);
+  context.fill();
+  context.restore();
+
+  context.fillStyle = PORTRAIT_CAMEO_STYLE.brassBase;
+  context.strokeStyle = PORTRAIT_CAMEO_STYLE.brassDeep;
+  context.lineWidth = 1.8;
+  tracePortraitCameoSilhouette(context, 61);
+  context.fill();
+  context.stroke();
+
+  context.save();
+  tracePortraitCameoSilhouette(context, 61);
+  context.clip();
+  context.fillStyle = PORTRAIT_CAMEO_STYLE.brassLight;
+  traceOrganicPatch(context, -36, -39, 43, 28, -0.2);
+  context.fill();
+  context.fillStyle = PORTRAIT_CAMEO_STYLE.brassShadow;
+  traceOrganicPatch(context, 39, 40, 46, 34, 0.16);
+  context.fill();
+  context.restore();
+
+  context.fillStyle = PORTRAIT_CAMEO_STYLE.parchmentBase;
+  tracePortraitCameoSilhouette(context, 57.5);
+  context.fill();
+
+  context.save();
+  tracePortraitCameoSilhouette(context, 57.5);
+  context.clip();
+  context.fillStyle = PORTRAIT_CAMEO_STYLE.parchmentLight;
+  traceOrganicPatch(context, -34, -37, 37, 26, -0.16);
+  context.fill();
+  context.fillStyle = PORTRAIT_CAMEO_STYLE.parchmentShadow;
+  traceOrganicPatch(context, 36, 38, 41, 31, 0.14);
+  context.fill();
+  context.restore();
+
   context.fillStyle = dark;
-  context.beginPath();
-  context.arc(0, 0, 58, 0, Math.PI * 2);
+  tracePortraitCameoSilhouette(context, 55);
   context.fill();
+
+  context.save();
+  tracePortraitCameoSilhouette(context, 55);
+  context.clip();
+  context.save();
+  context.globalAlpha = 0.58;
   context.fillStyle = light;
-  context.globalAlpha = 0.72;
-  context.beginPath();
-  context.arc(-7, -8, 45, 0, Math.PI * 2);
+  traceOrganicPatch(context, -26, -29, 39, 28, -0.16);
   context.fill();
-  context.fillStyle = '#fff3c4';
-  context.globalAlpha = 0.16;
-  context.beginPath();
-  context.ellipse(-19, -25, 24, 15, -0.45, 0, Math.PI * 2);
+  context.restore();
+  context.fillStyle = `rgba(255,239,194,${shimmer})`;
+  traceOrganicPatch(context, -24, -27, 34, 22, -0.18);
+  context.fill();
+  context.fillStyle = darken(dark, 0.08);
+  context.globalAlpha = 0.36;
+  traceOrganicPatch(context, 27, 30, 36, 22, 0.14);
   context.fill();
   context.globalAlpha = 1;
-  context.fillStyle = `rgba(255,232,171,${0.09 + Math.sin(time * 1.1) * 0.025})`;
-  for (const [x, y, size] of [[-34, -27, 3], [34, -18, 2], [-27, 29, 2.4], [29, 33, 1.8]]) {
-    drawFourPointStar(context, x, y, size);
-  }
+  context.strokeStyle = 'rgba(255, 235, 188, 0.16)';
+  context.lineWidth = 0.8;
+  context.beginPath();
+  context.moveTo(-47, 4);
+  context.bezierCurveTo(-24, -4, 8, -2, 39, -13);
+  context.moveTo(-38, 29);
+  context.bezierCurveTo(-13, 21, 14, 28, 37, 18);
+  context.stroke();
+  context.restore();
+
   context.restore();
 }
 
-function drawPortraitFrame(context, speaker, time) {
-  context.strokeStyle = '#3b2a24';
-  context.lineWidth = 9;
-  context.beginPath();
-  context.arc(0, 0, 59, 0, Math.PI * 2);
-  context.stroke();
-  context.strokeStyle = '#d5aa56';
-  context.lineWidth = 4.5;
-  context.beginPath();
-  context.arc(0, 0, 57, 0, Math.PI * 2);
-  context.stroke();
-  context.strokeStyle = 'rgba(255,240,187,0.78)';
-  context.lineWidth = 1.8;
-  context.beginPath();
-  context.arc(0, 0, 53.5, Math.PI * 1.08, Math.PI * 1.74);
+function drawPortraitFrame(context, time, reducedMotion) {
+  const safeTime = Number.isFinite(time) ? time : 0;
+  const glow = reducedMotion ? 0.7 : 0.66 + Math.sin(safeTime * 1.23) * 0.08;
+
+  context.save();
+  context.strokeStyle = PORTRAIT_CAMEO_STYLE.brassDeep;
+  context.lineWidth = 8.5;
+  tracePortraitCameoSilhouette(context, 60);
   context.stroke();
 
-  context.fillStyle = '#7b3049';
+  context.strokeStyle = PORTRAIT_CAMEO_STYLE.brassBase;
+  context.lineWidth = 5.2;
+  tracePortraitCameoSilhouette(context, 59.5);
+  context.stroke();
+
+  context.strokeStyle = PORTRAIT_CAMEO_STYLE.brassShadow;
+  context.lineWidth = 2.2;
   context.beginPath();
-  context.moveTo(-18, 53);
-  context.lineTo(-11, 67);
-  context.lineTo(0, 60 + Math.sin(time * 1.4) * 0.8);
-  context.lineTo(11, 67);
-  context.lineTo(18, 53);
-  context.closePath();
-  fillStroke(context, 2.1);
-  context.fillStyle = speaker === 'owl' ? '#e5ba58' : '#f0d28a';
-  drawFourPointStar(context, 0, 57, 4.5);
+  context.moveTo(49, -25);
+  context.bezierCurveTo(54, -5, 52, 21, 42, 37);
+  context.bezierCurveTo(35, 47, 25, 52, 14, 54);
+  context.stroke();
+
+  context.strokeStyle = PORTRAIT_CAMEO_STYLE.parchmentShadow;
+  context.lineWidth = 3;
+  tracePortraitCameoSilhouette(context, 55.9);
+  context.stroke();
+  context.strokeStyle = PORTRAIT_CAMEO_STYLE.parchmentLight;
+  context.lineWidth = 1.25;
+  tracePortraitCameoSilhouette(context, 54.8);
+  context.stroke();
+
+  context.save();
+  context.globalAlpha = glow;
+  context.strokeStyle = PORTRAIT_CAMEO_STYLE.brassLight;
+  context.lineWidth = 1.8;
+  context.beginPath();
+  context.moveTo(-49, -32);
+  context.bezierCurveTo(-43, -49, -23, -58, -5, -57);
+  context.bezierCurveTo(7, -59, 19, -56, 29, -51);
+  context.stroke();
+  context.restore();
+
+  context.strokeStyle = PORTRAIT_CAMEO_STYLE.toolMark;
+  context.lineWidth = 1.05;
+  context.beginPath();
+  context.moveTo(47, -27);
+  context.quadraticCurveTo(50, -21, 49, -15);
+  context.moveTo(51, 11);
+  context.quadraticCurveTo(49, 17, 46, 22);
+  context.moveTo(30, 49);
+  context.quadraticCurveTo(24, 52, 18, 53);
+  context.moveTo(-34, 46);
+  context.quadraticCurveTo(-39, 42, -41, 37);
+  context.stroke();
+
+  context.strokeStyle = 'rgba(255, 226, 156, 0.4)';
+  context.lineWidth = 0.75;
+  context.beginPath();
+  context.moveTo(-50, -17);
+  context.lineTo(-47, -13);
+  context.moveTo(-22, -53);
+  context.lineTo(-17, -54);
+  context.moveTo(39, 38);
+  context.lineTo(35, 42);
+  context.stroke();
+  context.restore();
 }
 
 function drawNarratorPortrait(context, time) {
