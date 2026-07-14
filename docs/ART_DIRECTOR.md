@@ -7,15 +7,15 @@ This is an automated agent layer, not a human gate (D32 holds — nothing waits 
 ## Protocol
 
 1. **Inputs the judge MUST receive** (author's responsibility):
-   - Captures at BOTH review zooms: the full 1280×720 frame *and* a 2× capture (`--size 2560x1440` — same scene, double pixel density). Posture and face defects live at 2×.
-   - The relevant reference sheet(s) from `art/character-refs/` (and for part-sheet reviews, the generated sheet itself).
-   - The scene's illusion checklist — as a *floor*, not the bar.
+   - For a generated character source review: the locked identity source, every production batch sheet, the named panels proposed for shipping, and the list of states normal gameplay currently requests. The judge may accept a named usable subset; defects in unused figures do not contaminate accepted panels by association.
+   - For an assembled character review: captures at BOTH review zooms, the full 1280×720 frame and a 2× capture (`--size 2560x1440` — same scene, double pixel density), including the character moving in a normal in-world scene. Harness captures may supplement this view but never replace it.
+   - For other visual work: the two required captures and the scene's illusion checklist as a *floor*, not the bar.
    - **Never the previous version.** Judges grade absolute, not improvement. The phrase "better than before" is banned from verdicts.
 2. **The judge's stance is adversarial**: assume something is wrong and find it. List everything, harshest-professional-critic mode. A clean verdict must survive the judge actively hunting.
-3. **Verdict format**: `PASS` or findings ranked CRITICAL / MAJOR / MINOR, each with a precise visual description ("both arms curl inward so the hands hover in front of the thighs — reads as sneaking, not standing") and, where possible, whether the defect lives in the *part art*, the *assembly*, or the *animation*.
-4. **Gate**: CRITICAL and MAJOR findings must be fixed (or explicitly decided away in DECISIONS.md) before merge. MINORs are logged in the report. The author re-submits after fixes; the re-review is also by a fresh judge.
-5. **When**: any change touching characters, rooms, UI surfaces, set pieces, or affordances. **Generated part sheets are reviewed BEFORE slicing and rigging** — a bent arm caught on the sheet costs a $0.03 regeneration; caught after rigging it costs the whole loop.
-6. **Scale**: routine changes get one judge. Flagship surfaces (title, set-piece moments, a character's first acceptance) get a three-lens panel — posture/anatomy, style-consistency-vs-rooms, six-year-old readability — run as parallel agents; any lens can block.
+3. **Verdict format**: `PASS` or findings ranked CRITICAL / MAJOR / MINOR, each with a precise visual description ("both arms curl inward so the hands hover in front of the thighs — reads as sneaking, not standing") and, where possible, whether the defect lives in the *source art*, the *assembly*, or the *animation*.
+4. **Gate**: CRITICAL and MAJOR findings that affect a proposed shipping panel or its extraction must be fixed (or explicitly decided away in DECISIONS.md) before merge. Findings confined to unused figures are inventory notes, not blockers. MINORs are logged in the report. A fresh judge rechecks blocking corrections without reopening already accepted states.
+5. **When**: any change touching characters, rooms, UI surfaces, set pieces, or affordances. Character production has two meaningful boundaries: one fresh source review of the proposed shipping panel set before slicing, then one fresh review of the assembled character after immediate integration into normal gameplay. A source review may prescribe deterministic scale, key, or isolation corrections; those corrected slices receive one targeted recheck before shipping. Do not create separate face, limb, pose, or frame review gates.
+6. **Scale**: one fresh judge handles each character source review and each assembled character review. A three-lens panel is reserved for genuinely flagship non-character surfaces such as the title or a major set-piece moment; ordinary visual work gets one judge.
 
 ## The absolute standards (the judge's bar)
 

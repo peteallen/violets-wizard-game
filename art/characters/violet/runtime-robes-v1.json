@@ -1,0 +1,26 @@
+{
+  "version": 1,
+  "id": "violet.robes.neutral-purple-v1",
+  "canvas": {
+    "width": 896,
+    "height": 1200
+  },
+  "alpha": {
+    "maskSource": "neutral-purple",
+    "opaqueCyanExcess": 20,
+    "transparentCyanExcess": 225,
+    "edgeSpillRadius": 8,
+    "edgeSpillOpaqueCyanExcess": -20,
+    "edgeSpillMaxGreenBlueDelta": 70,
+    "matteLowAlpha": 190,
+    "matteHighAlpha": 245,
+    "edgeColorRadius": 8
+  },
+  "variants": {
+    "neutral-purple": {
+      "source": "art/characters/violet/robes/neutral-purple-v1.png",
+      "sha256": "d378299758fc375a5691a2b1a54ce7faf5e6271520cb7dfbd797ede47253f41a",
+      "output": "public/assets/art/characters/violet/robes/neutral-purple-v1.png"
+    }
+  }
+}

@@ -1,0 +1,115 @@
+{
+  "schema_version": 1,
+  "algorithm": {
+    "id": "linear-light-premultiplied-rgba-v1",
+    "color_space": "srgb",
+    "transfer": "IEC 61966-2-1 sRGB to linear light and back",
+    "representation": "premultiplied RGBA",
+    "mask_coverage": "grayscale multiplied by alpha",
+    "output_color_type": 6,
+    "output_bit_depth": 8
+  },
+  "edit_spec": {
+    "path": "art/characters/violet/robes/expressions/curious.edit.json",
+    "bytes": 728,
+    "sha256": "e9186463f6c7b8bfe5762774265b606d70ad58a3abb1cfc16e0f62b148e6645b",
+    "schema_version": 1
+  },
+  "controls": {
+    "allow_alpha_change": false,
+    "zero_mask_pixels_copied_byte_exactly": true
+  },
+  "inputs": {
+    "base": {
+      "path": "art/characters/violet/robes/neutral-purple-v1.png",
+      "bytes": 1235688,
+      "sha256": "d378299758fc375a5691a2b1a54ce7faf5e6271520cb7dfbd797ede47253f41a",
+      "rgba_sha256": "44635ef386229b0f1b9b682cb9bbbd17b614134a4ebab1509d64653f70d12682",
+      "dimensions": {
+        "width": 896,
+        "height": 1200
+      },
+      "png": {
+        "color_type": 6,
+        "bit_depth": 8,
+        "has_color": true,
+        "has_alpha": true,
+        "interlaced": false
+      },
+      "expected_sha256": "d378299758fc375a5691a2b1a54ce7faf5e6271520cb7dfbd797ede47253f41a"
+    },
+    "raw_candidate": {
+      "path": "art/characters/violet/expressions/curious-v2.png",
+      "bytes": 1198527,
+      "sha256": "c75a5f311c5bb52a0417a9a980a15346da584cb91798b36477847b6ecf40abf4",
+      "rgba_sha256": "d821b604e0cffbb35407eb1f9072289abb6f500eefd2fae7461028d3769fe2c4",
+      "dimensions": {
+        "width": 896,
+        "height": 1200
+      },
+      "png": {
+        "color_type": 6,
+        "bit_depth": 8,
+        "has_color": true,
+        "has_alpha": true,
+        "interlaced": false
+      },
+      "expected_sha256": "c75a5f311c5bb52a0417a9a980a15346da584cb91798b36477847b6ecf40abf4"
+    },
+    "mask": {
+      "path": "art/characters/violet/expressions/masks/wonder-v1.png",
+      "bytes": 31301,
+      "sha256": "f88a2581966803f8917aff96696d4831829e86891c835311a7b82e4d07e13eb9",
+      "rgba_sha256": "48a2f8a201316970d31f0f8da6fd02df192dfc77259f0ca25f3873e92c1a0cf2",
+      "dimensions": {
+        "width": 896,
+        "height": 1200
+      },
+      "png": {
+        "color_type": 6,
+        "bit_depth": 8,
+        "has_color": true,
+        "has_alpha": true,
+        "interlaced": false
+      },
+      "expected_sha256": "f88a2581966803f8917aff96696d4831829e86891c835311a7b82e4d07e13eb9"
+    }
+  },
+  "mask": {
+    "bounds": {
+      "x": 358,
+      "y": 202,
+      "width": 177,
+      "height": 165
+    },
+    "coverage_denominator": 65025,
+    "minimum_nonzero_coverage_units": 255,
+    "maximum_coverage_units": 65025,
+    "zero_pixels": 1059432,
+    "nonzero_pixels": 15768,
+    "full_pixels": 11994,
+    "soft_pixels": 3774
+  },
+  "changes": {
+    "total_pixels": 1075200,
+    "output_changed_pixels": 14340,
+    "rgb_changed_pixels": 14340,
+    "alpha_changed_pixels": 0,
+    "changed_channel_bytes": 40940,
+    "outside_zero_mask_changed_pixels": 0
+  },
+  "output": {
+    "image": {
+      "path": "art/characters/violet/robes/expressions/curious.png",
+      "media_type": "image/png",
+      "bytes": 1236784,
+      "sha256": "f9b00479704142eca9ed80588fb1cb33137f2eb9e59ffe1839b06e60693bc006",
+      "rgba_sha256": "405347b11aa34ebc3257ffe5194a01060cba0ae408037ecb3654225dc8b69c09",
+      "dimensions": {
+        "width": 896,
+        "height": 1200
+      }
+    },
+    "provenance": "art/characters/violet/robes/expressions/curious.composite.json"
+  }
+}

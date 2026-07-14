@@ -298,7 +298,7 @@ describe('touch-first robe picker', () => {
     const figureBottom = layout.previewFigure.y + layout.previewFigure.height;
     const glassBottom = layout.previewGlass.y + layout.previewGlass.height;
     const geometry = geometryContext();
-    new CharacterRenderer().draw(geometry, {
+    new CharacterRenderer({ fullFrameRigs: new Map() }).draw(geometry, {
       kind: 'violet',
       ...layout.previewCharacter,
       facing: 'right',

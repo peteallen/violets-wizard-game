@@ -1,0 +1,56 @@
+{
+  "version": 1,
+  "id": "violet.robes.v8-expressions",
+  "canvas": {
+    "width": 896,
+    "height": 1200
+  },
+  "alpha": {
+    "maskSource": "neutral",
+    "opaqueCyanExcess": 20,
+    "transparentCyanExcess": 225,
+    "edgeSpillRadius": 8,
+    "edgeSpillOpaqueCyanExcess": -20,
+    "edgeSpillMaxGreenBlueDelta": 70,
+    "matteLowAlpha": 190,
+    "matteHighAlpha": 245,
+    "edgeColorRadius": 8
+  },
+  "variants": {
+    "neutral": {
+      "source": "art/characters/violet/robes/neutral-purple-v1.png",
+      "sha256": "d378299758fc375a5691a2b1a54ce7faf5e6271520cb7dfbd797ede47253f41a",
+      "output": "public/assets/art/characters/violet/robes/neutral.png"
+    },
+    "blink": {
+      "source": "art/characters/violet/robes/expressions/blink.png",
+      "sha256": "da9cc999bb166791db9e9e6c7cb6c639650da70ca1f9bd0ff01c96d6854764c3",
+      "output": "public/assets/art/characters/violet/robes/blink.png"
+    },
+    "talk-a": {
+      "source": "art/characters/violet/robes/expressions/talk-a.png",
+      "sha256": "6d923f2bb2c3b6b532d41b74beba65f88a21ff83eeb5aeecafd7a5ec31ca80d9",
+      "output": "public/assets/art/characters/violet/robes/talk-a.png"
+    },
+    "talk-b": {
+      "source": "art/characters/violet/robes/expressions/talk-b.png",
+      "sha256": "d27c1c64d6cee0e9004030f61c6c1619f178bc434d2841d7e365ed8243da18e2",
+      "output": "public/assets/art/characters/violet/robes/talk-b.png"
+    },
+    "wonder": {
+      "source": "art/characters/violet/robes/expressions/wonder.png",
+      "sha256": "2df595e03b675eaec1451694b6b0effe3c337bd0ba697f803676e3fbe90d1622",
+      "output": "public/assets/art/characters/violet/robes/wonder.png"
+    },
+    "proud": {
+      "source": "art/characters/violet/robes/expressions/proud.png",
+      "sha256": "4d8114a1bccb5ca8c28f3a17d0b296c9c8d263c01c31a933a67eb19df7aba60e",
+      "output": "public/assets/art/characters/violet/robes/proud.png"
+    },
+    "curious": {
+      "source": "art/characters/violet/robes/expressions/curious.png",
+      "sha256": "f9b00479704142eca9ed80588fb1cb33137f2eb9e59ffe1839b06e60693bc006",
+      "output": "public/assets/art/characters/violet/robes/curious.png"
+    }
+  }
+}

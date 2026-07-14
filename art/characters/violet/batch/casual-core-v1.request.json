@@ -1,0 +1,21 @@
+{
+  "schema_version": 1,
+  "prompt": {
+    "path": "art/characters/violet/batch/casual-core-v1.prompt.md",
+    "section": "Prompt"
+  },
+  "references": [
+    {
+      "path": "art/characters/violet/canonical/casual-approved.png",
+      "role": "exact locked Violet V8 identity, outfit, palette, and painted finish"
+    }
+  ],
+  "generation": {
+    "aspect_ratio": "4:3",
+    "resolution": "4K"
+  },
+  "output": {
+    "image": "art/characters/violet/batch/casual-core-v1.png",
+    "provenance": "art/characters/violet/batch/casual-core-v1.metadata.json"
+  }
+}

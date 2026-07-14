@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   CAT_STYLE,
   CHARACTER_REVIEW_SCENES,
-  CharacterRenderer,
+  CharacterRenderer as ProductionCharacterRenderer,
   HAGRID_STYLE,
   KEEPER_STYLE,
   OWL_RUNTIME_REVIEW_POSES,
@@ -18,6 +18,15 @@ import {
   tracePortraitCameoSilhouette,
 } from '../src/game/render/CharacterRenderer.js';
 import { STORYBOOK_INK, STORYBOOK_LINE_WEIGHT } from '../src/game/render/storybookInk.js';
+
+// These construction tests deliberately exercise the retained comparison
+// renderer. Production routing to whole-frame Violet is covered separately by
+// violet-full-frame-character-rig.test.js.
+class CharacterRenderer extends ProductionCharacterRenderer {
+  constructor(options = {}) {
+    super({ fullFrameRigs: new Map(), ...options });
+  }
+}
 
 function recordingContext() {
   const calls = [];

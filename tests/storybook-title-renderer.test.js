@@ -11,6 +11,7 @@ import {
   titleForegroundLayout,
   UIRenderer,
 } from '../src/game/render/UIRenderer.js';
+import { CharacterRenderer } from '../src/game/render/CharacterRenderer.js';
 
 function recordingContext() {
   const calls = [];
@@ -193,7 +194,9 @@ describe('code-only storybook title illustration', () => {
 
   it('composes the existing detailed Violet and owl renderers without leaking canvas state or text', () => {
     const context = recordingContext();
-    const renderer = new StorybookTitleRenderer();
+    const renderer = new StorybookTitleRenderer({
+      characterRenderer: new CharacterRenderer({ fullFrameRigs: new Map() }),
+    });
     renderer.draw(context, 4.25);
 
     expect(context.calls.some(([name]) => [

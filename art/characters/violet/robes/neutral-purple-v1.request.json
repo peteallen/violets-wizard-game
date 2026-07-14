@@ -1,0 +1,25 @@
+{
+  "schema_version": 1,
+  "prompt": {
+    "path": "art/characters/violet/robes/neutral-purple-v1.prompt.md",
+    "section": "Prompt"
+  },
+  "references": [
+    {
+      "path": "art/characters/violet/canonical/casual-approved.png",
+      "role": "immutable identity, pose, canvas, and painted-style authority"
+    },
+    {
+      "path": "art/character-refs/violet.png",
+      "role": "robe construction reference only"
+    }
+  ],
+  "generation": {
+    "aspect_ratio": "3:4",
+    "resolution": "1K"
+  },
+  "output": {
+    "image": "art/characters/violet/robes/neutral-purple-v1-raw.png",
+    "provenance": "art/characters/violet/robes/neutral-purple-v1.metadata.json"
+  }
+}

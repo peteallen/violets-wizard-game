@@ -1,0 +1,115 @@
+{
+  "schema_version": 1,
+  "algorithm": {
+    "id": "linear-light-premultiplied-rgba-v1",
+    "color_space": "srgb",
+    "transfer": "IEC 61966-2-1 sRGB to linear light and back",
+    "representation": "premultiplied RGBA",
+    "mask_coverage": "grayscale multiplied by alpha",
+    "output_color_type": 6,
+    "output_bit_depth": 8
+  },
+  "edit_spec": {
+    "path": "art/characters/violet/robes/neutral-purple-v1.edit.json",
+    "bytes": 731,
+    "sha256": "44256d0e14df5b0941fc183a952da7cfbad5a338e108035ec0d499d6178dee3d",
+    "schema_version": 1
+  },
+  "controls": {
+    "allow_alpha_change": false,
+    "zero_mask_pixels_copied_byte_exactly": true
+  },
+  "inputs": {
+    "base": {
+      "path": "art/characters/violet/canonical/casual-approved.png",
+      "bytes": 1139914,
+      "sha256": "68e9871ceecc32b9fbf50cbf36eecbae226eb184ad5337f67bbca2e53266e033",
+      "rgba_sha256": "c61835ae2054be51e1ca97a71e81958d2eadc9dc5292bb34597f06a7e08caa66",
+      "dimensions": {
+        "width": 896,
+        "height": 1200
+      },
+      "png": {
+        "color_type": 2,
+        "bit_depth": 8,
+        "has_color": true,
+        "has_alpha": false,
+        "interlaced": false
+      },
+      "expected_sha256": "68e9871ceecc32b9fbf50cbf36eecbae226eb184ad5337f67bbca2e53266e033"
+    },
+    "raw_candidate": {
+      "path": "art/characters/violet/robes/neutral-purple-v1-raw.png",
+      "bytes": 1211759,
+      "sha256": "e05b4cfa28ac5f9598aba04085a29def091c8ae9005b77bc80be1a623f82f747",
+      "rgba_sha256": "fb993e8a34cc683f6e31fbc967f0c506ac9a43e7c2321d922f898886751c868a",
+      "dimensions": {
+        "width": 896,
+        "height": 1200
+      },
+      "png": {
+        "color_type": 2,
+        "bit_depth": 8,
+        "has_color": true,
+        "has_alpha": false,
+        "interlaced": false
+      },
+      "expected_sha256": "e05b4cfa28ac5f9598aba04085a29def091c8ae9005b77bc80be1a623f82f747"
+    },
+    "mask": {
+      "path": "art/characters/violet/robes/masks/neutral-robe-v1.png",
+      "bytes": 46534,
+      "sha256": "cabec9e5371a027f03c157acef551f75de4fcdd616ce6b57409aaddee59d16ad",
+      "rgba_sha256": "e5c635e612e1f4f6846d5d51a3ddfdae35c078dec1ac629776100b39f9307e59",
+      "dimensions": {
+        "width": 896,
+        "height": 1200
+      },
+      "png": {
+        "color_type": 6,
+        "bit_depth": 8,
+        "has_color": true,
+        "has_alpha": true,
+        "interlaced": false
+      },
+      "expected_sha256": "cabec9e5371a027f03c157acef551f75de4fcdd616ce6b57409aaddee59d16ad"
+    }
+  },
+  "mask": {
+    "bounds": {
+      "x": 217,
+      "y": 348,
+      "width": 463,
+      "height": 686
+    },
+    "coverage_denominator": 65025,
+    "minimum_nonzero_coverage_units": 255,
+    "maximum_coverage_units": 65025,
+    "zero_pixels": 834370,
+    "nonzero_pixels": 240830,
+    "full_pixels": 226086,
+    "soft_pixels": 14744
+  },
+  "changes": {
+    "total_pixels": 1075200,
+    "output_changed_pixels": 236959,
+    "rgb_changed_pixels": 236959,
+    "alpha_changed_pixels": 0,
+    "changed_channel_bytes": 697992,
+    "outside_zero_mask_changed_pixels": 0
+  },
+  "output": {
+    "image": {
+      "path": "art/characters/violet/robes/neutral-purple-v1.png",
+      "media_type": "image/png",
+      "bytes": 1235688,
+      "sha256": "d378299758fc375a5691a2b1a54ce7faf5e6271520cb7dfbd797ede47253f41a",
+      "rgba_sha256": "44635ef386229b0f1b9b682cb9bbbd17b614134a4ebab1509d64653f70d12682",
+      "dimensions": {
+        "width": 896,
+        "height": 1200
+      }
+    },
+    "provenance": "art/characters/violet/robes/neutral-purple-v1.composite.json"
+  }
+}

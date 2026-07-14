@@ -7,6 +7,8 @@ import {
   violetAlignedSpriteManifest,
   violetAlignedSpriteRig,
 } from './VioletAlignedSpriteRig.js';
+import { productionFullFrameCharacterRigs } from './FullFrameCharacterRig.js';
+import './VioletFullFrameCharacterRig.js';
 
 const OUTLINE = STORYBOOK_INK.primary;
 const DEEP_OUTLINE = STORYBOOK_INK.deep;
@@ -219,7 +221,15 @@ export const CHARACTER_REVIEW_SCENES = Object.freeze([
 ]);
 
 export async function preloadCharacterReviewScene(scene) {
-  if (scene === 'violet-expression-review') await violetAlignedSpriteRig.preload();
+  const loading = [];
+  if (scene === 'violet-expression-review') loading.push(violetAlignedSpriteRig.preload());
+  // Harness captures must never record the transient loading state. The
+  // normal game remains lazy, but deterministic review scenes await every
+  // opted-in full-frame identity before declaring themselves ready.
+  for (const rig of productionFullFrameCharacterRigs.values()) {
+    if (typeof rig.preload === 'function') loading.push(rig.preload());
+  }
+  await Promise.all(loading);
 }
 
 export const OWL_RUNTIME_REVIEW_POSES = Object.freeze({
@@ -267,13 +277,32 @@ const CHARACTER_COLORS = Object.freeze({
 });
 
 export class CharacterRenderer {
-  constructor({ violetAlignedRig = violetAlignedSpriteRig } = {}) {
+  constructor({
+    violetAlignedRig = violetAlignedSpriteRig,
+    fullFrameRigs = productionFullFrameCharacterRigs,
+  } = {}) {
     this.violetAlignedRig = violetAlignedRig;
+    this.fullFrameRigs = fullFrameRigs instanceof Map
+      ? fullFrameRigs
+      : new Map(Object.entries(fullFrameRigs ?? {}));
+    for (const [kind, rig] of this.fullFrameRigs) {
+      if (typeof kind !== 'string' || typeof rig?.draw !== 'function') {
+        throw new TypeError('fullFrameRigs must map character kinds to drawable rigs.');
+      }
+    }
   }
 
   draw(context, character, time = 0) {
+    const fullFrameRig = this.fullFrameRigs.get(character.kind);
+    if (fullFrameRig && character.medium !== 'bezier') {
+      // Generated full-frame rigs are an authoritative opt-in. Loading,
+      // failed, or unsupported generated frames are surfaced by that rig and
+      // never disguised by silently drawing the legacy Bézier character.
+      return fullFrameRig.draw(context, character, time);
+    }
     if (character.kind === 'violet') this.drawViolet(context, character, time);
     else this.drawNpc(context, character, time);
+    return undefined;
   }
 
   // D51: painted sprite rigs render live characters wherever their parts can

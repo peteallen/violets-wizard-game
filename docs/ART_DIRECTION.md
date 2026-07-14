@@ -34,33 +34,49 @@ Beyond single-painting rooms, the pipeline produces (see [SET_PIECES.md](SET_PIE
 
 Rules learned from the sibling pipelines:
 
-- **No people or creatures in backgrounds** — characters are code-drawn on top; a painted figure would break the layering and the style seam.
+- **No people or creatures in backgrounds** — characters render from separate transparent production art on top; a figure baked into a room would break the layering and the style seam.
 - **No text in backgrounds** — generated lettering is always mangled; signs are added as code-drawn overlays where needed.
-- **One authored key light per room**: warm upper-left is the painting/reference-sheet default, while explicit room metadata records visible exceptions such as the bedroom’s strong right-window light. Code-drawn characters mirror their baked shading and rim to the room instead of carrying a contradictory universal edge.
+- **One authored key light per room**: warm upper-left is the painting/character-sheet default, while explicit room metadata records visible exceptions such as the bedroom’s strong right-window light. Character sheets and any required directional variants must agree with the room instead of carrying a contradictory universal edge.
 - **Walkable band kept visually calm** — the prompt pins the floor to the bottom quarter; hotspot furniture lives at band height or just above.
 - Every prompt, seed, raw output, and accepted final is committed under `art/` with a regeneration script — rooms must be reproducible and re-editable months later (house pattern).
 - Generate 3–4 candidates per room, pick one, log the choice. Style drift between chapters gets caught by eyeballing the full room contact sheet (`art/contact-sheet.html`, a build artifact).
 
-## Characters: code-drawn vector puppets
+## Characters: painted full-frame animation
 
-Characters are drawn in canvas as layered part-puppets (body, head, hair, arms, wand, accessories) with bone-lite tweening — walk bob, idle sway, head-turns toward whatever was tapped, blink cycles, big readable emotes (jump-for-joy, tumble, giggle).
+Characters are generated as coherent multi-view and core-action sheets, sliced
+deterministically onto aligned transparent canvases, and selected by the runtime
+for movement, dialogue, and story actions. The active production workflow is
+[CHARACTER_PIPELINE.md](CHARACTER_PIPELINE.md): derive only the states normal
+gameplay requests, use one or the smallest few coherent batch sheets, review the
+source set once, integrate it immediately, and review the assembled character in
+the game once.
 
-“Vector” is an implementation medium, not a license to simplify the cast. Finished puppets use shaped anatomy, overlapping hair/fur/feather masses, articulated hands and shoes, facial structure, brows and eyelids, clothing folds, material accents, asymmetry, expressive posture, and secondary motion. No final character may read as a stack of geometric primitives, a low-poly model, or a placeholder at gameplay scale. The hero owl establishes the floor for the entire cast: layered feathers, distinct facial disks, eye tracking, blinking, breathing, head turns, wing articulation, hops, perching, flight, and companion-follow behavior.
+Every character sheet and refinement uses
+`google/gemini-3.1-flash-image` through `google-vertex/global`, with no model or
+provider fallback or automatic retry. Finished characters use shaped anatomy,
+overlapping
+hair/fur/feather masses, articulated hands and shoes, facial structure, brows
+and eyelids, clothing folds, material accents, asymmetry, expressive posture,
+and readable secondary motion. No final character may read as a stack of
+geometric primitives, a low-poly model, or a placeholder at gameplay scale. The
+hero owl establishes the floor for the entire cast: layered feathers, distinct
+facial disks, eye tracking, blinking, breathing, head turns, wing articulation,
+hops, perching, flight, and companion-follow behavior.
 
 Owls recur as a personal motif for Violet wherever the fiction supports them: post, pets, brass hardware, wax seals, satchel clasps, maps, letters, chapter pages, and keepsakes. The motif should make the game feel made specifically for her without becoming repeated decorative clutter.
 
-Why code-drawn against painted rooms: full control of Violet's exact look, animation without a spritesheet pipeline, crisp at any DPR, and instant iteration. The two layers are stitched together by a shared treatment:
+The character and room layers are stitched together by a shared treatment:
 
 - **Soft dark-brown outlines** (`#3a2d22`, ~2.5px virtual, slightly varying weight), never black.
 - Layered base, shadow, and highlight planes on every material + the baked rim-light matching the room's authored key light.
-- A soft, room-toned contact shadow anchors every full-body puppet at its feet and every persistent diegetic HUD object to the surface behind it; puppet shadows are drawn in floor space before body bob, hop, tilt, or sway, so nobody floats and no shadow rides upward with its character.
+- A soft, room-toned contact shadow anchors every full-body character at its feet and every persistent diegetic HUD object to the surface behind it; character shadows are drawn in floor space before body bob, hop, tilt, or sway, so nobody floats and no shadow rides upward with its character.
 - Proportions: big heads (~1:3.5), small bodies, stubby limbs — picture-book kid proportions, matching the backgrounds' whimsy.
 
-**Violet (the player):** long **warm light-brown** hair, *deliberately a little messy* — three or four soft hair-attached wisps that bounce on the walk cycle (per the client: she prefers it messy; never spikes or antennae); warm brown eyes behind **dark-green rectangular glasses** (photo-matched, D37 — the puppet and portrait both wear them); rosy cheeks. She begins at home and shops for her wand in ordinary clothes: a high-contrast three-tone blue-violet soccer jersey, dark leggings, and slate trainers with a purple accent, deliberately separated from the bedroom’s softer purple furnishings. Madam Malkin’s is the earned costume change into a black first-year robe with her selected color visible across the broad lining, collar, cuffs, and hem, and her signature purple returning in the shoes and chosen trim. The accepted reference sheet `art/character-refs/violet.png` remains the canonical face, hair shape, glasses, and robed-look target, but D44’s warmer runtime hair color supersedes the sheet’s cooler tone. Post-Sorting she gains the house scarf; the confirmed robe color persists throughout.
+**Violet (the player):** long **warm light-brown** hair, *deliberately a little messy* — three or four soft hair-attached wisps that move with her walk (per the client: she prefers it messy; never spikes or antennae); warm brown eyes behind **dark-green rectangular glasses** (photo-matched, D37 — world and portrait states both wear them); rosy cheeks. She begins at home and shops for her wand in ordinary clothes: a high-contrast three-tone blue-violet soccer jersey, dark leggings, and slate trainers with a purple accent, deliberately separated from the bedroom’s softer purple furnishings. Madam Malkin’s is the earned costume change into a black first-year robe with her selected color visible across the broad lining, collar, cuffs, and hem, and her signature purple returning in the shoes and chosen trim. Violet V8 at `art/characters/violet/canonical/casual-approved.png` is the locked identity source; its SHA-256 is `68e9871ceecc32b9fbf50cbf36eecbae226eb184ad5337f67bbca2e53266e033`. Do not regenerate or reinterpret her neutral identity. Post-Sorting she gains the house scarf; the confirmed robe color persists throughout.
 
 **Cast silhouettes** stay instantly readable at gameplay scale: the half-giant guide is the broadest and tallest friendly adult, but his room-scale silhouette still fits beneath the authored doorway he uses; his great width, boots, coat, and posture sell the scale without breaking the room. The charms professor is knee-high with a book-stack podium; the potions master is a black column with a widow's peak; the villain is smoke-edged. Silhouette-first design, faces second.
 
-**Portraits** (dialogue frames) are larger, more detailed head-and-shoulders renders of the same puppets — same parts, higher detail tier — framed in ornate gilt like castle paintings, with two or three frames of mouth/eyebrow animation while speaking.
+**Portraits** (dialogue frames) use the same identity and face construction as the world frames, at the detail needed by the dialogue card. Generate and map only the speaking and expression states the current dialogue requests, framed in ornate gilt like castle paintings.
 
 ## UI: parchment, wax, and brass
 

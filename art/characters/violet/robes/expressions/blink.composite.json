@@ -1,0 +1,115 @@
+{
+  "schema_version": 1,
+  "algorithm": {
+    "id": "linear-light-premultiplied-rgba-v1",
+    "color_space": "srgb",
+    "transfer": "IEC 61966-2-1 sRGB to linear light and back",
+    "representation": "premultiplied RGBA",
+    "mask_coverage": "grayscale multiplied by alpha",
+    "output_color_type": 6,
+    "output_bit_depth": 8
+  },
+  "edit_spec": {
+    "path": "art/characters/violet/robes/expressions/blink.edit.json",
+    "bytes": 718,
+    "sha256": "1f78a57dd49e408e67b4a0444cf46c2e893fb959ac8fb1ca5b1417a7f488ee89",
+    "schema_version": 1
+  },
+  "controls": {
+    "allow_alpha_change": false,
+    "zero_mask_pixels_copied_byte_exactly": true
+  },
+  "inputs": {
+    "base": {
+      "path": "art/characters/violet/robes/neutral-purple-v1.png",
+      "bytes": 1235688,
+      "sha256": "d378299758fc375a5691a2b1a54ce7faf5e6271520cb7dfbd797ede47253f41a",
+      "rgba_sha256": "44635ef386229b0f1b9b682cb9bbbd17b614134a4ebab1509d64653f70d12682",
+      "dimensions": {
+        "width": 896,
+        "height": 1200
+      },
+      "png": {
+        "color_type": 6,
+        "bit_depth": 8,
+        "has_color": true,
+        "has_alpha": true,
+        "interlaced": false
+      },
+      "expected_sha256": "d378299758fc375a5691a2b1a54ce7faf5e6271520cb7dfbd797ede47253f41a"
+    },
+    "raw_candidate": {
+      "path": "art/characters/violet/expressions/blink.png",
+      "bytes": 1196310,
+      "sha256": "995f433244851b2f4d5e0220c6f1ad2122e8abf71eb6ac440aaeb292a71a8158",
+      "rgba_sha256": "6af08d957adc54fce467b8bda0e26910b0099e180627522fb897861d8a161737",
+      "dimensions": {
+        "width": 896,
+        "height": 1200
+      },
+      "png": {
+        "color_type": 6,
+        "bit_depth": 8,
+        "has_color": true,
+        "has_alpha": true,
+        "interlaced": false
+      },
+      "expected_sha256": "995f433244851b2f4d5e0220c6f1ad2122e8abf71eb6ac440aaeb292a71a8158"
+    },
+    "mask": {
+      "path": "art/characters/violet/expressions/masks/blink-v1.png",
+      "bytes": 24187,
+      "sha256": "e84c2fce704e2c79d9450500288234b5303d49951bcd1851da46b7fc11e9ab6f",
+      "rgba_sha256": "fbfb2fb95115c0556e8a24b012903cb2682aa84902783b5ebdb8c664351603eb",
+      "dimensions": {
+        "width": 896,
+        "height": 1200
+      },
+      "png": {
+        "color_type": 6,
+        "bit_depth": 8,
+        "has_color": true,
+        "has_alpha": true,
+        "interlaced": false
+      },
+      "expected_sha256": "e84c2fce704e2c79d9450500288234b5303d49951bcd1851da46b7fc11e9ab6f"
+    }
+  },
+  "mask": {
+    "bounds": {
+      "x": 358,
+      "y": 242,
+      "width": 177,
+      "height": 53
+    },
+    "coverage_denominator": 65025,
+    "minimum_nonzero_coverage_units": 255,
+    "maximum_coverage_units": 65025,
+    "zero_pixels": 1068634,
+    "nonzero_pixels": 6566,
+    "full_pixels": 6105,
+    "soft_pixels": 461
+  },
+  "changes": {
+    "total_pixels": 1075200,
+    "output_changed_pixels": 6444,
+    "rgb_changed_pixels": 6444,
+    "alpha_changed_pixels": 0,
+    "changed_channel_bytes": 18763,
+    "outside_zero_mask_changed_pixels": 0
+  },
+  "output": {
+    "image": {
+      "path": "art/characters/violet/robes/expressions/blink.png",
+      "media_type": "image/png",
+      "bytes": 1234404,
+      "sha256": "da9cc999bb166791db9e9e6c7cb6c639650da70ca1f9bd0ff01c96d6854764c3",
+      "rgba_sha256": "4c696c410995031a34ddeac6c73ee98a8ef3f09548294bcfb605ed635421ba6f",
+      "dimensions": {
+        "width": 896,
+        "height": 1200
+      }
+    },
+    "provenance": "art/characters/violet/robes/expressions/blink.composite.json"
+  }
+}

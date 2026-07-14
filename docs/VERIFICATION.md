@@ -4,17 +4,18 @@ The hard problem this doc solves: engineers on this project are largely AI agent
 
 ## The verification pyramid
 
-> **D32 (2026-07-13): no human approval gates.** This is a family project; velocity beats ceremony. Everything below is agent-automated and free. Pete's feedback comes from *playing the deployed game* whenever he likes, delivered conversationally — never from processing a review queue. Agents are therefore the last line of visual defense and must self-review strictly.
+> **D32 (2026-07-13): no human approval gates.** This is a family project; velocity beats ceremony. Everything below is agent-automated and free. Pete's feedback comes from *playing the deployed game* whenever he likes, delivered conversationally — never from processing a review queue. The author self-reviews strictly, and a fresh Art Director is the final automated visual reviewer before merge.
 
 1. **Headless sim tests** (Vitest) — logic: quest graphs, encounters, saves, geometry. Fast, exhaustive, no pixels.
 2. **Content lint** — the data contract police (see ARCHITECTURE.md §Testing).
 3. **Harness keyframe self-review** — agents capture deterministic frames of visual work and *look at them* against written illusion checklists (including the Storybook Standard section). **VERIFIED: the Read tool renders PNGs visually — agents genuinely see their work.**
-4. **Art-director adversarial review** (D49, brief: [ART_DIRECTOR.md](ART_DIRECTOR.md)) — a **fresh agent that did not author the change** judges the captures at 1× and 2× against absolute standards (posture, silhouette, anatomy joins, expression congruence, grounding, identity, the picture-book test), prompted to assume something is wrong and find it. CRITICAL/MAJOR findings block the merge. Exists because self-review provably passes taste failures the checklists can't express: the author sees intent and grades "better than before"; the judge sees only the frame. Generated art (part sheets, rooms) is judged *before* it enters the pipeline.
+4. **Art-director adversarial review** (D49, D57, and D58; brief: [ART_DIRECTOR.md](ART_DIRECTOR.md)) — a **fresh agent that did not author the change** judges against absolute standards (posture, silhouette, anatomy joins, expression congruence, grounding, identity, the picture-book test), prompted to assume something is wrong and find it. CRITICAL/MAJOR findings block the merge. A generated character's named shipping subset gets one source review in the context of all batch sheets before slicing; after immediate integration, its assembled movement gets one fresh review using 1280×720 and 2560×1440 harness and normal in-world captures. Unused figures do not block accepted panels, and there are no per-limb, per-pose, or per-frame review gates.
 5. **Play it** — Pete and Violet, on the deployed game and the actual iPad. iPad Safari renders with a different rasterizer and DPR than the capture harness; nothing replaces the actual glass. Feedback arrives as conversation and lands in DECISIONS.md — but obvious defects (posture, dead eyes, floating parts) must die at layer 4, never reach Pete.
 
 ## Determinism requirements (engine-level, non-negotiable, built FIRST)
 
-Retrofitting determinism is brutally expensive, so these land in WP-01/WP-02 before any visual work:
+Retrofitting determinism is brutally expensive, so these foundations landed
+before visual work and remain non-negotiable:
 
 - **Fixed-timestep sim**: `update(dt)` locked to 1/60 steps fed by an accumulator (also the fix for iPad rAF running at 30Hz in Low Power Mode or 120Hz on ProMotion — see ARCHITECTURE.md). `Date.now`, `performance.now`, and rAF deltas are **banned inside sim and render code** (enforced by a grep-based lint in CI).
 - **One seeded PRNG** (`core/rng.js`), injected at scene init; `Math.random` banned (same lint). Per-system sub-streams derived as `hash(masterSeed, systemName)` so adding a particle system doesn't reshuffle other systems' randomness.
@@ -25,7 +26,7 @@ Retrofitting determinism is brutally expensive, so these land in WP-01/WP-02 bef
 ## The harness
 
 - `harness.html` + `src/harness/boot.js` (dev-only): reads `?scene=<id>&t=<seconds>&seed=<n>&size=640x360`. Boot: stub audio → await fonts → await image decodes → construct scene seeded → step fixed timesteps to `t` → render exactly one frame → `window.__ready = true`. Exposes `window.__snapshot()` → `canvas.toDataURL('image/png')` and `window.__renderAt(t)` (re-sim from zero, re-render — lets the capture tool iterate times without reloading).
-- Every SET_PIECES.md id, every AM system, every UI surface, and every room registers a harness scene. If it isn't in the registry, it can't be reviewed; if it can't be reviewed, it doesn't merge.
+- Every SET_PIECES.md id, every AM system, every UI surface, every room, and every production character registers a harness scene. Registration makes work inspectable; it is not a substitute for connecting the feature to normal gameplay. A character that exists only in the harness is unfinished.
 - The URL-param path doubles as the human scrubber: dad can open `harness.html?scene=brick-wall&t=1.4` in a normal browser and eyeball any exact instant.
 
 ## Capture stack (VERIFIED on this machine)
@@ -49,9 +50,17 @@ Retrofitting determinism is brutally expensive, so these land in WP-01/WP-02 bef
 
 1. **Implement** the set piece per its SET_PIECES.md spec.
 2. **Capture**: `snap.mjs` at the spec's keyframe times (chosen to hit anticipation / impact / settle). Multi-seed spot-check (`--seed 1,42,1337`) to catch seed-dependent bugs.
-3. **Self-review**: Read the PNGs against the set piece's illusion checklist. Checklists are **geometric and countable** ("no tile crosses another into visual mush at t=1.4", "name legible at 640×360", "particle count 20–40") — never vibes; keyframe judgment of subtle motion is the weakest link, so the checklist carries the burden. Generate the `flipbook.mjs` GIF and read the contact strip for motion sanity. Iterate until it passes — **you are the last reviewer** (D32); ship when the full local gate is green (**`npm run build`**: tests, content lint, asset/voice/audio checks, production bundle — not `npm test` alone). CI re-runs the same battery and gates deployment, so a red push can't reach Pages — but the local gate exists so pushes *deploy*, not merely survive.
+3. **Self-review and fresh review**: Read the PNGs against the set piece's illusion checklist. Checklists are **geometric and countable** ("no tile crosses another into visual mush at t=1.4", "name legible at 640×360", "particle count 20–40") — never vibes; keyframe judgment of subtle motion is the weakest link, so the checklist carries the burden. Generate the `flipbook.mjs` GIF and read the contact strip for motion sanity. Iterate until the author pass is clean, then give the required captures to a fresh Art Director. Ship only after that reviewer has no CRITICAL or MAJOR findings and the full local gate is green (**`npm run build`**: tests, content lint, asset/voice/audio checks, production bundle — not `npm test` alone). CI re-runs the same battery and gates deployment, so a red push can't reach Pages — but the local gate exists so pushes *deploy*, not merely survive.
 
 There is no approval queue, no PENDING.md, no blessing step, and no golden gate (D32 retired them). If a change is genuinely taste-risky — a new character design, a signature moment's feel — say so plainly in your report so Pete knows to look at it in the deployed game; that's a heads-up, not a blocking request.
+
+Character work follows the shorter batch-first loop in
+[CHARACTER_PIPELINE.md](CHARACTER_PIPELINE.md): inventory only states the current
+game requests, generate one or the smallest few coherent sheets, review the
+named shipping subset across those batches once, slice deterministically, integrate into real rooms and dialogue,
+review the assembled result once, run `npm run build`, and push the complete
+green character. Do not expand this general set-piece loop into separate
+character-frame milestones.
 
 ## Mandatory Storybook Standard checklist section
 

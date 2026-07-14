@@ -1,219 +1,106 @@
 # Character production pipeline
 
-This is the production contract for rebuilding the cast. It covers every
-character visible in the playable game and is designed to extend to the later
-chapter roster without changing rendering media or animation semantics again.
+The unit of production is a complete playable character, not an isolated frame.
+Each character moves from one coherent source sheet set into the real game in one
+short pass, and only defects that remain visible in play earn another art
+generation.
 
-## One visual lineage per character
+## One model and one identity
 
-Every character begins with one independently reviewed, fully assembled,
-upright-neutral canonical painting. Canonical character generation and every
-production refinement derived from it use
-`google/gemini-3.1-flash-image` through OpenRouter. Cheaper or different models
-may be used only for disposable research that can never enter a shipping asset
-lineage. A production prompt always records the canonical input, exact model,
-output hash, cost, and review status under `art/characters/<character>/`.
+Every production character sheet and every later production refinement uses
+`google/gemini-3.1-flash-image` through `google-vertex/global`. There is no
+silent model or provider fallback and no automatic retry. A provider failure is
+surfaced; a deliberate new request may use the same exact route.
+Prompts, source images, model details, hashes, and provenance stay under
+`art/characters/<character>/`; only reviewed runtime assets ship under
+`public/assets/art/characters/`.
 
-The canonical painting locks identity, age, proportions, palette, outfit,
-material language, and the neutral attachment geometry. It is reviewed before
-any expression, limb, outfit, lighting, or action variant is generated. A
-rejected canonical source is never sliced and never becomes an input to a
-shipping derivative.
+Violet is the exception to creating a new identity during this pass because her
+identity is already decided. The exact pixels in
+`art/characters/violet/canonical/casual-approved.png` are Violet V8, the locked
+canonical design selected by Pete. Her production sheet is generated as an edit
+derived from that image, and the unchanged neutral artwork remains the identity
+reference. Its SHA-256 is
+`68e9871ceecc32b9fbf50cbf36eecbae226eb184ad5337f67bbca2e53266e033`.
+Do not regenerate, reinterpret, or “improve” neutral Violet.
 
-## Reproducible generation command
+## Generate the whole character together
 
-Production generations use `npm run assets:character-image -- --request
-<request.json>`. The command itself fixes the model to
-`google/gemini-3.1-flash-image`, the reviewed canonical model slug to
-`google/gemini-3.1-flash-image-20260528`, and the provider to
-`google-vertex/global`. A request file cannot override any of those values. It
-names one Markdown prompt section, the reference images in their semantic
-order, the requested aspect ratio and resolution, and new image and provenance
-paths in one output directory. Every path is relative to the repository root;
-existing inputs and output parents may not traverse symbolic links.
+Before generation, inventory every way normal gameplay currently shows the
+character: world scale, dialogue portrait, facing directions, expressions,
+outfits, carried props, locomotion, and story actions. Generate one large,
+clearly separated multi-panel sheet at a consistent scale and ground line. If
+the model's practical sheet capacity requires it, add the smallest coherent
+supplemental sheet needed for the remaining states rather than restarting a good
+primary sheet. A proposed shipping figure must be extractable without another
+figure attached to it. Perfect equal cells are not the product: deterministic
+connected-component isolation may remove neighboring debris, and unused malformed
+figures do not invalidate an otherwise usable batch.
 
-```json
-{
-  "schema_version": 1,
-  "prompt": {
-    "path": "art/characters/violet/canonical/casual-v8.prompt.md",
-    "section": "Prompt"
-  },
-  "references": [
-    {
-      "path": "art/character-refs/violet.png",
-      "role": "exact identity and age"
-    },
-    {
-      "path": "art/raw/ch1-bedroom.png",
-      "role": "painted room material language"
-    }
-  ],
-  "generation": {
-    "aspect_ratio": "3:4",
-    "resolution": "1K"
-  },
-  "output": {
-    "image": "art/characters/violet/canonical/casual-v8-raw.png",
-    "provenance": "art/characters/violet/canonical/casual-v8.metadata.json"
-  }
-}
-```
+The inventory comes from the current renderer and Chapter One content, not from
+a universal pose wish list. Violet needs the directions, walk, dialogue,
+celebration, tumble, wand, and robe-shop states that her playable scenes already
+request. Each NPC and animal gets only its own requested locomotion, dialogue,
+delivery, follow, selection, hint, or celebration states. Do not create
+speculative poses for hypothetical later scenes.
 
-Adding `--dry-run` reads and hashes the local inputs and verifies the current
-read-only OpenRouter model catalogs, but it does not require a key, call the
-cost-bearing image endpoint, or write a file. A real generation reads
-`OPENROUTER_API_KEY` only from the environment after catalog validation. It
-makes exactly one generation request, never retries automatically, refuses any
-existing output path, validates the returned PNG, and installs the PNG first
-inside a recoverable transaction. The provenance is written last as the commit
-marker, with directory synchronization and stale-transaction cleanup. The safe
-provenance retains the prompt, reference,
-request, catalog, response, and output hashes together with dimensions, usage,
-cost, timestamps, runtime, and repository commit; it allowlists response
-metadata and never retains embedded image data, signed URLs, unknown provider
-fields, or credentials. This cost-bearing command is
-deliberately outside `npm run build`; its offline contract tests remain part of
-the normal deterministic test gate.
+Keeping the views and actions in one or a few coherent batch generations gives
+the model the best chance
+to preserve face construction, proportions, clothing, line, palette, and prop
+scale across the set. Do not turn the first sheet into a frame-by-frame mask and
+compositing project. If none of the required figures are usable, regenerate the
+sheet as a unit. Otherwise name the usable production subset, record any missing
+normal-game state, and move the usable work into the game.
 
-## Atomic image editing and preserved pixels
+## Review once at the meaningful source boundary
 
-A refinement changes one visual concern at a time. Examples are closing the
-eyelids, changing one mouth shape, raising the right wand arm, or creating one
-planted walking-leg frame. Gemini receives the approved canonical source and a
-precise edit instruction. The resulting image is registered to the canonical
-canvas, and only the intended changed region is retained. Everything outside
-that region comes from the approved canonical pixels rather than trusting the
-model to repaint them consistently.
+A fresh Art Director reviews the proposed shipping panels across the complete
+batch before any slicing or shipping, following `docs/ART_DIRECTOR.md`. The review
+judges identity across selected views, action readability, age and emotional
+readability, room-style fit, scale, anchors, and whether normal gameplay is
+covered. The verdict names the accepted subset and any blocking correction.
+Violet’s review treats V8 as the decided identity, not as an invitation to reopen
+her proportions. Defects in unused panels do not block integration.
 
-This rule applies even when an edit appears identity-stable. A blink may not
-repaint the glasses or hair. A speaking mouth may not repaint the nose or
-cheeks. An arm gesture may not repaint the torso. A walking frame may not
-repaint the face. Local compositing is the mechanical identity guarantee that
-image-to-image prompting alone cannot provide.
+There is no separate review gate for every face, arm, leg, or animation frame.
+The proposed shipping subset across the batch is the single generated-art review unit.
 
-The preserved-pixel step uses `npm run assets:character-edit -- --spec
-<edit.json>`. Its strict versioned input binds the approved base and raw Gemini
-candidate and edit mask to expected SHA-256 hashes, requires the mask to be a
-same-size grayscale or RGBA PNG, and chooses whether that particular edit is
-allowed to change alpha:
+## Slice deterministically and integrate immediately
 
-```json
-{
-  "schema_version": 1,
-  "base": {
-    "path": "art/characters/violet/canonical/casual-v8.png",
-    "sha256": "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef"
-  },
-  "raw_candidate": {
-    "path": "art/characters/violet/expressions/blink-raw.png",
-    "sha256": "abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789"
-  },
-  "mask": {
-    "path": "art/characters/violet/expressions/blink-mask.png",
-    "sha256": "fedcba9876543210fedcba9876543210fedcba9876543210fedcba9876543210"
-  },
-  "output": {
-    "image": "art/characters/violet/expressions/blink.png",
-    "provenance": "art/characters/violet/expressions/blink.composite.json"
-  },
-  "allow_alpha_change": false
-}
-```
+After the proposed shipping subset passes, slice its known panel rectangles
+with deterministic local tooling. Slicing may isolate connected components,
+remove the sheet background, normalize selected figures to a common scale,
+place them on the shared transparent canvas, clean extraction edges, apply a
+review-prescribed opaque-art donor repair to a matte defect, and record ground,
+portrait, hand, prop, and other runtime anchors. It may not generatively repaint
+or reinterpret the figure. The character manifest must map every state the
+current game requests and must fail visibly in development if a state is
+missing rather than silently returning to the legacy puppet.
 
-All paths are relative to the repository root. RGBA mask coverage is its
-grayscale value multiplied by its alpha, so opaque painted masks and
-white-with-alpha masks have the same clear meaning. The compositor blends in
-linear-light premultiplied RGBA, directly copies every base channel byte where
-mask coverage is zero, and preserves base alpha exactly unless
-`allow_alpha_change` is true. It rejects stale hashes, mismatched dimensions,
-non-grayscale mask color, and existing destinations. The PNG and deterministic
-provenance are installed as one no-overwrite output pair, with the provenance
-linked and synced last as the transaction's commit record. Provenance records
-all input and output hashes, dimensions, mask bounds, coverage counts, and
-changed-pixel statistics. Like image generation, this production command stays
-outside the normal build while its offline tests remain in the test gate.
+Hook the complete character into its real rooms, dialogue, movement, and story
+actions immediately. A standalone sheet or harness is not a finished
+character. Preserve save data and simulation determinism while the renderer
+changes, and keep the game playable as each member of the cast lands.
 
-## Aligned-canvas puppet contract
+Capture the assembled character in its registered harness and in-world context
+at 1280×720 and 2560×1440, then have a fresh Art Director perform the required
+assembled visual review. This is a single character-level review, not a new
+per-frame loop.
+Refine only defects that are visible in these captures or during play, using
+`google/gemini-3.1-flash-image` through `google-vertex/global` again. Prefer a
+targeted correction when one panel is genuinely broken; do not reopen approved
+identity or polish hidden source details that players cannot see.
 
-Every runtime layer occupies the same transparent canonical canvas and uses the
-same ground anchor. Runtime code never guesses a neck, shoulder, hip, or hand
-join from a trimmed image rectangle. Layer changes therefore preserve exact
-registration.
+Run `npm run build`, commit, and push after each complete green character so the
+GitHub Pages build becomes the main feedback surface rather than an art-folder
+preview.
 
-The core layer order is authored per character. A typical human uses rear hair,
-leg or lower-body frame, rear arm, torso or outfit, front arm, base head,
-localized face expression, front hair, and attached prop layers. Characters
-with coats, beards, wings, tails, hats, or multiple heads define their own
-order. Each action frame may change both its selected layers and their z-order
-where an arm moves in front of the face or behind the body.
+## Completion
 
-Every logical asset has independently derived left-key and right-key variants.
-Facing is a world transform, while room lighting remains in world space. The
-renderer selects the opposite local light variant before mirroring a puppet so
-the visible highlight still agrees with the room.
-
-Every rig declares its canonical canvas and floor root, world bounds, portrait
-crop, shadow bounds, head-safe region, and all sockets used by gameplay. Human
-rigs declare at least the neck, left and right shoulders, elbows, wrists, hands,
-hips, knees, ankles, and planted feet. Violet also declares a wand grip and wand
-tip. Hagrid declares map, ticket, and brick-tap hand sockets. Owls declare
-talons, letter carry, and release sockets. Unknown identities, appearances,
-expressions, clips, or missing required sockets are validation errors; they may
-not silently become another character, another pose, or the old drawing medium.
-
-The implementation seam is `src/game/render/AlignedSpriteRig.js`. Production
-assets belong under `public/assets/art/characters/`; `art/characters/` contains
-canonical sources, prompts, edit inputs, masks, and provenance only.
-
-## Animation vocabulary
-
-Locomotion, expression, transient action, appearance, props, facing, gaze,
-room light, and reduced-motion behavior are independent inputs. The renderer
-does not overload one `pose` string with all of them.
-
-Every humanoid requires idle, walking, blinking, gaze, speaking, jump-for-joy,
-giggle, and comic tumble/recovery. Every speaking identity has a neutral
-portrait, blink, two or three talking mouth states, and the expressions used by
-its dialogue. Encounter participants add ready, telegraph, cast or attack,
-block or dodge, hit, stagger, defeated, and recovery clips. Friend characters
-add a finale cheer.
-
-Chapter One adds the following character-specific actions. Violet needs casual
-and robed appearances, runtime robe trim, wonder, proud, curious, wand hold,
-wrong-wand tests, wand receive, cast, and robe presentation. Hagrid needs
-beckon, walking departure, map handoff, ticket handoff, and triple brick tap.
-The Wandmaker needs assessment, surprised amusement, encouraging reset, and
-chosen-wand delight. Madam Malkin needs measuring, fitting, color presentation,
-and approval. The Menagerie keeper needs three-pet presentation, confirmation,
-name request, and new-friend celebration. The post owl retains perch, takeoff,
-delivery, flight, release, and settle. Cat, pet owl, and toad retain their
-complete idle, follow, curiosity, selection, portrait, hint, and celebration
-behavior.
-
-One-shot actions use action-local time or explicit progress. Global game time
-is only for harmless looping motion such as breathing and idle sway. Transient
-animation state remains outside the save payload, so existing saves retain
-their current character, wand, robe-trim, pet, quest, and yearbook data.
-
-## Review gate
-
-Canonical paintings and generated variants receive the fresh Art Director
-review before they become runtime inputs. A flagship canonical character gets
-the three-lens panel: posture and anatomy, style and room integration, and
-six-year-old readability. No judge sees the previous version.
-
-After approved layers are assembled, each character receives four clean
-registered harness surfaces with no previous-version comparison: full-body clip
-strip, expression and portrait strip, reduced-motion strip, and in-world action
-scene. Captures are produced at 1280x720 and 2560x1440. CRITICAL and MAJOR
-findings return to generation, local compositing, rig configuration, or content
-cue authoring as appropriate. Only a clean assembled verdict can replace the
-currently deployed puppet.
-
-The complete playable Chapter One gate covers Violet, Hagrid, the Wandmaker,
-Madam Malkin, the Menagerie keeper, narrator portrait, post owl, cat, pet owl,
-and pet toad across every current action and portrait state. Later chapter
-characters enter the same pipeline as their authored identities and actions
-become concrete; unresolved ensembles remain explicit inventory slots rather
-than invented characters.
+A character is complete when the reviewed sheet covers every state the current
+game requests, deterministic slices and anchors are in the production manifest,
+the real game uses them for world and portrait rendering without a legacy-art
+fallback, both required capture sizes have passed assembled Art Director review,
+and the full build is green. Chapter One is complete only when this is true for
+Violet, Hagrid, the Wandmaker, Madam Malkin, the Menagerie keeper, the narrator
+portrait, the post owl, the cat, the pet owl, and the pet toad.

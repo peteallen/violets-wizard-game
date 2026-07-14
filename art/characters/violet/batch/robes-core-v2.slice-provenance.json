@@ -1,0 +1,858 @@
+{
+  "schema_version": 1,
+  "algorithm": {
+    "id": "cyan-flood-aligned-character-sheet-v1",
+    "component_connectivity": 8,
+    "scale_filter": "premultiplied-rgba-box-rational-v1",
+    "output_color_type": 6,
+    "output_bit_depth": 8,
+    "deterministic": true
+  },
+  "slice_spec": {
+    "path": "art/characters/violet/batch/robes-core-v2.layout.json",
+    "bytes": 2180,
+    "sha256": "fc4f5354071e1612b4e6302d248ba6664cda276243b1d9413b40f2bda3dc4a47",
+    "schema_version": 1,
+    "id": "violet.robes-core-v2"
+  },
+  "source": {
+    "path": "art/characters/violet/batch/robes-core-v2.png",
+    "bytes": 19433561,
+    "expected_sha256": "64b28d91fade606eb5ed7a7b3d1d55578f68299b059f6e0cc216b0c0965707f1",
+    "sha256": "64b28d91fade606eb5ed7a7b3d1d55578f68299b059f6e0cc216b0c0965707f1",
+    "rgba_sha256": "64ac2a6c247dd85c777458ad4e3c12e3f29a726a4cb45953ea46cf2ed981279d",
+    "dimensions": {
+      "width": 4800,
+      "height": 3584
+    }
+  },
+  "controls": {
+    "output_canvas": {
+      "width": 896,
+      "height": 1200,
+      "center_x": 448,
+      "ground_y": 1132
+    },
+    "common_scale": {
+      "numerator": 2,
+      "denominator": 3
+    },
+    "key": {
+      "color": {
+        "red": 0,
+        "green": 255,
+        "blue": 255
+      },
+      "tolerance": 28,
+      "alpha": {
+        "opaque_cyan_excess": 20,
+        "transparent_cyan_excess": 225,
+        "edge_spill_radius": 8,
+        "edge_spill_opaque_cyan_excess": -20,
+        "edge_spill_max_green_blue_delta": 70,
+        "matte_low_alpha": 170,
+        "matte_high_alpha": 245,
+        "edge_color_radius": 0
+      }
+    },
+    "components": {
+      "detail_min_pixels": 8,
+      "detail_max_pixels": 5000,
+      "detail_max_distance": 48
+    }
+  },
+  "outputs": [
+    {
+      "name": "profile-right",
+      "path": "public/assets/art/characters/violet/robes/profile-right.png",
+      "media_type": "image/png",
+      "bytes": 394435,
+      "sha256": "6314263b108e19ff7b2bf413005cd4d678db1090b11bfbfcc7dcdddf08cd72ac",
+      "rgba_sha256": "d812f8d9175eb7506c76f16ad5cd0de6d57bcb1cc5d876eaeff870e3938eaf57",
+      "dimensions": {
+        "width": 896,
+        "height": 1200
+      },
+      "crop": {
+        "x": 1480,
+        "y": 0,
+        "width": 1040,
+        "height": 1872
+      },
+      "source_content_bounds": {
+        "x": 259,
+        "y": 123,
+        "width": 519,
+        "height": 1547
+      },
+      "scaled_dimensions": {
+        "width": 346,
+        "height": 1032
+      },
+      "placement": {
+        "x": 275,
+        "y": 101,
+        "width": 346,
+        "height": 1032,
+        "center_x": 448,
+        "ground_y": 1132
+      },
+      "flood": {
+        "background_pixels": 1390779,
+        "non_background_pixels": 556101,
+        "background_fraction": 0.7143629807692308
+      },
+      "components": {
+        "found": 16,
+        "dominant_pixels": 529708,
+        "kept": 5,
+        "removed": 11,
+        "selected_pixels": 529817,
+        "details": [
+          {
+            "pixels": 59,
+            "distance_from_dominant": 4,
+            "kept": true
+          },
+          {
+            "pixels": 5,
+            "distance_from_dominant": 4,
+            "kept": false
+          },
+          {
+            "pixels": 3,
+            "distance_from_dominant": 2,
+            "kept": false
+          },
+          {
+            "pixels": 4,
+            "distance_from_dominant": 2,
+            "kept": false
+          },
+          {
+            "pixels": 2,
+            "distance_from_dominant": 3,
+            "kept": false
+          },
+          {
+            "pixels": 11,
+            "distance_from_dominant": 2,
+            "kept": true
+          },
+          {
+            "pixels": 10,
+            "distance_from_dominant": 4,
+            "kept": true
+          },
+          {
+            "pixels": 29,
+            "distance_from_dominant": 5,
+            "kept": true
+          },
+          {
+            "pixels": 1,
+            "distance_from_dominant": 11,
+            "kept": false
+          },
+          {
+            "pixels": 137,
+            "distance_from_dominant": 283,
+            "kept": false
+          },
+          {
+            "pixels": 3638,
+            "distance_from_dominant": 247,
+            "kept": false
+          },
+          {
+            "pixels": 30,
+            "distance_from_dominant": 285,
+            "kept": false
+          },
+          {
+            "pixels": 5675,
+            "distance_from_dominant": 197,
+            "kept": false
+          },
+          {
+            "pixels": 1460,
+            "distance_from_dominant": 277,
+            "kept": false
+          },
+          {
+            "pixels": 756,
+            "distance_from_dominant": 242,
+            "kept": false
+          }
+        ]
+      },
+      "alpha": {
+        "transparent_pixels": 1417063,
+        "soft_pixels": 12899,
+        "opaque_pixels": 516918
+      },
+      "edge_artifacts_repaired": 0
+    },
+    {
+      "name": "walk-contact",
+      "path": "public/assets/art/characters/violet/robes/walk-contact.png",
+      "media_type": "image/png",
+      "bytes": 464522,
+      "sha256": "77d18d994d31b89f86e7ed9ac9c206c558919ce5d6f260a2de729ac5ffb7cf52",
+      "rgba_sha256": "c8721def21506931445eeb5917c4ae647d538ea70dca1cc520c5a967fa4f598c",
+      "dimensions": {
+        "width": 896,
+        "height": 1200
+      },
+      "crop": {
+        "x": 2240,
+        "y": 0,
+        "width": 1120,
+        "height": 1872
+      },
+      "source_content_bounds": {
+        "x": 214,
+        "y": 136,
+        "width": 751,
+        "height": 1526
+      },
+      "scaled_dimensions": {
+        "width": 501,
+        "height": 1018
+      },
+      "placement": {
+        "x": 198,
+        "y": 115,
+        "width": 501,
+        "height": 1018,
+        "center_x": 448,
+        "ground_y": 1132
+      },
+      "flood": {
+        "background_pixels": 1465389,
+        "non_background_pixels": 631251,
+        "background_fraction": 0.6989225618131868
+      },
+      "components": {
+        "found": 12,
+        "dominant_pixels": 596352,
+        "kept": 4,
+        "removed": 8,
+        "selected_pixels": 596437,
+        "details": [
+          {
+            "pixels": 66,
+            "distance_from_dominant": 3,
+            "kept": true
+          },
+          {
+            "pixels": 10,
+            "distance_from_dominant": 4,
+            "kept": true
+          },
+          {
+            "pixels": 9,
+            "distance_from_dominant": 4,
+            "kept": true
+          },
+          {
+            "pixels": 1591,
+            "distance_from_dominant": 296,
+            "kept": false
+          },
+          {
+            "pixels": 8,
+            "distance_from_dominant": 297,
+            "kept": false
+          },
+          {
+            "pixels": 719,
+            "distance_from_dominant": 263,
+            "kept": false
+          },
+          {
+            "pixels": 194,
+            "distance_from_dominant": 266,
+            "kept": false
+          },
+          {
+            "pixels": 736,
+            "distance_from_dominant": 233,
+            "kept": false
+          },
+          {
+            "pixels": 7490,
+            "distance_from_dominant": 137,
+            "kept": false
+          },
+          {
+            "pixels": 1629,
+            "distance_from_dominant": 197,
+            "kept": false
+          },
+          {
+            "pixels": 4412,
+            "distance_from_dominant": 105,
+            "kept": false
+          }
+        ]
+      },
+      "alpha": {
+        "transparent_pixels": 1500203,
+        "soft_pixels": 17030,
+        "opaque_pixels": 579407
+      },
+      "edge_artifacts_repaired": 41
+    },
+    {
+      "name": "walk-pass",
+      "path": "public/assets/art/characters/violet/robes/walk-pass.png",
+      "media_type": "image/png",
+      "bytes": 453433,
+      "sha256": "d8acfd97351b4dbfdd0b5cababe11ccf0a4a114417ac31fdb6164538e45fe039",
+      "rgba_sha256": "8a204c347bb76d7fb3f1e603d80cc1d583c096de939f5bde024318243903dcff",
+      "dimensions": {
+        "width": 896,
+        "height": 1200
+      },
+      "crop": {
+        "x": 3040,
+        "y": 0,
+        "width": 1120,
+        "height": 1872
+      },
+      "source_content_bounds": {
+        "x": 238,
+        "y": 137,
+        "width": 609,
+        "height": 1537
+      },
+      "scaled_dimensions": {
+        "width": 406,
+        "height": 1025
+      },
+      "placement": {
+        "x": 245,
+        "y": 108,
+        "width": 406,
+        "height": 1025,
+        "center_x": 448,
+        "ground_y": 1132
+      },
+      "flood": {
+        "background_pixels": 1407653,
+        "non_background_pixels": 688987,
+        "background_fraction": 0.6713851686507937
+      },
+      "components": {
+        "found": 11,
+        "dominant_pixels": 586364,
+        "kept": 1,
+        "removed": 10,
+        "selected_pixels": 586364,
+        "details": [
+          {
+            "pixels": 5,
+            "distance_from_dominant": 4,
+            "kept": false
+          },
+          {
+            "pixels": 1,
+            "distance_from_dominant": 5,
+            "kept": false
+          },
+          {
+            "pixels": 58,
+            "distance_from_dominant": 326,
+            "kept": false
+          },
+          {
+            "pixels": 1,
+            "distance_from_dominant": 343,
+            "kept": false
+          },
+          {
+            "pixels": 12081,
+            "distance_from_dominant": 240,
+            "kept": false
+          },
+          {
+            "pixels": 114,
+            "distance_from_dominant": 260,
+            "kept": false
+          },
+          {
+            "pixels": 12873,
+            "distance_from_dominant": 200,
+            "kept": false
+          },
+          {
+            "pixels": 6560,
+            "distance_from_dominant": 229,
+            "kept": false
+          },
+          {
+            "pixels": 33673,
+            "distance_from_dominant": 202,
+            "kept": false
+          },
+          {
+            "pixels": 14881,
+            "distance_from_dominant": 105,
+            "kept": false
+          }
+        ]
+      },
+      "alpha": {
+        "transparent_pixels": 1510276,
+        "soft_pixels": 17806,
+        "opaque_pixels": 568558
+      },
+      "edge_artifacts_repaired": 61
+    },
+    {
+      "name": "robe-present",
+      "path": "public/assets/art/characters/violet/robes/robe-present.png",
+      "media_type": "image/png",
+      "bytes": 532533,
+      "sha256": "5054b13b651f51a07dafd87ce9d0944a8cdc6b39bda51f853887ac43c2053eb5",
+      "rgba_sha256": "3c741c8d1de4768063062aef02b1248de821668117e57a648a1dba3da11eeacd",
+      "dimensions": {
+        "width": 896,
+        "height": 1200
+      },
+      "crop": {
+        "x": 620,
+        "y": 1672,
+        "width": 1180,
+        "height": 1912
+      },
+      "source_content_bounds": {
+        "x": 275,
+        "y": 275,
+        "width": 721,
+        "height": 1540
+      },
+      "scaled_dimensions": {
+        "width": 481,
+        "height": 1027
+      },
+      "placement": {
+        "x": 208,
+        "y": 106,
+        "width": 481,
+        "height": 1027,
+        "center_x": 448,
+        "ground_y": 1132
+      },
+      "flood": {
+        "background_pixels": 1409991,
+        "non_background_pixels": 846169,
+        "background_fraction": 0.6249516878235586
+      },
+      "components": {
+        "found": 17,
+        "dominant_pixels": 680715,
+        "kept": 3,
+        "removed": 14,
+        "selected_pixels": 680744,
+        "details": [
+          {
+            "pixels": 548,
+            "distance_from_dominant": 268,
+            "kept": false
+          },
+          {
+            "pixels": 10,
+            "distance_from_dominant": 4,
+            "kept": true
+          },
+          {
+            "pixels": 7,
+            "distance_from_dominant": 2,
+            "kept": false
+          },
+          {
+            "pixels": 19,
+            "distance_from_dominant": 13,
+            "kept": true
+          },
+          {
+            "pixels": 153,
+            "distance_from_dominant": 345,
+            "kept": false
+          },
+          {
+            "pixels": 78742,
+            "distance_from_dominant": 52,
+            "kept": false
+          },
+          {
+            "pixels": 3,
+            "distance_from_dominant": 2,
+            "kept": false
+          },
+          {
+            "pixels": 2,
+            "distance_from_dominant": 3,
+            "kept": false
+          },
+          {
+            "pixels": 17,
+            "distance_from_dominant": 301,
+            "kept": false
+          },
+          {
+            "pixels": 2,
+            "distance_from_dominant": 305,
+            "kept": false
+          },
+          {
+            "pixels": 1,
+            "distance_from_dominant": 306,
+            "kept": false
+          },
+          {
+            "pixels": 8557,
+            "distance_from_dominant": 125,
+            "kept": false
+          },
+          {
+            "pixels": 24172,
+            "distance_from_dominant": 178,
+            "kept": false
+          },
+          {
+            "pixels": 16523,
+            "distance_from_dominant": 77,
+            "kept": false
+          },
+          {
+            "pixels": 1867,
+            "distance_from_dominant": 206,
+            "kept": false
+          },
+          {
+            "pixels": 4797,
+            "distance_from_dominant": 255,
+            "kept": false
+          }
+        ]
+      },
+      "alpha": {
+        "transparent_pixels": 1575416,
+        "soft_pixels": 19061,
+        "opaque_pixels": 661683
+      },
+      "edge_artifacts_repaired": 0
+    },
+    {
+      "name": "wand-hold",
+      "path": "public/assets/art/characters/violet/robes/wand-hold.png",
+      "media_type": "image/png",
+      "bytes": 512395,
+      "sha256": "11f4077ab991090406341bfcaac05ead3b5611bbc4255bb18b79e81f6b682609",
+      "rgba_sha256": "3426a0f6b5dfb5c30ad47769ca027e10a8f870f9d670f9f4c6968758e9ab7a2c",
+      "dimensions": {
+        "width": 896,
+        "height": 1200
+      },
+      "crop": {
+        "x": 2200,
+        "y": 1672,
+        "width": 1220,
+        "height": 1912
+      },
+      "source_content_bounds": {
+        "x": 289,
+        "y": 274,
+        "width": 652,
+        "height": 1542
+      },
+      "scaled_dimensions": {
+        "width": 435,
+        "height": 1028
+      },
+      "placement": {
+        "x": 231,
+        "y": 105,
+        "width": 435,
+        "height": 1028,
+        "center_x": 448,
+        "ground_y": 1132
+      },
+      "flood": {
+        "background_pixels": 1393252,
+        "non_background_pixels": 939388,
+        "background_fraction": 0.5972854791137938
+      },
+      "components": {
+        "found": 17,
+        "dominant_pixels": 679445,
+        "kept": 1,
+        "removed": 16,
+        "selected_pixels": 679445,
+        "details": [
+          {
+            "pixels": 2,
+            "distance_from_dominant": 6,
+            "kept": false
+          },
+          {
+            "pixels": 3,
+            "distance_from_dominant": 6,
+            "kept": false
+          },
+          {
+            "pixels": 4,
+            "distance_from_dominant": 5,
+            "kept": false
+          },
+          {
+            "pixels": 2,
+            "distance_from_dominant": 2,
+            "kept": false
+          },
+          {
+            "pixels": 1,
+            "distance_from_dominant": 325,
+            "kept": false
+          },
+          {
+            "pixels": 72,
+            "distance_from_dominant": 309,
+            "kept": false
+          },
+          {
+            "pixels": 42259,
+            "distance_from_dominant": 186,
+            "kept": false
+          },
+          {
+            "pixels": 133373,
+            "distance_from_dominant": 108,
+            "kept": false
+          },
+          {
+            "pixels": 1,
+            "distance_from_dominant": 2,
+            "kept": false
+          },
+          {
+            "pixels": 5,
+            "distance_from_dominant": 2,
+            "kept": false
+          },
+          {
+            "pixels": 1,
+            "distance_from_dominant": 244,
+            "kept": false
+          },
+          {
+            "pixels": 1,
+            "distance_from_dominant": 243,
+            "kept": false
+          },
+          {
+            "pixels": 2,
+            "distance_from_dominant": 2,
+            "kept": false
+          },
+          {
+            "pixels": 1,
+            "distance_from_dominant": 234,
+            "kept": false
+          },
+          {
+            "pixels": 2,
+            "distance_from_dominant": 235,
+            "kept": false
+          },
+          {
+            "pixels": 44042,
+            "distance_from_dominant": 212,
+            "kept": false
+          }
+        ]
+      },
+      "alpha": {
+        "transparent_pixels": 1653195,
+        "soft_pixels": 16516,
+        "opaque_pixels": 662929
+      },
+      "edge_artifacts_repaired": 85
+    },
+    {
+      "name": "cheer",
+      "path": "public/assets/art/characters/violet/robes/cheer.png",
+      "media_type": "image/png",
+      "bytes": 506119,
+      "sha256": "ce309dc711a6faee3c62697e2d61d4ff8d68417b3ceccdd4acfb36dcff9e8540",
+      "rgba_sha256": "aaf53e617eadba6bd14ed58086bb95885497742645f4ccbc31a1d107f0cb72c9",
+      "dimensions": {
+        "width": 896,
+        "height": 1200
+      },
+      "crop": {
+        "x": 3780,
+        "y": 1612,
+        "width": 1020,
+        "height": 1972
+      },
+      "source_content_bounds": {
+        "x": 241,
+        "y": 233,
+        "width": 723,
+        "height": 1640
+      },
+      "scaled_dimensions": {
+        "width": 482,
+        "height": 1094
+      },
+      "placement": {
+        "x": 207,
+        "y": 39,
+        "width": 482,
+        "height": 1094,
+        "center_x": 448,
+        "ground_y": 1132
+      },
+      "flood": {
+        "background_pixels": 1255527,
+        "non_background_pixels": 755913,
+        "background_fraction": 0.6241931153800262
+      },
+      "components": {
+        "found": 24,
+        "dominant_pixels": 642320,
+        "kept": 2,
+        "removed": 22,
+        "selected_pixels": 642330,
+        "details": [
+          {
+            "pixels": 3564,
+            "distance_from_dominant": 378,
+            "kept": false
+          },
+          {
+            "pixels": 5318,
+            "distance_from_dominant": 301,
+            "kept": false
+          },
+          {
+            "pixels": 3080,
+            "distance_from_dominant": 197,
+            "kept": false
+          },
+          {
+            "pixels": 4,
+            "distance_from_dominant": 8,
+            "kept": false
+          },
+          {
+            "pixels": 1,
+            "distance_from_dominant": 8,
+            "kept": false
+          },
+          {
+            "pixels": 1,
+            "distance_from_dominant": 7,
+            "kept": false
+          },
+          {
+            "pixels": 10,
+            "distance_from_dominant": 2,
+            "kept": true
+          },
+          {
+            "pixels": 1,
+            "distance_from_dominant": 6,
+            "kept": false
+          },
+          {
+            "pixels": 1,
+            "distance_from_dominant": 2,
+            "kept": false
+          },
+          {
+            "pixels": 3,
+            "distance_from_dominant": 9,
+            "kept": false
+          },
+          {
+            "pixels": 34,
+            "distance_from_dominant": 239,
+            "kept": false
+          },
+          {
+            "pixels": 6,
+            "distance_from_dominant": 240,
+            "kept": false
+          },
+          {
+            "pixels": 66848,
+            "distance_from_dominant": 65,
+            "kept": false
+          },
+          {
+            "pixels": 2,
+            "distance_from_dominant": 2,
+            "kept": false
+          },
+          {
+            "pixels": 1,
+            "distance_from_dominant": 4,
+            "kept": false
+          },
+          {
+            "pixels": 5,
+            "distance_from_dominant": 2,
+            "kept": false
+          },
+          {
+            "pixels": 2,
+            "distance_from_dominant": 217,
+            "kept": false
+          },
+          {
+            "pixels": 3,
+            "distance_from_dominant": 218,
+            "kept": false
+          },
+          {
+            "pixels": 3,
+            "distance_from_dominant": 187,
+            "kept": false
+          },
+          {
+            "pixels": 3,
+            "distance_from_dominant": 208,
+            "kept": false
+          },
+          {
+            "pixels": 1,
+            "distance_from_dominant": 200,
+            "kept": false
+          },
+          {
+            "pixels": 2,
+            "distance_from_dominant": 2,
+            "kept": false
+          },
+          {
+            "pixels": 9679,
+            "distance_from_dominant": 237,
+            "kept": false
+          }
+        ]
+      },
+      "alpha": {
+        "transparent_pixels": 1369110,
+        "soft_pixels": 16532,
+        "opaque_pixels": 625798
+      },
+      "edge_artifacts_repaired": 0
+    }
+  ],
+  "provenance_path": "art/characters/violet/batch/robes-core-v2.slice-provenance.json"
+}

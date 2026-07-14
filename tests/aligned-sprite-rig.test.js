@@ -163,6 +163,9 @@ describe('aligned sprite rig contract', () => {
     expect(transformAlignedSpriteAnchor(rig, sample, sample.anchors.handRight, {
       x: 300, y: 500, scale: 2, facing: 'right',
     })).toEqual({ x: 330, y: 536 });
+    expect(transformAlignedSpriteAnchor(rig, sample, sample.anchors.handRight, {
+      x: 300, y: 500, scale: 2, facing: 'left', mirror: false,
+    })).toEqual({ x: 330, y: 536 });
     expect(() => transformAlignedSpriteAnchor(rig, sample, 'wandTip')).toThrow(
       'does not define anchor wandTip',
     );
@@ -222,6 +225,14 @@ describe('aligned sprite rig contract', () => {
     const firstLayer = context.calls.findIndex(([name]) => name === 'drawImage');
     expect(shadowFill).toBeGreaterThan(-1);
     expect(shadowFill).toBeLessThan(firstLayer);
+
+    const preOriented = recordingContext();
+    rig.draw(preOriented, {
+      appearance: 'casual', pose: 'walking', localTime: 0.1,
+      x: 300, y: 500, scale: 2, facing: 'left', lightSide: 'right', mirror: false,
+    });
+    expect(preOriented.calls).toContainEqual(['scale', 2, 2]);
+    expect(preOriented.calls).not.toContainEqual(['scale', -2, 2]);
   });
 
   it('rejects a layer whose decoded size does not match the aligned canvas', async () => {

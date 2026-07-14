@@ -469,7 +469,10 @@ registry
     createSave({
       scene: 'ch1.ticket',
       room: 'ch1.diagonStreet',
-      spawn: 'west',
+      // Normal Chapter One returns Violet from the Menagerie on the east.
+      // Keeping the live review on that real route lets her approach Hagrid
+      // without the artificial west-to-east crossing through his footprint.
+      spawn: 'east',
       questFlags: {
         ...throughWandFlags,
         'ch1.trimChosen': true,

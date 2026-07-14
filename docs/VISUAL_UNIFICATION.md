@@ -4,7 +4,11 @@
 
 Pete's review of the deployed Chapter 1 (2026-07-13), confirmed by screen-by-screen inspection: the game renders **three fidelity tiers on every screen** — production-grade painted rooms, clipart-grade character puppets, wireframe-grade UI chrome — plus a fourth visual language of debug-looking affordances (dashed rings, tiny diamonds) and pervasive helper text that a non-reading six-year-old can't use. Individually defensible; together they read as amateur and undercut rooms that are genuinely beautiful. Separately, a batch of catalogued clarity bugs makes the game feel arbitrary ("things don't make sense").
 
-This pass unifies everything to **one fidelity tier** before any new content is built, and it is the true completion of the M2 gate: Violet's first playtest happens after this pass, not before.
+This document records the full unification backlog. The active stop point is
+narrower: finish and deploy the complete Chapter One cast, let Pete test it in
+normal gameplay, and then decide which remaining visual issue comes next. No UI,
+title, affordance, or clarity workstream runs in parallel merely because it is
+listed here.
 
 **Evidence base:** `output/playwright/blind-public-2-*.png` (full deployed playthrough), the six-dimension progress review (2026-07-13), and the illusion-checklist gap it exposed — geometric checklists pass screens that fail taste.
 
@@ -24,14 +28,33 @@ These seven become a mandatory **Storybook Standard section in every illusion ch
 
 ## Workstream 1 — Characters (the biggest lever)
 
-The puppets are the largest quality gap and Violet-the-puppet is on every screen. The fix is not "try harder" — it's giving builders a **visual target instead of adjectives**:
+The puppets are the largest quality gap and Violet is on nearly every screen.
+VU-00 establishes the Storybook Standard and its countable checks; the room
+paintings and existing reference material remain the visual target. Character
+production no longer waits on a second set of style-only reference sheets.
 
-- **VU-00 Standard, checklists, and reference art first.** Two halves: (a) the Storybook Standard lands as a mandatory section in every illusion checklist (countable checks: every fill region ≥2 tones; outline colors within the ink range; no perfect-geometry primitives on player-facing surfaces; palette within room-palette distance; squint test vs. reference) plus the D31 budget assertions in the harness/test layer — every other workstream self-reviews against these, so they ship first; and (b) generate painted character reference sheets in the exact room style (same style-prefix, front-facing full body + face close-up) for: Violet, Hagrid, the three shopkeepers, the hero owl, all three pets. These are *style targets, not shipped assets* — committed under `art/character-refs/` with prompts. Every puppet rebuild is reviewed **side-by-side against its reference**; the checklist question becomes "does the puppet look like this painting's cartoon sibling?" — answerable by an agent from a still.
-- **Anatomy of the lift** (per ART_DIRECTION, now enforced): real eyes (iris + pupil + catch-light + lids — blinks are lid shapes, never a bar: the current title owl's blink frame reads as broken eyes in stills); eyebrows and cheek blush; hair as shaded masses with interior strand lines (Violet's messiness = the in-flight soft wisps, never spikes); articulated shoulder, elbow, wrist, thumb/hand, knee, and shoe shapes rather than detached sticks or mittens; clothing with base, shadow, highlight, folds, and material detail; a baked rim-light on the room-lit side; a soft floor-space contact shadow that does not bob or rotate with the puppet; and a softly varying outline.
-- **One face construction shared by puppet and portrait** (two detail tiers, same bones) so a character standing next to their own dialogue portrait no longer reads as two different games.
-- Order: **Violet first** (VU-01), then Hagrid + shopkeepers + owl + pets (VU-02). The in-flight hair-wisp work folds into VU-01.
+VU-01 and VU-02 follow [CHARACTER_PIPELINE.md](CHARACTER_PIPELINE.md). Each
+character is generated with `google/gemini-3.1-flash-image` through
+`google-vertex/global` as one coherent multi-view and core-action production
+sheet, plus only a minimal coherent supplement if the inventory does not fit.
+The named panels proposed for shipping are reviewed fresh in the context of all
+batch sheets, sliced deterministically, and connected to the real game
+immediately; malformed unused figures do not block that subset. Violet V8 is the
+locked identity for VU-01; her neutral design is not regenerated. Once the
+assembled character is moving in its actual rooms and dialogue, only defects
+visible in the required captures or in play are refined.
 
-## Workstream 2 — Affordances: one language, a salience hierarchy, and a lifecycle (VU-03)
+The intended lift remains concrete: real eyes and readable blinks, expressive
+brows and cheeks, shaded hair masses without antenna-like spikes, articulated
+limbs and hands, clothing with material and fold detail, room-consistent light,
+a stable floor-space contact shadow, and softly varying outlines. These are
+judged across the proposed shipping subset and the assembled game character, not expanded
+into a separate generation-and-review loop for every body part. Puppet and
+portrait share one face construction at two useful detail tiers. The order is
+Violet, Hagrid, the Wandmaker, Madam Malkin, the Menagerie keeper, the narrator
+portrait, the post owl, the cat, the pet owl, and the toad.
+
+## Deferred workstream 2 — Affordances: one language, a salience hierarchy, and a lifecycle (VU-03)
 
 Pete's playtest feedback (2026-07-13) sharpened this workstream: the dashed rings aren't just ugly — they're *confusing*. They appear everywhere at equal strength (five at once in Diagon Alley), they don't distinguish "your next step" from "optional fun," and they sometimes persist after the interaction is spent. That's three distinct defects: a style problem, a missing **salience hierarchy**, and a missing **affordance lifecycle**. All three are VU-03.
 
@@ -63,28 +86,29 @@ Affordance state derives from quest/flag state — mechanically, not by hand-aut
 
 The map objective is an actual glowing star on the destination — always present for the current objective (fixes the "tap the golden star" / no-star contradiction), and it's the same golden-thread visual language.
 
-## Workstream 3 — Diegetic UI (VU-04, VU-05)
+## Deferred workstream 3 — Diegetic UI (VU-04, VU-05)
 
 - **Dialogue panel rebuild (VU-04)**: the full-width cream slab becomes a **parchment scroll banner** — bottom ~22% of the screen, deckled edges, slight hand-placed rotation, portrait in a small gilt frame, caption chip integrated. **Hard layout rule: the active speaker's puppet is never occluded** — the panel narrows or shifts opposite the speaker. Warm-dark parchment variant for night rooms so the panel stops fighting moody paintings.
 - **Satchel & map rebuild (VU-05)**: the flowchart-in-a-book becomes an **illustrated map** — a generated parchment map painting of Diagon Alley (stylized vignette composition; the pipeline's first UI painting) with locations as small painted vignettes, the objective star glowing, dotted ink path drawn as quill strokes. Tabs become leather bookmarks; the software gear becomes a **brass keyhole** (voiced "Ask a grown-up!" on tap); locked locations get soft fog, not gray boxes with X's. Icon audit across the game: every icon pictorial and diegetic (wand, robe, paw — never hearts/X's/gears).
 
-The deterministic code-only parchment map, painted-style location vignettes, soft fog, leather bookmarks, brass keyhole, objective star, and individually shaped quill-route marks are now integrated into the live satchel. The shared generated map painting remains paused for Pete’s review, so the painted-asset portion of VU-05 is not complete and this integration does not claim otherwise.
+The deterministic code-only parchment map, painted-style location vignettes, soft fog, leather bookmarks, brass keyhole, objective star, and individually shaped quill-route marks are now integrated into the live satchel. The shared generated map painting is deferred until the post-cast priority decision; it is not part of the current character deliverable.
 
-## Workstream 4 — Text purge (VU-07)
+## Deferred workstream 4 — Text purge (VU-07)
 
 **Rule (tightens GAME_DESIGN; exceptions per D36):** during play, on-screen text is caption chips (≤3 words) and proper nouns on title/chapter cards — plus two deliberate exceptions: **readable story objects** (the letter's parchment, spellbook incantations, rune tiles, potion labels — reading them *is* the content per the learning layer, and their written words must match any narration verbatim) and **short action labels on primary controls** (≤3 easy caption-vocabulary words: "Hear the letter", "Again", the update prompt's "Reload"/"Later"). Everything else — helper sentences, subtitles, state labels — dies; voice + icons carry all instruction. The parent panel is exempt (it's *for* adults).
 
 Kill list from the current build: "Tap the page to continue" (the pulsing arrow already exists — first-time voice hint covers it), "A map that remembers where Violet needs to go," "Tap to travel," "Violet goes here," "Still hidden," "Hold for grown-ups," "Best with sound on" clutter, the title's subtitle sentence and envelope eyebrow text. Each removal that loses information gains a voice line (small VU voice-gen batch rides the existing pipeline + QA loop).
 
-## Workstream 5 — Title v3 (VU-06)
+## Deferred workstream 5 — Title v3 (VU-06)
 
 The in-flight redesign is a real step up (keep: Almendra masthead, composition, owl placement) but it's typography-forward. v3 goes **illustration-forward**: a painted hero night scene — the castle across the lake with warm windows (generated once, and it *is* the Chapter 2 lake-vista painting, so the asset does double duty) — Violet-and-owl vignette, masthead, and **one glowing envelope to tap**. Text: title + button label, nothing else. Absorbs and supersedes the uncommitted title work; the owl blink fix lands here.
 
-The deterministic code-only castle, reflective lake, mist, shore, Violet, and owl composition is now integrated into the live title with the Almendra masthead and one envelope action. The shared generated painted lake-vista asset remains paused for Pete’s review, so the painted-asset portion of VU-06 is not complete and this integration does not claim otherwise.
+The deterministic code-only castle, reflective lake, mist, shore, Violet, and owl composition is now integrated into the live title with the Almendra masthead and one envelope action. The shared generated painted lake-vista asset is deferred until the post-cast priority decision; it is not part of the current character deliverable.
 
-## Workstream 6 — Clarity bug batch (VU-08)
+## Deferred workstream 6 — Clarity bug batch (VU-08)
 
-The "doesn't make sense" list, fixed in one sweep (all engine/content, parallel-safe with art work):
+The deferred "doesn't make sense" list remains recorded here for the post-cast
+priority decision:
 
 1. **Empty walk-taps no longer count as puzzle failures** — the hint ladder's failure rungs scope to interactions with the active puzzle; idle-time rungs (pet glance, voice repeat) remain time-based. Five happy taps must never auto-complete the letter.
 2. **The written letter text = the narrated text, exactly**, original wording only — and "We await your owl." is removed (near-verbatim book fragment; hard IP line).
@@ -94,33 +118,27 @@ The "doesn't make sense" list, fixed in one sweep (all engine/content, parallel-
 6. **"Curious…" restored** as the Wandmaker's whispery beat (spec flavor, cheap).
 7. The always-on "Again" replay affordance and pulsing next-arrow stay — they tested fine.
 
-## Prerequisite: land the in-flight diff (VU-pre)
-
-Before the pass starts, the working tree goes green and empty: the Nimbus caption and on-screen title are decided (D30 — "Flying broom!" and **Violet at Hogwarts**, aligned in index.html), changed scenes re-captured and self-reviewed, decisions logged, committed.
-
 ## Process rules (velocity-first, per D32)
 
-1. **Side-by-side self-review**: agents capture character/UI work next to its reference art in the same image strip and judge the match themselves — a tool for hitting the bar, not an approval step.
-2. **No human gates anywhere** (D32): no GIF approvals, no PENDING queue, no golden blessing. Agents self-review strictly, ship when the local `npm run build` gate is green (tests + content lint + asset/voice/audio checks + bundle); CI re-runs the same battery and gates deployment. Taste-risky changes get a plain-language heads-up in the report so Pete knows what to look at *in the deployed game*.
-3. Log the drift batch this pass resolves in DECISIONS.md as it lands (dashed-ring removal, text rule, map rebuild replacing the hardcoded renderer bypass, etc.).
+1. **Review complete outcomes**: character work gives one fresh Art Director the named proposed shipping subset in the context of all generated batches, then proceeds to deterministic slicing and immediate integration. The assembled character is captured in the game at both required sizes for another fresh Art Director review. There is no per-frame approval queue, and unused malformed figures do not block selected panels.
+2. **No human gates anywhere** (D32): no GIF approvals, no PENDING queue, no golden blessing. Agents self-review strictly, then a fresh Art Director performs the required independent review before the local `npm run build` gate and merge. CI re-runs the full test, asset, voice, audio, and bundle battery and gates deployment. Taste-risky changes get a plain-language heads-up in the report so Pete knows what to look at *in the deployed game*.
+3. **Fix what play exposes**: after integration, character refinements answer player-visible defects in captures or play. Source-level concerns that disappear at runtime scale do not restart production.
+4. Log the drift batch this pass resolves in DECISIONS.md as it lands (dashed-ring removal, text rule, map rebuild replacing the hardcoded renderer bypass, etc.).
 
-## Order and gating
+## Active order and stopping point
 
 ```
-VU-pre (land in-flight work, tree green)
-  → VU-00 Storybook Standard + upgraded illusion checklists (in docs/tests)
-          + painted character reference sheets
-      ├─ VU-01 Violet rebuild → VU-02 cast rebuild   (needs the reference sheets)
-      ├─ VU-03 affordance salience system             (parallel — no ref dependency)
-      ├─ VU-04 dialogue panel → VU-05 satchel/map     (parallel — no ref dependency)
-      └─ VU-08 clarity bugs                           (parallel, engine/content)
-  → VU-06 title v3 + VU-07 text purge     ← after the language/UI tracks settle
-  → deploy continuously throughout → **Violet's first playtest** (completes M2)
+VU-01 Violet full sheet + normal-game integration + deploy
+  → VU-02 one complete cast member + deploy, repeated through Chapter One
+  → Pete tests the live cast
+  → choose the next workstream from player-visible findings
 ```
 
-Only the character rebuilds (VU-01/02) wait on reference sheets; the checklist upgrades land **first**, inside VU-00, because every workstream self-reviews against them. VU-03/04/05/08 start immediately after VU-00's checklist half, in parallel.
+VU-01 starts from the locked Violet V8 identity and does not wait for more
+reference art. The deferred workstreams above preserve useful product direction,
+but they do not authorize parallel implementation before the cast test.
 
-Every VU work package follows the standing loop (VERIFICATION.md): implement → capture → self-review against the upgraded checklist → merge when green. Commit and push **every green increment** (D33) — several pushes per session — so the GitHub Pages build is always current; Pete tests there continuously and feedback arrives as conversation.
+Every VU work package follows the standing loop (VERIFICATION.md): implement → capture → self-review against the upgraded checklist → fresh Art Director review → merge when green. For character work, the increment is one complete playable character rather than one isolated sprite. Commit and push **every green increment** (D33) so the GitHub Pages build is always current; Pete tests there continuously and feedback arrives as conversation.
 
 ## Non-goals
 

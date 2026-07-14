@@ -1,0 +1,848 @@
+{
+  "schema_version": 1,
+  "algorithm": {
+    "id": "cyan-flood-aligned-character-sheet-v1",
+    "component_connectivity": 8,
+    "scale_filter": "premultiplied-rgba-box-rational-v1",
+    "output_color_type": 6,
+    "output_bit_depth": 8,
+    "deterministic": true
+  },
+  "slice_spec": {
+    "path": "art/characters/violet/batch/casual-core-v1.layout.json",
+    "bytes": 2171,
+    "sha256": "4566990e1f48f663ba671147f584e5314af0c66e7fe7cfd4dc2c325a918ef85c",
+    "schema_version": 1,
+    "id": "violet.casual-core-v1"
+  },
+  "source": {
+    "path": "art/characters/violet/batch/casual-core-v1.png",
+    "bytes": 18804954,
+    "expected_sha256": "8a959520795182dc636cbb1f2e281bf7f94f8237a730a72cea2119cdd2dc6431",
+    "sha256": "8a959520795182dc636cbb1f2e281bf7f94f8237a730a72cea2119cdd2dc6431",
+    "rgba_sha256": "dbbe252d85802eb5cabde3dd63ea42f1cf09287b8580a392245437ebceba5c57",
+    "dimensions": {
+      "width": 4800,
+      "height": 3584
+    }
+  },
+  "controls": {
+    "output_canvas": {
+      "width": 896,
+      "height": 1200,
+      "center_x": 448,
+      "ground_y": 1132
+    },
+    "common_scale": {
+      "numerator": 2,
+      "denominator": 3
+    },
+    "key": {
+      "color": {
+        "red": 0,
+        "green": 255,
+        "blue": 255
+      },
+      "tolerance": 28,
+      "alpha": {
+        "opaque_cyan_excess": 20,
+        "transparent_cyan_excess": 225,
+        "edge_spill_radius": 8,
+        "edge_spill_opaque_cyan_excess": -20,
+        "edge_spill_max_green_blue_delta": 70,
+        "matte_low_alpha": 170,
+        "matte_high_alpha": 245,
+        "edge_color_radius": 0
+      }
+    },
+    "components": {
+      "detail_min_pixels": 8,
+      "detail_max_pixels": 5000,
+      "detail_max_distance": 48
+    }
+  },
+  "outputs": [
+    {
+      "name": "profile-right",
+      "path": "public/assets/art/characters/violet/casual/profile-right.png",
+      "media_type": "image/png",
+      "bytes": 337167,
+      "sha256": "d1609681ecee96f72c3529c3f92e2fb104a719abaaa3ea056adf38c567af6eb4",
+      "rgba_sha256": "6116892d74473393208666d2641be9f893e3912ab3e8db8eec63b7ab500f8702",
+      "dimensions": {
+        "width": 896,
+        "height": 1200
+      },
+      "crop": {
+        "x": 1480,
+        "y": 0,
+        "width": 1040,
+        "height": 1872
+      },
+      "source_content_bounds": {
+        "x": 235,
+        "y": 120,
+        "width": 484,
+        "height": 1591
+      },
+      "scaled_dimensions": {
+        "width": 323,
+        "height": 1061
+      },
+      "placement": {
+        "x": 287,
+        "y": 72,
+        "width": 323,
+        "height": 1061,
+        "center_x": 448,
+        "ground_y": 1132
+      },
+      "flood": {
+        "background_pixels": 1517097,
+        "non_background_pixels": 429783,
+        "background_fraction": 0.7792452539447732
+      },
+      "components": {
+        "found": 9,
+        "dominant_pixels": 409412,
+        "kept": 1,
+        "removed": 8,
+        "selected_pixels": 409412,
+        "details": [
+          {
+            "pixels": 44,
+            "distance_from_dominant": 233,
+            "kept": false
+          },
+          {
+            "pixels": 219,
+            "distance_from_dominant": 230,
+            "kept": false
+          },
+          {
+            "pixels": 250,
+            "distance_from_dominant": 316,
+            "kept": false
+          },
+          {
+            "pixels": 10,
+            "distance_from_dominant": 233,
+            "kept": false
+          },
+          {
+            "pixels": 5,
+            "distance_from_dominant": 328,
+            "kept": false
+          },
+          {
+            "pixels": 41,
+            "distance_from_dominant": 315,
+            "kept": false
+          },
+          {
+            "pixels": 2703,
+            "distance_from_dominant": 278,
+            "kept": false
+          },
+          {
+            "pixels": 437,
+            "distance_from_dominant": 421,
+            "kept": false
+          }
+        ]
+      },
+      "alpha": {
+        "transparent_pixels": 1537468,
+        "soft_pixels": 18131,
+        "opaque_pixels": 391281
+      },
+      "edge_artifacts_repaired": 33
+    },
+    {
+      "name": "walk-contact",
+      "path": "public/assets/art/characters/violet/casual/walk-contact.png",
+      "media_type": "image/png",
+      "bytes": 417849,
+      "sha256": "aef0aa0a24ecd88db666d2268d8c25ce6dda5cdfdcf3cf2c9d9e3ad659d5ae24",
+      "rgba_sha256": "ec8d7d2e80d437c34a7bf63f22aae7903df23aad6533db0b22c3c234708a37cf",
+      "dimensions": {
+        "width": 896,
+        "height": 1200
+      },
+      "crop": {
+        "x": 2240,
+        "y": 0,
+        "width": 1120,
+        "height": 1872
+      },
+      "source_content_bounds": {
+        "x": 235,
+        "y": 120,
+        "width": 704,
+        "height": 1584
+      },
+      "scaled_dimensions": {
+        "width": 470,
+        "height": 1056
+      },
+      "placement": {
+        "x": 213,
+        "y": 77,
+        "width": 470,
+        "height": 1056,
+        "center_x": 448,
+        "ground_y": 1132
+      },
+      "flood": {
+        "background_pixels": 1555166,
+        "non_background_pixels": 541474,
+        "background_fraction": 0.7417420253357754
+      },
+      "components": {
+        "found": 11,
+        "dominant_pixels": 503646,
+        "kept": 1,
+        "removed": 10,
+        "selected_pixels": 503646,
+        "details": [
+          {
+            "pixels": 2,
+            "distance_from_dominant": 7,
+            "kept": false
+          },
+          {
+            "pixels": 1,
+            "distance_from_dominant": 7,
+            "kept": false
+          },
+          {
+            "pixels": 53,
+            "distance_from_dominant": 343,
+            "kept": false
+          },
+          {
+            "pixels": 2,
+            "distance_from_dominant": 342,
+            "kept": false
+          },
+          {
+            "pixels": 259,
+            "distance_from_dominant": 310,
+            "kept": false
+          },
+          {
+            "pixels": 5221,
+            "distance_from_dominant": 251,
+            "kept": false
+          },
+          {
+            "pixels": 45,
+            "distance_from_dominant": 260,
+            "kept": false
+          },
+          {
+            "pixels": 1,
+            "distance_from_dominant": 2,
+            "kept": false
+          },
+          {
+            "pixels": 691,
+            "distance_from_dominant": 231,
+            "kept": false
+          },
+          {
+            "pixels": 10766,
+            "distance_from_dominant": 83,
+            "kept": false
+          }
+        ]
+      },
+      "alpha": {
+        "transparent_pixels": 1592994,
+        "soft_pixels": 23283,
+        "opaque_pixels": 480363
+      },
+      "edge_artifacts_repaired": 10
+    },
+    {
+      "name": "walk-pass",
+      "path": "public/assets/art/characters/violet/casual/walk-pass.png",
+      "media_type": "image/png",
+      "bytes": 418367,
+      "sha256": "de9eb556de4dc22615c59bbeedf53d4cae74ae160d0a5e1dbd95a62fb3a1fffe",
+      "rgba_sha256": "e4771e5c801917262ccee5db96b6e40844bf4a74a0ff8966118510c04d781f47",
+      "dimensions": {
+        "width": 896,
+        "height": 1200
+      },
+      "crop": {
+        "x": 3040,
+        "y": 0,
+        "width": 1120,
+        "height": 1872
+      },
+      "source_content_bounds": {
+        "x": 221,
+        "y": 120,
+        "width": 693,
+        "height": 1588
+      },
+      "scaled_dimensions": {
+        "width": 462,
+        "height": 1059
+      },
+      "placement": {
+        "x": 217,
+        "y": 74,
+        "width": 462,
+        "height": 1059,
+        "center_x": 448,
+        "ground_y": 1132
+      },
+      "flood": {
+        "background_pixels": 1487476,
+        "non_background_pixels": 609164,
+        "background_fraction": 0.709457036019536
+      },
+      "components": {
+        "found": 9,
+        "dominant_pixels": 507677,
+        "kept": 1,
+        "removed": 8,
+        "selected_pixels": 507677,
+        "details": [
+          {
+            "pixels": 624,
+            "distance_from_dominant": 321,
+            "kept": false
+          },
+          {
+            "pixels": 22404,
+            "distance_from_dominant": 256,
+            "kept": false
+          },
+          {
+            "pixels": 2,
+            "distance_from_dominant": 2,
+            "kept": false
+          },
+          {
+            "pixels": 17,
+            "distance_from_dominant": 272,
+            "kept": false
+          },
+          {
+            "pixels": 9442,
+            "distance_from_dominant": 203,
+            "kept": false
+          },
+          {
+            "pixels": 7021,
+            "distance_from_dominant": 231,
+            "kept": false
+          },
+          {
+            "pixels": 24051,
+            "distance_from_dominant": 63,
+            "kept": false
+          },
+          {
+            "pixels": 11723,
+            "distance_from_dominant": 83,
+            "kept": false
+          }
+        ]
+      },
+      "alpha": {
+        "transparent_pixels": 1588963,
+        "soft_pixels": 24355,
+        "opaque_pixels": 483322
+      },
+      "edge_artifacts_repaired": 0
+    },
+    {
+      "name": "jump",
+      "path": "public/assets/art/characters/violet/casual/jump.png",
+      "media_type": "image/png",
+      "bytes": 424433,
+      "sha256": "0533c02b6fdf852a445793c4dfde3d441f8296dceb2c1937801e7ce285a8632c",
+      "rgba_sha256": "fc7d16b1e4410c3ff0707bf5af423e90a765c9eb47bdbe4099df6723433ab99f",
+      "dimensions": {
+        "width": 896,
+        "height": 1200
+      },
+      "crop": {
+        "x": 0,
+        "y": 1672,
+        "width": 980,
+        "height": 1912
+      },
+      "source_content_bounds": {
+        "x": 86,
+        "y": 200,
+        "width": 786,
+        "height": 1412
+      },
+      "scaled_dimensions": {
+        "width": 524,
+        "height": 942
+      },
+      "placement": {
+        "x": 186,
+        "y": 191,
+        "width": 524,
+        "height": 942,
+        "center_x": 448,
+        "ground_y": 1132
+      },
+      "flood": {
+        "background_pixels": 1347221,
+        "non_background_pixels": 526539,
+        "background_fraction": 0.7189933609427035
+      },
+      "components": {
+        "found": 21,
+        "dominant_pixels": 484059,
+        "kept": 1,
+        "removed": 20,
+        "selected_pixels": 484059,
+        "details": [
+          {
+            "pixels": 3054,
+            "distance_from_dominant": 173,
+            "kept": false
+          },
+          {
+            "pixels": 2628,
+            "distance_from_dominant": 176,
+            "kept": false
+          },
+          {
+            "pixels": 3,
+            "distance_from_dominant": 5,
+            "kept": false
+          },
+          {
+            "pixels": 4,
+            "distance_from_dominant": 5,
+            "kept": false
+          },
+          {
+            "pixels": 4,
+            "distance_from_dominant": 2,
+            "kept": false
+          },
+          {
+            "pixels": 1,
+            "distance_from_dominant": 2,
+            "kept": false
+          },
+          {
+            "pixels": 2,
+            "distance_from_dominant": 5,
+            "kept": false
+          },
+          {
+            "pixels": 2,
+            "distance_from_dominant": 3,
+            "kept": false
+          },
+          {
+            "pixels": 1,
+            "distance_from_dominant": 12,
+            "kept": false
+          },
+          {
+            "pixels": 5,
+            "distance_from_dominant": 2,
+            "kept": false
+          },
+          {
+            "pixels": 130,
+            "distance_from_dominant": 106,
+            "kept": false
+          },
+          {
+            "pixels": 3,
+            "distance_from_dominant": 3,
+            "kept": false
+          },
+          {
+            "pixels": 160,
+            "distance_from_dominant": 127,
+            "kept": false
+          },
+          {
+            "pixels": 12879,
+            "distance_from_dominant": 129,
+            "kept": false
+          },
+          {
+            "pixels": 2,
+            "distance_from_dominant": 137,
+            "kept": false
+          },
+          {
+            "pixels": 1,
+            "distance_from_dominant": 140,
+            "kept": false
+          },
+          {
+            "pixels": 7,
+            "distance_from_dominant": 162,
+            "kept": false
+          },
+          {
+            "pixels": 3,
+            "distance_from_dominant": 2,
+            "kept": false
+          },
+          {
+            "pixels": 1,
+            "distance_from_dominant": 153,
+            "kept": false
+          },
+          {
+            "pixels": 8,
+            "distance_from_dominant": 171,
+            "kept": false
+          }
+        ]
+      },
+      "alpha": {
+        "transparent_pixels": 1389701,
+        "soft_pixels": 18913,
+        "opaque_pixels": 465146
+      },
+      "edge_artifacts_repaired": 0
+    },
+    {
+      "name": "giggle",
+      "path": "public/assets/art/characters/violet/casual/giggle.png",
+      "media_type": "image/png",
+      "bytes": 425164,
+      "sha256": "35b057dfc94019e8b95e48b8dc7d1a0a75d372a285ce956b712569647b76d691",
+      "rgba_sha256": "7ce73aceab917dac5146fa605c04be867e682156c7423a3eff072f18112894eb",
+      "dimensions": {
+        "width": 896,
+        "height": 1200
+      },
+      "crop": {
+        "x": 620,
+        "y": 1672,
+        "width": 1160,
+        "height": 1912
+      },
+      "source_content_bounds": {
+        "x": 278,
+        "y": 313,
+        "width": 602,
+        "height": 1520
+      },
+      "scaled_dimensions": {
+        "width": 402,
+        "height": 1014
+      },
+      "placement": {
+        "x": 247,
+        "y": 119,
+        "width": 402,
+        "height": 1014,
+        "center_x": 448,
+        "ground_y": 1132
+      },
+      "flood": {
+        "background_pixels": 1536659,
+        "non_background_pixels": 681261,
+        "background_fraction": 0.6928378841437022
+      },
+      "components": {
+        "found": 21,
+        "dominant_pixels": 501316,
+        "kept": 3,
+        "removed": 18,
+        "selected_pixels": 501350,
+        "details": [
+          {
+            "pixels": 1935,
+            "distance_from_dominant": 357,
+            "kept": false
+          },
+          {
+            "pixels": 5234,
+            "distance_from_dominant": 271,
+            "kept": false
+          },
+          {
+            "pixels": 697,
+            "distance_from_dominant": 305,
+            "kept": false
+          },
+          {
+            "pixels": 77931,
+            "distance_from_dominant": 106,
+            "kept": false
+          },
+          {
+            "pixels": 3,
+            "distance_from_dominant": 2,
+            "kept": false
+          },
+          {
+            "pixels": 26,
+            "distance_from_dominant": 3,
+            "kept": true
+          },
+          {
+            "pixels": 3,
+            "distance_from_dominant": 3,
+            "kept": false
+          },
+          {
+            "pixels": 5,
+            "distance_from_dominant": 2,
+            "kept": false
+          },
+          {
+            "pixels": 3,
+            "distance_from_dominant": 211,
+            "kept": false
+          },
+          {
+            "pixels": 3,
+            "distance_from_dominant": 3,
+            "kept": false
+          },
+          {
+            "pixels": 13,
+            "distance_from_dominant": 283,
+            "kept": false
+          },
+          {
+            "pixels": 60813,
+            "distance_from_dominant": 62,
+            "kept": false
+          },
+          {
+            "pixels": 5,
+            "distance_from_dominant": 277,
+            "kept": false
+          },
+          {
+            "pixels": 2,
+            "distance_from_dominant": 3,
+            "kept": false
+          },
+          {
+            "pixels": 1,
+            "distance_from_dominant": 3,
+            "kept": false
+          },
+          {
+            "pixels": 7,
+            "distance_from_dominant": 12,
+            "kept": false
+          },
+          {
+            "pixels": 3,
+            "distance_from_dominant": 174,
+            "kept": false
+          },
+          {
+            "pixels": 1,
+            "distance_from_dominant": 2,
+            "kept": false
+          },
+          {
+            "pixels": 8,
+            "distance_from_dominant": 2,
+            "kept": true
+          },
+          {
+            "pixels": 6,
+            "distance_from_dominant": 2,
+            "kept": false
+          }
+        ]
+      },
+      "alpha": {
+        "transparent_pixels": 1716570,
+        "soft_pixels": 19666,
+        "opaque_pixels": 481684
+      },
+      "edge_artifacts_repaired": 66
+    },
+    {
+      "name": "tumble",
+      "path": "public/assets/art/characters/violet/casual/tumble.png",
+      "media_type": "image/png",
+      "bytes": 313946,
+      "sha256": "c789cd8945cf945d0dd14850d97bd0bbb32d272888142bdd119c5d0bd5d7a621",
+      "rgba_sha256": "039f33b5add64204770e76074f769b9bd92198d39fc39d545442e130d6fa00e0",
+      "dimensions": {
+        "width": 896,
+        "height": 1200
+      },
+      "crop": {
+        "x": 1340,
+        "y": 1612,
+        "width": 1480,
+        "height": 1972
+      },
+      "source_content_bounds": {
+        "x": 221,
+        "y": 523,
+        "width": 943,
+        "height": 713
+      },
+      "scaled_dimensions": {
+        "width": 629,
+        "height": 476
+      },
+      "placement": {
+        "x": 134,
+        "y": 657,
+        "width": 629,
+        "height": 476,
+        "center_x": 448,
+        "ground_y": 1132
+      },
+      "flood": {
+        "background_pixels": 2215413,
+        "non_background_pixels": 703147,
+        "background_fraction": 0.759077421742229
+      },
+      "components": {
+        "found": 24,
+        "dominant_pixels": 339673,
+        "kept": 2,
+        "removed": 22,
+        "selected_pixels": 339695,
+        "details": [
+          {
+            "pixels": 9335,
+            "distance_from_dominant": 461,
+            "kept": false
+          },
+          {
+            "pixels": 24450,
+            "distance_from_dominant": 425,
+            "kept": false
+          },
+          {
+            "pixels": 11933,
+            "distance_from_dominant": 481,
+            "kept": false
+          },
+          {
+            "pixels": 20,
+            "distance_from_dominant": 284,
+            "kept": false
+          },
+          {
+            "pixels": 55170,
+            "distance_from_dominant": 62,
+            "kept": false
+          },
+          {
+            "pixels": 3,
+            "distance_from_dominant": 281,
+            "kept": false
+          },
+          {
+            "pixels": 5,
+            "distance_from_dominant": 279,
+            "kept": false
+          },
+          {
+            "pixels": 4,
+            "distance_from_dominant": 11,
+            "kept": false
+          },
+          {
+            "pixels": 3,
+            "distance_from_dominant": 10,
+            "kept": false
+          },
+          {
+            "pixels": 22,
+            "distance_from_dominant": 9,
+            "kept": true
+          },
+          {
+            "pixels": 3,
+            "distance_from_dominant": 2,
+            "kept": false
+          },
+          {
+            "pixels": 3,
+            "distance_from_dominant": 3,
+            "kept": false
+          },
+          {
+            "pixels": 5,
+            "distance_from_dominant": 4,
+            "kept": false
+          },
+          {
+            "pixels": 11,
+            "distance_from_dominant": 306,
+            "kept": false
+          },
+          {
+            "pixels": 22,
+            "distance_from_dominant": 286,
+            "kept": false
+          },
+          {
+            "pixels": 6,
+            "distance_from_dominant": 280,
+            "kept": false
+          },
+          {
+            "pixels": 21,
+            "distance_from_dominant": 264,
+            "kept": false
+          },
+          {
+            "pixels": 209129,
+            "distance_from_dominant": 69,
+            "kept": false
+          },
+          {
+            "pixels": 6,
+            "distance_from_dominant": 97,
+            "kept": false
+          },
+          {
+            "pixels": 6,
+            "distance_from_dominant": 102,
+            "kept": false
+          },
+          {
+            "pixels": 3,
+            "distance_from_dominant": 99,
+            "kept": false
+          },
+          {
+            "pixels": 5753,
+            "distance_from_dominant": 203,
+            "kept": false
+          },
+          {
+            "pixels": 4726,
+            "distance_from_dominant": 415,
+            "kept": false
+          }
+        ]
+      },
+      "alpha": {
+        "transparent_pixels": 2578865,
+        "soft_pixels": 19505,
+        "opaque_pixels": 320190
+      },
+      "edge_artifacts_repaired": 0
+    }
+  ],
+  "provenance_path": "art/characters/violet/batch/casual-core-v1.slice-provenance.json"
+}

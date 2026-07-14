@@ -1,0 +1,20 @@
+{
+  "schema_version": 1,
+  "base": {
+    "path": "art/characters/violet/robes/neutral-purple-v1.png",
+    "sha256": "d378299758fc375a5691a2b1a54ce7faf5e6271520cb7dfbd797ede47253f41a"
+  },
+  "raw_candidate": {
+    "path": "art/characters/violet/expressions/blink.png",
+    "sha256": "995f433244851b2f4d5e0220c6f1ad2122e8abf71eb6ac440aaeb292a71a8158"
+  },
+  "mask": {
+    "path": "art/characters/violet/expressions/masks/blink-v1.png",
+    "sha256": "e84c2fce704e2c79d9450500288234b5303d49951bcd1851da46b7fc11e9ab6f"
+  },
+  "output": {
+    "image": "art/characters/violet/robes/expressions/blink.png",
+    "provenance": "art/characters/violet/robes/expressions/blink.composite.json"
+  },
+  "allow_alpha_change": false
+}

@@ -1,0 +1,20 @@
+{
+  "schema_version": 1,
+  "base": {
+    "path": "art/characters/violet/robes/neutral-purple-v1.png",
+    "sha256": "d378299758fc375a5691a2b1a54ce7faf5e6271520cb7dfbd797ede47253f41a"
+  },
+  "raw_candidate": {
+    "path": "art/characters/violet/expressions/wonder.png",
+    "sha256": "a1c4968104d625ba170c77e41572288a65682b92789f210bc622fc37c2bc7eb9"
+  },
+  "mask": {
+    "path": "art/characters/violet/expressions/masks/wonder-v1.png",
+    "sha256": "f88a2581966803f8917aff96696d4831829e86891c835311a7b82e4d07e13eb9"
+  },
+  "output": {
+    "image": "art/characters/violet/robes/expressions/wonder.png",
+    "provenance": "art/characters/violet/robes/expressions/wonder.composite.json"
+  },
+  "allow_alpha_change": false
+}

@@ -4,15 +4,15 @@ This document exists because of a tight line: **don't squash the imagination, an
 
 ## The one law
 
-> **If it moves, we drew it. If it's still, it's painted.**
+> **If it moves, it is a separate authored layer. If it is still, it may live in the room painting.**
 
-Painted backgrounds are *never* animated, warped, or partially redrawn. Anything that moves — characters, props, doors, bricks, letters, flames, reflections — lives in the code-drawn layer or in a **source-cropped piece of painting** that code moves as a rigid tile. This is why the art rule "no people, no creatures, no text in backgrounds" is load-bearing: it's not a style preference, it's the animation architecture. The painting is the stage; everything on the stage is ours.
+Painted backgrounds are *never* animated, warped, or partially redrawn. Anything that moves — characters, props, doors, bricks, letters, flames, reflections — lives in a separate transparent character/sprite layer, a code-drawn layer, or a **source-cropped piece of painting** that code moves as a rigid tile. This is why the art rule "no people, no creatures, no text in backgrounds" is load-bearing: it is animation architecture, not merely style. The painting is the stage; every moving element remains independently controllable.
 
 ## Render layer stack (every room, every frame)
 
 1. **Room cache** — painted background + static dressing, composited once to an offscreen canvas on room entry (see ARCHITECTURE.md).
 2. **Behind-band props** — code-drawn props that characters can walk in front of.
-3. **Characters & pets** — puppet layer, y-sorted.
+3. **Characters & pets** — aligned full-frame animation layer, y-sorted.
 4. **Front props & effects** — spell bolts, held items, sliced-tile animations.
 5. **Lighting overlay** — darkness/glow compositing (only when a scene uses it).
 6. **UI** — HUD, dialogue, ribbons.
@@ -26,7 +26,7 @@ Set pieces are choreography across layers 2–5 plus camera moves. The painting 
 |---|---|
 | Particles | Pooled sprites stamped from pre-rendered gradient canvases; hard cap ~300 |
 | Camera | `{x, y, zoom}` tweened by script; shake = damped noise on x/y |
-| Puppets | Layered part-transforms (translate/rotate/scale per part), path fills, tween library of named poses |
+| Character clips | Reviewed aligned full-frame paintings selected, mirrored, scaled, and grounded by the runtime; separately authored props remain independent layers |
 | Darkness & light | Full-screen dim overlay; light sources punch soft holes (`destination-out` radial gradients); glow washes via `screen` blend |
 | Crossfade | Two paintings drawn with ramping `globalAlpha` |
 | Freeze & flash | Sim pause with effects layer live; full-screen white/color flash with eased alpha |
@@ -59,8 +59,8 @@ Format: **Moment · Composition · Assets · Beats · Verify** (illusion checkli
 ### SP-01 `letter` — The letter arrives (Ch. 1) — T2
 
 **Moment:** Owl taps window; one small illustrated envelope arrives above Violet; VIOLET glows on it; tap her name; the owl seal cracks into restrained wax fragments; the complete invitation waits for Violet; listening is optional.
-**Composition:** Owl = puppet (perch pose, tap-beak pose, flap-off). Window = painted; the *opening* casement is a rigid painted slice on a hinge (generated with the window shut; the open state reveals painted sky already behind it via the layered painting). Letter = one canonical code-drawn prop reused by delivery, the resting hotspot, and opening frame zero: irregular layered parchment silhouette, warm upper-left light, curved flap and pocket seams, organic postmark, gold name lettering, and one irregular impressed owl seal. The paper rises physically between the back and front pocket, unfolds along two softly curved creases, and settles into the exact persistent reading pose. No opaque material layer cross-fades through another.
-**Assets:** bedroom painting (2 layers: room / sky-behind-window), owl puppet, SFX (tap-tap, seal crack, paper). The envelope, wax, postmark, name, and invitation are deterministic code drawing rather than shipped raster props.
+**Composition:** Owl = reviewed aligned perch, tap-beak, and flap-off clips. Window = painted; the *opening* casement is a rigid painted slice on a hinge (generated with the window shut; the open state reveals painted sky already behind it via the layered painting). Letter = one canonical code-drawn prop reused by delivery, the resting hotspot, and opening frame zero: irregular layered parchment silhouette, warm upper-left light, curved flap and pocket seams, organic postmark, gold name lettering, and one irregular impressed owl seal. The paper rises physically between the back and front pocket, unfolds along two softly curved creases, and settles into the exact persistent reading pose. No opaque material layer cross-fades through another.
+**Assets:** bedroom painting (2 layers: room / sky-behind-window), reviewed owl character clips, SFX (tap-tap, seal crack, paper). The envelope, wax, postmark, name, and invitation are deterministic code drawing rather than shipped raster props.
 **Beats:** owl taps ×2 (loop until tapped) → flutter to sill → canonical envelope slips to its resting pose → name shimmer loop → [tap] envelope lifts above Violet → one seal crack branches → two irregular wax pieces separate slightly → flap opens → folded parchment rises from the pocket → top and bottom folds open → small push-in settles on the exact reading pose → the complete invitation remains indefinitely with separate **Hear the letter** and **Let’s go!** actions. Hear narrates both clips while the page remains visible; Let’s go advances immediately with or without listening.
 **Verify:** the delivery end, resting prop, and opening t=0 have identical material geometry; name is legible at iPad size; the closed envelope’s bounds never intersect Violet’s protected head region; envelope edges, postmark, and seal use no perfect arc/ellipse/rounded-rectangle/ruler-straight construction; seal halves tessellate before separation and remain restrained wax rather than semicircles or gold particles; no two opaque material objects overlap through fractional alpha; unfold panels never intersect visually; final animation and reading-surface poses align exactly; written words remain visible throughout optional narration; continuing never depends on audio completion.
 **Fallback:** reduced motion cuts from the intact canonical envelope to the same fully readable invitation after the seal cue, with no moving folds or overlapping cross-fade.
@@ -76,7 +76,7 @@ The canonical answer to "are we really going to animate that?" Yes — like this
 3. *The animated grid:* an authored 10×8 grid defines the wall region. The courtyard painting remains one decoded image: each moving tile uses the nine-argument `drawImage` source-crop form with a 3px source gutter and ~1% destination overlap. **Do not allocate a canvas per brick.** That would violate the global five-canvas WebKit budget even though each canvas is small. The overlapping source crops keep the painted mortar and surface detail attached to each moving rigid tile without creating 80 backing stores. Tiles that have not begun moving are not redrawn at all, so the intact wall is pixel-quiet before the shiver. Animation: tiles rotate away and slide outward+back with `easeInOutCubic`, ordered by distance from the tap point (center-out wave, 60ms distance stagger), each fading during the last 20% of its travel. **The intact wall painting stays drawn beneath the moving crops**, and the Diagon Alley painting is clipped into only the source cells whose tiles have departed — so the growing hole is real and any residual seam shows wall pixels, never an unchanged wall or a premature full-screen reveal.
 **Dust particles** at each tile's departure edge; low rumble + brick-clack ticks synced to the stagger; camera: hold 0.5s → slow 8% push during the wave → 1.2s push-through crossfading courtyard→street room.
 **Assets:** courtyard painting (center wall), authored grid bounds, rumble/clack SFX. ~2.5s total, 80 tiles = at most 80 transformed source-crop `drawImage` calls/frame at peak (well inside the draw-call budget and with zero additional tile canvases; brick-slicing looks *intentional* because bricks are rectangles).
-**Beats:** t0 Guide tap-tap-tap (puppet) → t0.4 wall shiver (grid jitters ±2px) → t0.8 wave starts at tap brick → t2.2 last tile gone → t2.4 camera push-through begins → t3.6 street room active.
+**Beats:** t0 Hagrid tap-tap-tap (reviewed action clip) → t0.4 wall shiver (grid jitters ±2px) → t0.8 wave starts at tap brick → t2.2 last tile gone → t2.4 camera push-through begins → t3.6 street room active.
 **Verify (keyframe strip at t = 0, 0.6, 1.0, 1.4, 1.8, 2.2, 2.6, 3.2):** no background bleed at tile seams at rest (t=0 must be pixel-quiet — the wall must look *unsliced* before it moves); wave reads center-out; no tile crosses another mid-flight into visual mush; reveal painting alignment — street horizon level sits consistent through the hole; dust stays local; final frame is clean street room.
 **Fallback:** wall splits as two large hinged slices (double-door style) + heavy dust cover — still magical, 1/10th the choreography.
 **Spike:** this is prototype spike SP-A in M1 (see ROADMAP) — built against a placeholder painting before the real one is generated.

@@ -1,0 +1,25 @@
+{
+  "schema_version": 1,
+  "prompt": {
+    "path": "art/characters/violet/batch/robes-core-v1.prompt.md",
+    "section": "Prompt"
+  },
+  "references": [
+    {
+      "path": "art/characters/violet/robes/neutral-purple-v1.png",
+      "role": "exact robed Violet V8 identity, wardrobe, palette, and painted finish"
+    },
+    {
+      "path": "art/characters/violet/batch/casual-core-v1.png",
+      "role": "pose language and profile-walk coherence only"
+    }
+  ],
+  "generation": {
+    "aspect_ratio": "4:3",
+    "resolution": "4K"
+  },
+  "output": {
+    "image": "art/characters/violet/batch/robes-core-v1.png",
+    "provenance": "art/characters/violet/batch/robes-core-v1.metadata.json"
+  }
+}

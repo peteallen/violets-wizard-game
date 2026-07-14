@@ -1,0 +1,20 @@
+{
+  "schema_version": 1,
+  "base": {
+    "path": "art/characters/violet/robes/neutral-purple-v1.png",
+    "sha256": "d378299758fc375a5691a2b1a54ce7faf5e6271520cb7dfbd797ede47253f41a"
+  },
+  "raw_candidate": {
+    "path": "art/characters/violet/expressions/talk-a.png",
+    "sha256": "eec0fa6d2956d7d80a0b2de6e967130834957292eb872fe4a71dddb49b24eb93"
+  },
+  "mask": {
+    "path": "art/characters/violet/expressions/masks/talk-a-v1.png",
+    "sha256": "d364a765af4ef9314c6b18154cbacdd46f9ef0127a074988833c420fc16d0617"
+  },
+  "output": {
+    "image": "art/characters/violet/robes/expressions/talk-a.png",
+    "provenance": "art/characters/violet/robes/expressions/talk-a.composite.json"
+  },
+  "allow_alpha_change": false
+}

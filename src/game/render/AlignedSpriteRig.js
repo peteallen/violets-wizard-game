@@ -341,6 +341,7 @@ export function transformAlignedSpriteAnchor(manifest, sample, anchor, {
   y = 0,
   scale = 1,
   facing = 'right',
+  mirror,
 } = {}) {
   assertObject(manifest, 'manifest');
   const canvas = assertObject(manifest.canvas, 'manifest.canvas');
@@ -362,6 +363,9 @@ export function transformAlignedSpriteAnchor(manifest, sample, anchor, {
     assertFinite(root[key], `sample.root.${key}`);
   }
   if (!SIDES.has(facing)) throw new RangeError(`Unknown facing ${facing}.`);
+  if (mirror !== undefined && typeof mirror !== 'boolean') {
+    throw new TypeError('placement.mirror must be boolean.');
+  }
   assertFinite(x, 'placement.x');
   assertFinite(y, 'placement.y');
   assertFinite(scale, 'placement.scale');
@@ -372,7 +376,7 @@ export function transformAlignedSpriteAnchor(manifest, sample, anchor, {
   const sine = Math.sin(root.rotation);
   const movedX = root.x + localX * cosine - localY * sine;
   const movedY = root.y + localX * sine + localY * cosine;
-  const direction = facing === 'left' ? -1 : 1;
+  const direction = (mirror ?? (facing === 'left')) ? -1 : 1;
 
   return Object.freeze({
     x: x + movedX * direction * scale,
@@ -417,11 +421,17 @@ export class AlignedSpriteRig {
 
   draw(context, options = {}) {
     if (!this.ready) throw new Error(`${this.manifest.id} must be preloaded before drawing.`);
+    if (options.resolveImage !== undefined && typeof options.resolveImage !== 'function') {
+      throw new TypeError('options.resolveImage must be a function.');
+    }
     const sample = sampleAlignedSpriteFrame(this.manifest, options);
     const x = Number.isFinite(options.x) ? options.x : 0;
     const y = Number.isFinite(options.y) ? options.y : 0;
     const scale = Number.isFinite(options.scale) ? options.scale : 1;
-    const direction = options.facing === 'left' ? -1 : 1;
+    if (options.mirror !== undefined && typeof options.mirror !== 'boolean') {
+      throw new TypeError('options.mirror must be boolean.');
+    }
+    const direction = (options.mirror ?? (options.facing === 'left')) ? -1 : 1;
     const { canvas } = this.manifest;
 
     if (options.shadow !== false) {
@@ -451,8 +461,13 @@ export class AlignedSpriteRig {
     context.rotate(sample.root.rotation);
     context.scale(sample.root.scaleX, sample.root.scaleY);
     for (const layer of sample.layers) {
+      const loadedImage = this.images.get(layer.url);
+      const image = options.resolveImage
+        ? options.resolveImage({ image: loadedImage, layer, sample })
+        : loadedImage;
+      if (!image) throw new TypeError(`Image resolver returned no source for ${layer.url}.`);
       context.drawImage(
-        this.images.get(layer.url),
+        image,
         -canvas.ground.x,
         -canvas.ground.y,
         canvas.width,

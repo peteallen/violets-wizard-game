@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="896" height="1200" viewBox="0 0 896 1200">
+  <defs>
+    <filter id="feather" x="-5%" y="-5%" width="110%" height="110%">
+      <feGaussianBlur stdDeviation="2"/>
+    </filter>
+    <filter id="feather-small" x="-10%" y="-10%" width="120%" height="120%">
+      <feGaussianBlur stdDeviation="1.5"/>
+    </filter>
+  </defs>
+  <rect width="896" height="1200" fill="#000000"/>
+  <!-- Outfit ceiling: neck base, lower hair overlap, sleeves, robe body, and hem. -->
+  <path
+    d="M396 354
+       Q448 365 500 354
+       C542 365 577 382 600 410
+       C631 451 646 570 674 684
+       C677 714 654 735 623 747
+       C630 815 638 921 641 1009
+       C597 1033 548 1040 494 1034
+       C474 1031 459 1028 448 1022
+       C437 1028 422 1031 402 1034
+       C348 1040 299 1033 255 1009
+       C258 921 266 815 273 747
+       C242 735 219 714 222 684
+       C250 570 265 451 296 410
+       C319 382 354 365 396 354
+       Z"
+    fill="#ffffff"
+    filter="url(#feather)"/>
+  <!-- Preserve the canonical trainers while letting the robe hem meet them. -->
+  <g fill="#000000" filter="url(#feather-small)">
+    <path d="M295 1024Q365 1005 432 1031L435 1150H286Z"/>
+    <path d="M464 1031Q531 1005 601 1024L610 1150H461Z"/>
+  </g>
+</svg>

@@ -34,10 +34,12 @@ src/
       Minigames.js            enter/succeed/celebrate contract (broom, potion, quill)
       Learning.js             adaptive tile difficulty (hidden letterSkill), parent dial
       Save.js                 schema, autosave, migrations, backup, export/import, guard
-    entities/                 Violet, NPC, Pet, Prop (puppet part definitions + tweens)
+    entities/                 Violet, NPC, Pet, Prop simulation-facing state
     render/
       RoomRenderer.js         cached-background compositing, hotspot glows, exits
-      CharacterRenderer.js    puppet drawing + portrait tier
+      CharacterRenderer.js    selects the production character renderer
+      FullFrameCharacterRig.js manifest-driven world/portrait frame selection
+      AlignedSpriteRig.js     aligned-canvas transforms and orientation
       UIRenderer.js           HUD, spell fan, ribbons/tiles, satchel, map, parent panel
       Particles.js            pooled sprite particles, pre-rendered glow sprites
     core/
@@ -102,11 +104,11 @@ Schema in [GAME_DESIGN.md](GAME_DESIGN.md#save-and-persistence). Implementation 
 1. **Room background cache** — the big one: composite the painted background + static dressing + baked lighting ONCE into an offscreen canvas at device resolution on room entry; per-frame cost is one `drawImage` plus dynamic entities. Rebuild only on resize/orientation.
 2. `getContext('2d', { alpha: false })`; DPR capped at 2; fixed virtual 1280×720 with letterbox scale (soccer pattern).
 3. Only the active room simulates; NPC idle animation freezes off-screen during pans.
-4. Particles: pooled, hard-capped (~400), built from pre-rendered gradient sprites. Puppet parts that never deform (heads, torsos, props) pre-render to sprite canvases at load (1× and 2×) — live path fills only for genuinely deforming parts (ribbons, mouths, cloth).
+4. Particles are pooled, hard-capped (~400), and built from pre-rendered gradient sprites. Reviewed character frames are decoded before use and drawn from their aligned canvases; slicing, background removal, and pixel cleanup happen deterministically offline during the per-character production pass, before manifest integration, and never in the frame loop.
 5. **Frame budget: ≤5 full-screen-equivalent composite passes** (see SET_PIECES.md §Banned APIs: no `ctx.filter` — *disabled in Safari* — no `shadowBlur`, no per-frame gradient construction, no frame-loop `getImageData`; darkness overlay at half resolution).
 6. **Chapter code + assets lazy-load** via dynamic `import()` — first paint stays fast as the game grows to 8 chapters; room images preload one room ahead (map shows a sparkle transition that covers any load).
 7. `visibilitychange`: flush save, pause audio, resume the AudioContext if Safari left it `interrupted`.
-8. Device gate: every milestone ends with a run on the actual iPad — Safari, added to home screen (fullscreen meta), touch targets and frame rate checked by hand. The early stress scene (6 puppets + max particles + darkness overlay) is profiled on the *base* iPad, not a Pro.
+8. Device gate: every milestone ends with a run on the actual iPad — Safari, added to home screen (fullscreen meta), touch targets and frame rate checked by hand. The early stress scene (6 characters + max particles + darkness overlay) is profiled on the *base* iPad, not a Pro.
 
 ## Device reality (red-team verified — rules, not suggestions)
 

@@ -1,0 +1,115 @@
+{
+  "schema_version": 1,
+  "algorithm": {
+    "id": "linear-light-premultiplied-rgba-v1",
+    "color_space": "srgb",
+    "transfer": "IEC 61966-2-1 sRGB to linear light and back",
+    "representation": "premultiplied RGBA",
+    "mask_coverage": "grayscale multiplied by alpha",
+    "output_color_type": 6,
+    "output_bit_depth": 8
+  },
+  "edit_spec": {
+    "path": "art/characters/violet/robes/expressions/wonder.edit.json",
+    "bytes": 722,
+    "sha256": "10977cd869a8010370b186ec25eeeea866a82e21a9dfe2f1f0271dffce112f64",
+    "schema_version": 1
+  },
+  "controls": {
+    "allow_alpha_change": false,
+    "zero_mask_pixels_copied_byte_exactly": true
+  },
+  "inputs": {
+    "base": {
+      "path": "art/characters/violet/robes/neutral-purple-v1.png",
+      "bytes": 1235688,
+      "sha256": "d378299758fc375a5691a2b1a54ce7faf5e6271520cb7dfbd797ede47253f41a",
+      "rgba_sha256": "44635ef386229b0f1b9b682cb9bbbd17b614134a4ebab1509d64653f70d12682",
+      "dimensions": {
+        "width": 896,
+        "height": 1200
+      },
+      "png": {
+        "color_type": 6,
+        "bit_depth": 8,
+        "has_color": true,
+        "has_alpha": true,
+        "interlaced": false
+      },
+      "expected_sha256": "d378299758fc375a5691a2b1a54ce7faf5e6271520cb7dfbd797ede47253f41a"
+    },
+    "raw_candidate": {
+      "path": "art/characters/violet/expressions/wonder.png",
+      "bytes": 1199340,
+      "sha256": "a1c4968104d625ba170c77e41572288a65682b92789f210bc622fc37c2bc7eb9",
+      "rgba_sha256": "6e5c1e60b1a47b01a1b794eff0be98dac37e56c0314f45ec1b855f2d08e7ef3c",
+      "dimensions": {
+        "width": 896,
+        "height": 1200
+      },
+      "png": {
+        "color_type": 6,
+        "bit_depth": 8,
+        "has_color": true,
+        "has_alpha": true,
+        "interlaced": false
+      },
+      "expected_sha256": "a1c4968104d625ba170c77e41572288a65682b92789f210bc622fc37c2bc7eb9"
+    },
+    "mask": {
+      "path": "art/characters/violet/expressions/masks/wonder-v1.png",
+      "bytes": 31301,
+      "sha256": "f88a2581966803f8917aff96696d4831829e86891c835311a7b82e4d07e13eb9",
+      "rgba_sha256": "48a2f8a201316970d31f0f8da6fd02df192dfc77259f0ca25f3873e92c1a0cf2",
+      "dimensions": {
+        "width": 896,
+        "height": 1200
+      },
+      "png": {
+        "color_type": 6,
+        "bit_depth": 8,
+        "has_color": true,
+        "has_alpha": true,
+        "interlaced": false
+      },
+      "expected_sha256": "f88a2581966803f8917aff96696d4831829e86891c835311a7b82e4d07e13eb9"
+    }
+  },
+  "mask": {
+    "bounds": {
+      "x": 358,
+      "y": 202,
+      "width": 177,
+      "height": 165
+    },
+    "coverage_denominator": 65025,
+    "minimum_nonzero_coverage_units": 255,
+    "maximum_coverage_units": 65025,
+    "zero_pixels": 1059432,
+    "nonzero_pixels": 15768,
+    "full_pixels": 11994,
+    "soft_pixels": 3774
+  },
+  "changes": {
+    "total_pixels": 1075200,
+    "output_changed_pixels": 14511,
+    "rgb_changed_pixels": 14511,
+    "alpha_changed_pixels": 0,
+    "changed_channel_bytes": 42096,
+    "outside_zero_mask_changed_pixels": 0
+  },
+  "output": {
+    "image": {
+      "path": "art/characters/violet/robes/expressions/wonder.png",
+      "media_type": "image/png",
+      "bytes": 1237475,
+      "sha256": "2df595e03b675eaec1451694b6b0effe3c337bd0ba697f803676e3fbe90d1622",
+      "rgba_sha256": "dd3e85f448e902c2a3aa1f1d9d823056594b7afa09b137e867461ad71eca3c75",
+      "dimensions": {
+        "width": 896,
+        "height": 1200
+      }
+    },
+    "provenance": "art/characters/violet/robes/expressions/wonder.composite.json"
+  }
+}

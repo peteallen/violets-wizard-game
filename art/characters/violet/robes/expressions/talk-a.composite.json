@@ -1,0 +1,115 @@
+{
+  "schema_version": 1,
+  "algorithm": {
+    "id": "linear-light-premultiplied-rgba-v1",
+    "color_space": "srgb",
+    "transfer": "IEC 61966-2-1 sRGB to linear light and back",
+    "representation": "premultiplied RGBA",
+    "mask_coverage": "grayscale multiplied by alpha",
+    "output_color_type": 6,
+    "output_bit_depth": 8
+  },
+  "edit_spec": {
+    "path": "art/characters/violet/robes/expressions/talk-a.edit.json",
+    "bytes": 722,
+    "sha256": "492a9b35e1944aa606cc564d27fe85d6687d6e68f5430981ae8db56ffaf0184d",
+    "schema_version": 1
+  },
+  "controls": {
+    "allow_alpha_change": false,
+    "zero_mask_pixels_copied_byte_exactly": true
+  },
+  "inputs": {
+    "base": {
+      "path": "art/characters/violet/robes/neutral-purple-v1.png",
+      "bytes": 1235688,
+      "sha256": "d378299758fc375a5691a2b1a54ce7faf5e6271520cb7dfbd797ede47253f41a",
+      "rgba_sha256": "44635ef386229b0f1b9b682cb9bbbd17b614134a4ebab1509d64653f70d12682",
+      "dimensions": {
+        "width": 896,
+        "height": 1200
+      },
+      "png": {
+        "color_type": 6,
+        "bit_depth": 8,
+        "has_color": true,
+        "has_alpha": true,
+        "interlaced": false
+      },
+      "expected_sha256": "d378299758fc375a5691a2b1a54ce7faf5e6271520cb7dfbd797ede47253f41a"
+    },
+    "raw_candidate": {
+      "path": "art/characters/violet/expressions/talk-a.png",
+      "bytes": 1197803,
+      "sha256": "eec0fa6d2956d7d80a0b2de6e967130834957292eb872fe4a71dddb49b24eb93",
+      "rgba_sha256": "3a96c031b1991e58e3f23b6d5eeefbe74413880aa112d6ed808c400d0935e6ef",
+      "dimensions": {
+        "width": 896,
+        "height": 1200
+      },
+      "png": {
+        "color_type": 6,
+        "bit_depth": 8,
+        "has_color": true,
+        "has_alpha": true,
+        "interlaced": false
+      },
+      "expected_sha256": "eec0fa6d2956d7d80a0b2de6e967130834957292eb872fe4a71dddb49b24eb93"
+    },
+    "mask": {
+      "path": "art/characters/violet/expressions/masks/talk-a-v1.png",
+      "bytes": 26992,
+      "sha256": "d364a765af4ef9314c6b18154cbacdd46f9ef0127a074988833c420fc16d0617",
+      "rgba_sha256": "e274531aba763dcf2c12403a7539f8ed89dcba22492d243394e8917fd273cc40",
+      "dimensions": {
+        "width": 896,
+        "height": 1200
+      },
+      "png": {
+        "color_type": 6,
+        "bit_depth": 8,
+        "has_color": true,
+        "has_alpha": true,
+        "interlaced": false
+      },
+      "expected_sha256": "d364a765af4ef9314c6b18154cbacdd46f9ef0127a074988833c420fc16d0617"
+    }
+  },
+  "mask": {
+    "bounds": {
+      "x": 399,
+      "y": 301,
+      "width": 99,
+      "height": 66
+    },
+    "coverage_denominator": 65025,
+    "minimum_nonzero_coverage_units": 255,
+    "maximum_coverage_units": 65025,
+    "zero_pixels": 1069511,
+    "nonzero_pixels": 5689,
+    "full_pixels": 2771,
+    "soft_pixels": 2918
+  },
+  "changes": {
+    "total_pixels": 1075200,
+    "output_changed_pixels": 4588,
+    "rgb_changed_pixels": 4588,
+    "alpha_changed_pixels": 0,
+    "changed_channel_bytes": 13212,
+    "outside_zero_mask_changed_pixels": 0
+  },
+  "output": {
+    "image": {
+      "path": "art/characters/violet/robes/expressions/talk-a.png",
+      "media_type": "image/png",
+      "bytes": 1236016,
+      "sha256": "6d923f2bb2c3b6b532d41b74beba65f88a21ff83eeb5aeecafd7a5ec31ca80d9",
+      "rgba_sha256": "52bd3d717503abba66a61dfef3a4c8762442a2e658eae9c56112fd8e0f565844",
+      "dimensions": {
+        "width": 896,
+        "height": 1200
+      }
+    },
+    "provenance": "art/characters/violet/robes/expressions/talk-a.composite.json"
+  }
+}
