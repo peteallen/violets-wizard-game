@@ -1,3 +1,5 @@
+import { childFacingUiText } from '../content/playerVisibleCopy.js';
+
 let nextDialogId = 0;
 
 const SVG_NAMESPACE = 'http://www.w3.org/2000/svg';
@@ -99,10 +101,22 @@ export class PetNameDialog {
     root.append(dialog);
 
     appendOwlMedallion(documentRef, dialog);
-    const title = appendTextElement(documentRef, dialog, 'h2', 'pet-name-title', 'Name your pet');
+    const title = appendTextElement(
+      documentRef,
+      dialog,
+      'h2',
+      'pet-name-title',
+      childFacingUiText('Name your pet', 'caption'),
+    );
     title.id = `${id}-title`;
 
-    const label = appendTextElement(documentRef, dialog, 'label', 'pet-name-label', 'Pet name');
+    const label = appendTextElement(
+      documentRef,
+      dialog,
+      'label',
+      'pet-name-label',
+      childFacingUiText('Pet name', 'caption'),
+    );
     label.setAttribute('for', `${id}-input`);
     const input = documentRef.createElement('input');
     input.id = `${id}-input`;
@@ -133,12 +147,12 @@ export class PetNameDialog {
     const submitButton = documentRef.createElement('button');
     submitButton.className = 'pet-name-button pet-name-button-primary';
     submitButton.type = 'button';
-    submitButton.textContent = 'Use this name';
+    submitButton.textContent = childFacingUiText('Use this name', 'action');
     actions.append(submitButton);
     const cancelButton = documentRef.createElement('button');
     cancelButton.className = 'pet-name-button pet-name-button-secondary';
     cancelButton.type = 'button';
-    cancelButton.textContent = 'Name cards';
+    cancelButton.textContent = childFacingUiText('Name cards', 'action');
     cancelButton.setAttribute('aria-label', 'Choose a name card instead');
     actions.append(cancelButton);
     dialog.append(actions);

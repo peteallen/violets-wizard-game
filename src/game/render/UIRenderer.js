@@ -1,5 +1,6 @@
 import { INPUT, PALETTE, WORLD } from '../config.js';
 import { chapter1Map } from '../content/chapters/ch1.js';
+import { childFacingUiText } from '../content/playerVisibleCopy.js';
 import { buildMapState } from '../core/MapState.js';
 import { ROBE_TRIMS, normalizeRobeTrim, robeTrimColor } from '../core/RobeTrims.js';
 import { CharacterRenderer } from './CharacterRenderer.js';
@@ -33,6 +34,8 @@ import {
   createIllustratedMapPresentation,
   IllustratedMapRenderer,
 } from './IllustratedMapRenderer.js';
+
+export { isAllowedChildFacingUiText } from '../content/playerVisibleCopy.js';
 
 const STORY_GRADIENTS = new WeakMap();
 const NIGHT_DIALOGUE_GRADIENTS = new WeakMap();
@@ -110,23 +113,6 @@ const ROBE_PREVIEW_VIOLET_LOCAL_BOUNDS = Object.freeze({
   width: 136,
   height: 245,
 });
-const VISIBLE_UI_WORD = /[\p{L}\p{N}]+(?:[’'-][\p{L}\p{N}]+)*/gu;
-
-export function isAllowedChildFacingUiText(text, role) {
-  const value = String(text ?? '').trim();
-  if (!value) return false;
-  if (role === 'parent' || role === 'story-object' || role === 'proper-name') return true;
-
-  const wordCount = value.match(VISIBLE_UI_WORD)?.length ?? 0;
-  if (role === 'symbol') return wordCount === 0;
-  return (role === 'caption' || role === 'action') && wordCount <= 3;
-}
-
-function childFacingUiText(text, role) {
-  const value = String(text ?? '').trim();
-  return isAllowedChildFacingUiText(value, role) ? value : '';
-}
-
 export function dialogueSceneContext(state, dialogue = state?.dialogue) {
   const night = state?.roomVariant === 'dusk' || state?.roomVariant === 'night';
   const lightSide = state?.keyLight === 'right' ? 'right' : 'left';
@@ -564,7 +550,7 @@ export class UIRenderer {
     drawDialogueCaption(
       context,
       captionRect,
-      childFacingUiText(dialogue.caption ?? 'Listen', 'caption'),
+      childFacingUiText(dialogue.caption, 'caption'),
       Boolean(scene.night),
     );
 
@@ -888,12 +874,20 @@ export class UIRenderer {
     context.fillStyle = '#fff8e8';
     context.textAlign = 'center';
     context.font = '700 26px "Andika", "Trebuchet MS", sans-serif';
-    context.fillText('DEV: Reset game', rect.x + rect.width / 2, rect.y + rect.height / 2 + 9);
+    context.fillText(
+      childFacingUiText('Start fresh', 'action'),
+      rect.x + rect.width / 2,
+      rect.y + rect.height / 2 + 9,
+    );
     context.restore();
   }
 
   drawReplayExit(context) {
-    drawReplayRibbon(context, UI_RECTS.replayExit);
+    drawReplayRibbon(
+      context,
+      UI_RECTS.replayExit,
+      childFacingUiText('Return', 'action'),
+    );
   }
 
   drawParentPanel(context, model) {
@@ -3204,8 +3198,9 @@ function vectorControlIcon(icon) {
 }
 
 function drawDialogueCaption(context, rect, caption, night) {
-  const words = String(caption).trim().split(/\s+/u).filter(Boolean).slice(0, 3);
-  const text = words.join(' ') || 'Listen';
+  const words = String(caption).trim().split(/\s+/u).filter(Boolean);
+  if (words.length === 0) return;
+  const text = words.join(' ');
   context.fillStyle = night ? '#f8e6ba' : '#382a24';
   context.textAlign = 'center';
   context.textBaseline = 'alphabetic';

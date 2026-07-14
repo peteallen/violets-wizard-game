@@ -145,6 +145,10 @@ describe('chapter content contracts', () => {
     expect(narratedText).toEqual(chapter1LetterNarration);
     expect(chapter1LetterLines.join(' ')).toBe(narratedText.join(' '));
     expect(chapter1LetterLines.join(' ')).not.toContain('We await your owl.');
+    expect([
+      letter.nodes.invitation.caption,
+      letter.nodes.waiting.caption,
+    ]).toEqual(['Dear Violet', 'Your place']);
   });
 
   it('keeps the chosen-wand reveal on the Wandmaker’s whispery Curious beat', () => {

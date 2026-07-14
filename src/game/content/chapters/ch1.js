@@ -89,14 +89,14 @@ const dialogueGraphs = [
         speaker: 'npc.narrator',
         voice: 'voice/ch1/narrator/letterInvitation',
         text: chapter1LetterNarration[0],
-        caption: 'HOGWARTS!',
+        caption: 'Dear Violet',
         next: 'waiting',
       }),
       waiting: voiceLine({
         speaker: 'npc.narrator',
         voice: 'voice/ch1/narrator/letterWaiting',
         text: chapter1LetterNarration[1],
-        caption: 'For Violet',
+        caption: 'Your place',
         next: 'finish',
       }),
       finish: {

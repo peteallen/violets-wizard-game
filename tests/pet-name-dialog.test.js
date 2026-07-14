@@ -1,4 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
+import { isAllowedChildFacingUiText } from '../src/game/content/playerVisibleCopy.js';
 import { cleanPetName, PetNameDialog } from '../src/game/core/PetNameDialog.js';
 
 class FakeElement extends EventTarget {
@@ -108,6 +109,10 @@ describe('PetNameDialog', () => {
     expect(dialog.elements.dialog.children.some((child) => child.className === 'pet-name-instructions')).toBe(false);
     expect(dialog.elements.submitButton.textContent).toBe('Use this name');
     expect(dialog.elements.cancelButton.textContent).toBe('Name cards');
+    expect(isAllowedChildFacingUiText('Name your pet', 'caption')).toBe(true);
+    expect(isAllowedChildFacingUiText('Pet name', 'caption')).toBe(true);
+    expect(isAllowedChildFacingUiText(dialog.elements.submitButton.textContent, 'action')).toBe(true);
+    expect(isAllowedChildFacingUiText(dialog.elements.cancelButton.textContent, 'action')).toBe(true);
     expect(dialog.elements.cancelButton.getAttribute('aria-label')).toBe('Choose a name card instead');
     const owl = dialog.elements.dialog.children.find(
       (child) => child.getAttribute('class') === 'pet-name-owl',

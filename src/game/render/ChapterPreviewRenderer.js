@@ -1,4 +1,5 @@
 import { WORLD } from '../config.js';
+import { childFacingUiText } from '../content/playerVisibleCopy.js';
 
 const INK = '#382a24';
 const DEEP_INK = '#2d2220';
@@ -91,10 +92,20 @@ function drawTitlePlaque(context, rect, title) {
   context.textBaseline = 'middle';
   context.fillStyle = LEATHER;
   context.font = '700 23px "Andika", "Trebuchet MS", sans-serif';
-  context.fillText('Chapter Two', rect.x + rect.width / 2, rect.y + 38, rect.width - 70);
+  context.fillText(
+    childFacingUiText('Chapter Two', 'proper-name'),
+    rect.x + rect.width / 2,
+    rect.y + 38,
+    rect.width - 70,
+  );
   context.fillStyle = INK;
   context.font = '700 39px "Almendra", Georgia, serif';
-  context.fillText(String(title), rect.x + rect.width / 2, rect.y + 96, rect.width - 62);
+  context.fillText(
+    childFacingUiText(title, 'proper-name'),
+    rect.x + rect.width / 2,
+    rect.y + 96,
+    rect.width - 62,
+  );
 
   context.strokeStyle = 'rgba(120,79,43,0.5)';
   context.lineWidth = 2;
@@ -127,7 +138,12 @@ function drawStartFresh(context, rect) {
   context.textAlign = 'center';
   context.textBaseline = 'middle';
   context.font = '700 22px "Andika", "Trebuchet MS", sans-serif';
-  context.fillText('Start fresh', rect.x + 143, rect.y + rect.height / 2, 126);
+  context.fillText(
+    childFacingUiText('Start fresh', 'action'),
+    rect.x + 143,
+    rect.y + rect.height / 2,
+    126,
+  );
   context.restore();
 }
 
@@ -179,7 +195,12 @@ function drawChoiceAction(context, rect, { id, label }) {
   context.textAlign = 'center';
   context.textBaseline = 'middle';
   context.font = '700 30px "Andika", "Trebuchet MS", sans-serif';
-  context.fillText(String(label), rect.x + 226, rect.y + rect.height / 2, 220);
+  context.fillText(
+    childFacingUiText(label, 'action'),
+    rect.x + 226,
+    rect.y + rect.height / 2,
+    220,
+  );
   context.restore();
 }
 

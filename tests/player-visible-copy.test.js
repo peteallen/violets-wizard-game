@@ -1,7 +1,8 @@
-import { readFileSync } from 'node:fs';
+import { readFileSync, readdirSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import { chapter1LetterLines } from '../src/game/content/chapters/ch1-letter.js';
 import { ROBE_TRIMS } from '../src/game/core/RobeTrims.js';
+import { ChapterPreviewRenderer } from '../src/game/render/ChapterPreviewRenderer.js';
 import {
   UIRenderer,
   drawYearbookPageDots,
@@ -18,6 +19,19 @@ const uiPrimitiveSource = readFileSync(
   'utf8',
 );
 const pageSource = readFileSync(new URL('../index.html', import.meta.url), 'utf8');
+
+function sourceFiles(directoryUrl) {
+  return readdirSync(directoryUrl, { withFileTypes: true }).flatMap((entry) => {
+    const entryUrl = new URL(entry.name, directoryUrl);
+    if (entry.isDirectory()) return sourceFiles(new URL(`${entry.name}/`, directoryUrl));
+    return entry.name.endsWith('.js') ? [entryUrl] : [];
+  });
+}
+
+const runtimePlayerSource = [
+  pageSource,
+  ...sourceFiles(new URL('../src/', import.meta.url)).map((file) => readFileSync(file, 'utf8')),
+].join('\n');
 
 function recordingContext() {
   const calls = [];
@@ -76,7 +90,10 @@ describe('player-visible copy', () => {
   it('expresses the D28 and D36 Canvas policy in semantic roles', () => {
     expect(isAllowedChildFacingUiText('Choose a pet', 'caption')).toBe(true);
     expect(isAllowedChildFacingUiText('Open Violet’s letter', 'action')).toBe(true);
+    expect(isAllowedChildFacingUiText('Hear the letter', 'action')).toBe(true);
+    expect(isAllowedChildFacingUiText('Start fresh', 'action')).toBe(true);
     expect(isAllowedChildFacingUiText('Tap this glowing picture now', 'action')).toBe(false);
+    expect(isAllowedChildFacingUiText('Shimmering destination marker', 'caption')).toBe(false);
     expect(isAllowedChildFacingUiText('Platform Nine and Three-Quarters', 'proper-name')).toBe(true);
     expect(isAllowedChildFacingUiText(chapter1LetterLines[1], 'story-object')).toBe(true);
     expect(isAllowedChildFacingUiText('Settings and keepsakes for Violet’s adventure.', 'parent')).toBe(true);
@@ -86,7 +103,9 @@ describe('player-visible copy', () => {
   });
 
   it('keeps each child-facing Canvas surface to captions, actions, names, and story text', () => {
-    const renderer = new UIRenderer({ characterRenderer: { draw: () => {} } });
+    const renderer = new UIRenderer({
+      characterRenderer: { draw: () => {}, drawPortrait: () => {} },
+    });
     const surfaces = [
       {
         name: 'title',
@@ -98,6 +117,15 @@ describe('player-visible copy', () => {
         },
       },
       {
+        name: 'returning title',
+        draw: (context) => renderer.drawTitle(context, 0, true, true),
+        expected: ['Violet', 'at Hogwarts', 'Return to Hogwarts'],
+        roles: {
+          properNames: ['Violet', 'at Hogwarts'],
+          actions: ['Return to Hogwarts'],
+        },
+      },
+      {
         name: 'letter',
         draw: (context) => renderer.drawLetterReading(context),
         expected: [...chapter1LetterLines, 'Hear the letter', 'Let’s go!'],
@@ -105,6 +133,16 @@ describe('player-visible copy', () => {
           storyObjects: [...chapter1LetterLines],
           actions: ['Hear the letter', 'Let’s go!'],
         },
+      },
+      {
+        name: 'dialogue',
+        draw: (context) => renderer.drawDialogue(context, {
+          type: 'line',
+          speaker: 'npc.guide',
+          caption: 'This way!',
+        }, 0, false, true),
+        expected: ['This way!', 'Again'],
+        roles: { actions: ['Again'] },
       },
       {
         name: 'robe picker',
@@ -203,6 +241,18 @@ describe('player-visible copy', () => {
         expected: ['Violet’s Yearbook'],
         roles: { properNames: ['Violet’s Yearbook'] },
       },
+      {
+        name: 'replay exit',
+        draw: (context) => renderer.drawReplayExit(context),
+        expected: ['↩', 'Return'],
+        roles: { actions: ['Return'], symbols: ['↩'] },
+      },
+      {
+        name: 'development reset',
+        draw: (context) => renderer.drawDebugReset(context),
+        expected: ['Start fresh'],
+        roles: { actions: ['Start fresh'] },
+      },
     ];
 
     for (const surface of surfaces) {
@@ -215,8 +265,10 @@ describe('player-visible copy', () => {
     }
   });
 
-  it('drops overlong dynamic helper copy at the child-facing renderer boundary', () => {
-    const renderer = new UIRenderer({ characterRenderer: {} });
+  it('drops overlong or unfamiliar dynamic helper copy at every child-facing renderer boundary', () => {
+    const renderer = new UIRenderer({
+      characterRenderer: { draw: () => {}, drawPortrait: () => {} },
+    });
     const choiceTexts = visibleTexts((context) => renderer.drawChoices(context, [{
       icon: 'owl',
       caption: 'Tap this picture to choose the owl',
@@ -225,9 +277,43 @@ describe('player-visible copy', () => {
       caption: 'Follow the glowing star over there',
       text: 'This helper sentence is never child-facing Canvas copy.',
     }, 0, { reducedMotion: true }));
+    const dialogueTexts = visibleTexts((context) => renderer.drawDialogue(context, {
+      type: 'line',
+      speaker: 'npc.guide',
+      caption: 'Shimmering destination marker',
+    }, 0, false, true));
+    const previewTexts = visibleTexts((context) => new ChapterPreviewRenderer().draw(context, {
+      choices: [
+        { id: 'explore', caption: 'Tap anywhere to travel now' },
+        { id: 'playAgain', caption: 'Configuration' },
+      ],
+      showChoices: true,
+    }));
 
     expect(choiceTexts).toEqual([]);
     expect(objectiveTexts).toEqual([]);
+    expect(dialogueTexts).toEqual(['Again']);
+    expect(previewTexts).toEqual([
+      'Chapter Two',
+      'Platform Nine and Three-Quarters',
+      'Start fresh',
+    ]);
+  });
+
+  it('keeps every retired helper sentence and obsolete letter caption out of runtime source', () => {
+    const retiredCopy = [
+      'Tap the page to continue',
+      'A map that remembers where Violet needs to go',
+      'Tap to travel',
+      'Violet goes here',
+      'Still hidden',
+      'Hold for grown-ups',
+      'Best with sound on',
+      'HOGWARTS!',
+      'For Violet',
+    ];
+
+    for (const text of retiredCopy) expect(runtimePlayerSource, text).not.toContain(text);
   });
 
   it('draws yearbook page leaves as deterministic organic curves, never perfect geometry', () => {
@@ -272,6 +358,8 @@ describe('player-visible copy', () => {
     expect(updateAside).toMatch(/\bhidden\b/);
     expect(pageSource).toMatch(/<button\b[^>]*\bid="version-reload-now"[^>]*>Reload<\/button>/);
     expect(pageSource).toMatch(/<button\b[^>]*\bid="version-reload-later"[^>]*>Later<\/button>/);
+    expect(isAllowedChildFacingUiText('Reload', 'action')).toBe(true);
+    expect(isAllowedChildFacingUiText('Later', 'action')).toBe(true);
 
     const gameStatus = pageSource.match(/<p\b[^>]*\bid="game-status"[^>]*>/)?.[0] ?? '';
     expect(gameStatus).toContain('class="visually-hidden"');
