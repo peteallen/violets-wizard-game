@@ -15,6 +15,7 @@ import {
 
 function recordingContext() {
   const calls = [];
+  const paintEvents = [];
   const propertyWrites = [];
   let depth = 0;
   const methods = new Set([
@@ -22,7 +23,13 @@ function recordingContext() {
     'fillText', 'lineTo', 'moveTo', 'quadraticCurveTo', 'rect', 'restore', 'rotate', 'roundRect',
     'save', 'scale', 'setLineDash', 'stroke', 'translate',
   ]);
-  const target = { calls, propertyWrites, globalAlpha: 1, get depth() { return depth; } };
+  const target = {
+    calls,
+    paintEvents,
+    propertyWrites,
+    globalAlpha: 1,
+    get depth() { return depth; },
+  };
   return new Proxy(target, {
     get(object, property) {
       if (property === 'createLinearGradient' || property === 'createRadialGradient') {
@@ -34,6 +41,11 @@ function recordingContext() {
       if (methods.has(property)) {
         return (...args) => {
           calls.push([property, ...args]);
+          if (property === 'fill') {
+            paintEvents.push(['fill', object.fillStyle, object.globalAlpha]);
+          } else if (property === 'stroke') {
+            paintEvents.push(['stroke', object.strokeStyle, object.globalAlpha]);
+          }
           if (property === 'save') depth += 1;
           if (property === 'restore') depth -= 1;
         };
@@ -270,7 +282,9 @@ describe('illustrated interface primitives', () => {
         { enabled: true, time: 1.25 },
       )],
     ];
-    const forbiddenGeometry = new Set(['arc', 'arcTo', 'ellipse', 'fillRect', 'rect', 'roundRect']);
+    const forbiddenGeometry = new Set([
+      'arc', 'arcTo', 'ellipse', 'fillRect', 'lineTo', 'rect', 'roundRect', 'setLineDash',
+    ]);
 
     for (const [name, draw] of drawings) {
       const first = recordingContext();
@@ -285,7 +299,7 @@ describe('illustrated interface primitives', () => {
         .toBeGreaterThan(12);
       expect(first.calls.some(([method]) => forbiddenGeometry.has(method)), name).toBe(false);
       expect(first.calls.some(([method]) => [
-        'createLinearGradient', 'createRadialGradient', 'setLineDash',
+        'createLinearGradient', 'createRadialGradient',
       ].includes(method)), name).toBe(false);
       expect(first.propertyWrites.some(([property]) => [
         'filter', 'shadowBlur', 'shadowColor',
@@ -304,6 +318,96 @@ describe('illustrated interface primitives', () => {
     }
   });
 
+  it('grounds every persistent HUD object with exactly two painted organic shadow passes', () => {
+    const rect = { x: 20, y: 20, width: 108, height: 108 };
+    const drawings = [
+      ['satchel', (context) => drawLeatherSatchel(context, rect)],
+      ['compass', (context) => drawCompassQuest(context, rect, 0, { pulse: false })],
+      ['holster', (context) => drawBrassWandHolster(
+        context,
+        rect,
+        { enabled: true, time: 0 },
+      )],
+    ];
+    const shadowStyles = [
+      'rgba(27, 18, 28, 0.17)',
+      'rgba(27, 18, 28, 0.34)',
+    ];
+
+    for (const [name, draw] of drawings) {
+      const context = recordingContext();
+      draw(context);
+      const shadowPaints = context.paintEvents.filter(
+        ([method, style]) => method === 'fill' && shadowStyles.includes(style),
+      );
+
+      expect(context.paintEvents.slice(0, 2), `${name} shadows should sit behind the object`)
+        .toEqual([
+          ['fill', shadowStyles[0], 1],
+          ['fill', shadowStyles[1], 1],
+        ]);
+      expect(shadowPaints, `${name} should have one soft and one core contact shadow`)
+        .toEqual([
+          ['fill', shadowStyles[0], 1],
+          ['fill', shadowStyles[1], 1],
+        ]);
+      expect(context.calls.slice(1, 7).map(([method]) => method), name).toEqual([
+        'beginPath', 'moveTo', 'bezierCurveTo', 'bezierCurveTo', 'closePath', 'fill',
+      ]);
+      expect(context.calls.slice(7, 13).map(([method]) => method), name).toEqual([
+        'beginPath', 'moveTo', 'bezierCurveTo', 'bezierCurveTo', 'closePath', 'fill',
+      ]);
+      expect(context.depth, name).toBe(0);
+    }
+  });
+
+  it('keeps the satchel, compass, and wand identifiable through object-specific material marks', () => {
+    const rect = { x: 20, y: 20, width: 108, height: 108 };
+    const satchel = recordingContext();
+    const compass = recordingContext();
+    const wand = recordingContext();
+    drawLeatherSatchel(satchel, rect);
+    drawCompassQuest(compass, rect, 0, { pulse: false });
+    drawBrassWandHolster(wand, rect, { enabled: true, time: 0 });
+
+    const fillStyles = (context) => context.paintEvents
+      .filter(([method]) => method === 'fill')
+      .map(([, style]) => style);
+    const strokeStyles = (context) => context.paintEvents
+      .filter(([method]) => method === 'stroke')
+      .map(([, style]) => style);
+
+    const satchelFills = fillStyles(satchel);
+    for (const leatherPlane of ['#6d452d', '#583725', '#a16e47', '#7d5134', '#68412a']) {
+      expect(satchelFills, `satchel should retain leather plane ${leatherPlane}`)
+        .toContain(leatherPlane);
+    }
+    for (const claspTone of ['#c99b43', '#f6d58a']) expect(satchelFills).toContain(claspTone);
+    expect(satchelFills.filter((style) => style === '#4d2430'))
+      .toHaveLength(3);
+
+    const compassFills = fillStyles(compass);
+    for (const compassMaterial of [
+      '#76522c', '#c89d45', '#f7d992', '#f3e6ca',
+      '#a86f36', '#70416e', '#b987b0', 'rgba(222, 241, 239, 0.34)',
+    ]) expect(compassFills).toContain(compassMaterial);
+    expect(compassFills.indexOf('rgba(222, 241, 239, 0.34)'))
+      .toBeGreaterThan(compassFills.indexOf('#70416e'));
+
+    const wandFills = fillStyles(wand);
+    for (const holsterMaterial of [
+      '#a96f47', '#e0b07b', '#4b3025', '#3a2721', '#d0a450', '#f4d58d',
+    ]) expect(wandFills).toContain(holsterMaterial);
+    expect(strokeStyles(wand).filter((style) => style === '#5b372a'))
+      .toHaveLength(3);
+
+    for (const context of [satchel, compass, wand]) {
+      expect(context.calls.filter(([method]) => method === 'save').length)
+        .toBe(context.calls.filter(([method]) => method === 'restore').length);
+      expect(context.depth).toBe(0);
+    }
+  });
+
   it('keeps HUD animation deterministic and still when its reduced-motion inputs are still', () => {
     const rect = { x: 20, y: 20, width: 108, height: 108 };
 
@@ -315,6 +419,9 @@ describe('illustrated interface primitives', () => {
     drawLeatherSatchel(mutedSatchel, rect, { muted: true });
     expect(openSatchel.calls).not.toEqual(closedSatchel.calls);
     expect(mutedSatchel.propertyWrites).toContainEqual(['globalAlpha', 0.55]);
+    expect(openSatchel.paintEvents).toContainEqual(['fill', '#2d2020', 1]);
+    expect(openSatchel.paintEvents).toContainEqual(['fill', '#6f472e', 1]);
+    expect(closedSatchel.paintEvents).toContainEqual(['fill', '#68412a', 1]);
 
     const stillQuestEarly = recordingContext();
     const stillQuestLate = recordingContext();
@@ -340,6 +447,12 @@ describe('illustrated interface primitives', () => {
     expect(disabledWandEarly.propertyWrites).toEqual(disabledWandLate.propertyWrites);
     expect(enabledWand.calls).toEqual(enabledWandRepeat.calls);
     expect(enabledWand.calls).not.toEqual(disabledWandEarly.calls);
+    expect(enabledWand.paintEvents).toContainEqual(['fill', '#a96f47', 1]);
+    expect(enabledWand.paintEvents).toContainEqual(['stroke', '#5b372a', 1]);
+    expect(disabledWandEarly.paintEvents.some(([, style]) => [
+      '#a96f47', '#e0b07b', '#5b372a', '#ffd76a', '#fff1b8',
+    ].includes(style))).toBe(false);
+    expect(disabledWandEarly.paintEvents).toContainEqual(['stroke', '#a5977f', 0.62]);
 
     for (const context of [
       closedSatchel, openSatchel, mutedSatchel,

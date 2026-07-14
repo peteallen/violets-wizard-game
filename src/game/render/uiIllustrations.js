@@ -9,6 +9,9 @@ const BRASS_LIGHT = '#f4d58d';
 const BRASS_DARK = '#76522c';
 const LEATHER = '#6d452d';
 const LEATHER_DARK = '#3f2b23';
+const HUD_CONTACT_SHADOW_SOFT = 'rgba(27, 18, 28, 0.17)';
+const HUD_CONTACT_SHADOW_CORE = 'rgba(27, 18, 28, 0.34)';
+const HUD_GLASS_LIGHT = 'rgba(222, 241, 239, 0.34)';
 const ICON_CREAM = '#f7e7c2';
 const ICON_LIGHT = '#ffe3a0';
 const ICON_MID = '#b98448';
@@ -1105,11 +1108,12 @@ export function drawLeatherSatchel(context, rect, { open = false, muted = false 
   context.save();
   context.globalAlpha = muted ? 0.55 : 1;
 
-  context.fillStyle = 'rgba(31, 20, 27, 0.4)';
-  traceSatchelHandle(context, offsetRect(rect, 3, 5), 0.68);
-  context.fill();
-  traceSatchelBody(context, offsetRect(rect, 4, 6), 0.73);
-  context.fill();
+  drawHudContactShadow(context, rect, {
+    centerY: 0.91,
+    radiusX: 0.43,
+    radiusY: 0.072,
+    phase: 0.68,
+  });
 
   context.fillStyle = LEATHER_DARK;
   traceSatchelHandle(context, rect, 0.21);
@@ -1129,8 +1133,16 @@ export function drawLeatherSatchel(context, rect, { open = false, muted = false 
   context.lineWidth = Math.max(3, rect.width * 0.042);
   context.stroke();
 
-  context.fillStyle = '#8b5e3b';
+  context.fillStyle = '#583725';
+  traceSatchelBodyShade(context, rect);
+  context.fill();
+
+  context.fillStyle = '#a16e47';
   traceSatchelUpperLight(context, rect);
+  context.fill();
+
+  context.fillStyle = '#7d5134';
+  traceSatchelRightGusset(context, rect);
   context.fill();
 
   if (open) {
@@ -1142,28 +1154,39 @@ export function drawLeatherSatchel(context, rect, { open = false, muted = false 
     context.stroke();
   }
 
-  context.fillStyle = open ? '#8f623a' : '#7d5131';
+  context.fillStyle = open ? '#9b6c42' : '#805333';
   traceSatchelFlap(context, rect, open);
   context.fill();
   context.strokeStyle = '#3a281f';
   context.lineWidth = Math.max(2.5, rect.width * 0.035);
   context.stroke();
 
-  context.fillStyle = 'rgba(244, 213, 141, 0.2)';
+  context.fillStyle = 'rgba(247, 218, 151, 0.29)';
   traceSatchelFlapLight(context, rect, open);
+  context.fill();
+
+  context.fillStyle = open ? '#6f472e' : '#68412a';
+  traceSatchelLatchStrap(context, rect, open);
+  context.fill();
+  context.strokeStyle = '#3a281f';
+  context.lineWidth = Math.max(1.5, rect.width * 0.018);
+  context.stroke();
+
+  context.fillStyle = 'rgba(240, 190, 119, 0.32)';
+  traceSatchelLatchStrapLight(context, rect, open);
   context.fill();
 
   drawSatchelStitches(context, rect, open);
   drawSatchelGrain(context, rect);
 
-  context.fillStyle = BRASS;
+  context.fillStyle = '#c99b43';
   traceSatchelClasp(context, rect, open, 0.37);
   context.fill();
   context.strokeStyle = BRASS_DARK;
   context.lineWidth = Math.max(1.8, rect.width * 0.022);
   context.stroke();
 
-  context.fillStyle = BRASS_LIGHT;
+  context.fillStyle = '#f6d58a';
   traceSatchelClaspLight(context, rect, open);
   context.fill();
   context.strokeStyle = BRASS_LIGHT;
@@ -1177,14 +1200,26 @@ export function drawLeatherSatchel(context, rect, { open = false, muted = false 
 export function drawCompassQuest(context, rect, time = 0, { pulse = false } = {}) {
   const x = rect.x + rect.width / 2;
   const y = rect.y + rect.height / 2;
-  const radius = Math.min(rect.width, rect.height) * 0.405;
+  const radius = Math.min(rect.width, rect.height) * 0.39;
   const breathe = pulse ? 1.025 + Math.sin(time * 3.5) * 0.025 : 1;
   context.save();
+  drawHudContactShadow(context, rect, {
+    centerY: 0.89,
+    radiusX: 0.4,
+    radiusY: 0.065,
+    phase: 0.36,
+  });
   context.translate(x, y);
   context.scale(breathe, breathe);
 
-  context.fillStyle = 'rgba(20,17,38,0.42)';
-  traceCompassCase(context, 4, 6, radius + 3, 0.74);
+  context.fillStyle = BRASS_DARK;
+  traceCompassBail(context, radius);
+  context.fill();
+  context.strokeStyle = '#49331f';
+  context.lineWidth = 2.2;
+  context.stroke();
+  context.fillStyle = '#32251e';
+  traceCompassBailOpening(context, radius);
   context.fill();
 
   context.fillStyle = BRASS_DARK;
@@ -1200,6 +1235,10 @@ export function drawCompassQuest(context, rect, time = 0, { pulse = false } = {}
   context.strokeStyle = BRASS_LIGHT;
   context.lineWidth = 3.3;
   context.stroke();
+
+  context.fillStyle = '#f7d992';
+  traceCompassRimGleam(context, radius);
+  context.fill();
 
   context.fillStyle = '#f3e6ca';
   traceCompassFace(context, radius - 9);
@@ -1232,21 +1271,23 @@ export function drawCompassQuest(context, rect, time = 0, { pulse = false } = {}
     context.stroke();
   }
 
-  context.fillStyle = '#76522c';
+  context.save();
+  context.rotate(-0.12);
+  context.fillStyle = '#a86f36';
   traceCompassSouthNeedle(context, radius);
   context.fill();
   context.strokeStyle = OUTLINE;
   context.lineWidth = 2.2;
   context.stroke();
 
-  context.fillStyle = PALETTE.violet;
+  context.fillStyle = '#70416e';
   traceCompassNorthNeedle(context, radius);
   context.fill();
   context.strokeStyle = OUTLINE;
   context.lineWidth = 2.2;
   context.stroke();
 
-  context.fillStyle = '#8e5c8b';
+  context.fillStyle = '#b987b0';
   traceCompassNeedleLight(context, radius);
   context.fill();
 
@@ -1257,6 +1298,15 @@ export function drawCompassQuest(context, rect, time = 0, { pulse = false } = {}
   context.lineWidth = 1.6;
   context.stroke();
   context.restore();
+
+  context.fillStyle = HUD_GLASS_LIGHT;
+  traceCompassGlassReflection(context, radius);
+  context.fill();
+  context.strokeStyle = 'rgba(246, 255, 244, 0.62)';
+  context.lineWidth = 1.4;
+  traceCompassGlassEdge(context, radius);
+  context.stroke();
+  context.restore();
 }
 
 export function drawBrassWandHolster(context, rect, { enabled = true, time = 0 } = {}) {
@@ -1264,11 +1314,13 @@ export function drawBrassWandHolster(context, rect, { enabled = true, time = 0 }
   const size = Math.min(width, height);
   context.save();
   context.globalAlpha = enabled ? 1 : 0.62;
+  drawHudContactShadow(context, rect, {
+    centerY: 0.89,
+    radiusX: 0.41,
+    radiusY: 0.068,
+    phase: 0.83,
+  });
   context.translate(x + width / 2, y + height / 2);
-
-  context.fillStyle = 'rgba(20,17,38,0.42)';
-  traceHolsterBackplate(context, 4, 6, width * 0.42, height * 0.43, 0.71);
-  context.fill();
 
   context.fillStyle = BRASS_DARK;
   traceHolsterBackplate(context, 0, 0, width * 0.42, height * 0.43, 0.16);
@@ -1292,21 +1344,43 @@ export function drawBrassWandHolster(context, rect, { enabled = true, time = 0 }
   traceHolsterPlateShade(context, width, height);
   context.fill();
 
-  context.rotate(-0.73);
+  context.rotate(-0.57);
+
+  if (enabled) {
+    context.fillStyle = '#3c2822';
+    traceHolsteredWand(context, size, 2.5, 3);
+    context.fill();
+
+    context.fillStyle = '#a96f47';
+    traceHolsteredWand(context, size);
+    context.fill();
+    context.strokeStyle = '#4a3027';
+    context.lineWidth = Math.max(1.8, size * 0.022);
+    context.stroke();
+
+    context.fillStyle = '#e0b07b';
+    traceWandWoodLight(context, size);
+    context.fill();
+    drawWandCarving(context, size);
+  }
 
   context.fillStyle = '#30221f';
   traceWandSheath(context, size, 3, 4);
   context.fill();
 
-  context.fillStyle = enabled ? '#503426' : '#433b35';
+  context.fillStyle = enabled ? '#4b3025' : '#433b35';
   traceWandSheath(context, size, 0, 0);
   context.fill();
   context.strokeStyle = enabled ? '#aa7942' : '#817462';
   context.lineWidth = Math.max(2.5, size * 0.035);
   context.stroke();
 
-  context.fillStyle = enabled ? '#724b2f' : '#574f47';
+  context.fillStyle = enabled ? '#7f5334' : '#574f47';
   traceWandSheathLight(context, size);
+  context.fill();
+
+  context.fillStyle = enabled ? '#3a2721' : '#393532';
+  traceWandSheathShade(context, size);
   context.fill();
 
   context.fillStyle = '#281d1c';
@@ -1318,24 +1392,24 @@ export function drawBrassWandHolster(context, rect, { enabled = true, time = 0 }
 
   drawWandSheathStitches(context, size, enabled);
 
+  context.fillStyle = enabled ? '#d0a450' : '#766c5f';
+  traceWandSheathBand(context, size);
+  context.fill();
+  context.strokeStyle = enabled ? '#6f4b2a' : '#4e4841';
+  context.lineWidth = Math.max(1.2, size * 0.016);
+  context.stroke();
+
+  context.fillStyle = enabled ? '#f4d58d' : '#a89a82';
+  traceWandSheathBandLight(context, size);
+  context.fill();
+
   if (enabled) {
-    context.fillStyle = '#915f3f';
-    traceHolsteredWand(context, size);
-    context.fill();
-    context.strokeStyle = '#4a3027';
-    context.lineWidth = Math.max(1.8, size * 0.022);
-    context.stroke();
-
-    context.fillStyle = '#d6a271';
-    traceWandWoodLight(context, size);
-    context.fill();
-
-    const glow = size * (0.075 + (Math.sin(time * 3.1) + 1) * 0.012);
+    const glow = size * (0.062 + (Math.sin(time * 3.1) + 1) * 0.009);
     context.fillStyle = PALETTE.interactive;
-    traceWandSpark(context, 0, -size * 0.4, glow, time * 0.17);
+    traceWandSpark(context, 0, -size * 0.455, glow, time * 0.17);
     context.fill();
     context.fillStyle = '#fff1b8';
-    traceWandSpark(context, -size * 0.012, -size * 0.41, glow * 0.48, 0.63);
+    traceWandSpark(context, -size * 0.012, -size * 0.465, glow * 0.48, 0.63);
     context.fill();
   } else {
     context.strokeStyle = '#a5977f';
@@ -1346,13 +1420,54 @@ export function drawBrassWandHolster(context, rect, { enabled = true, time = 0 }
   context.restore();
 }
 
-function offsetRect(rect, dx, dy) {
-  return {
-    x: rect.x + dx,
-    y: rect.y + dy,
-    width: rect.width,
-    height: rect.height,
-  };
+function drawHudContactShadow(context, rect, {
+  centerY = 0.9,
+  radiusX = 0.4,
+  radiusY = 0.07,
+  phase = 0.5,
+} = {}) {
+  const centerX = rect.x + rect.width * 0.5;
+  const shadowY = rect.y + rect.height * centerY;
+  const width = rect.width * radiusX;
+  const height = rect.height * radiusY;
+
+  context.fillStyle = HUD_CONTACT_SHADOW_SOFT;
+  traceHudContactShadow(context, centerX + rect.width * 0.012, shadowY, width, height, phase);
+  context.fill();
+
+  context.fillStyle = HUD_CONTACT_SHADOW_CORE;
+  traceHudContactShadow(
+    context,
+    centerX - rect.width * 0.018,
+    shadowY - rect.height * 0.005,
+    width * 0.73,
+    height * 0.56,
+    phase + 0.37,
+  );
+  context.fill();
+}
+
+function traceHudContactShadow(context, x, y, radiusX, radiusY, phase) {
+  const drift = Math.sin(phase * 17) * radiusY * 0.24;
+  context.beginPath();
+  context.moveTo(x - radiusX, y + drift * 0.15);
+  context.bezierCurveTo(
+    x - radiusX * 0.66,
+    y - radiusY * 0.94,
+    x + radiusX * 0.35,
+    y - radiusY * 0.82 + drift,
+    x + radiusX * 0.98,
+    y - drift * 0.1,
+  );
+  context.bezierCurveTo(
+    x + radiusX * 0.62,
+    y + radiusY * 0.88,
+    x - radiusX * 0.45,
+    y + radiusY * 0.76 - drift,
+    x - radiusX,
+    y + drift * 0.15,
+  );
+  context.closePath();
 }
 
 function traceSatchelHandle(context, rect, phase) {
@@ -1513,6 +1628,76 @@ function traceSatchelUpperLight(context, rect) {
   context.closePath();
 }
 
+function traceSatchelBodyShade(context, rect) {
+  const { x, y, width, height } = rect;
+  context.beginPath();
+  context.moveTo(x + width * 0.11, y + height * 0.58);
+  context.bezierCurveTo(
+    x + width * 0.24,
+    y + height * 0.72,
+    x + width * 0.55,
+    y + height * 0.82,
+    x + width * 0.87,
+    y + height * 0.7,
+  );
+  context.bezierCurveTo(
+    x + width * 0.87,
+    y + height * 0.79,
+    x + width * 0.82,
+    y + height * 0.88,
+    x + width * 0.72,
+    y + height * 0.92,
+  );
+  context.bezierCurveTo(
+    x + width * 0.51,
+    y + height * 0.96,
+    x + width * 0.28,
+    y + height * 0.94,
+    x + width * 0.13,
+    y + height * 0.88,
+  );
+  context.bezierCurveTo(
+    x + width * 0.09,
+    y + height * 0.78,
+    x + width * 0.08,
+    y + height * 0.67,
+    x + width * 0.11,
+    y + height * 0.58,
+  );
+  context.closePath();
+}
+
+function traceSatchelRightGusset(context, rect) {
+  const { x, y, width, height } = rect;
+  context.beginPath();
+  context.moveTo(x + width * 0.76, y + height * 0.43);
+  context.bezierCurveTo(
+    x + width * 0.87,
+    y + height * 0.43,
+    x + width * 0.92,
+    y + height * 0.54,
+    x + width * 0.9,
+    y + height * 0.66,
+  );
+  context.bezierCurveTo(
+    x + width * 0.9,
+    y + height * 0.77,
+    x + width * 0.86,
+    y + height * 0.84,
+    x + width * 0.8,
+    y + height * 0.88,
+  );
+  context.bezierCurveTo(
+    x + width * 0.82,
+    y + height * 0.69,
+    x + width * 0.8,
+    y + height * 0.54,
+    x + width * 0.76,
+    y + height * 0.43,
+  );
+  context.closePath();
+}
+
 function traceSatchelMouth(context, rect) {
   const { x, y, width, height } = rect;
   context.beginPath();
@@ -1620,6 +1805,80 @@ function traceSatchelFlapLight(context, rect, open) {
   context.closePath();
 }
 
+function traceSatchelLatchStrap(context, rect, open) {
+  const { x, y, width, height } = rect;
+  const top = open ? 0.17 : 0.42;
+  const bottom = open ? 0.31 : 0.7;
+  context.beginPath();
+  context.moveTo(x + width * 0.455, y + height * top);
+  context.bezierCurveTo(
+    x + width * 0.475,
+    y + height * (top - 0.012),
+    x + width * 0.535,
+    y + height * (top - 0.008),
+    x + width * 0.552,
+    y + height * (top + 0.008),
+  );
+  context.bezierCurveTo(
+    x + width * 0.56,
+    y + height * (top + (bottom - top) * 0.45),
+    x + width * 0.548,
+    y + height * (bottom - 0.018),
+    x + width * 0.522,
+    y + height * bottom,
+  );
+  context.bezierCurveTo(
+    x + width * 0.49,
+    y + height * (bottom + 0.012),
+    x + width * 0.46,
+    y + height * (bottom - 0.002),
+    x + width * 0.446,
+    y + height * (bottom - 0.025),
+  );
+  context.bezierCurveTo(
+    x + width * 0.438,
+    y + height * (top + (bottom - top) * 0.52),
+    x + width * 0.444,
+    y + height * (top + 0.035),
+    x + width * 0.455,
+    y + height * top,
+  );
+  context.closePath();
+}
+
+function traceSatchelLatchStrapLight(context, rect, open) {
+  const { x, y, width, height } = rect;
+  const top = open ? 0.19 : 0.44;
+  const bottom = open ? 0.27 : 0.61;
+  context.beginPath();
+  context.moveTo(x + width * 0.468, y + height * top);
+  context.bezierCurveTo(
+    x + width * 0.482,
+    y + height * (top - 0.008),
+    x + width * 0.508,
+    y + height * (top - 0.004),
+    x + width * 0.518,
+    y + height * (top + 0.008),
+  );
+  context.bezierCurveTo(
+    x + width * 0.517,
+    y + height * (top + (bottom - top) * 0.5),
+    x + width * 0.506,
+    y + height * (bottom - 0.006),
+    x + width * 0.492,
+    y + height * bottom,
+  );
+  context.bezierCurveTo(
+    x + width * 0.475,
+    y + height * (bottom - 0.025),
+    x + width * 0.468,
+    y + height * (top + 0.05),
+    x + width * 0.468,
+    y + height * top,
+  );
+  context.closePath();
+}
+
 function drawSatchelStitches(context, rect, open) {
   const { x, y, width, height } = rect;
   context.save();
@@ -1681,8 +1940,8 @@ function claspCenter(rect, open) {
 
 function traceSatchelClasp(context, rect, open, phase) {
   const center = claspCenter(rect, open);
-  const radiusX = rect.width * 0.09;
-  const radiusY = rect.height * 0.085;
+  const radiusX = rect.width * 0.105;
+  const radiusY = rect.height * 0.102;
   const drift = Math.sin(phase * 19) * rect.width * 0.006;
   context.beginPath();
   context.moveTo(center.x - drift, center.y - radiusY);
@@ -1746,14 +2005,13 @@ function traceSatchelClaspLight(context, rect, open) {
 
 function drawSatchelClaspOwl(context, rect, open) {
   const center = claspCenter(rect, open);
-  const eyeWidth = rect.width * 0.024;
-  const eyeHeight = rect.height * 0.021;
+  const eyeWidth = rect.width * 0.026;
+  const eyeHeight = rect.height * 0.024;
   context.save();
-  context.strokeStyle = '#4d2430';
-  context.lineWidth = Math.max(1, rect.width * 0.012);
+  context.fillStyle = '#4d2430';
   for (const side of [-1, 1]) {
-    const eyeX = center.x + side * rect.width * 0.029;
-    const eyeY = center.y - rect.height * 0.012;
+    const eyeX = center.x + side * rect.width * 0.032;
+    const eyeY = center.y - rect.height * 0.014;
     context.beginPath();
     context.moveTo(eyeX - eyeWidth, eyeY);
     context.bezierCurveTo(
@@ -1773,8 +2031,32 @@ function drawSatchelClaspOwl(context, rect, open) {
       eyeY,
     );
     context.closePath();
-    context.stroke();
+    context.fill();
   }
+
+  context.strokeStyle = '#4d2430';
+  context.lineWidth = Math.max(1.2, rect.width * 0.014);
+  context.lineCap = 'round';
+  context.beginPath();
+  context.moveTo(center.x - rect.width * 0.071, center.y - rect.height * 0.043);
+  context.bezierCurveTo(
+    center.x - rect.width * 0.04,
+    center.y - rect.height * 0.065,
+    center.x - rect.width * 0.013,
+    center.y - rect.height * 0.052,
+    center.x,
+    center.y - rect.height * 0.029,
+  );
+  context.bezierCurveTo(
+    center.x + rect.width * 0.016,
+    center.y - rect.height * 0.052,
+    center.x + rect.width * 0.045,
+    center.y - rect.height * 0.063,
+    center.x + rect.width * 0.071,
+    center.y - rect.height * 0.039,
+  );
+  context.stroke();
+
   context.fillStyle = '#4d2430';
   context.beginPath();
   context.moveTo(center.x, center.y + rect.height * 0.005);
@@ -1838,6 +2120,96 @@ function traceCompassCase(context, x, y, radius, phase) {
   context.closePath();
 }
 
+function traceCompassBail(context, radius) {
+  context.beginPath();
+  context.moveTo(-radius * 0.24, -radius * 0.87);
+  context.bezierCurveTo(
+    -radius * 0.3,
+    -radius * 1.08,
+    -radius * 0.18,
+    -radius * 1.18,
+    radius * 0.02,
+    -radius * 1.2,
+  );
+  context.bezierCurveTo(
+    radius * 0.22,
+    -radius * 1.18,
+    radius * 0.31,
+    -radius * 1.07,
+    radius * 0.24,
+    -radius * 0.87,
+  );
+  context.bezierCurveTo(
+    radius * 0.15,
+    -radius * 0.91,
+    radius * 0.08,
+    -radius * 0.94,
+    -radius * 0.02,
+    -radius * 0.93,
+  );
+  context.bezierCurveTo(
+    -radius * 0.1,
+    -radius * 0.95,
+    -radius * 0.18,
+    -radius * 0.92,
+    -radius * 0.24,
+    -radius * 0.87,
+  );
+  context.closePath();
+}
+
+function traceCompassBailOpening(context, radius) {
+  context.beginPath();
+  context.moveTo(-radius * 0.12, -radius * 1.06);
+  context.bezierCurveTo(
+    -radius * 0.09,
+    -radius * 1.12,
+    radius * 0.1,
+    -radius * 1.13,
+    radius * 0.13,
+    -radius * 1.06,
+  );
+  context.bezierCurveTo(
+    radius * 0.1,
+    -radius * 0.99,
+    -radius * 0.08,
+    -radius * 0.98,
+    -radius * 0.12,
+    -radius * 1.06,
+  );
+  context.closePath();
+}
+
+function traceCompassRimGleam(context, radius) {
+  context.beginPath();
+  context.moveTo(-radius * 0.78, -radius * 0.46);
+  context.bezierCurveTo(
+    -radius * 0.62,
+    -radius * 0.78,
+    -radius * 0.25,
+    -radius * 0.95,
+    radius * 0.08,
+    -radius * 0.88,
+  );
+  context.bezierCurveTo(
+    -radius * 0.18,
+    -radius * 0.76,
+    -radius * 0.47,
+    -radius * 0.6,
+    -radius * 0.68,
+    -radius * 0.34,
+  );
+  context.bezierCurveTo(
+    -radius * 0.75,
+    -radius * 0.31,
+    -radius * 0.83,
+    -radius * 0.37,
+    -radius * 0.78,
+    -radius * 0.46,
+  );
+  context.closePath();
+}
+
 function traceCompassFace(context, radius) {
   traceCompassCase(context, 0, 0, radius, 0.83);
 }
@@ -1886,73 +2258,116 @@ function traceCompassFaceShade(context, radius) {
   context.closePath();
 }
 
+function traceCompassGlassReflection(context, radius) {
+  context.beginPath();
+  context.moveTo(-radius * 0.58, -radius * 0.52);
+  context.bezierCurveTo(
+    -radius * 0.34,
+    -radius * 0.72,
+    radius * 0.13,
+    -radius * 0.71,
+    radius * 0.41,
+    -radius * 0.46,
+  );
+  context.bezierCurveTo(
+    radius * 0.15,
+    -radius * 0.44,
+    -radius * 0.18,
+    -radius * 0.29,
+    -radius * 0.43,
+    -radius * 0.08,
+  );
+  context.bezierCurveTo(
+    -radius * 0.52,
+    -radius * 0.19,
+    -radius * 0.62,
+    -radius * 0.36,
+    -radius * 0.58,
+    -radius * 0.52,
+  );
+  context.closePath();
+}
+
+function traceCompassGlassEdge(context, radius) {
+  context.beginPath();
+  context.moveTo(-radius * 0.55, -radius * 0.62);
+  context.bezierCurveTo(
+    -radius * 0.28,
+    -radius * 0.84,
+    radius * 0.21,
+    -radius * 0.82,
+    radius * 0.51,
+    -radius * 0.57,
+  );
+}
+
 function traceCompassNorthNeedle(context, radius) {
   context.beginPath();
-  context.moveTo(0, -radius + 16);
+  context.moveTo(0, -radius + 10);
   context.bezierCurveTo(
-    radius * 0.08,
-    -radius * 0.58,
-    radius * 0.17,
-    -radius * 0.19,
-    radius * 0.14,
-    -radius * 0.05,
+    radius * 0.04,
+    -radius * 0.72,
+    radius * 0.095,
+    -radius * 0.23,
+    radius * 0.075,
+    -radius * 0.055,
   );
-  context.bezierCurveTo(radius * 0.08, radius * 0.02, radius * 0.04, radius * 0.1, 0, radius * 0.16);
-  context.bezierCurveTo(-radius * 0.05, radius * 0.07, -radius * 0.1, 0, -radius * 0.15, -radius * 0.05);
+  context.bezierCurveTo(radius * 0.045, radius * 0.02, radius * 0.025, radius * 0.08, 0, radius * 0.14);
+  context.bezierCurveTo(-radius * 0.03, radius * 0.07, -radius * 0.055, 0, -radius * 0.078, -radius * 0.055);
   context.bezierCurveTo(
-    -radius * 0.14,
-    -radius * 0.24,
-    -radius * 0.07,
-    -radius * 0.65,
+    -radius * 0.09,
+    -radius * 0.25,
+    -radius * 0.045,
+    -radius * 0.75,
     0,
-    -radius + 16,
+    -radius + 10,
   );
   context.closePath();
 }
 
 function traceCompassSouthNeedle(context, radius) {
   context.beginPath();
-  context.moveTo(0, radius - 16);
+  context.moveTo(0, radius - 12);
   context.bezierCurveTo(
-    radius * 0.07,
-    radius * 0.57,
-    radius * 0.15,
-    radius * 0.21,
-    radius * 0.13,
+    radius * 0.04,
+    radius * 0.68,
+    radius * 0.085,
+    radius * 0.22,
+    radius * 0.072,
     radius * 0.05,
   );
-  context.bezierCurveTo(radius * 0.08, -radius * 0.02, radius * 0.04, -radius * 0.1, 0, -radius * 0.16);
-  context.bezierCurveTo(-radius * 0.05, -radius * 0.07, -radius * 0.1, 0, -radius * 0.13, radius * 0.05);
+  context.bezierCurveTo(radius * 0.04, -radius * 0.02, radius * 0.025, -radius * 0.08, 0, -radius * 0.14);
+  context.bezierCurveTo(-radius * 0.03, -radius * 0.07, -radius * 0.055, 0, -radius * 0.075, radius * 0.05);
   context.bezierCurveTo(
-    -radius * 0.13,
-    radius * 0.23,
-    -radius * 0.06,
-    radius * 0.66,
+    -radius * 0.082,
+    radius * 0.24,
+    -radius * 0.042,
+    radius * 0.72,
     0,
-    radius - 16,
+    radius - 12,
   );
   context.closePath();
 }
 
 function traceCompassNeedleLight(context, radius) {
   context.beginPath();
-  context.moveTo(-radius * 0.02, -radius * 0.73);
+  context.moveTo(-radius * 0.014, -radius * 0.75);
   context.bezierCurveTo(
     radius * 0.02,
     -radius * 0.51,
-    radius * 0.06,
+    radius * 0.032,
     -radius * 0.29,
-    radius * 0.05,
+    radius * 0.027,
     -radius * 0.15,
   );
   context.bezierCurveTo(radius * 0.015, -radius * 0.11, -radius * 0.015, -radius * 0.1, -radius * 0.02, -radius * 0.14);
   context.bezierCurveTo(
-    -radius * 0.04,
+    -radius * 0.024,
     -radius * 0.34,
-    -radius * 0.04,
+    -radius * 0.022,
     -radius * 0.57,
-    -radius * 0.02,
-    -radius * 0.73,
+    -radius * 0.014,
+    -radius * 0.75,
   );
   context.closePath();
 }
@@ -2046,14 +2461,14 @@ function traceHolsterPlateShade(context, width, height) {
 
 function traceWandSheath(context, size, offsetX = 0, offsetY = 0) {
   context.beginPath();
-  context.moveTo(offsetX - size * 0.115, offsetY - size * 0.29);
+  context.moveTo(offsetX - size * 0.12, offsetY - size * 0.255);
   context.bezierCurveTo(
     offsetX - size * 0.07,
-    offsetY - size * 0.34,
+    offsetY - size * 0.305,
     offsetX + size * 0.075,
-    offsetY - size * 0.335,
+    offsetY - size * 0.3,
     offsetX + size * 0.12,
-    offsetY - size * 0.285,
+    offsetY - size * 0.25,
   );
   context.bezierCurveTo(
     offsetX + size * 0.115,
@@ -2084,14 +2499,14 @@ function traceWandSheath(context, size, offsetX = 0, offsetY = 0) {
 
 function traceWandSheathLight(context, size) {
   context.beginPath();
-  context.moveTo(-size * 0.075, -size * 0.25);
+  context.moveTo(-size * 0.078, -size * 0.22);
   context.bezierCurveTo(
     -size * 0.03,
-    -size * 0.28,
+    -size * 0.255,
     size * 0.015,
-    -size * 0.27,
+    -size * 0.245,
     size * 0.035,
-    -size * 0.23,
+    -size * 0.205,
   );
   context.bezierCurveTo(
     -size * 0.005,
@@ -2107,29 +2522,59 @@ function traceWandSheathLight(context, size) {
     -size * 0.07,
     -size * 0.12,
     -size * 0.075,
-    -size * 0.25,
+    -size * 0.22,
+  );
+  context.closePath();
+}
+
+function traceWandSheathShade(context, size) {
+  context.beginPath();
+  context.moveTo(size * 0.036, -size * 0.19);
+  context.bezierCurveTo(
+    size * 0.092,
+    -size * 0.12,
+    size * 0.105,
+    size * 0.12,
+    size * 0.055,
+    size * 0.34,
+  );
+  context.bezierCurveTo(
+    size * 0.035,
+    size * 0.39,
+    size * 0.002,
+    size * 0.405,
+    -size * 0.018,
+    size * 0.37,
+  );
+  context.bezierCurveTo(
+    size * 0.012,
+    size * 0.18,
+    size * 0.025,
+    -size * 0.07,
+    size * 0.036,
+    -size * 0.19,
   );
   context.closePath();
 }
 
 function traceWandSheathMouth(context, size) {
   context.beginPath();
-  context.moveTo(-size * 0.112, -size * 0.29);
+  context.moveTo(-size * 0.118, -size * 0.255);
   context.bezierCurveTo(
     -size * 0.07,
-    -size * 0.34,
+    -size * 0.305,
     size * 0.075,
-    -size * 0.335,
+    -size * 0.3,
     size * 0.118,
-    -size * 0.285,
+    -size * 0.25,
   );
   context.bezierCurveTo(
     size * 0.07,
-    -size * 0.24,
+    -size * 0.208,
     -size * 0.065,
-    -size * 0.245,
+    -size * 0.212,
     -size * 0.112,
-    -size * 0.29,
+    -size * 0.255,
   );
   context.closePath();
 }
@@ -2140,7 +2585,7 @@ function drawWandSheathStitches(context, size, enabled) {
   context.lineWidth = Math.max(1.1, size * 0.014);
   context.lineCap = 'round';
   for (let index = 0; index < 6; index += 1) {
-    const y = -size * 0.18 + index * size * 0.085;
+    const y = -size * 0.14 + index * size * 0.085;
     context.beginPath();
     context.moveTo(-size * 0.09, y);
     context.quadraticCurveTo(
@@ -2154,40 +2599,100 @@ function drawWandSheathStitches(context, size, enabled) {
   context.restore();
 }
 
-function traceHolsteredWand(context, size) {
+function traceWandSheathBand(context, size) {
   context.beginPath();
-  context.moveTo(-size * 0.04, size * 0.26);
+  context.moveTo(-size * 0.118, -size * 0.205);
   context.bezierCurveTo(
-    -size * 0.048,
-    size * 0.08,
-    -size * 0.043,
-    -size * 0.2,
-    -size * 0.028,
-    -size * 0.39,
+    -size * 0.055,
+    -size * 0.226,
+    size * 0.06,
+    -size * 0.221,
+    size * 0.118,
+    -size * 0.198,
   );
   context.bezierCurveTo(
-    -size * 0.005,
-    -size * 0.42,
-    size * 0.018,
-    -size * 0.42,
-    size * 0.032,
-    -size * 0.385,
+    size * 0.12,
+    -size * 0.163,
+    size * 0.107,
+    -size * 0.133,
+    size * 0.091,
+    -size * 0.116,
   );
   context.bezierCurveTo(
+    size * 0.035,
+    -size * 0.137,
+    -size * 0.059,
+    -size * 0.14,
+    -size * 0.105,
+    -size * 0.12,
+  );
+  context.bezierCurveTo(
+    -size * 0.119,
+    -size * 0.142,
+    -size * 0.126,
+    -size * 0.178,
+    -size * 0.118,
+    -size * 0.205,
+  );
+  context.closePath();
+}
+
+function traceWandSheathBandLight(context, size) {
+  context.beginPath();
+  context.moveTo(-size * 0.085, -size * 0.194);
+  context.bezierCurveTo(
+    -size * 0.036,
+    -size * 0.208,
     size * 0.045,
-    -size * 0.17,
-    size * 0.048,
-    size * 0.08,
-    size * 0.04,
-    size * 0.27,
+    -size * 0.205,
+    size * 0.084,
+    -size * 0.189,
   );
   context.bezierCurveTo(
-    size * 0.018,
-    size * 0.3,
-    -size * 0.018,
-    size * 0.3,
-    -size * 0.04,
-    size * 0.26,
+    size * 0.067,
+    -size * 0.175,
+    -size * 0.049,
+    -size * 0.177,
+    -size * 0.085,
+    -size * 0.194,
+  );
+  context.closePath();
+}
+
+function traceHolsteredWand(context, size, offsetX = 0, offsetY = 0) {
+  context.beginPath();
+  context.moveTo(offsetX - size * 0.04, offsetY + size * 0.26);
+  context.bezierCurveTo(
+    offsetX - size * 0.048,
+    offsetY + size * 0.08,
+    offsetX - size * 0.04,
+    offsetY - size * 0.24,
+    offsetX - size * 0.024,
+    offsetY - size * 0.455,
+  );
+  context.bezierCurveTo(
+    offsetX - size * 0.004,
+    offsetY - size * 0.477,
+    offsetX + size * 0.014,
+    offsetY - size * 0.473,
+    offsetX + size * 0.026,
+    offsetY - size * 0.448,
+  );
+  context.bezierCurveTo(
+    offsetX + size * 0.045,
+    offsetY - size * 0.19,
+    offsetX + size * 0.048,
+    offsetY + size * 0.08,
+    offsetX + size * 0.04,
+    offsetY + size * 0.27,
+  );
+  context.bezierCurveTo(
+    offsetX + size * 0.018,
+    offsetY + size * 0.3,
+    offsetX - size * 0.018,
+    offsetY + size * 0.3,
+    offsetX - size * 0.04,
+    offsetY + size * 0.26,
   );
   context.closePath();
 }
@@ -2199,13 +2704,13 @@ function traceWandWoodLight(context, size) {
     -size * 0.02,
     size * 0.01,
     -size * 0.017,
-    -size * 0.22,
+    -size * 0.27,
     -size * 0.006,
-    -size * 0.35,
+    -size * 0.425,
   );
   context.bezierCurveTo(
     size * 0.005,
-    -size * 0.3,
+    -size * 0.36,
     size * 0.008,
     -size * 0.01,
     size * 0.006,
@@ -2220,6 +2725,26 @@ function traceWandWoodLight(context, size) {
     size * 0.19,
   );
   context.closePath();
+}
+
+function drawWandCarving(context, size) {
+  context.save();
+  context.strokeStyle = '#5b372a';
+  context.lineWidth = Math.max(1, size * 0.012);
+  context.lineCap = 'round';
+  for (let index = 0; index < 3; index += 1) {
+    const y = -size * (0.31 + index * 0.052);
+    context.beginPath();
+    context.moveTo(-size * 0.025, y - size * 0.008);
+    context.quadraticCurveTo(
+      0,
+      y + (index % 2 ? size * 0.008 : -size * 0.005),
+      size * 0.025,
+      y + size * 0.006,
+    );
+    context.stroke();
+  }
+  context.restore();
 }
 
 function traceWandSpark(context, x, y, size, phase) {
