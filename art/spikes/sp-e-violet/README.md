@@ -147,7 +147,16 @@ not any existing actor or film character.
   WAVY strand-painted hair per the reference (M4), walk pair at the exact
   standing column height (M5), slight toe turnout (m1), rich warm never-pastel
   palette (m4).
-- Art Director verdict: pending at time of writing; recorded here when ruled.
+- Art Director verdict: **none — the sheet judge was cancelled by Pete
+  mid-run.** Sliced and shipped live 2026-07-14 under D51's best-available
+  rule on author pre-check: every axis the v3 verdict failed measurably
+  improved (separated legs, wavy reference-matched hair, straight arms,
+  pixel-identical glasses carried over), and the v1 parts it replaced had
+  strictly worse findings on file. `rects-v4.json` maps the slice; the
+  duplicate torso (the sheet painted two) and the mirror-lit second arm are
+  skipped — the rig mirrors the well-lit arm at runtime. Rig numbers retuned
+  for the v4 part dimensions (grounded feet, wider hip sockets, calmer leg
+  swing, raised head).
 
 ## v4 generation prompt
 

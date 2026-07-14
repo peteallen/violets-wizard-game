@@ -22,17 +22,18 @@ export const violetSpriteRig = new SpriteRig({
     legRight: legRightUrl,
   },
   sheetToWorld: 0.26,
+  // Numbers tuned for the v4 sheet's part dimensions (heads ~311×348,
+  // torso 221×254, legs 111×324, arm 68×294).
   rig: {
-    hipY: -232,
-    hipSpread: 30,
+    hipY: -248,
+    hipSpread: 44,
     waistOverlap: 46,
-    shoulderInset: 40,
-    shoulderDrop: 58,
-    neckOverlap: 64,
+    shoulderInset: 28,
+    shoulderDrop: 55,
+    neckOverlap: 44,
     backHairLift: 14,
   },
   shadow: { rx: 38, ry: 9 },
-  // Her sheet's arm is painted for the opposite side: without the flip the
-  // elbows point inward and the hands curl palm-out in front of the thighs.
-  armFlip: true,
+  motion: { legSwing: 0.13 },
+  armFlip: false,
 });

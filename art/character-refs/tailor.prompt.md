@@ -4,28 +4,44 @@ This is a style target for the Tailor's painted sprite parts (D48) and the
 identity source for every art-director judgment of her future part sheets.
 Reference-only material; never shipped by the game.
 
-## Current file (v2)
+## Current file (v1 — provisional identity anchor, D53)
 
-- Status: **under fresh art-director review (D49)** — accepted only on a PASS
-  verdict; this line is updated when the ruling lands
-- Generated: 2026-07-14
-- Workflow: OpenRouter Image API via the `openrouter-image` skill
-- Model identifier: `black-forest-labs/flux.2-pro` (same model-family switch
-  that cured the Wandmaker's craft findings; requested 16:9, FLUX returned
-  1024×1024 square)
-- Cost: $0.03
-- Reference images: none — text-to-image only
+- Status: **provisional identity anchor per D53** (second application, after
+  the Wandmaker). Part sheets judge IDENTITY and PALETTE against this sheet;
+  CRAFT is judged directly against the Storybook Standard and the room
+  paintings. Outstanding v1 craft findings remain on file below (mechanical
+  dot screen over airbrush, drawn contour lines, warm-only full-body
+  shadows); a true-PASS regeneration is deferred until the toolchain can win
+  that fight. Restored from `9d9ef56`.
+- Generated: 2026-07-13, `google/gemini-3.1-flash-image-preview`, $0.0695,
+  16:9 at 1K
 - File: `tailor.png`
-- SHA-256: `64dda62fdb9a3d5e16f8474d6c0396e489cbb4ec4bc34fe187bcc46caaae880d`
-- Prompt: v2 block below — the v1 verdict encoded: dense gouache with weave
-  in every tone and no dot screen (C1), edges modeled by paint value with no
-  drawn contours (M1), violet-blue shadow cooling named per surface on the
-  full-body figure (M2), the pincushion-side hand resting flat with thumb +
-  separated fingers (m1), symmetric narrow apron straps in both views (m2),
-  stance-sized contact shadow (m3), and the dress pigment ruled canon as
-  blue-leaning heather, never magenta plum (m4).
+- SHA-256: `a773196cb59007007f58079340f8a4714a3a3b1f620d7b10c9952d6f113b2af7`
+- What its ruling verified it locks: two-view single-skull identity (iris
+  ΔH ≤ 4°, catchlights upper-left in all four eyes), the full wardrobe kit —
+  tomato-red wrist pincushion, plum boots, apron with chalk and a
+  tick-marks-only ruler, heather-purple dress pigment agreeing across views
+  (ΔH < 3°, warmer than briefed; noted) — plus a warm motherly
+  6-year-old-safe read and clean hygiene.
 
 ## History
+
+- **v2** (`black-forest-labs/flux.2-pro`, $0.03, 1024×1024, SHA-256
+  `64dda62fdb9a3d5e16f8474d6c0396e489cbb4ec4bc34fe187bcc46caaae880d`,
+  committed at `2a5b4d3`-era): **FAILED D49 review — 3 CRITICAL, 5 MAJOR,
+  4 MINOR.** The model-family switch did not repeat its Wandmaker craft win
+  here: the judge measured outlined-drawing construction over airbrush fills
+  with synthetic 1px micrograin — corner DoG 0.64–0.71 vs the anchors'
+  1.07–1.66 — i.e. the medium itself failed (C2), and the wardrobe collapsed:
+  near-black ballet flats instead of plum boots (C1); a pale-blue,
+  polka-dotted, beribboned pincushion worn at MID-FOREARM instead of the
+  tomato-red wrist bracelet (C3); a waist-only apron with the straps painted
+  into the dress as purple seams, no pocket, no ruler (M1); unrequested gold
+  hoops, a buckled leather cuff with glyph-like hardware, and a ribbon bow
+  (M2); gold bloom at lower-left contradicting the catchlights with no rim
+  and no figure cooling (M3); mauve-magenta dress (M4); a soft-fist cuff-side
+  hand (M5). Its verdict recommended a three-lens panel for any future
+  first-acceptance re-roll.
 
 - **v1** (`google/gemini-3.1-flash-image-preview`, $0.0695, SHA-256
   `a773196cb59007007f58079340f8a4714a3a3b1f620d7b10c9952d6f113b2af7`,
