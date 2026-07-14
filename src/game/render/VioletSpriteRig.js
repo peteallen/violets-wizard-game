@@ -32,4 +32,7 @@ export const violetSpriteRig = new SpriteRig({
     backHairLift: 14,
   },
   shadow: { rx: 52, ry: 11 },
+  // Her sheet's arm is painted for the opposite side: without the flip the
+  // elbows point inward and the hands curl palm-out in front of the thighs.
+  armFlip: true,
 });

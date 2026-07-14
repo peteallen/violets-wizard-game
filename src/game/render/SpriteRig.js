@@ -14,13 +14,17 @@ export class SpriteRig {
    * @param {Object} [config.beckonPivot] — { x, y, mirror } pivot for the
    *   armBeckon part (fractions of the part box; the shoulder attach point).
    */
-  constructor({ partUrls, sheetToWorld, rig, shadow, motion = {}, beckonPivot = {} }) {
+  constructor({ partUrls, sheetToWorld, rig, shadow, motion = {}, beckonPivot = {}, armFlip = false }) {
     this.partUrls = partUrls;
     this.sheetToWorld = sheetToWorld;
     this.rig = rig;
     this.shadow = shadow;
     this.motion = { armRest: 0.05, armSwing: 0.22, legSwing: 0.18, ...motion };
     this.beckonPivot = { x: 0.4, y: 0, mirror: false, ...beckonPivot };
+    // The shared arm part has a chirality: elbows must point outward and
+    // hands rest beside the outer thighs. armFlip swaps which body side gets
+    // the mirrored copy for parts painted with the opposite handedness.
+    this.armFlip = armFlip;
     this.images = null;
     this.ready = false;
     this.failed = false;
@@ -103,7 +107,11 @@ export class SpriteRig {
     const armRest = this.motion.armRest;
     const shoulderY = torsoTop + this.rig.shoulderDrop * s;
     const shoulderX = (img.torso.naturalWidth * s) / 2 - this.rig.shoulderInset * s;
-    drawPart(img.arm, -shoulderX, shoulderY, { pivotX: 0.62, rotate: -armRest + armSwing, mirror: true });
+    drawPart(img.arm, -shoulderX, shoulderY, {
+      pivotX: this.armFlip ? 0.38 : 0.62,
+      rotate: -armRest + armSwing,
+      mirror: !this.armFlip,
+    });
     if (beckoning) {
       const beckonLift = Math.sin(time * 2.4 + phase) * 0.05;
       drawPart(img.armBeckon, shoulderX, shoulderY, {
@@ -113,7 +121,11 @@ export class SpriteRig {
         mirror: this.beckonPivot.mirror,
       });
     } else {
-      drawPart(img.arm, shoulderX, shoulderY, { pivotX: 0.62, rotate: armRest - armSwing * 0.8 });
+      drawPart(img.arm, shoulderX, shoulderY, {
+        pivotX: this.armFlip ? 0.38 : 0.62,
+        rotate: armRest - armSwing * 0.8,
+        mirror: this.armFlip,
+      });
     }
 
     const head = blinking ? img.headBlink : img.headOpen;
