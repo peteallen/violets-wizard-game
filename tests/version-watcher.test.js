@@ -5,7 +5,11 @@ import {
   shouldRevealVersionOffer,
   validateVersionPayload,
 } from '../src/game/core/VersionWatcher.js';
-import { createBuildIdentity, versionFilePlugin } from '../vite.config.js';
+import {
+  createBuildIdentity,
+  productionHtmlInputs,
+  versionFilePlugin,
+} from '../vite.config.js';
 
 const CURRENT_SHA = 'a'.repeat(40);
 const NEXT_SHA = 'b'.repeat(40);
@@ -21,6 +25,13 @@ async function nextTask() {
 }
 
 describe('deployed build identity', () => {
+  it('ships the deterministic review harness beside the playable game', () => {
+    expect(productionHtmlInputs()).toEqual({
+      game: expect.stringMatching(/\/index\.html$/),
+      harness: expect.stringMatching(/\/harness\.html$/),
+    });
+  });
+
   it('emits version.json from the same strict identity used by the bundle', () => {
     const identity = createBuildIdentity({ sha: CURRENT_SHA, builtAt: BUILT_AT });
     const emitFile = vi.fn();

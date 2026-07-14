@@ -18,6 +18,16 @@ const IMAGE_PATHS = Object.freeze({
   'cards/dumbledore/portrait': 'assets/art/cards/dumbledore.webp',
 });
 
+const CHARACTER_IMAGE_PATHS = Object.freeze({
+  'characters/violet/casual/neutral': 'assets/art/characters/violet/casual/neutral.png',
+  'characters/violet/casual/blink': 'assets/art/characters/violet/casual/blink.png',
+  'characters/violet/casual/talk-a': 'assets/art/characters/violet/casual/talk-a.png',
+  'characters/violet/casual/talk-b': 'assets/art/characters/violet/casual/talk-b.png',
+  'characters/violet/casual/wonder': 'assets/art/characters/violet/casual/wonder.png',
+  'characters/violet/casual/proud': 'assets/art/characters/violet/casual/proud.png',
+  'characters/violet/casual/curious': 'assets/art/characters/violet/casual/curious.png',
+});
+
 const AMBIENCE_ALIASES = Object.freeze({
   'ambience/ch1/bedroom': 'assets/audio/music/ch1/violetTheme.mp3',
   'ambience/ch1/leaky': 'assets/audio/music/ch1/violetTheme.mp3',
@@ -27,7 +37,7 @@ const AMBIENCE_ALIASES = Object.freeze({
 
 const allKeys = [...new Set([...chapter1AssetKeys, ...chapter2AssetKeys])];
 
-export const assetManifest = Object.freeze(Object.fromEntries(allKeys.map((key) => {
+const chapterAssetEntries = Object.fromEntries(allKeys.map((key) => {
   const chapter = key.includes('/ch2/') ? 'ch2' : 'ch1';
   if (IMAGE_PATHS[key]) return [key, Object.freeze({ path: IMAGE_PATHS[key], kind: 'image', chapter })];
   if (AMBIENCE_ALIASES[key]) return [key, Object.freeze({ path: AMBIENCE_ALIASES[key], kind: 'music', chapter, volume: 0.38 })];
@@ -35,7 +45,14 @@ export const assetManifest = Object.freeze(Object.fromEntries(allKeys.map((key) 
   if (key.startsWith('sfx/')) return [key, Object.freeze({ path: `assets/audio/${key}.mp3`, kind: 'sfx', chapter, volume: 0.8 })];
   if (key.startsWith('music/')) return [key, Object.freeze({ path: `assets/audio/${key}.mp3`, kind: 'music', chapter, volume: 0.55 })];
   throw new Error(`No manifest convention exists for asset key ${key}.`);
-})));
+}));
+
+const characterAssetEntries = Object.fromEntries(Object.entries(CHARACTER_IMAGE_PATHS).map(([key, path]) => [
+  key,
+  Object.freeze({ path, kind: 'image', chapter: 'ch1' }),
+]));
+
+export const assetManifest = Object.freeze({ ...chapterAssetEntries, ...characterAssetEntries });
 
 export function getAsset(key) {
   return assetManifest[key] ?? null;

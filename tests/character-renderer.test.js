@@ -81,7 +81,14 @@ describe('illustrated character renderer', () => {
   });
 
   it('draws every registered review surface deterministically without leaking canvas state', () => {
-    const renderer = new CharacterRenderer();
+    const renderer = new CharacterRenderer({
+      violetAlignedRig: {
+        draw(context, { x, y, scale }) {
+          context.fillRect(x - 20 * scale, y - 80 * scale, 40 * scale, 80 * scale);
+          return { expression: 'test' };
+        },
+      },
+    });
     for (const scene of CHARACTER_REVIEW_SCENES) {
       const first = recordingContext();
       const second = recordingContext();

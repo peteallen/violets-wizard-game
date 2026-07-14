@@ -179,6 +179,9 @@ registry
   .register('hagrid-sprite-review', createFixture(
     'Hold the code-drawn and painted-part Hagrids side by side on deterministic loops.',
   ))
+  .register('violet-expression-review', createFixture(
+    'Hold every approved aligned Violet expression without animation or input.',
+  ))
   .register('ui-dialogue-review', createFixture(
     'Hold the illustrated voiced-dialogue frame and replay control.',
   ))

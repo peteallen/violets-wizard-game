@@ -1,0 +1,56 @@
+{
+  "version": 1,
+  "id": "violet.casual.approved-expressions",
+  "canvas": {
+    "width": 896,
+    "height": 1200
+  },
+  "alpha": {
+    "maskSource": "neutral",
+    "opaqueCyanExcess": 20,
+    "transparentCyanExcess": 225,
+    "edgeSpillRadius": 8,
+    "edgeSpillOpaqueCyanExcess": -20,
+    "edgeSpillMaxGreenBlueDelta": 70,
+    "matteLowAlpha": 190,
+    "matteHighAlpha": 245,
+    "edgeColorRadius": 8
+  },
+  "variants": {
+    "neutral": {
+      "source": "art/characters/violet/canonical/casual-approved.png",
+      "sha256": "68e9871ceecc32b9fbf50cbf36eecbae226eb184ad5337f67bbca2e53266e033",
+      "output": "public/assets/art/characters/violet/casual/neutral.png"
+    },
+    "blink": {
+      "source": "art/characters/violet/expressions/blink.png",
+      "sha256": "995f433244851b2f4d5e0220c6f1ad2122e8abf71eb6ac440aaeb292a71a8158",
+      "output": "public/assets/art/characters/violet/casual/blink.png"
+    },
+    "talk-a": {
+      "source": "art/characters/violet/expressions/talk-a.png",
+      "sha256": "eec0fa6d2956d7d80a0b2de6e967130834957292eb872fe4a71dddb49b24eb93",
+      "output": "public/assets/art/characters/violet/casual/talk-a.png"
+    },
+    "talk-b": {
+      "source": "art/characters/violet/expressions/talk-b.png",
+      "sha256": "2da242a791e5607f827e15a39941dc2b9f3721df1f438359674bc5061b8d33b9",
+      "output": "public/assets/art/characters/violet/casual/talk-b.png"
+    },
+    "wonder": {
+      "source": "art/characters/violet/expressions/wonder.png",
+      "sha256": "a1c4968104d625ba170c77e41572288a65682b92789f210bc622fc37c2bc7eb9",
+      "output": "public/assets/art/characters/violet/casual/wonder.png"
+    },
+    "proud": {
+      "source": "art/characters/violet/expressions/proud-v2.png",
+      "sha256": "09e3aae3513e8d14f5344fb7a1d2f8988d45558f4308c7a70a0e0e4d84fdbc0b",
+      "output": "public/assets/art/characters/violet/casual/proud.png"
+    },
+    "curious": {
+      "source": "art/characters/violet/expressions/curious-v2.png",
+      "sha256": "c75a5f311c5bb52a0417a9a980a15346da584cb91798b36477847b6ecf40abf4",
+      "output": "public/assets/art/characters/violet/casual/curious.png"
+    }
+  }
+}

@@ -3,6 +3,10 @@ import { drawVectorOwl } from './OwlRenderer.js';
 import { STORYBOOK_INK, STORYBOOK_LINE_WEIGHT } from './storybookInk.js';
 import { violetSpriteRig } from './VioletSpriteRig.js';
 import { hagridSpriteRig } from './HagridSpriteRig.js';
+import {
+  violetAlignedSpriteManifest,
+  violetAlignedSpriteRig,
+} from './VioletAlignedSpriteRig.js';
 
 const OUTLINE = STORYBOOK_INK.primary;
 const DEEP_OUTLINE = STORYBOOK_INK.deep;
@@ -211,7 +215,12 @@ export const CHARACTER_REVIEW_SCENES = Object.freeze([
   'owl-motion-review',
   'character-sprite-spike-review',
   'hagrid-sprite-review',
+  'violet-expression-review',
 ]);
+
+export async function preloadCharacterReviewScene(scene) {
+  if (scene === 'violet-expression-review') await violetAlignedSpriteRig.preload();
+}
 
 export const OWL_RUNTIME_REVIEW_POSES = Object.freeze({
   post: Object.freeze(['perch', 'takeoff', 'delivery', 'flight', 'settle']),
@@ -258,6 +267,10 @@ const CHARACTER_COLORS = Object.freeze({
 });
 
 export class CharacterRenderer {
+  constructor({ violetAlignedRig = violetAlignedSpriteRig } = {}) {
+    this.violetAlignedRig = violetAlignedRig;
+  }
+
   draw(context, character, time = 0) {
     if (character.kind === 'violet') this.drawViolet(context, character, time);
     else this.drawNpc(context, character, time);
@@ -539,8 +552,75 @@ export class CharacterRenderer {
     else if (scene === 'character-portraits-review') this.drawPortraitReview(context, time);
     else if (scene === 'character-sprite-spike-review') this.drawSpriteSpikeReview(context, time);
     else if (scene === 'hagrid-sprite-review') this.drawHagridSpriteReview(context, time);
+    else if (scene === 'violet-expression-review') this.drawVioletExpressionReview(context);
     else this.drawOwlMotionReview(context, time, reducedMotion);
     return true;
+  }
+
+  drawVioletExpressionReview(context) {
+    const entries = [
+      ['Neutral', 'neutral'],
+      ['Blink', 'blink'],
+      ['Talk A', 'talk-a'],
+      ['Talk B', 'talk-b'],
+      ['Wonder', 'wonder'],
+      ['Proud', 'proud'],
+      ['Curious', 'curious'],
+    ];
+    const { ground } = violetAlignedSpriteManifest.canvas;
+    const portrait = violetAlignedSpriteManifest.bounds.portrait;
+    const portraitScale = Math.min(118 / portrait.width, 136 / portrait.height);
+    const portraitCenterX = portrait.x + portrait.width / 2;
+    const portraitCenterY = portrait.y + portrait.height / 2;
+
+    entries.forEach(([label, expression], index) => {
+      const x = 95 + index * (1090 / (entries.length - 1));
+      const portraitY = 210;
+      const turn = index % 2 ? -0.16 : 0.14;
+
+      context.save();
+      context.fillStyle = '#1d192a';
+      traceOrganicPatch(context, x, portraitY, 66, 78, turn);
+      context.fill();
+      context.save();
+      traceOrganicPatch(context, x, portraitY, 61, 72, turn);
+      context.clip();
+      context.fillStyle = index % 2 ? '#5a486b' : '#4d4265';
+      context.fillRect(x - 68, portraitY - 80, 136, 160);
+      this.violetAlignedRig.draw(context, {
+        appearance: 'casual',
+        pose: 'idle',
+        expression,
+        x: x - (portraitCenterX - ground.x) * portraitScale,
+        y: portraitY - (portraitCenterY - ground.y) * portraitScale,
+        scale: portraitScale,
+        facing: 'right',
+        lightSide: 'left',
+        shadow: false,
+      });
+      context.restore();
+      context.strokeStyle = '#d1a85e';
+      context.lineWidth = 3;
+      traceOrganicPatch(context, x, portraitY, 64, 76, turn);
+      context.stroke();
+      context.strokeStyle = 'rgba(255, 231, 174, 0.55)';
+      context.lineWidth = 1;
+      traceOrganicPatch(context, x - 1, portraitY - 1, 59, 70, -turn);
+      context.stroke();
+      context.restore();
+
+      drawReviewLabel(context, x, 670, label);
+      this.violetAlignedRig.draw(context, {
+        appearance: 'casual',
+        pose: 'idle',
+        expression,
+        x,
+        y: 625,
+        scale: 0.27,
+        facing: 'right',
+        lightSide: 'left',
+      });
+    });
   }
 
   drawSpriteSpikeReview(context, time) {
@@ -1045,6 +1125,7 @@ function drawReviewBackground(context, scene) {
     'owl-motion-review': 'Hero owl · pose and motion library',
     'character-sprite-spike-review': 'SP-E spike · code-drawn vs painted parts',
     'hagrid-sprite-review': 'SP-F · code-drawn vs painted Hagrid',
+    'violet-expression-review': 'Approved Violet · aligned expressions and portraits',
   };
   context.fillText(titles[scene], 640, 77);
   context.fillStyle = 'rgba(225,183,89,0.68)';

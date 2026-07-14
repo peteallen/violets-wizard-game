@@ -1,5 +1,6 @@
 import { defineConfig } from 'vite';
 import { execFileSync } from 'node:child_process';
+import { fileURLToPath } from 'node:url';
 
 const FULL_GIT_SHA = /^[a-f0-9]{40}$/;
 
@@ -35,6 +36,13 @@ export function versionFilePlugin(identity) {
   };
 }
 
+export function productionHtmlInputs() {
+  return Object.freeze({
+    game: fileURLToPath(new URL('./index.html', import.meta.url)),
+    harness: fileURLToPath(new URL('./harness.html', import.meta.url)),
+  });
+}
+
 export default defineConfig(() => {
   const identity = createBuildIdentity();
   return {
@@ -55,6 +63,9 @@ export default defineConfig(() => {
     },
     build: {
       target: 'es2022',
+      rollupOptions: {
+        input: productionHtmlInputs(),
+      },
     },
   };
 });

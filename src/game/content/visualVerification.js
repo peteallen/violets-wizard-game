@@ -185,6 +185,13 @@ const REVIEW_SCENE_ILLUSION_CHECKS = Object.freeze({
     'Part edges show no pale keying halo and no fragments of neighboring sheet parts; the beckoning arm raises from the shoulder without detaching or covering the face.',
     'Posture reads grounded and mighty at 2×: weight over the feet, level chin, the resting arm beside the coat, and every figure’s boot soles meet the top of their contact shadow with no lit gap — never hunched, floating, or knock-kneed.',
   ],
+  'violet-expression-review': [
+    'Exactly seven labeled Violet states appear as matched portrait and full-body pairs: neutral, blink, talk A, talk B, wonder, proud, and curious.',
+    'Every state retains the locked Violet identity and unchanged full-body silhouette: dark-green rectangular glasses, warm light-brown hair with attached wisps, warm brown eyes when open, purple-and-blue soccer jersey, dark leggings, and gray-purple trainers.',
+    'At portrait scale, blink closes both eyes naturally, talk A and talk B have distinct readable mouth shapes, and wonder, proud, and curious preserve their approved eye, brow, and mouth art without changing Violet’s identity.',
+    'The cyan source field is completely absent, with no turquoise fringe, clipped hair wisps, holes, or detached edge fragments at either review zoom.',
+    'All seven full figures share exact aligned-canvas registration, each receives exactly one figure-sized planted contact shadow, and all remain visually separated from their labels, portrait frames, and the outer gold frame.',
+  ],
 });
 
 // A fixture belongs here only when it renders no surface visible to Violet or an assisting grown-up.

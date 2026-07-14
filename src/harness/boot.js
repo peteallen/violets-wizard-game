@@ -2,6 +2,7 @@ import '../style.css';
 import { Game } from '../game/Game.js';
 import { loadGameFonts } from '../game/core/loadFonts.js';
 import { validateSaveV1 } from '../game/systems/Save.js';
+import { preloadCharacterReviewScene } from '../game/render/CharacterRenderer.js';
 import {
   ACTION_FIXTURE_IDS,
   cloneActionFixture,
@@ -207,6 +208,7 @@ export async function bootHarness({
   canvas.style.height = `${request.height}px`;
   targetWindow.__ready = false;
   await loadGameFonts(globalThis.document);
+  await preloadCharacterReviewScene(request.scene);
 
   let current = null;
 

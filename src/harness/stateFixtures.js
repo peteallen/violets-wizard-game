@@ -433,6 +433,10 @@ registry
     'hagrid-sprite-review',
     'The code-drawn Hagrid beside the painted sprite-part Hagrid, idle, walking, and beckoning.',
   ))
+  .register('violet-expression-review', characterReviewFixture(
+    'violet-expression-review',
+    'The owner-approved aligned Violet shown in every accepted neutral and facial-expression state, as both portraits and grounded full figures.',
+  ))
   .register('ui-dialogue-review', characterReviewFixture(
     'ui-dialogue-review',
     'The illustrated dialogue parchment, animated Hagrid cameo, short caption, and replay control.',

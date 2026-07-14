@@ -95,6 +95,7 @@ describe('state fixtures', () => {
       'owl-motion-review',
       'character-sprite-spike-review',
       'hagrid-sprite-review',
+      'violet-expression-review',
       'ui-dialogue-review',
       'ui-dialogue-night-review',
       'ui-dialogue-center-review',
@@ -175,7 +176,13 @@ describe('action fixtures', () => {
 
 describe('registered harness scenarios', () => {
   it('registers dedicated gameplay-scale review scenes for the cast, companions, portraits, and owl poses', () => {
-    for (const id of ['character-cast-review', 'character-pets-review', 'character-portraits-review', 'owl-motion-review']) {
+    for (const id of [
+      'character-cast-review',
+      'character-pets-review',
+      'character-portraits-review',
+      'owl-motion-review',
+      'violet-expression-review',
+    ]) {
       expect(STATE_FIXTURE_IDS).toContain(id);
       expect(ACTION_FIXTURE_IDS).toContain(id);
       expect(parseHarnessRequest(`?scene=${id}`)).toMatchObject({ scene: id, state: id, actions: id });
