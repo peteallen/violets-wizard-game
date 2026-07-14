@@ -279,12 +279,6 @@ export class CharacterRenderer {
       : kind === 'guide' && character.pose === 'speaking'
         ? 'beckoning'
         : 'idle';
-    context.save();
-    context.translate(character.x, character.y);
-    context.scale(direction * scale, scale);
-    prepare(context, kind === 'guide' ? 2.1 : 2.25);
-    drawGroundingShadow(context, kind);
-    context.restore();
     return rig.draw(context, {
       x: character.x,
       y: character.y,
@@ -293,7 +287,10 @@ export class CharacterRenderer {
       pose,
       time,
       phase: character.phase ?? 0,
-      shadow: false,
+      // The rig's own shadow is sized to its parts and painted before the
+      // bob translate, so it stays planted (D47) and never spills like the
+      // bezier-sized grounding ellipse did under painted characters.
+      shadow: true,
     });
   }
 

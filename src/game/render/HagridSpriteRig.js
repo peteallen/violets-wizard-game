@@ -26,7 +26,7 @@ export const hagridSpriteRig = new SpriteRig({
   },
   sheetToWorld: 0.41,
   rig: {
-    hipY: -340,
+    hipY: -320,
     hipSpread: 48,
     waistOverlap: 120,
     shoulderInset: 66,
@@ -34,7 +34,9 @@ export const hagridSpriteRig = new SpriteRig({
     neckOverlap: 95,
     backHairLift: 12,
   },
-  shadow: { rx: 84, ry: 15 },
+  shadow: { rx: 76, ry: 13 },
   motion: { armRest: 0.04, armSwing: 0.16, legSwing: 0.13 },
-  beckonPivot: { x: 0.85, y: 0.55 },
+  // The painted beckon part's shoulder is at its bottom-left; the forearm
+  // rises to the raised hand at top-right.
+  beckonPivot: { x: 0.12, y: 0.85 },
 });

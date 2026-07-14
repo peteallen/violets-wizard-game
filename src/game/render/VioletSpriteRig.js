@@ -23,7 +23,7 @@ export const violetSpriteRig = new SpriteRig({
   },
   sheetToWorld: 0.26,
   rig: {
-    hipY: -290,
+    hipY: -232,
     hipSpread: 30,
     waistOverlap: 46,
     shoulderInset: 40,
@@ -31,7 +31,7 @@ export const violetSpriteRig = new SpriteRig({
     neckOverlap: 64,
     backHairLift: 14,
   },
-  shadow: { rx: 52, ry: 11 },
+  shadow: { rx: 38, ry: 9 },
   // Her sheet's arm is painted for the opposite side: without the flip the
   // elbows point inward and the hands curl palm-out in front of the thighs.
   armFlip: true,

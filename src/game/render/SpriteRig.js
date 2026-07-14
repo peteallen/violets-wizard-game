@@ -67,11 +67,11 @@ export class SpriteRig {
     context.scale(direction * scale, scale);
 
     if (shadow) {
-      context.fillStyle = 'rgba(27, 18, 24, 0.28)';
+      context.fillStyle = 'rgba(27, 18, 24, 0.24)';
       context.beginPath();
       context.ellipse(2, 8, this.shadow.rx, this.shadow.ry, 0, 0, Math.PI * 2);
       context.fill();
-      context.fillStyle = 'rgba(45, 27, 22, 0.22)';
+      context.fillStyle = 'rgba(45, 27, 22, 0.17)';
       context.beginPath();
       context.ellipse(-1, 6.5, this.shadow.rx * 0.71, this.shadow.ry * 0.64, 0, 0, Math.PI * 2);
       context.fill();
