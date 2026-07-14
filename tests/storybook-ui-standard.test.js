@@ -1,6 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import {
+  drawParchmentAction,
+  drawReplayRibbon,
+  drawRibbonTab,
   drawStorybookSpread,
+  drawWaxMedallion,
   traceRoundedRect,
 } from '../src/game/render/uiPrimitives.js';
 import { drawDeckledParchment } from '../src/game/render/uiIllustrations.js';
@@ -177,5 +181,50 @@ describe('shared Storybook Standard paper surfaces', () => {
     }
     expect(assignedStyles(earned, 'fillStyle')).toContain('#6a4c35');
     expect(assignedStyles(locked, 'fillStyle')).toContain('#5a5264');
+  });
+
+  it('builds shared actions, tabs, replay ribbons, and wax seals from organic layered materials', () => {
+    const action = recordingContext();
+    const actionReplay = recordingContext();
+    const tab = recordingContext();
+    const replay = recordingContext();
+    const wax = recordingContext();
+    const actionRect = { x: 120, y: 180, width: 430, height: 118 };
+
+    drawParchmentAction(action, actionRect, { label: 'Hear the letter', detail: 'A safe detail' });
+    drawParchmentAction(actionReplay, actionRect, { label: 'Hear the letter', detail: 'A safe detail' });
+    drawRibbonTab(tab, { x: 180, y: 120, width: 230, height: 88 }, 'Play', { active: true });
+    drawReplayRibbon(replay, { x: 430, y: 18, width: 420, height: 88 });
+    drawWaxMedallion(wax, 90, 90, 42, '✓');
+
+    expect(action.calls).toEqual(actionReplay.calls);
+    expect(action.assignments).toEqual(actionReplay.assignments);
+    for (const [label, context, minimumCurves, minimumTones] of [
+      ['parchment action', action, 100, 10],
+      ['leather tab', tab, 60, 7],
+      ['replay ribbon', replay, 120, 10],
+      ['wax seal', wax, 70, 7],
+    ]) {
+      expect(context.calls.some(([name]) => [
+        ...FORBIDDEN_SURFACE_GEOMETRY,
+        'lineTo',
+        'setLineDash',
+      ].includes(name)), label).toBe(false);
+      expect(context.calls.filter(([name]) => name === 'quadraticCurveTo').length, label)
+        .toBeGreaterThanOrEqual(minimumCurves);
+      expect(new Set([
+        ...assignedStyles(context, 'fillStyle'),
+        ...assignedStyles(context, 'strokeStyle'),
+      ]).size, label)
+        .toBeGreaterThanOrEqual(minimumTones);
+      expect(numericArgumentsAreFinite(context.calls), label).toBe(true);
+      expect(context.depth, label).toBe(0);
+    }
+
+    expect(assignedStyles(action, 'fillStyle')).toEqual(expect.arrayContaining([
+      '#ead9b7',
+      'rgba(255,244,210,0.42)',
+      'rgba(93,58,39,0.18)',
+    ]));
   });
 });

@@ -13,6 +13,11 @@ const PAGE_GRAIN = Object.freeze([
   [0.62, 0.63, 0.22, -0.012], [0.73, 0.16, 0.16, 0.014], [0.79, 0.39, 0.14, -0.01],
   [0.71, 0.82, 0.21, 0.009],
 ]);
+const CONTROL_GRAIN = Object.freeze([
+  [0.08, 0.22, 0.2, -0.018], [0.17, 0.68, 0.14, 0.016], [0.29, 0.42, 0.19, -0.012],
+  [0.43, 0.78, 0.16, 0.014], [0.56, 0.19, 0.18, -0.015], [0.67, 0.54, 0.2, 0.012],
+  [0.79, 0.31, 0.13, -0.013], [0.84, 0.73, 0.1, 0.011],
+]);
 
 export function traceRoundedRect(context, x, y, width, height, radius) {
   const r = Math.max(0, Math.min(radius, width / 2, height / 2));
@@ -289,14 +294,15 @@ function drawOpenBookPage(context, x, y, width, height, side, fill) {
 
 export function drawRibbonTab(context, rect, label, { icon = '', active = false } = {}) {
   const { x, y, width, height } = rect;
+  const placed = {
+    x,
+    y: y + (active ? 0 : 7),
+    width,
+    height: height - (active ? 0 : 7),
+  };
   context.save();
-  context.fillStyle = active ? '#66405f' : '#8c765d';
-  traceRibbon(context, x, y + (active ? 0 : 7), width, height - (active ? 0 : 7));
-  context.fill();
-  context.strokeStyle = active ? PALETTE.interactive : '#5f4d3e';
-  context.lineWidth = active ? 5 : 3;
-  context.stroke();
-  context.fillStyle = active ? '#fff8e8' : '#30261f';
+  drawLeatherRibbonMaterial(context, placed, { active, phase: active ? 0.37 : 0.81 });
+  context.fillStyle = active ? '#f8e9c8' : '#30261f';
   context.textAlign = 'center';
   context.font = '700 25px "Andika", "Trebuchet MS", sans-serif';
   if (typeof icon === 'function') {
@@ -319,15 +325,29 @@ export function drawParchmentAction(context, rect, {
   context.save();
   context.globalAlpha = disabled ? 0.48 : 1;
 
-  context.fillStyle = '#8b6845';
+  context.fillStyle = 'rgba(47,30,31,0.38)';
   traceClippedCard(context, x + 5, y + 8, width, height);
   context.fill();
 
-  context.fillStyle = selected ? '#fff1c3' : '#ead9b7';
+  context.fillStyle = selected ? '#f2dfae' : '#ead9b7';
   traceClippedCard(context, x, y, width, height);
   context.fill();
+
+  context.save();
+  traceClippedCard(context, x + 3, y + 3, width - 6, height - 6);
+  context.clip();
+  drawControlPaperLight(context, rect, selected);
+  drawControlPaperShade(context, rect);
+  drawControlGrain(context, rect, selected ? 'rgba(116,77,40,0.16)' : 'rgba(111,75,43,0.13)');
+  context.restore();
+
   context.strokeStyle = selected ? PALETTE.interactive : '#8a6b44';
-  context.lineWidth = selected ? 6 : 4;
+  context.lineWidth = selected ? 6 : 4.2;
+  traceClippedCard(context, x, y, width, height);
+  context.stroke();
+  context.strokeStyle = selected ? 'rgba(255,242,193,0.62)' : 'rgba(121,82,45,0.38)';
+  context.lineWidth = 1.5;
+  traceClippedCard(context, x + 9, y + 8, width - 18, height - 16);
   context.stroke();
 
   const sealX = x + (compact ? 44 : 56);
@@ -365,14 +385,9 @@ export function drawStepper(context, { label, valueLabel, minusRect, plusRect })
 export function drawReplayRibbon(context, rect, label = 'Return') {
   const { x, y, width, height } = rect;
   context.save();
-  context.fillStyle = '#35233f';
-  traceRibbon(context, x, y, width, height);
-  context.fill();
-  context.strokeStyle = PALETTE.interactive;
-  context.lineWidth = 5;
-  context.stroke();
+  drawLeatherRibbonMaterial(context, rect, { active: true, phase: 1.27, replay: true });
   drawWaxMedallion(context, x + 52, y + height / 2, 31, '↩');
-  context.fillStyle = '#fff8e8';
+  context.fillStyle = '#f8e9c8';
   context.textAlign = 'center';
   context.font = '700 25px "Andika", "Trebuchet MS", sans-serif';
   context.fillText(label, x + width / 2 + 24, y + height / 2 + 9);
@@ -381,22 +396,29 @@ export function drawReplayRibbon(context, rect, label = 'Return') {
 
 export function drawWaxMedallion(context, x, y, radius, glyph, { danger = false } = {}) {
   context.save();
-  context.fillStyle = danger ? '#642a35' : WAX_DARK;
-  context.beginPath();
-  for (let index = 0; index < 16; index += 1) {
-    const angle = index * Math.PI / 8;
-    const r = radius * (index % 2 === 0 ? 1 : 0.88);
-    const px = x + Math.cos(angle) * r;
-    const py = y + Math.sin(angle) * r;
-    if (index === 0) context.moveTo(px, py);
-    else context.lineTo(px, py);
-  }
-  context.closePath();
+  context.fillStyle = 'rgba(40,24,30,0.36)';
+  traceWaxMedallion(context, x + radius * 0.09, y + radius * 0.12, radius, 0.63);
   context.fill();
+  context.fillStyle = danger ? '#642a35' : WAX_DARK;
+  traceWaxMedallion(context, x, y, radius, 0.19);
+  context.fill();
+
+  context.fillStyle = danger ? 'rgba(122,42,56,0.46)' : 'rgba(113,48,62,0.46)';
+  traceWaxShade(context, x, y, radius);
+  context.fill();
+  context.fillStyle = danger ? 'rgba(226,151,154,0.28)' : 'rgba(235,177,146,0.26)';
+  traceWaxLight(context, x, y, radius);
+  context.fill();
+
   context.strokeStyle = danger ? '#bd7580' : PALETTE.candle;
   context.lineWidth = 3;
+  traceWaxMedallion(context, x, y, radius, 0.19);
   context.stroke();
-  context.fillStyle = '#fff8e8';
+  context.strokeStyle = danger ? 'rgba(239,176,176,0.3)' : 'rgba(244,209,141,0.34)';
+  context.lineWidth = 1.3;
+  traceWaxMedallion(context, x, y, radius * 0.78, 0.91);
+  context.stroke();
+  context.fillStyle = '#f8e9c8';
   context.textAlign = 'center';
   if (typeof glyph === 'function') glyph(context, x, y, radius * 1.18);
   else {
@@ -429,29 +451,229 @@ function traceOpenBookPage(context, x, y, width, height, side) {
   context.closePath();
 }
 
-function traceRibbon(context, x, y, width, height) {
-  const notch = Math.min(18, height * 0.24);
+function drawControlPaperLight(context, rect, selected) {
+  const { x, y, width, height } = rect;
+  context.fillStyle = selected ? 'rgba(255,245,202,0.52)' : 'rgba(255,244,210,0.42)';
   context.beginPath();
-  context.moveTo(x + notch, y);
-  context.lineTo(x + width - notch, y);
-  context.lineTo(x + width, y + height / 2);
-  context.lineTo(x + width - notch, y + height);
-  context.lineTo(x + notch, y + height);
-  context.lineTo(x, y + height / 2);
+  context.moveTo(x - 4, y + height * 0.04);
+  context.bezierCurveTo(
+    x + width * 0.24,
+    y - 2,
+    x + width * 0.54,
+    y + height * 0.04,
+    x + width * 0.69,
+    y + height * 0.22,
+  );
+  context.bezierCurveTo(
+    x + width * 0.51,
+    y + height * 0.34,
+    x + width * 0.22,
+    y + height * 0.39,
+    x - 4,
+    y + height * 0.46,
+  );
   context.closePath();
+  context.fill();
+}
+
+function drawControlPaperShade(context, rect) {
+  const { x, y, width, height } = rect;
+  context.fillStyle = 'rgba(93,58,39,0.18)';
+  context.beginPath();
+  context.moveTo(x - 3, y + height * 0.7);
+  context.bezierCurveTo(
+    x + width * 0.31,
+    y + height * 0.63,
+    x + width * 0.68,
+    y + height * 0.82,
+    x + width + 4,
+    y + height * 0.61,
+  );
+  context.bezierCurveTo(
+    x + width + 3,
+    y + height * 0.86,
+    x + width * 0.72,
+    y + height + 5,
+    x - 3,
+    y + height + 2,
+  );
+  context.closePath();
+  context.fill();
+}
+
+function drawControlGrain(context, rect, color) {
+  const { x, y, width, height } = rect;
+  context.strokeStyle = color;
+  context.lineWidth = 1.15;
+  context.lineCap = 'round';
+  for (const [grainX, grainY, grainLength, grainBend] of CONTROL_GRAIN) {
+    const startX = x + width * grainX;
+    const startY = y + height * grainY;
+    const length = width * grainLength;
+    context.beginPath();
+    context.moveTo(startX, startY);
+    context.quadraticCurveTo(
+      startX + length * 0.47,
+      startY + height * grainBend,
+      startX + length,
+      startY + height * grainBend * 0.34,
+    );
+    context.stroke();
+  }
+}
+
+function drawLeatherRibbonMaterial(context, rect, { active = false, phase = 0, replay = false } = {}) {
+  const { x, y, width, height } = rect;
+  context.fillStyle = 'rgba(34,22,29,0.4)';
+  traceRibbon(context, x + 5, y + 8, width, height, phase + 0.31);
+  context.fill();
+
+  context.fillStyle = replay ? '#35233f' : active ? '#66405f' : '#80694f';
+  traceRibbon(context, x, y, width, height, phase);
+  context.fill();
+
+  context.save();
+  traceRibbon(context, x + 3, y + 3, width - 6, height - 6, phase + 0.17);
+  context.clip();
+  context.fillStyle = replay ? 'rgba(158,112,151,0.3)' : active ? 'rgba(191,139,171,0.27)' : 'rgba(229,187,123,0.26)';
+  context.beginPath();
+  context.moveTo(x - 4, y + height * 0.05);
+  context.bezierCurveTo(x + width * 0.28, y - 2, x + width * 0.59, y + 4, x + width * 0.72, y + height * 0.25);
+  context.bezierCurveTo(x + width * 0.49, y + height * 0.34, x + width * 0.19, y + height * 0.42, x - 4, y + height * 0.46);
+  context.closePath();
+  context.fill();
+  context.fillStyle = 'rgba(30,21,28,0.25)';
+  context.beginPath();
+  context.moveTo(x - 2, y + height * 0.69);
+  context.bezierCurveTo(x + width * 0.3, y + height * 0.62, x + width * 0.69, y + height * 0.82, x + width + 3, y + height * 0.66);
+  context.bezierCurveTo(x + width * 0.82, y + height * 1.03, x + width * 0.31, y + height * 0.96, x - 2, y + height + 3);
+  context.closePath();
+  context.fill();
+  drawControlGrain(context, rect, replay ? 'rgba(230,190,218,0.12)' : 'rgba(238,199,125,0.12)');
+  context.restore();
+
+  context.strokeStyle = active || replay ? PALETTE.interactive : '#5f4d3e';
+  context.lineWidth = active || replay ? 5 : 3.4;
+  traceRibbon(context, x, y, width, height, phase);
+  context.stroke();
+  context.strokeStyle = active || replay ? 'rgba(255,231,163,0.36)' : 'rgba(239,199,122,0.26)';
+  context.lineWidth = 1.3;
+  traceRibbon(context, x + 9, y + 8, width - 18, height - 16, phase + 0.43);
+  context.stroke();
+}
+
+function traceRibbon(context, x, y, width, height, phase = 0) {
+  const notch = Math.min(18, height * 0.24);
+  const wobble = Math.sin(phase * 3.7) * Math.min(2.4, height * 0.035);
+  traceSoftClosedPath(context, [
+    [x + notch * 0.82, y + 1 + wobble * 0.2],
+    [x + width * 0.29, y - 1 - wobble],
+    [x + width * 0.66, y + 2 + wobble * 0.5],
+    [x + width - notch * 0.68, y + 0.5 - wobble * 0.2],
+    [x + width + 1, y + height * 0.4],
+    [x + width - 2, y + height * 0.6 + wobble * 0.2],
+    [x + width - notch * 1.06, y + height - 1],
+    [x + width * 0.7, y + height + 1 + wobble * 0.3],
+    [x + width * 0.34, y + height - 2 - wobble * 0.4],
+    [x + notch * 0.72, y + height + 1],
+    [x - 1, y + height * 0.57],
+    [x + 2, y + height * 0.38 - wobble * 0.2],
+  ]);
 }
 
 function traceClippedCard(context, x, y, width, height) {
   const cut = Math.min(18, height * 0.18);
+  const wobble = Math.min(2.8, height * 0.035);
+  traceSoftClosedPath(context, [
+    [x + cut * 0.83, y + 1],
+    [x + width * 0.28, y - wobble * 0.55],
+    [x + width * 0.61, y + wobble * 0.72],
+    [x + width - cut * 0.77, y],
+    [x + width + wobble * 0.22, y + cut * 0.88],
+    [x + width - wobble * 0.45, y + height * 0.44],
+    [x + width + wobble * 0.16, y + height - cut * 0.93],
+    [x + width - cut * 1.08, y + height - 1],
+    [x + width * 0.69, y + height + wobble * 0.46],
+    [x + width * 0.31, y + height - wobble * 0.58],
+    [x + cut * 0.91, y + height],
+    [x - wobble * 0.2, y + height - cut * 1.07],
+    [x + wobble * 0.48, y + height * 0.57],
+    [x - wobble * 0.12, y + cut * 0.82],
+  ]);
+}
+
+function traceWaxMedallion(context, x, y, radius, phase) {
+  const points = [];
+  for (let index = 0; index < 18; index += 1) {
+    const angle = (index * Math.PI) / 9;
+    const ripple = 0.9 + ((index * 7) % 5) * 0.022 + Math.sin(phase + index * 1.73) * 0.028;
+    points.push([
+      x + Math.cos(angle) * radius * ripple,
+      y + Math.sin(angle) * radius * ripple,
+    ]);
+  }
+  traceSoftClosedPath(context, points);
+}
+
+function traceWaxLight(context, x, y, radius) {
   context.beginPath();
-  context.moveTo(x + cut, y);
-  context.lineTo(x + width - cut, y);
-  context.lineTo(x + width, y + cut);
-  context.lineTo(x + width, y + height - cut);
-  context.lineTo(x + width - cut, y + height);
-  context.lineTo(x + cut, y + height);
-  context.lineTo(x, y + height - cut);
-  context.lineTo(x, y + cut);
+  context.moveTo(x - radius * 0.62, y - radius * 0.2);
+  context.bezierCurveTo(
+    x - radius * 0.51,
+    y - radius * 0.69,
+    x + radius * 0.08,
+    y - radius * 0.82,
+    x + radius * 0.39,
+    y - radius * 0.48,
+  );
+  context.bezierCurveTo(
+    x + radius * 0.06,
+    y - radius * 0.38,
+    x - radius * 0.27,
+    y - radius * 0.13,
+    x - radius * 0.62,
+    y - radius * 0.2,
+  );
+  context.closePath();
+}
+
+function traceWaxShade(context, x, y, radius) {
+  context.beginPath();
+  context.moveTo(x - radius * 0.68, y + radius * 0.36);
+  context.bezierCurveTo(
+    x - radius * 0.14,
+    y + radius * 0.53,
+    x + radius * 0.43,
+    y + radius * 0.33,
+    x + radius * 0.73,
+    y + radius * 0.16,
+  );
+  context.bezierCurveTo(
+    x + radius * 0.62,
+    y + radius * 0.72,
+    x - radius * 0.25,
+    y + radius * 0.86,
+    x - radius * 0.68,
+    y + radius * 0.36,
+  );
+  context.closePath();
+}
+
+function traceSoftClosedPath(context, points) {
+  const previous = points.at(-1);
+  const first = points[0];
+  context.beginPath();
+  context.moveTo((previous[0] + first[0]) / 2, (previous[1] + first[1]) / 2);
+  for (let index = 0; index < points.length; index += 1) {
+    const point = points[index];
+    const next = points[(index + 1) % points.length];
+    context.quadraticCurveTo(
+      point[0],
+      point[1],
+      (point[0] + next[0]) / 2,
+      (point[1] + next[1]) / 2,
+    );
+  }
   context.closePath();
 }
 
