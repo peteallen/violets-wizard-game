@@ -53,7 +53,18 @@ agent (docs/ART_DIRECTOR.md) BEFORE slicing.
   other, the walk pair at the standing column height, the blink head changed
   only at the eyelids, finger-width clearances with no bbox overlaps, and
   warm reddish (never gray) browns.
-- Art Director verdict: pending at time of writing; recorded here when ruled.
+- **Art Director verdict: FAIL — 2 CRITICAL, 5 MAJOR, 6 MINOR. Never
+  sliced.** A complete left arm with a finished five-finger hand is baked
+  into the "sleeveless" torso, plus a sleeve-cap lobe on its right shoulder
+  (C1); torso breadth 1.93 head-widths vs the ~2.4–2.5 identity silhouette
+  (C2); blink head is a whole-face redraw — 74% of changed pixels fall
+  OUTSIDE the eye band (M1; eye-rect graft viable at slice time); standing
+  legs flip-IoU only 0.755 with the right foot turned out twice as far (M2)
+  and the right leg lit from the wrong side (M3); walk-pair lead leg 13%
+  short at the hip (M4); palette −20 to −34 saturation vs the reference on
+  every leather (M5). Keepers measured clean: both arms (beckon standalone,
+  −3% length delta), heads, mane, left leg, two-buckle boot consistency,
+  coat/trouser color continuity, zero bbox overlaps.
 
 ## v1 generation prompt
 
@@ -204,4 +215,81 @@ with toe touching, same wide espresso trousers, same two-buckle boots. Every
 trouser leg is thick and wide to match the trousers on the torso. Hair, mane, 
 and beard are soft shaded masses with interior strand groupings. Original 
 character design, not any existing actor or film character.
+```
+
+## sheet-v4.png
+
+- Generated 2026-07-13 via OpenRouter, `google/gemini-3.1-flash-image-preview`
+  (model upgraded from lite after three structural failures — the same upgrade
+  that fixed the Wandmaker reference tier and Violet's fused legs), cost
+  $0.0677, 16:9 at 1K → 1376×768. `sheet-v4-clean.png` is the sips-normalized
+  PNG.
+- Prompt: fourth block below — every v3 finding encoded, plus a tactic
+  change for the repeat offender: the torso is described as an EMPTY GARMENT
+  on an invisible mannequin with closed side seams (C1), colossal at 2.5
+  head-widths and wider than both heads side by side (C2); the right leg is
+  "painted separately, never a copied flip, lit from the same upper left"
+  (M2/M3); the walk pair keeps BOTH legs full hip height (M4); saturated
+  candlelit values on every leather (M5); cuffs locked to coat brown (m4);
+  hand-width clearances (m6).
+- Art Director verdict: pending at time of writing; recorded here when ruled.
+
+## v4 generation prompt
+
+```text
+Children's storybook illustration, FULLY PAINTED dense gouache and watercolor 
+with soft painted edges, gentle paper texture, RICH DEEP SATURATED color 
+values: reddish chocolate browns, deep bottle greens, wine-dark plum, glowing 
+like a candlelit oil painting — never washed out, never dusty, never gray, 
+never pastel. ONE warm key light from the UPPER LEFT on EVERY single part: 
+every part's highlight side is its left side and its soft cool shadow side is 
+its right side — including BOTH arms and BOTH legs; never mirrored lighting. A 
+cutout puppet part sheet for ONE character, laid out like a paper-doll kit in 
+a neat grid on a plain flat pale-cream background, EXACTLY NINE separate 
+parts and nothing else — no duplicate parts, no back views, no props; every 
+part fully separated with at least a hand-width of empty background between 
+any two parts, no overlapping, all parts at one consistent scale, no drop 
+shadows, no text. The character: an original gentle half-giant groundskeeper, 
+enormous and mighty but friendly, with a wild dark-chocolate-brown mane, full 
+bushy dark-brown beard and moustache with a visible warm smile, twinkling 
+warm brown eyes under heavy brows, big bulbous nose, rosy weathered cheeks. 
+SHARED SWATCHES used identically wherever they appear: coat = deep saturated 
+weathered chocolate brown with stitched patches, and every sleeve cuff in the 
+same coat brown; trousers = dark espresso brown; boots = ONE single design, 
+deep umber leather with TWO brass buckles; hair, mane, and beard = one warm 
+very dark brown. The nine parts: (1) head with face: eyes OPEN, beard and 
+moustache attached, shaggy dark fringe; (2) the IDENTICAL head with eyes 
+gently closed — an exact copy of part 1 changed ONLY at the eyelids: identical 
+hair strands, identical fringe, identical beard, identical brows, identical 
+nose, identical mouth, identical outline, identical size; (3) the 
+back-of-mane alone: a HUGE wild warm dark-brown hair mass, MUCH wider and 
+MUCH taller than the head parts; (4) his COLOSSAL torso, shaped like an EMPTY 
+GARMENT with nobody inside: the long deep-brown patched overcoat with brass 
+toggles, open over a deep-green waistcoat and a wine-dark plum scarf, wide 
+espresso trousers showing between the coat flaps at the bottom hem, a short 
+skin neck stub at the collar — and ABSOLUTELY NO SLEEVES, NO CUFFS, NO HANDS, 
+NO ARMS anywhere on this piece: both sides of the coat end in clean smooth 
+closed side seams, like a giant coat displayed empty on an invisible 
+mannequin. This torso is BY FAR the biggest part on the sheet: a wide 
+mountain of coat TWO AND A HALF HEAD-WIDTHS across, wider than both head 
+parts placed side by side — if it does not look almost too wide, it is too 
+narrow; (5) one complete arm from SHOULDER to fingertips hanging STRAIGHT 
+DOWN, deep-brown coat sleeve with a wide folded cuff in exactly the coat's 
+brown, ending in a huge thick-fingered hand, fingers together, visible thumb; 
+(6) a second complete arm from SHOULDER to fingertips, EXACTLY the same 
+length as part 5, floating alone attached to NOTHING: bent at the elbow, big 
+open hand RAISED at head height, palm out, fingers up, a friendly follow-me 
+wave, painted with its own upper-left light; (7) his LEFT standing leg from 
+hip to foot, straight and vertical, a wide espresso trouser column, the 
+two-buckle boot planted FLAT, toe turned about 30 degrees toward the LEFT 
+edge; (8) his RIGHT standing leg, painted separately — same trouser width, 
+same boot design, same length, the same 30-degree turnout toward the RIGHT 
+edge, and lit from the SAME upper left as every other part (highlight on its 
+left side), never a copied flip; (9) a walking pair: BOTH legs full length 
+from the SAME hip height as parts 7 and 8 down to the floor, both feet 
+pointing the same travel direction, the LEADING foot planted completely FLAT, 
+the TRAILING heel lifted with toe touching, same espresso trousers, same 
+two-buckle boots. Hair, mane, and beard are soft shaded masses with interior 
+strand groupings. Original character design, not any existing actor or film 
+character.
 ```
