@@ -293,7 +293,9 @@ describe('adaptive dialogue card', () => {
     expect(first.texts.some((text) => text.includes('Tap the page'))).toBe(false);
     expect(first.calls).toEqual(second.calls);
     expect(first.assignments).toEqual(second.assignments);
-    expect(first.calls.filter(([name]) => name === 'clip')).toHaveLength(1);
+    // One clip belongs to the single parchment material and one to the wax
+    // replay seal; there is still no nested caption panel.
+    expect(first.calls.filter(([name]) => name === 'clip')).toHaveLength(2);
     expect(first.calls.some(([name]) => name === 'rotate')).toBe(false);
   });
 

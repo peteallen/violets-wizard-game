@@ -64,7 +64,7 @@ describe('illustrated interface primitives', () => {
   it('draws every authored choice icon deterministically without text glyph stand-ins', () => {
     const icons = [
       'owl', 'cat', 'toad', 'wand', 'eyes', 'map', 'cards', 'replay', 'quill', 'satchel',
-      'quest', 'close', 'check', 'speaker', 'name-biscuit', 'name-pip', 'name-star',
+      'quest', 'close', 'check', 'speaker', 'name-biscuit', 'name-pip', 'name-custom', 'name-star',
       'heart', 'rose', 'circle', 'star',
     ];
     for (const icon of icons) {
@@ -83,6 +83,7 @@ describe('illustrated interface primitives', () => {
     const icons = [
       'speaker', 'check', 'map', 'cards', 'close', 'replay', 'quill',
       'owl', 'cat', 'toad', 'wand', 'eyes', 'satchel', 'quest',
+      'name-biscuit', 'name-pip', 'name-custom',
     ];
     const forbiddenGeometry = new Set([
       'arc', 'arcTo', 'ellipse', 'lineTo', 'rect', 'roundRect', 'setLineDash',
@@ -134,6 +135,36 @@ describe('illustrated interface primitives', () => {
       expect(first.calls.filter(([method]) => method === 'save').length, icon)
         .toBe(first.calls.filter(([method]) => method === 'restore').length);
       expect(first.depth, `${icon} should restore Canvas state`).toBe(0);
+    }
+  });
+
+  it('pools wax controls from layered curves instead of straight-edged polygons', () => {
+    const forbiddenGeometry = new Set([
+      'arc', 'arcTo', 'ellipse', 'lineTo', 'rect', 'roundRect', 'setLineDash',
+    ]);
+    const variants = [
+      ['close', {}],
+      ['speaker', { danger: true }],
+      ['owl', { selected: true }],
+    ];
+
+    for (const [icon, options] of variants) {
+      const first = recordingContext();
+      const second = recordingContext();
+      drawWaxIcon(first, 80, 80, 38, icon, options);
+      drawWaxIcon(second, 80, 80, 38, icon, options);
+
+      expect(first.calls, `${icon} seal geometry should be deterministic`).toEqual(second.calls);
+      expect(first.propertyWrites, `${icon} seal palette should be deterministic`)
+        .toEqual(second.propertyWrites);
+      expect(first.calls.some(([method]) => forbiddenGeometry.has(method)), icon).toBe(false);
+      expect(first.calls.filter(([method]) => method === 'quadraticCurveTo').length, icon)
+        .toBeGreaterThan(50);
+      expect(first.calls.filter(([method]) => method === 'fill').length, icon)
+        .toBeGreaterThanOrEqual(6);
+      expect(first.calls.filter(([method]) => method === 'stroke').length, icon)
+        .toBeGreaterThanOrEqual(3);
+      expect(first.depth, `${icon} seal should restore Canvas state`).toBe(0);
     }
   });
 

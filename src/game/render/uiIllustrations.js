@@ -28,6 +28,12 @@ const KEYHOLE_PROGRESS_MARKS = Object.freeze([
   [0.04, -0.46, -1.66, 0.91], [0.25, -0.38, -1.9, 1.08], [0.39, -0.21, -2.14, 0.93],
   [0.44, 0.02, -2.31, 1.05], [0.36, 0.25, -2.55, 0.96], [0.2, 0.39, -2.82, 1.03],
 ]);
+const WAX_EDGE_PROFILE = Object.freeze([
+  [1.02, -0.022], [0.93, 0.018], [1.05, -0.014], [0.9, 0.026],
+  [1.01, -0.019], [0.95, 0.012], [1.07, -0.027], [0.92, 0.021],
+  [1.03, -0.011], [0.91, 0.025], [1.06, -0.018], [0.94, 0.014],
+  [1, -0.024], [0.9, 0.019], [1.04, -0.013],
+]);
 
 export function traceDeckledRect(context, x, y, width, height, depth = 7) {
   const top = [0, 0.16, -0.08, 0.12, -0.05, 0.1, 0];
@@ -874,26 +880,103 @@ function traceSoftLoop(context, points) {
   context.closePath();
 }
 
+function traceOrganicWaxSeal(context, x, y, radius, phase = 0) {
+  const points = WAX_EDGE_PROFILE.map(([radiusScale, angleDrift], index) => {
+    const angle = -Math.PI / 2
+      + (index * TAU) / WAX_EDGE_PROFILE.length
+      + angleDrift
+      + Math.sin(phase + index * 1.37) * 0.009;
+    const softenedRipple = Math.sin(phase * 2.3 + index * 1.91) * 0.014;
+    return {
+      x: x + Math.cos(angle) * radius * (radiusScale + softenedRipple),
+      y: y + Math.sin(angle) * radius * (radiusScale - softenedRipple * 0.38),
+    };
+  });
+  traceSoftLoop(context, points);
+}
+
+function traceWaxSealShade(context, x, y, radius) {
+  context.beginPath();
+  context.moveTo(x + radius * 0.76, y - radius * 0.22);
+  context.bezierCurveTo(
+    x + radius * 0.9,
+    y + radius * 0.17,
+    x + radius * 0.58,
+    y + radius * 0.76,
+    x + radius * 0.08,
+    y + radius * 0.86,
+  );
+  context.bezierCurveTo(
+    x + radius * 0.31,
+    y + radius * 0.54,
+    x + radius * 0.42,
+    y + radius * 0.08,
+    x + radius * 0.76,
+    y - radius * 0.22,
+  );
+  context.closePath();
+}
+
+function traceWaxSealLight(context, x, y, radius) {
+  context.beginPath();
+  context.moveTo(x - radius * 0.73, y - radius * 0.08);
+  context.bezierCurveTo(
+    x - radius * 0.58,
+    y - radius * 0.65,
+    x + radius * 0.04,
+    y - radius * 0.82,
+    x + radius * 0.42,
+    y - radius * 0.5,
+  );
+  context.bezierCurveTo(
+    x + radius * 0.04,
+    y - radius * 0.54,
+    x - radius * 0.38,
+    y - radius * 0.23,
+    x - radius * 0.73,
+    y - radius * 0.08,
+  );
+  context.closePath();
+}
+
 export function drawWaxIcon(context, x, y, radius, icon, {
   danger = false,
   selected = false,
   iconColor = '#fff8e8',
 } = {}) {
   context.save();
-  context.fillStyle = danger ? '#642a35' : selected ? '#5e365d' : '#4d2430';
-  context.beginPath();
-  for (let index = 0; index < 20; index += 1) {
-    const angle = (index * Math.PI) / 10;
-    const ripple = index % 2 === 0 ? 1 : index % 4 === 1 ? 0.88 : 0.93;
-    const px = x + Math.cos(angle) * radius * ripple;
-    const py = y + Math.sin(angle) * radius * ripple;
-    if (index === 0) context.moveTo(px, py);
-    else context.lineTo(px, py);
-  }
-  context.closePath();
+  context.fillStyle = 'rgba(40, 24, 30, 0.38)';
+  traceOrganicWaxSeal(context, x + radius * 0.09, y + radius * 0.12, radius, 0.71);
   context.fill();
-  context.strokeStyle = danger ? '#d1848f' : BRASS_LIGHT;
+
+  context.fillStyle = danger ? '#642a35' : selected ? '#5e365d' : '#4d2430';
+  traceOrganicWaxSeal(context, x, y, radius, 0.23);
+  context.fill();
+
+  context.save();
+  traceOrganicWaxSeal(context, x, y, radius, 0.23);
+  context.clip();
+  context.fillStyle = danger
+    ? 'rgba(66, 20, 31, 0.5)'
+    : selected ? 'rgba(54, 29, 50, 0.48)' : 'rgba(48, 20, 29, 0.5)';
+  traceWaxSealShade(context, x, y, radius);
+  context.fill();
+  context.fillStyle = danger
+    ? 'rgba(234, 158, 163, 0.28)'
+    : selected ? 'rgba(229, 174, 213, 0.24)' : 'rgba(239, 181, 148, 0.25)';
+  traceWaxSealLight(context, x, y, radius);
+  context.fill();
+  context.restore();
+
+  context.strokeStyle = danger ? '#d1848f' : selected ? '#d3a0c5' : BRASS_LIGHT;
   context.lineWidth = Math.max(2, radius * 0.09);
+  traceOrganicWaxSeal(context, x, y, radius, 0.23);
+  context.stroke();
+  context.strokeStyle = danger
+    ? 'rgba(239, 176, 176, 0.34)'
+    : selected ? 'rgba(239, 194, 225, 0.32)' : 'rgba(244, 209, 141, 0.34)';
+  context.lineWidth = Math.max(1.1, radius * 0.04);
+  traceOrganicWaxSeal(context, x, y, radius * 0.77, 1.03);
   context.stroke();
   drawVectorIcon(context, icon, x, y, radius * 1.22, { color: iconColor, secondary: BRASS_LIGHT });
   context.restore();
@@ -928,7 +1011,8 @@ export function drawVectorIcon(context, icon, x, y, size, {
   else if (normalized === 'close') drawCloseIcon(context, color, secondary);
   else if (normalized === 'check') drawCheckIcon(context, color, secondary);
   else if (normalized === 'speaker') drawSpeakerIcon(context, color, secondary);
-  else if (normalized === 'name') drawNameIcon(context, color, secondary);
+  else if (normalized === 'biscuit' || normalized === 'name') drawBiscuitIcon(context, color, secondary);
+  else if (normalized === 'pip') drawPipIcon(context, color, secondary);
   else if (normalized === 'heart') drawHeartIcon(context, color);
   else if (normalized === 'rose') drawRoseIcon(context, color, secondary);
   else if (normalized === 'circle') drawOrbIcon(context, color, secondary);
@@ -2810,8 +2894,9 @@ function traceEmptyHolsterMark(context, size) {
 
 function normalizeIcon(icon) {
   const value = String(icon ?? '').toLowerCase();
-  if (value === 'name-biscuit') return 'name';
-  if (value === 'name-pip') return 'circle';
+  if (value === 'name-biscuit') return 'biscuit';
+  if (value === 'name-pip') return 'pip';
+  if (value === 'name-custom') return 'quill';
   if (value === 'name-star') return 'star';
   if (value.includes('owl')) return 'owl';
   if (value.includes('cat')) return 'cat';
@@ -2827,7 +2912,9 @@ function normalizeIcon(icon) {
   if (value.includes('close') || value === '×') return 'close';
   if (value.includes('check') || value === '✓') return 'check';
   if (value.includes('speaker') || value.includes('listen')) return 'speaker';
-  if (value.includes('biscuit') || value.includes('name')) return 'name';
+  if (value.includes('biscuit')) return 'biscuit';
+  if (value === 'pip') return 'pip';
+  if (value.includes('name')) return 'name';
   if (value === 'rose' || value.includes('heart')) return 'heart';
   if (value === 'teal' || value === 'circle') return 'circle';
   return value;
@@ -3813,26 +3900,168 @@ function drawSpeakerIcon(context, color, secondary) {
   context.fill();
 }
 
-function drawNameIcon(context, color, secondary) {
+function traceBiscuitShape(context, offsetX = 0, offsetY = 0) {
+  traceSoftLoop(context, [
+    { x: 1 + offsetX, y: -44 + offsetY },
+    { x: 18 + offsetX, y: -42 + offsetY },
+    { x: 34 + offsetX, y: -31 + offsetY },
+    { x: 42 + offsetX, y: -15 + offsetY },
+    { x: 40 + offsetX, y: 2 + offsetY },
+    { x: 44 + offsetX, y: 18 + offsetY },
+    { x: 31 + offsetX, y: 34 + offsetY },
+    { x: 14 + offsetX, y: 42 + offsetY },
+    { x: -5 + offsetX, y: 40 + offsetY },
+    { x: -23 + offsetX, y: 43 + offsetY },
+    { x: -38 + offsetX, y: 29 + offsetY },
+    { x: -43 + offsetX, y: 10 + offsetY },
+    { x: -40 + offsetX, y: -11 + offsetY },
+    { x: -32 + offsetX, y: -29 + offsetY },
+    { x: -16 + offsetX, y: -40 + offsetY },
+  ]);
+}
+
+function drawBiscuitIcon(context, color, secondary) {
+  context.fillStyle = 'rgba(74, 48, 38, 0.38)';
+  traceBiscuitShape(context, 4, 5);
+  context.fill();
+
   context.fillStyle = secondary;
-  context.beginPath();
-  context.ellipse(0, 0, 39, 30, 0.2, 0, Math.PI * 2);
+  traceBiscuitShape(context);
   context.fill();
   context.strokeStyle = color;
+  context.lineWidth = 5;
   context.stroke();
-  context.lineWidth = 4;
+
+  context.fillStyle = 'rgba(255, 237, 187, 0.66)';
   context.beginPath();
-  context.moveTo(-24, -7);
-  context.quadraticCurveTo(0, -22, 24, -4);
-  context.moveTo(-27, 7);
-  context.quadraticCurveTo(0, -8, 27, 10);
-  context.stroke();
-  for (const spot of [[-16, 14], [10, 15], [18, -15], [-4, -13]]) {
-    context.fillStyle = color;
-    context.beginPath();
-    context.arc(spot[0], spot[1], 3, 0, Math.PI * 2);
+  context.moveTo(-31, -20);
+  context.bezierCurveTo(-19, -34, 4, -38, 20, -29);
+  context.bezierCurveTo(8, -23, -10, -15, -28, -8);
+  context.quadraticCurveTo(-34, -12, -31, -20);
+  context.closePath();
+  context.fill();
+
+  const crumbs = [
+    [-17, 14, 6, 5, 0.12], [9, 17, 5.5, 6.5, 0.38],
+    [21, -12, 5, 4.5, 0.71], [-5, -11, 4.5, 5, 1.04],
+  ];
+  for (let index = 0; index < crumbs.length; index += 1) {
+    const [crumbX, crumbY, radiusX, radiusY, phase] = crumbs[index];
+    context.fillStyle = index % 2 === 0 ? ICON_SHADOW : ICON_MID;
+    traceOrganicOval(context, crumbX, crumbY, radiusX, radiusY, phase);
     context.fill();
   }
+
+  context.strokeStyle = 'rgba(102, 70, 43, 0.72)';
+  context.lineWidth = 2.8;
+  context.beginPath();
+  context.moveTo(-27, 5);
+  context.quadraticCurveTo(-20, 1, -14, 3);
+  context.moveTo(18, 3);
+  context.quadraticCurveTo(23, 7, 27, 13);
+  context.stroke();
+}
+
+function tracePipSeed(context, offsetX = 0, offsetY = 0) {
+  context.beginPath();
+  context.moveTo(4 + offsetX, -18 + offsetY);
+  context.bezierCurveTo(
+    29 + offsetX,
+    -12 + offsetY,
+    39 + offsetX,
+    12 + offsetY,
+    27 + offsetX,
+    31 + offsetY,
+  );
+  context.bezierCurveTo(
+    16 + offsetX,
+    47 + offsetY,
+    -12 + offsetX,
+    46 + offsetY,
+    -27 + offsetX,
+    31 + offsetY,
+  );
+  context.bezierCurveTo(
+    -42 + offsetX,
+    15 + offsetY,
+    -31 + offsetX,
+    -9 + offsetY,
+    4 + offsetX,
+    -18 + offsetY,
+  );
+  context.closePath();
+}
+
+function tracePipLeaf(context, x, y, direction) {
+  context.beginPath();
+  context.moveTo(x, y);
+  context.bezierCurveTo(
+    x + direction * 8,
+    y - 20,
+    x + direction * 24,
+    y - 27,
+    x + direction * 34,
+    y - 23,
+  );
+  context.bezierCurveTo(
+    x + direction * 31,
+    y - 8,
+    x + direction * 16,
+    y - 2,
+    x,
+    y,
+  );
+  context.closePath();
+}
+
+function drawPipIcon(context, color, secondary) {
+  context.strokeStyle = 'rgba(65, 49, 35, 0.42)';
+  context.lineWidth = 8;
+  context.beginPath();
+  context.moveTo(3, -14);
+  context.bezierCurveTo(4, -24, 1, -34, -5, -42);
+  context.stroke();
+
+  context.strokeStyle = '#667345';
+  context.lineWidth = 5;
+  context.beginPath();
+  context.moveTo(0, -16);
+  context.bezierCurveTo(2, -26, 0, -36, -5, -44);
+  context.stroke();
+
+  context.fillStyle = '#53653d';
+  tracePipLeaf(context, -4, -37, -1);
+  context.fill();
+  context.strokeStyle = color;
+  context.lineWidth = 3.5;
+  context.stroke();
+  context.fillStyle = '#8fa45f';
+  tracePipLeaf(context, -3, -39, 1);
+  context.fill();
+  context.stroke();
+
+  context.fillStyle = 'rgba(74, 48, 38, 0.38)';
+  tracePipSeed(context, 4, 5);
+  context.fill();
+  context.fillStyle = secondary;
+  tracePipSeed(context);
+  context.fill();
+  context.strokeStyle = color;
+  context.lineWidth = 5;
+  context.stroke();
+
+  context.fillStyle = ICON_LIGHT;
+  context.beginPath();
+  context.moveTo(-19, 4);
+  context.bezierCurveTo(-14, -7, -3, -12, 8, -10);
+  context.bezierCurveTo(-1, -3, -7, 9, -9, 20);
+  context.quadraticCurveTo(-18, 16, -19, 4);
+  context.closePath();
+  context.fill();
+
+  context.fillStyle = ICON_MID;
+  traceOrganicOval(context, 14, 24, 5, 4, 0.62);
+  context.fill();
 }
 
 function drawHeartIcon(context, color) {
