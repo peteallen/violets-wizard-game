@@ -169,6 +169,8 @@ export function drawVectorOwl(context, owl = {}, time = 0) {
   const palette = OWL_PALETTES[variant];
   const scale = owl.scale ?? (variant === 'pet' ? 0.9 : 1);
   const direction = owl.facing === 'left' ? -1 : 1;
+  const lightSide = owl.lightSide === 'right' ? 'right' : 'left';
+  const lightDirection = (lightSide === 'right' ? 1 : -1) * direction;
   const motion = sampleOwlMotion({
     time,
     phase: owl.phase ?? 0,
@@ -181,6 +183,13 @@ export function drawVectorOwl(context, owl = {}, time = 0) {
 
   context.save();
   context.globalAlpha *= owl.opacity ?? 1;
+  context.translate(owl.x ?? 0, owl.y ?? 0);
+  context.scale(direction * scale, scale);
+  drawOwlShadow(context, owl.pose ?? (variant === 'pet' ? 'idle' : 'perch'), motion);
+  context.restore();
+
+  context.save();
+  context.globalAlpha *= owl.opacity ?? 1;
   context.translate(owl.x ?? 0, (owl.y ?? 0) - motion.hop + motion.bodyBob);
   context.rotate((owl.rotation ?? 0) + motion.bodyTilt);
   context.scale(direction * scale, scale);
@@ -189,14 +198,12 @@ export function drawVectorOwl(context, owl = {}, time = 0) {
   context.strokeStyle = OUTLINE;
   context.lineWidth = 3;
 
-  drawOwlShadow(context, owl.pose ?? (variant === 'pet' ? 'idle' : 'perch'), motion);
-
   drawTail(context, palette, motion);
   drawFarWing(context, palette, motion);
 
   context.save();
   context.scale(1, motion.bodyScaleY);
-  drawBody(context, palette, variant);
+  drawBody(context, palette, variant, lightDirection);
   context.restore();
 
   drawNearWing(context, palette, motion);
@@ -206,7 +213,7 @@ export function drawVectorOwl(context, owl = {}, time = 0) {
   context.translate(motion.headTurn * 22, -1);
   context.rotate(motion.headTilt + motion.headTurn * 0.12);
   context.scale(1 - Math.abs(motion.headTurn) * 0.08, 1);
-  drawHead(context, palette, variant, motion);
+  drawHead(context, palette, variant, motion, lightDirection);
   context.restore();
 
   context.restore();
@@ -216,7 +223,6 @@ function drawOwlShadow(context, pose, motion) {
   if (pose === 'flight' || pose === 'delivery' || pose === 'takeoff') return;
   const lift = Math.min(0.46, motion.hop / 18);
   context.save();
-  context.translate(0, motion.hop - motion.bodyBob);
   context.globalAlpha *= 1 - lift;
   context.fillStyle = 'rgba(25,17,24,0.22)';
   traceOrganicOval(context, 2, 7, 34 - lift * 7, 7 - lift * 1.5, 0.28);
@@ -334,7 +340,7 @@ function drawWing(context, side, palette, motion, far) {
   context.restore();
 }
 
-function drawBody(context, palette, variant) {
+function drawBody(context, palette, variant, lightDirection = -1) {
   context.fillStyle = palette.body;
   context.beginPath();
   context.moveTo(-25, -87);
@@ -345,6 +351,8 @@ function drawBody(context, palette, variant) {
   context.closePath();
   fillStroke(context, 3.2);
 
+  context.save();
+  if (lightDirection > 0) context.scale(-1, 1);
   context.fillStyle = palette.bodyLight;
   context.beginPath();
   context.moveTo(-18, -70);
@@ -365,6 +373,7 @@ function drawBody(context, palette, variant) {
   context.closePath();
   context.fill();
   context.globalAlpha = 1;
+  context.restore();
 
   context.fillStyle = 'rgba(245,199,119,0.14)';
   context.beginPath();
@@ -394,6 +403,8 @@ function drawBody(context, palette, variant) {
     }
   }
   context.globalAlpha = 1;
+  context.save();
+  if (lightDirection > 0) context.scale(-1, 1);
   context.strokeStyle = palette.accent;
   context.lineWidth = 2;
   context.beginPath();
@@ -416,6 +427,7 @@ function drawBody(context, palette, variant) {
   context.bezierCurveTo(-39, -67, -36, -31, -24, -12);
   context.stroke();
   context.globalAlpha = 1;
+  context.restore();
 }
 
 function drawFeet(context, palette, pose) {
@@ -437,7 +449,7 @@ function drawFeet(context, palette, pose) {
   }
 }
 
-function drawHead(context, palette, variant, motion) {
+function drawHead(context, palette, variant, motion, lightDirection = -1) {
   const pet = variant === 'pet';
   context.fillStyle = palette.body;
   context.beginPath();
@@ -472,6 +484,8 @@ function drawHead(context, palette, variant, motion) {
   context.closePath();
   context.fill();
 
+  context.save();
+  if (lightDirection > 0) context.scale(-1, 1);
   context.fillStyle = 'rgba(255,250,229,0.28)';
   context.beginPath();
   context.moveTo(-22, -99);
@@ -487,6 +501,7 @@ function drawHead(context, palette, variant, motion) {
   context.quadraticCurveTo(8, -84, 2, -96, 2, -96);
   context.closePath();
   context.fill();
+  context.restore();
 
   for (const side of [-1, 1]) {
     context.strokeStyle = palette.fleck;
@@ -519,6 +534,8 @@ function drawHead(context, palette, variant, motion) {
     context.fill();
   }
   context.globalAlpha = 1;
+  context.save();
+  if (lightDirection > 0) context.scale(-1, 1);
   context.strokeStyle = 'rgba(255,241,201,0.65)';
   context.lineWidth = 2.3;
   context.beginPath();
@@ -535,6 +552,7 @@ function drawHead(context, palette, variant, motion) {
   context.quadraticCurveTo(-16, -111, -11, -110);
   context.stroke();
   context.globalAlpha = 1;
+  context.restore();
 }
 
 function drawOwlEye(context, x, y, palette, motion) {

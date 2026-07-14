@@ -60,7 +60,7 @@ export const VIOLET_STYLE = Object.freeze({
 });
 
 export const HAGRID_STYLE = Object.freeze({
-  worldScale: 1.5,
+  worldScale: 1.24,
   coatBase: '#65503d',
   coatMid: '#786048',
   coatShadow: '#3d312b',
@@ -71,10 +71,10 @@ export const HAGRID_STYLE = Object.freeze({
   hairMid: '#53392c',
   hairShadow: '#261d1a',
   hairLight: '#80583d',
-  beardBase: '#493229',
-  beardMid: '#634333',
-  beardShadow: '#2d211d',
-  beardLight: '#8b6042',
+  beardBase: '#5b4031',
+  beardMid: '#76513c',
+  beardShadow: '#382720',
+  beardLight: '#a0704b',
   skin: '#bd7d5e',
   skinShadow: '#925847',
   skinLight: 'rgba(255, 218, 166, 0.26)',
@@ -274,16 +274,23 @@ export class CharacterRenderer {
     const trim = character.robeTrim ?? PALETTE.violet;
     const outfit = character.outfit === 'casual' ? 'casual' : 'robes';
     const blinking = isBlinking(time, 0.1);
-    const casualHeadScale = outfit === 'casual' ? 0.84 : 1;
+    const casualHeadScale = outfit === 'casual' ? 0.6 : 1;
+    const casualHeightScale = outfit === 'casual' ? 1.08 : 1;
     const headAnchorY = -101;
 
     context.save();
-    context.translate(character.x, character.y + motion.bob);
+    context.translate(character.x, character.y);
     context.scale(direction * scale, scale);
+    prepare(context, 2.25);
+    drawGroundingShadow(context, 'violet');
+    context.restore();
+
+    context.save();
+    context.translate(character.x, character.y + motion.bob);
+    context.scale(direction * scale, scale * casualHeightScale);
     context.rotate(motion.bodySway);
     prepare(context, 2.25);
 
-    drawGroundingShadow(context, 'violet');
     drawVioletLeg(context, -15, motion.stride * 8, true, motion, outfit, lightDirection);
     drawVioletLeg(context, 15, -motion.stride * 8, false, motion, outfit, lightDirection);
     context.save();
@@ -346,12 +353,17 @@ export class CharacterRenderer {
     const blinking = isBlinking(time, phase);
 
     context.save();
+    context.translate(character.x, character.y);
+    context.scale(direction * scale, scale);
+    prepare(context, 2.1);
+    drawGroundingShadow(context, kind);
+    context.restore();
+
+    context.save();
     context.translate(character.x, character.y + bob);
     context.scale(direction * scale, scale);
     context.rotate(sway);
     prepare(context, 2.1);
-
-    drawGroundingShadow(context, kind);
     drawNpcLegs(context, kind, palette, character.pose, time + phase);
     drawNpcBackDetails(context, kind, palette, { lightDirection });
     drawNpcBody(context, kind, palette, { lightDirection });
@@ -396,16 +408,24 @@ export class CharacterRenderer {
     });
     const scale = pet.scale ?? 1;
     const direction = pet.facing === 'left' ? -1 : 1;
+    const lightSide = pet.lightSide === 'right' ? 'right' : 'left';
+    const lightDirection = (lightSide === 'right' ? 1 : -1) * direction;
+
+    context.save();
+    context.translate(pet.x, pet.y);
+    context.scale(direction * scale, scale);
+    prepare(context, 2.8);
+    drawCompanionShadow(context, pet.type, motion);
+    context.restore();
+
     context.save();
     context.translate(pet.x, pet.y + motion.bob - motion.hop);
     context.rotate(motion.tilt);
     context.scale(direction * scale, scale * motion.breathScale * motion.bodySquash);
     prepare(context, 2.8);
 
-    drawCompanionShadow(context, pet.type, motion);
-
-    if (pet.type === 'cat') drawCat(context, safeTime, motion, pet);
-    else drawToad(context, safeTime, motion, pet);
+    if (pet.type === 'cat') drawCat(context, safeTime, motion, lightDirection);
+    else drawToad(context, safeTime, motion, lightDirection);
 
     context.restore();
   }
@@ -439,6 +459,7 @@ export class CharacterRenderer {
         y: petY,
         scale: speaker === 'owl' ? 0.86 : speaker === 'cat' ? 0.96 : 1.05,
         facing,
+        lightSide: portrait.lightSide,
         lookX: facing === 'left' ? -0.35 : 0.35,
       }, time);
     } else if (speaker === 'violet') {
@@ -452,7 +473,7 @@ export class CharacterRenderer {
     } else {
       const guide = speaker === 'guide';
       this.draw(context, {
-        kind: speaker, x: 0, y: guide ? 166 : 116, scale: guide ? 0.76 : 0.84,
+        kind: speaker, x: 0, y: guide ? 166 : 116, scale: guide ? 0.92 : 0.84,
         facing, pose, lightSide: portrait.lightSide,
       }, time);
     }
@@ -474,7 +495,7 @@ export class CharacterRenderer {
   drawCastReview(context, time) {
     const cast = [
       { label: 'Violet', kind: 'violet', x: 126, y: 595, scale: 1, wand: true, robeTrim: '#7952b7', pose: 'speaking' },
-      { label: 'Hagrid', kind: 'guide', x: 365, y: 595, scale: 0.98, pose: 'speaking' },
+      { label: 'Hagrid', kind: 'guide', x: 365, y: 595, scale: 1.18, pose: 'speaking' },
       { label: 'Wandmaker', kind: 'wandmaker', x: 625, y: 595, scale: 1.05, pose: 'curious' },
       { label: 'Tailor', kind: 'tailor', x: 855, y: 595, scale: 1.05, pose: 'speaking' },
       { label: 'Keeper', kind: 'keeper', x: 1085, y: 595, scale: 1.05, pose: 'proud' },
@@ -1326,22 +1347,55 @@ function drawVioletCasualJersey(context, motion, lightDirection = -1) {
   context.bezierCurveTo(18, -93, 13, -87, 9, -80);
   context.stroke();
 
+  // A cream shoulder yoke and long side stripes make this read as a soccer kit, not sleepwear.
   context.fillStyle = VIOLET_STYLE.casualJerseyTrim;
   context.beginPath();
-  context.moveTo(-24, -68);
-  context.bezierCurveTo(-20, -72, -14, -71, -11, -67);
-  context.bezierCurveTo(-14, -62, -20, -62, -24, -66);
-  context.quadraticCurveTo(-25, -67, -24, -68);
+  context.moveTo(-28, -101);
+  context.bezierCurveTo(-36, -98, -39, -91, -38, -84);
+  context.bezierCurveTo(-31, -88, -23, -91, -14, -95);
+  context.bezierCurveTo(-18, -100, -23, -102, -28, -101);
+  context.closePath();
+  context.moveTo(28, -102);
+  context.bezierCurveTo(35, -99, 39, -92, 38, -85);
+  context.bezierCurveTo(31, -89, 23, -92, 14, -96);
+  context.bezierCurveTo(18, -101, 23, -103, 28, -102);
+  context.closePath();
+  context.fill();
+
+  context.strokeStyle = VIOLET_STYLE.casualJerseyTrim;
+  context.lineWidth = 2.8;
+  context.beginPath();
+  context.moveTo(-34, -85);
+  context.bezierCurveTo(-31, -72, -34, -58, -33 - swing, -46);
+  context.moveTo(34, -85);
+  context.bezierCurveTo(31, -72, 34, -58, 33 + swing, -47);
+  context.stroke();
+
+  // An organic team shield and hand-drawn seven give the jersey an unmistakable match identity.
+  context.fillStyle = VIOLET_STYLE.casualJerseyTrim;
+  context.beginPath();
+  context.moveTo(-25, -72);
+  context.bezierCurveTo(-21, -75, -15, -74, -12, -71);
+  context.bezierCurveTo(-12, -65, -16, -60, -19, -58);
+  context.bezierCurveTo(-23, -60, -26, -65, -25, -72);
   context.closePath();
   context.fill();
   context.fillStyle = VIOLET_STYLE.casualJerseyShadow;
   context.beginPath();
-  context.moveTo(-20, -69);
-  context.bezierCurveTo(-17, -68, -15, -66, -14, -64);
-  context.bezierCurveTo(-17, -63, -20, -64, -22, -66);
-  context.quadraticCurveTo(-22, -68, -20, -69);
+  context.moveTo(-22, -70);
+  context.bezierCurveTo(-19, -72, -16, -71, -14, -69);
+  context.bezierCurveTo(-15, -65, -17, -63, -19, -61);
+  context.bezierCurveTo(-21, -63, -23, -66, -22, -70);
   context.closePath();
   context.fill();
+
+  context.strokeStyle = VIOLET_STYLE.casualJerseyTrim;
+  context.lineWidth = 3.1;
+  context.beginPath();
+  context.moveTo(9, -72);
+  context.bezierCurveTo(13, -74, 18, -74, 22, -72);
+  context.bezierCurveTo(18, -68, 14, -62, 12, -56);
+  context.stroke();
 }
 
 function drawVioletCasualNeckline(context) {
@@ -3043,7 +3097,7 @@ function drawGuideArms(
     context.bezierCurveTo(elbowX - 1, elbowY + 6, elbowX + 4, elbowY + 5, elbowX + 7, elbowY + 1);
     context.stroke();
 
-    drawHand(context, wristX, wristY + 12, HAGRID_STYLE.skin, raised ? 10.5 : 9.6);
+    drawHand(context, wristX, wristY + 12, HAGRID_STYLE.skin, raised ? 12.5 : 11.5);
     context.strokeStyle = HAGRID_STYLE.skinLight;
     context.lineWidth = 1.05;
     context.beginPath();
@@ -5797,20 +5851,22 @@ function drawKeeperBrush(context, x, y, rotation) {
   context.restore();
 }
 
-function drawCat(context, time, motion) {
+function drawCat(context, time, motion, lightDirection = -1) {
   drawCatTail(context, motion);
   drawCatHindquarters(context, motion);
-  drawCatBody(context, motion);
-  drawCatForelegs(context, motion);
+  drawCatBody(context, motion, lightDirection);
+  drawCatForelegs(context, motion, lightDirection);
   drawCatPaws(context, motion);
 
   context.save();
   context.translate(0, motion.headNod);
   context.rotate(motion.headTilt);
-  drawCatHead(context, time, motion);
+  drawCatHead(context, time, motion, lightDirection);
   context.restore();
   drawCatCollar(context);
 
+  context.save();
+  if (lightDirection > 0) context.scale(-1, 1);
   context.strokeStyle = CAT_STYLE.rim;
   context.lineWidth = 2.25;
   context.beginPath();
@@ -5819,6 +5875,7 @@ function drawCat(context, time, motion) {
   context.moveTo(-23, -78 + motion.headNod);
   context.bezierCurveTo(-19, -96, -8, -104, 5, -101);
   context.stroke();
+  context.restore();
 }
 
 function drawCatTail(context, motion) {
@@ -5872,7 +5929,7 @@ function drawCatHindquarters(context, motion) {
   context.fill();
 }
 
-function drawCatBody(context, motion) {
+function drawCatBody(context, motion, lightDirection = -1) {
   context.fillStyle = CAT_STYLE.furBase;
   context.beginPath();
   context.moveTo(-13, -65);
@@ -5884,6 +5941,8 @@ function drawCatBody(context, motion) {
   context.closePath();
   fillStroke(context, 2.05);
 
+  context.save();
+  if (lightDirection > 0) context.scale(-1, 1);
   context.fillStyle = CAT_STYLE.furShadow;
   context.beginPath();
   context.moveTo(7, -66);
@@ -5901,6 +5960,7 @@ function drawCatBody(context, motion) {
   context.bezierCurveTo(-7, -40, -9, -53, -17, -60);
   context.closePath();
   context.fill();
+  context.restore();
 
   context.fillStyle = CAT_STYLE.chest;
   context.beginPath();
@@ -5926,9 +5986,9 @@ function drawCatBody(context, motion) {
   context.stroke();
 }
 
-function drawCatForelegs(context, motion) {
+function drawCatForelegs(context, motion, lightDirection = -1) {
   const leftLift = motion.hindLift * 8;
-  context.fillStyle = CAT_STYLE.furMid;
+  context.fillStyle = lightDirection < 0 ? CAT_STYLE.furMid : CAT_STYLE.furShadow;
   context.beginPath();
   context.moveTo(-12, -36);
   context.bezierCurveTo(-20, -27, -21, -12, -18 - motion.step * 1.2, -3 - leftLift);
@@ -5939,7 +5999,7 @@ function drawCatForelegs(context, motion) {
 
   if (motion.pawLift > 0) return;
   const rightLift = motion.foreLift * 15;
-  context.fillStyle = CAT_STYLE.furBase;
+  context.fillStyle = lightDirection > 0 ? CAT_STYLE.furMid : CAT_STYLE.furBase;
   context.beginPath();
   context.moveTo(7, -37);
   context.bezierCurveTo(16, -27, 17, -12, 18 + motion.step * 1.5, -3 - rightLift);
@@ -5970,10 +6030,10 @@ function drawCatCollar(context) {
   context.stroke();
 }
 
-function drawCatHead(context, time, motion) {
+function drawCatHead(context, time, motion, lightDirection = -1) {
   const twitch = motion.earTwitch;
-  drawCatEar(context, -1, twitch);
-  drawCatEar(context, 1, -twitch * 0.65);
+  drawCatEar(context, -1, twitch, lightDirection);
+  drawCatEar(context, 1, -twitch * 0.65, lightDirection);
 
   context.fillStyle = CAT_STYLE.furBase;
   context.beginPath();
@@ -5986,6 +6046,8 @@ function drawCatHead(context, time, motion) {
   context.closePath();
   fillStroke(context, 2.05);
 
+  context.save();
+  if (lightDirection > 0) context.scale(-1, 1);
   context.fillStyle = CAT_STYLE.furShadow;
   context.beginPath();
   context.moveTo(5, -96);
@@ -6003,16 +6065,17 @@ function drawCatHead(context, time, motion) {
   context.bezierCurveTo(-8, -76, -9, -86, -16, -91);
   context.closePath();
   context.fill();
+  context.restore();
 
   drawCatFace(context, time, motion);
-  drawCatFurMarks(context);
+  drawCatFurMarks(context, lightDirection);
 }
 
-function drawCatEar(context, side, twitch) {
+function drawCatEar(context, side, twitch, lightDirection = -1) {
   const innerX = side * 7;
   const outerX = side * (25 + twitch * 1.2);
   const tipY = -108 - Math.abs(twitch) * 1.5;
-  context.fillStyle = side < 0 ? CAT_STYLE.furMid : CAT_STYLE.furShadow;
+  context.fillStyle = side === lightDirection ? CAT_STYLE.furMid : CAT_STYLE.furShadow;
   context.beginPath();
   context.moveTo(side * 4, -82);
   context.bezierCurveTo(side * 8, -91, side * 14, -103, outerX, tipY);
@@ -6028,7 +6091,7 @@ function drawCatEar(context, side, twitch) {
   context.bezierCurveTo(side * 14, -78, side * 10, -79, innerX, -83);
   context.closePath();
   context.fill();
-  context.strokeStyle = side < 0 ? CAT_STYLE.rim : 'rgba(71, 47, 40, 0.35)';
+  context.strokeStyle = side === lightDirection ? CAT_STYLE.rim : 'rgba(71, 47, 40, 0.35)';
   context.lineWidth = 1.25;
   context.beginPath();
   context.moveTo(innerX, -86);
@@ -6121,7 +6184,7 @@ function drawCatFace(context, time, motion) {
   context.stroke();
 }
 
-function drawCatFurMarks(context) {
+function drawCatFurMarks(context, lightDirection = -1) {
   context.strokeStyle = CAT_STYLE.furDeep;
   context.lineWidth = 2;
   context.beginPath();
@@ -6132,6 +6195,8 @@ function drawCatFurMarks(context) {
   context.moveTo(11, -91);
   context.bezierCurveTo(8, -85, 6, -82, 4, -79);
   context.stroke();
+  context.save();
+  if (lightDirection > 0) context.scale(-1, 1);
   context.strokeStyle = 'rgba(255, 231, 178, 0.46)';
   context.lineWidth = 1.3;
   context.beginPath();
@@ -6140,6 +6205,7 @@ function drawCatFurMarks(context) {
   context.moveTo(-22, -62);
   context.bezierCurveTo(-18, -55, -15, -51, -10, -49);
   context.stroke();
+  context.restore();
 }
 
 function drawCatPaws(context, motion) {
@@ -6191,14 +6257,16 @@ function drawCatPaws(context, motion) {
   context.stroke();
 }
 
-function drawToad(context, time, motion) {
-  drawToadHindLeg(context, -1, motion);
-  drawToadHindLeg(context, 1, motion);
-  drawToadBody(context, motion);
-  drawToadEyeTurret(context, -1, motion);
-  drawToadEyeTurret(context, 1, motion);
+function drawToad(context, time, motion, lightDirection = -1) {
+  drawToadHindLeg(context, -1, motion, lightDirection);
+  drawToadHindLeg(context, 1, motion, lightDirection);
+  drawToadBody(context, motion, lightDirection);
+  drawToadEyeTurret(context, -1, motion, lightDirection);
+  drawToadEyeTurret(context, 1, motion, lightDirection);
   drawToadFace(context, time, motion);
   drawToadSkinDetail(context, motion);
+  context.save();
+  if (lightDirection > 0) context.scale(-1, 1);
   context.strokeStyle = TOAD_STYLE.rim;
   context.lineWidth = 2.15;
   context.beginPath();
@@ -6206,13 +6274,14 @@ function drawToad(context, time, motion) {
   context.bezierCurveTo(-31, -39, -23, -52, -13, -56);
   context.bezierCurveTo(-8, -61, -1, -62, 5, -59);
   context.stroke();
+  context.restore();
 }
 
-function drawToadHindLeg(context, side, motion) {
+function drawToadHindLeg(context, side, motion, lightDirection = -1) {
   const step = motion.step * 2.4;
   const lift = (side < 0 ? motion.hindLift : motion.foreLift) * 9;
   const outer = side * (43 + step);
-  context.fillStyle = side < 0 ? TOAD_STYLE.skinShadow : TOAD_STYLE.skinBase;
+  context.fillStyle = side === lightDirection ? TOAD_STYLE.skinMid : TOAD_STYLE.skinShadow;
   context.beginPath();
   context.moveTo(side * 7, -28);
   context.bezierCurveTo(side * 21, -25, side * 28, -15, outer, -8 - lift);
@@ -6240,7 +6309,7 @@ function drawToadHindLeg(context, side, motion) {
   context.stroke();
 }
 
-function drawToadBody(context, motion) {
+function drawToadBody(context, motion, lightDirection = -1) {
   context.fillStyle = TOAD_STYLE.skinBase;
   context.beginPath();
   context.moveTo(-3, -57);
@@ -6252,6 +6321,8 @@ function drawToadBody(context, motion) {
   context.closePath();
   fillStroke(context, 2.05);
 
+  context.save();
+  if (lightDirection > 0) context.scale(-1, 1);
   context.fillStyle = TOAD_STYLE.skinShadow;
   context.beginPath();
   context.moveTo(7, -57);
@@ -6269,6 +6340,7 @@ function drawToadBody(context, motion) {
   context.bezierCurveTo(-13, -29, -15, -42, -24, -48);
   context.closePath();
   context.fill();
+  context.restore();
 
   const throatWidth = 19 + motion.throatPulse * 2.2;
   const throatHeight = 12 + motion.throatPulse * 2.8;
@@ -6284,10 +6356,10 @@ function drawToadBody(context, motion) {
   context.fill();
 }
 
-function drawToadEyeTurret(context, side, motion) {
+function drawToadEyeTurret(context, side, motion, lightDirection = -1) {
   const x = side * 15;
   const y = -51 + motion.headNod * 0.25;
-  context.fillStyle = side < 0 ? TOAD_STYLE.skinLight : TOAD_STYLE.skinMid;
+  context.fillStyle = side === lightDirection ? TOAD_STYLE.skinLight : TOAD_STYLE.skinMid;
   traceOrganicPatch(context, x, y, 12.2, 11.6, side * 0.12);
   fillStroke(context, 1.75);
   context.fillStyle = TOAD_STYLE.skinShadow;
@@ -6542,13 +6614,26 @@ function drawHand(context, x, y, color, radius) {
   context.fillStyle = color;
   context.beginPath();
   context.moveTo(-side * radius * 0.7, -radius * 0.65);
-  context.quadraticCurveTo(0, -radius * 1.05, side * radius * 0.65, -radius * 0.55);
-  context.quadraticCurveTo(side * radius * 1.15, -radius * 0.18, side * radius * 0.72, radius * 0.25);
-  context.quadraticCurveTo(side * radius * 1.18, radius * 0.46, side * radius * 0.63, radius * 0.78);
+  context.bezierCurveTo(-side * radius * 0.28, -radius, side * radius * 0.38, -radius, side * radius * 0.7, -radius * 0.7);
+  context.bezierCurveTo(side * radius * 1.02, -radius * 0.56, side * radius * 1.04, -radius * 0.28, side * radius * 0.77, -radius * 0.17);
+  context.bezierCurveTo(side * radius * 1.14, -radius * 0.08, side * radius * 1.17, radius * 0.2, side * radius * 0.84, radius * 0.31);
+  context.bezierCurveTo(side * radius * 1.11, radius * 0.46, side * radius, radius * 0.7, side * radius * 0.63, radius * 0.78);
   context.quadraticCurveTo(0, radius * 1.05, -side * radius * 0.72, radius * 0.52);
   context.quadraticCurveTo(-side * radius, 0, -side * radius * 0.7, -radius * 0.65);
   context.closePath();
   fillStroke(context, 2.2);
+
+  context.fillStyle = 'rgba(255, 218, 174, 0.3)';
+  context.beginPath();
+  context.moveTo(-side * radius * 0.18, -radius * 0.08);
+  context.bezierCurveTo(side * radius * 0.2, -radius * 0.18, side * radius * 0.7, -radius * 0.08, side * radius * 0.82, radius * 0.17);
+  context.bezierCurveTo(side * radius * 0.58, radius * 0.38, side * radius * 0.18, radius * 0.32, -side * radius * 0.18, -radius * 0.08);
+  context.closePath();
+  context.fill();
+  context.strokeStyle = 'rgba(104,60,46,0.42)';
+  context.lineWidth = 1.05;
+  context.stroke();
+
   context.strokeStyle = 'rgba(255,231,168,0.4)';
   context.lineWidth = 1.5;
   context.beginPath();
@@ -6565,8 +6650,19 @@ function drawHand(context, x, y, color, radius) {
   context.strokeStyle = 'rgba(87,52,42,0.35)';
   context.lineWidth = 1.1;
   context.beginPath();
-  context.moveTo(-side * radius * 0.15, radius * 0.2);
-  context.quadraticCurveTo(side * radius * 0.2, radius * 0.38, side * radius * 0.55, radius * 0.23);
+  for (const fingerY of [-0.38, -0.04, 0.3]) {
+    context.moveTo(side * radius * 0.55, radius * fingerY);
+    context.bezierCurveTo(
+      side * radius * 0.7,
+      radius * (fingerY + 0.07),
+      side * radius * 0.77,
+      radius * (fingerY + 0.13),
+      side * radius * 0.82,
+      radius * (fingerY + 0.2),
+    );
+  }
+  context.moveTo(-side * radius * 0.22, radius * 0.18);
+  context.quadraticCurveTo(side * radius * 0.08, radius * 0.42, side * radius * 0.43, radius * 0.32);
   context.stroke();
   context.restore();
 }

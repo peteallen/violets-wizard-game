@@ -18,6 +18,7 @@ This is a style target for the deterministic Canvas puppet and dialogue portrait
 - Generation output path: `/Users/peteallen/.codex/generated_images/019f5cfb-61ae-7ba2-a518-f105589f11f2/exec-8f8a9802-e6ff-45e3-afe3-0c1241460d88.png`
 - Reference images: `../raw/ch1-leaky.png`, `../raw/ch1-malkins.png`, `../raw/ch1-menagerie.png`, `../raw/ch1-diagon-dusk.png`, and `violet.png`
 - Acceptance note: the accepted sheet preserves one identity across the full-body and portrait views; reads immediately as an enormous, safe, weathered guide; keeps both hands and both boots fully readable; and matches the rooms' parchment, umber, forest-green, violet-shadow, candle-gold, painterly texture, and upper-left light. His face, coat construction, and palette are original rather than an actor or film-costume copy. The full-body anatomy is deliberately massive and twice-wide, but the sheet does not include a child or ruler, so the exact two-times gameplay scale remains a renderer requirement rather than a literal measurement visible inside this image.
+- Runtime-fit note: D47 supersedes the final scale clause above. The accepted sheet remains the face, anatomy, material, and broad-silhouette target, while the live puppet must fit beneath each authored doorway he visibly uses; width, coat volume, boots, and posture carry the half-giant read without breaking room geometry.
 
 ## Reference roles
 

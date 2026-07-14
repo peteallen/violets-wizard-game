@@ -300,6 +300,33 @@ describe('player-visible copy', () => {
     ]);
   });
 
+  it('keeps unearned inventory props out of the bedroom HUD while retaining the quest compass', () => {
+    const renderer = new UIRenderer({ characterRenderer: {} });
+    const baseState = {
+      screen: 'playing',
+      overlay: null,
+      dialogue: null,
+      selection: null,
+      newObjective: false,
+      affordances: null,
+    };
+    const questOnly = recordingContext();
+    const withSatchel = recordingContext();
+    const complete = recordingContext();
+
+    expect(renderer.drawHud(questOnly, {
+      ...baseState, hasSatchel: false, hasWand: false,
+    }, 0, true)).toEqual({ quest: true, satchel: false, wand: false });
+    expect(renderer.drawHud(withSatchel, {
+      ...baseState, hasSatchel: true, hasWand: false,
+    }, 0, true)).toEqual({ quest: true, satchel: true, wand: false });
+    expect(renderer.drawHud(complete, {
+      ...baseState, hasSatchel: true, hasWand: true,
+    }, 0, true)).toEqual({ quest: true, satchel: true, wand: true });
+    expect(withSatchel.calls.length).toBeGreaterThan(questOnly.calls.length);
+    expect(complete.calls.length).toBeGreaterThan(withSatchel.calls.length);
+  });
+
   it('keeps every retired helper sentence and obsolete letter caption out of runtime source', () => {
     const retiredCopy = [
       'Tap the page to continue',

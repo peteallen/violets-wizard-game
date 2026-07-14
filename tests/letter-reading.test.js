@@ -1,10 +1,21 @@
 import { describe, expect, it, vi } from 'vitest';
 import { Game } from '../src/game/Game.js';
 import { chapter1LetterNarration } from '../src/game/content/chapters/ch1-letter.js';
-import { UI_RECTS } from '../src/game/render/UIRenderer.js';
+import {
+  UI_RECTS,
+  dialogueSceneContext,
+  letterReadingLayout,
+} from '../src/game/render/UIRenderer.js';
 
 function center(rect) {
   return { x: rect.x + rect.width / 2, y: rect.y + rect.height / 2 };
+}
+
+function overlapsBounds(rect, bounds) {
+  return rect.x < bounds.right
+    && rect.x + rect.width > bounds.left
+    && rect.y < bounds.bottom
+    && rect.y + rect.height > bounds.top;
 }
 
 function gameStub() {
@@ -34,6 +45,36 @@ function endedCallback(game, callIndex) {
 }
 
 describe('optional invitation narration', () => {
+  it('keeps the settled paper and both reading actions clear of live Violet', () => {
+    const layout = letterReadingLayout();
+    const violet = dialogueSceneContext({
+      cameraX: 0,
+      player: { x: 760, y: 610 },
+      occupants: [],
+      targets: [],
+    }, { speaker: 'npc.violet' }).speakerBounds;
+    const invitation = {
+      x: layout.invitationBounds.left,
+      y: layout.invitationBounds.top,
+      width: layout.invitationBounds.right - layout.invitationBounds.left,
+      height: layout.invitationBounds.bottom - layout.invitationBounds.top,
+    };
+
+    expect(overlapsBounds(invitation, violet)).toBe(false);
+    expect(overlapsBounds(layout.hear, violet)).toBe(false);
+    expect(overlapsBounds(layout.continue, violet)).toBe(false);
+    expect(overlapsBounds(layout.hear, {
+      left: layout.continue.x,
+      right: layout.continue.x + layout.continue.width,
+      top: layout.continue.y,
+      bottom: layout.continue.y + layout.continue.height,
+    })).toBe(false);
+    for (const action of [layout.hear, layout.continue]) {
+      expect(action.width).toBeGreaterThanOrEqual(88);
+      expect(action.height).toBeGreaterThanOrEqual(88);
+    }
+  });
+
   it('keeps the readable invitation open while the two existing clips play sequentially', () => {
     const { game, state } = gameStub();
 

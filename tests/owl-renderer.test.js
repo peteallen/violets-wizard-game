@@ -140,6 +140,39 @@ describe('storybook owl drawing', () => {
     expect(context.calls.some(([name]) => forbiddenGeometry.has(name))).toBe(false);
     expect(context.depth).toBe(0);
   });
+
+  it('mirrors material light and rim from the authored room side while the shadow stays planted', () => {
+    for (const facing of ['left', 'right']) {
+      const left = recordingContext();
+      const explicitLeft = recordingContext();
+      const right = recordingContext();
+      const replayedRight = recordingContext();
+      const owl = { variant: 'post', pose: 'perch', facing, x: 280, y: 340 };
+
+      drawVectorOwl(left, owl, 1.375);
+      drawVectorOwl(explicitLeft, { ...owl, lightSide: 'left' }, 1.375);
+      drawVectorOwl(right, { ...owl, lightSide: 'right' }, 1.375);
+      drawVectorOwl(replayedRight, { ...owl, lightSide: 'right' }, 1.375);
+
+      expect(left.calls).toEqual(explicitLeft.calls);
+      expect(right.calls).toEqual(replayedRight.calls);
+      expect(right.calls).not.toEqual(left.calls);
+      const leftMirrors = left.calls.filter(([name, x, y]) => (
+        name === 'scale' && x === -1 && y === 1
+      )).length;
+      const rightMirrors = right.calls.filter(([name, x, y]) => (
+        name === 'scale' && x === -1 && y === 1
+      )).length;
+      if (facing === 'right') expect(rightMirrors).toBeGreaterThan(leftMirrors);
+      else expect(rightMirrors).toBeLessThan(leftMirrors);
+
+      const translates = right.calls.filter(([name]) => name === 'translate');
+      expect(translates[0]).toEqual(['translate', 280, 340]);
+      expect(translates[1][1]).toBe(280);
+      expect(translates[1][2]).not.toBe(340);
+      expect(right.depth).toBe(0);
+    }
+  });
 });
 
 describe('owl delivery choreography', () => {

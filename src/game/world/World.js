@@ -846,6 +846,7 @@ export class World {
       setPiece: this.setPieces.active,
       overlay: this.overlay,
       selection: this.selection,
+      hasSatchel: Boolean(this.flags['ch1.satchelReceived']),
       hasWand: Boolean(this.save.character.wandId),
       cards: [...this.save.collections.cards],
       unlockedRooms: this.unlockedRooms(),

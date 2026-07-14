@@ -33,6 +33,7 @@ const REVIEW_SCENE_ILLUSION_CHECKS = Object.freeze({
   ],
   'ch1-start': [
     'The delivered envelope, opening choreography, readable invitation, and two independent reading actions preserve one continuous letter identity with zero ambiguous next step.',
+    'Before Violet earns her school gear, the quest compass is the only persistent HUD object; no empty wand sheath or unowned satchel appears.',
   ],
   'world-shimmer-review': [
     'Exactly one current-objective golden thread remains strongest, while optional and secret glints stay quieter and never become competing rings or symbols.',
@@ -106,10 +107,11 @@ const REVIEW_SCENE_ILLUSION_CHECKS = Object.freeze({
     'The centered Violet puppet remains fully readable beside one dialogue parchment and two non-overlapping 88×88 controls.',
   ],
   'ui-dialogue-live-review': [
-    'The live bedroom dialogue keeps Hagrid, his portrait, one parchment caption, and two 88×88 controls mutually separate against the painted room.',
+    'The live bedroom dialogue keeps Hagrid, Violet, Hagrid’s portrait, the current objective scenery, one parchment caption, and two 88×88 controls mutually separate against the painted room.',
     'Hagrid reads as a grounded half-giant with visible coat sleeves, hands, boots, separate shaded hair and beard masses, and zero gold painted inside his silhouette.',
     'Casual Violet reads as a long-limbed child in a three-tone soccer jersey, shaded leggings, and sneakers, with joined shoulder, elbow, wrist, and hand shapes.',
-    'Both bedroom characters cast visible contact shadows and place their highlight and rim on the side lit by the right-hand window.',
+    'Hagrid’s broad silhouette remains visibly larger than Violet while fitting beneath the bedroom doorway he uses.',
+    'Both bedroom characters cast visible floor-planted contact shadows that stay still beneath body motion and place their highlight and rim on the side lit by the right-hand window.',
   ],
   'ui-dialogue-night-live-review': [
     'The live dusk-street dialogue keeps Hagrid, his portrait, one warm-dark parchment caption, and two 88×88 controls mutually separate and legible.',
@@ -118,7 +120,7 @@ const REVIEW_SCENE_ILLUSION_CHECKS = Object.freeze({
     'The two-word “Flying broom!” caption remains readable, and neither 88×88 dialogue control covers Violet or the caption.',
   ],
   'ui-letter-reading-review': [
-    'The complete invitation remains visible above two distinct, non-overlapping 88px-or-larger reading actions.',
+    'The complete invitation remains visible beside Violet and above two distinct, non-overlapping 88px-or-larger reading actions; paper and actions cover no part of her puppet.',
     'The written invitation matches its narration and contains zero unrelated dialogue captions.',
   ],
   'ui-robe-picker-review': [
@@ -154,7 +156,7 @@ const REVIEW_SCENE_ILLUSION_CHECKS = Object.freeze({
   'character-cast-review': [
     'Exactly five labeled, full-body cast members remain visually separated and readable at gameplay scale.',
     'Each cast member has two readable eyes with iris, pupil, catch-light, and lid shapes; hair and clothing remain distinct masses.',
-    'Every cast member has articulated limbs, readable hands and shoes, layered base-shadow-highlight material planes, and a visible contact shadow beneath the feet.',
+    'Every cast member has articulated limbs, readable thumbs/hands and shoes, layered base-shadow-highlight material planes, and a visible floor-planted contact shadow beneath the feet.',
     'Hagrid retains visible arms, broad boots, a shaped coat, and separate shaded hair, moustache, and beard masses instead of one dark silhouette.',
   ],
   'character-pets-review': [

@@ -25,6 +25,15 @@ function rectsOverlap(first, second) {
     && first.y + first.height > second.y;
 }
 
+function rectFromBounds(bounds) {
+  return {
+    x: bounds.left,
+    y: bounds.top,
+    width: bounds.right - bounds.left,
+    height: bounds.bottom - bounds.top,
+  };
+}
+
 function dialogueState({
   speaker = 'npc.guide',
   playerX = 1040,
@@ -123,6 +132,7 @@ describe('adaptive dialogue card', () => {
     const guide = dialogueSceneContext(guideState);
     expect(guide.speakerPosition).toEqual({ x: 230, y: 620 });
     expect(guide.speakerBounds).toMatchObject({ left: 108, right: 352, bottom: 655 });
+    expect(guide.characterBounds.map(({ id }) => id)).toEqual(['npc.violet', 'npc.guide']);
     expect(guide.night).toBe(false);
     expect(guide.lightSide).toBe('left');
 
@@ -205,13 +215,7 @@ describe('adaptive dialogue card', () => {
       expect(layout.advanceRect.height).toBeGreaterThanOrEqual(88);
       expect(rectsOverlap(layout.replayRect, layout.advanceRect)).toBe(false);
 
-      const portraitRadius = 55 * layout.portrait.scale;
-      const portraitBounds = {
-        x: layout.portrait.x - portraitRadius,
-        y: layout.portrait.y - portraitRadius,
-        width: portraitRadius * 2,
-        height: portraitRadius * 2,
-      };
+      const portraitBounds = rectFromBounds(layout.portraitBounds);
       expect(overlaps(portraitBounds, speakerBounds)).toBe(false);
       if (layout.side === 'right') {
         expect(layout.portraitSide).toBe('left');
@@ -224,6 +228,65 @@ describe('adaptive dialogue card', () => {
         expect(layout.controlsSide).toBe('left');
         expect(layout.replayRect.x).toBeLessThan(layout.captionRect.x);
       }
+    }
+  });
+
+  it('keeps the live bedroom card, real cameo, and controls clear of Hagrid, Violet, and the objective scenery', () => {
+    const state = {
+      cameraX: 0,
+      roomId: 'ch1.bedroom',
+      sceneId: 'ch1.guideArrival',
+      roomVariant: 'base',
+      player: { kind: 'violet', x: 360, y: 610, facing: 'left' },
+      occupants: [{ npc: 'npc.guide', x: 250, y: 610, facing: 'right' }],
+      pet: null,
+      targets: [{
+        id: 'bedroom.guide',
+        hitArea: { shape: 'circle', x: 250, y: 455, radius: 95 },
+        salience: { tier: 'thread' },
+      }],
+      dialogue: { type: 'line', speaker: 'npc.guide', caption: 'Come with me!' },
+    };
+    const scene = dialogueSceneContext(state);
+    const layout = dialogueScrollLayout(scene);
+    const surfaces = [layout.frame, rectFromBounds(layout.portraitBounds), layout.replayRect, layout.advanceRect];
+
+    expect(scene.characterBounds.map(({ id }) => id)).toEqual(['npc.violet', 'npc.guide']);
+    expect(scene.sceneryBounds.map(({ id }) => id)).toEqual(['scenery:bedroom.guide']);
+    expect(layout.side).toBe('right');
+    expect(layout.frame.x).toBe(526);
+    for (const surface of surfaces) {
+      for (const bounds of scene.avoidBounds) expect(overlaps(surface, bounds)).toBe(false);
+    }
+  });
+
+  it('moves the same one-card design above a crowded live cast when neither bottom side is clear', () => {
+    const state = {
+      cameraX: 0,
+      roomId: 'ch1.menagerie',
+      sceneId: 'ch1.petShopping',
+      roomVariant: 'base',
+      player: { kind: 'violet', x: 390, y: 610, facing: 'left' },
+      occupants: [{ npc: 'npc.menagerieKeeper', x: 270, y: 610, facing: 'right' }],
+      pet: null,
+      targets: [],
+      dialogue: { type: 'line', speaker: 'npc.menagerieKeeper', caption: 'Choose a pet!' },
+    };
+    const scene = dialogueSceneContext(state);
+    const layout = dialogueScrollLayout(scene);
+    const surfaces = [layout.frame, rectFromBounds(layout.portraitBounds), layout.replayRect, layout.advanceRect];
+
+    expect(scene.characterBounds.map(({ id }) => id)).toEqual([
+      'npc.violet',
+      'npc.menagerieKeeper',
+      'preview.pet.cat',
+      'preview.pet.owl',
+      'preview.pet.toad',
+    ]);
+    expect(layout.side).toBe('center');
+    expect(layout.frame.y).toBe(32);
+    for (const surface of surfaces) {
+      for (const bounds of scene.characterBounds) expect(overlaps(surface, bounds)).toBe(false);
     }
   });
 

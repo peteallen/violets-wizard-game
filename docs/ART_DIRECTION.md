@@ -53,12 +53,12 @@ Why code-drawn against painted rooms: full control of Violet's exact look, anima
 
 - **Soft dark-brown outlines** (`#3a2d22`, ~2.5px virtual, slightly varying weight), never black.
 - Layered base, shadow, and highlight planes on every material + the baked rim-light matching the room's authored key light.
-- A soft, room-toned contact shadow anchors every full-body puppet at its feet and every persistent diegetic HUD object to the surface behind it; nobody floats over a painted floor.
+- A soft, room-toned contact shadow anchors every full-body puppet at its feet and every persistent diegetic HUD object to the surface behind it; puppet shadows are drawn in floor space before body bob, hop, tilt, or sway, so nobody floats and no shadow rides upward with its character.
 - Proportions: big heads (~1:3.5), small bodies, stubby limbs — picture-book kid proportions, matching the backgrounds' whimsy.
 
 **Violet (the player):** long **warm light-brown** hair, *deliberately a little messy* — three or four soft hair-attached wisps that bounce on the walk cycle (per the client: she prefers it messy; never spikes or antennae); warm brown eyes behind **dark-green rectangular glasses** (photo-matched, D37 — the puppet and portrait both wear them); rosy cheeks. She begins at home and shops for her wand in ordinary clothes: a high-contrast three-tone blue-violet soccer jersey, dark leggings, and slate trainers with a purple accent, deliberately separated from the bedroom’s softer purple furnishings. Madam Malkin’s is the earned costume change into a black first-year robe with her selected color visible across the broad lining, collar, cuffs, and hem, and her signature purple returning in the shoes and chosen trim. The accepted reference sheet `art/character-refs/violet.png` remains the canonical face, hair shape, glasses, and robed-look target, but D44’s warmer runtime hair color supersedes the sheet’s cooler tone. Post-Sorting she gains the house scarf; the confirmed robe color persists throughout.
 
-**Cast silhouettes** stay instantly readable at gameplay scale: the half-giant guide is twice everyone's height and width; the charms professor is knee-high with a book-stack podium; the potions master is a black column with a widow's peak; the villain is smoke-edged. Silhouette-first design, faces second.
+**Cast silhouettes** stay instantly readable at gameplay scale: the half-giant guide is the broadest and tallest friendly adult, but his room-scale silhouette still fits beneath the authored doorway he uses; his great width, boots, coat, and posture sell the scale without breaking the room. The charms professor is knee-high with a book-stack podium; the potions master is a black column with a widow's peak; the villain is smoke-edged. Silhouette-first design, faces second.
 
 **Portraits** (dialogue frames) are larger, more detailed head-and-shoulders renders of the same puppets — same parts, higher detail tier — framed in ornate gilt like castle paintings, with two or three frames of mouth/eyebrow animation while speaking.
 
@@ -68,6 +68,7 @@ Uncluttered but highly stylized — the HUD should look like objects from the wo
 
 - **Materials:** parchment cards with deckled edges, wax-seal buttons, brass/gold filigree trim, quill-drawn icons with ink texture.
 - **The wand button** is her actual wand in a brass holster; **the satchel** is a leather school bag; **the quest star** is a small enchanted compass-star. Nothing on screen looks like software.
+- Diegetic HUD objects appear only after Violet receives them in the story: the opening bedroom shows the quest compass, not an empty wand sheath or an as-yet-unowned satchel.
 - **Spell cards** in the fan: parchment with the quill-drawn spell icon, the one-word name in a friendly rounded hand, and the spell's signature color as the wax seal.
 - **Incantation ribbons & rune-tiles** (the learning layer): floating parchment ribbon with letter slots; letter tiles as small stone runes with gold-leaf letters that flip and chime into place; completed words ignite in the spell's color.
 - **Caption chips:** cream parchment chip, large friendly rounded lettering (high contrast, ~44px virtual minimum), max three words, bottom-center above the HUD line.

@@ -172,10 +172,12 @@ describe('one-tap world interactions', () => {
     expect(world.roomId).toBe('ch1.diagonStreet');
     expect(world.dialogue.scriptId).toBe('ch1.guide.map');
     expect(world.flags['ch1.satchelReceived']).not.toBe(true);
+    expect(world.snapshot().hasSatchel).toBe(false);
 
     world.advanceDialogue();
 
     expect(world.flags['ch1.satchelReceived']).toBe(true);
+    expect(world.snapshot().hasSatchel).toBe(true);
     expect(world.overlay).toEqual({ surface: 'satchel', tab: 'map' });
     expect(world.unlockedRooms()).toContain('ch1.ollivanders');
   });

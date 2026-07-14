@@ -455,14 +455,12 @@ export class Game {
       if (objective) this.sound.speak(objective.voice, objective.text);
       return;
     }
-    if (pointInUiRect(point, UI_RECTS.satchel)) {
-      if (this.world.flags['ch1.satchelReceived']) {
-        this.world.overlay = { surface: 'satchel', tab: 'map' };
-        this.sound.playSfx('sfx/ui/parchment', 'chime');
-      } else this.sound.playSfx('sfx/ui/locked', 'fizzle');
+    if (state.hasSatchel && pointInUiRect(point, UI_RECTS.satchel)) {
+      this.world.overlay = { surface: 'satchel', tab: 'map' };
+      this.sound.playSfx('sfx/ui/parchment', 'chime');
       return;
     }
-    if (pointInUiRect(point, UI_RECTS.wand)) {
+    if (state.hasWand && pointInUiRect(point, UI_RECTS.wand)) {
       const script = this.world.chapter.dialogues['ch1.violet.noSpells'];
       if (script) this.world.dialogue.open('ch1.violet.noSpells');
       this.processWorldEvents();
@@ -1604,6 +1602,7 @@ export class Game {
           variant: state.pet.type === 'owl' ? 'pet' : undefined,
           pose: state.pet.pose ?? (state.player.walking ? 'pet-follow' : 'idle'),
           reducedMotion: this.reducedMotion,
+          lightSide: state.keyLight,
           lookX: (state.pet.facing ?? state.player.facing) === 'right' ? 0.45 : -0.45,
         }, this.simTime);
       } else {
@@ -1618,6 +1617,7 @@ export class Game {
             scale: 1.08,
             facing: occupant.facing,
             reducedMotion: this.reducedMotion,
+            lightSide: state.keyLight,
             lookX: clamp((state.player.x - occupant.x) / 360, -1, 1),
             lookY: clamp((state.player.y - occupant.y - 170) / 300, -1, 1),
           }, this.simTime);
@@ -1641,12 +1641,17 @@ export class Game {
     }
 
     if (state.roomId === 'ch1.menagerie' && !this.world.flags['ch1.petNamed']) {
-      this.characterRenderer.drawPet(context, { type: 'cat', x: 650 - state.cameraX, y: 585 }, this.simTime);
+      this.characterRenderer.drawPet(context, {
+        type: 'cat', x: 650 - state.cameraX, y: 585, lightSide: state.keyLight,
+      }, this.simTime);
       this.characterRenderer.drawPet(context, {
         type: 'owl', variant: 'pet', pose: 'idle', x: 900 - state.cameraX, y: 520,
         scale: 0.92, reducedMotion: this.reducedMotion, lookX: -0.35,
+        lightSide: state.keyLight,
       }, this.simTime + 0.7);
-      this.characterRenderer.drawPet(context, { type: 'toad', x: 1110 - state.cameraX, y: 595 }, this.simTime + 1.3);
+      this.characterRenderer.drawPet(context, {
+        type: 'toad', x: 1110 - state.cameraX, y: 595, lightSide: state.keyLight,
+      }, this.simTime + 1.3);
     }
   }
 
@@ -1678,11 +1683,9 @@ export class Game {
       x: (target.hitArea.x ?? 0) - state.cameraX + (target.hitArea.shape === 'rect' ? target.hitArea.width / 2 : 0),
       y: (target.hitArea.y ?? 0) + (target.hitArea.shape === 'rect' ? target.hitArea.height / 2 : 0),
     }));
-    targets.push(
-      { id: 'hud.quest', x: 80, y: 80 },
-      { id: 'hud.satchel', x: 82, y: 638 },
-      { id: 'hud.wand', x: 1198, y: 638 },
-    );
+    targets.push({ id: 'hud.quest', x: 80, y: 80 });
+    if (state.hasSatchel) targets.push({ id: 'hud.satchel', x: 82, y: 638 });
+    if (state.hasWand) targets.push({ id: 'hud.wand', x: 1198, y: 638 });
     if (this.shouldShowReplayExit()) targets.push(semanticRect('replay.exit', UI_RECTS.replayExit));
     const chapterTwoPreview = isChapterTwoPreview(this.world, state);
     if (chapterTwoPreview && !state.setPiece && !state.overlay) {

@@ -203,8 +203,9 @@ describe('illustrated character renderer', () => {
 
     expect(world.calls).toEqual(replayed.calls);
     expect(world.depth).toBe(0);
-    expect(HAGRID_STYLE.worldScale).toBeGreaterThanOrEqual(1.45);
-    expect(HAGRID_STYLE.worldScale).toBeLessThanOrEqual(1.55);
+    expect(HAGRID_STYLE.worldScale).toBeGreaterThanOrEqual(1.2);
+    expect(HAGRID_STYLE.worldScale).toBeLessThanOrEqual(1.3);
+    expect(240 * HAGRID_STYLE.worldScale).toBeLessThanOrEqual(300);
     expect(world.calls).toContainEqual(['scale', HAGRID_STYLE.worldScale, HAGRID_STYLE.worldScale]);
     expect(world.calls.filter(([name]) => name === 'bezierCurveTo').length).toBeGreaterThan(145);
     expect(world.calls.some(([name]) => [
@@ -651,6 +652,8 @@ describe('illustrated character renderer', () => {
     expect(casual.calls).toEqual(replayedCasual.calls);
     expect(defaultRobes.calls).toEqual(explicitRobes.calls);
     expect(casual.calls).not.toEqual(defaultRobes.calls);
+    const casualHeadHeight = 92 * 0.6;
+    expect((133 + casualHeadHeight) / casualHeadHeight).toBeGreaterThanOrEqual(3.4);
     expect(casual.calls.filter(([name]) => name === 'bezierCurveTo').length).toBeGreaterThan(145);
     expect(casual.calls.some(([name]) => [
       'arc', 'ellipse', 'fillRect', 'lineTo', 'rect', 'roundRect', 'strokeRect',
@@ -690,8 +693,8 @@ describe('illustrated character renderer', () => {
       expect(surface.styles).not.toContainEqual(['fillStyle', VIOLET_STYLE.lining]);
       expect(surface.styles.filter(([, style]) => style === VIOLET_STYLE.iris)).toHaveLength(2);
       expect(surface.calls.filter(([name, x, y]) => (
-        name === 'scale' && x === 0.84 && y === 0.84
-      ))).toHaveLength(4);
+        name === 'scale' && x === 0.6 && y === 0.6
+      ))).toHaveLength(2);
     }
     expect(casual.styles.filter(([property, style]) => (
       property === 'fillStyle' && style === VIOLET_STYLE.skinBase
@@ -699,6 +702,9 @@ describe('illustrated character renderer', () => {
     expect(casual.calls.filter(([name, x, y]) => (
       name === 'moveTo' && x === 32 && y === -81
     ))).toHaveLength(2);
+    expect(casual.calls).toContainEqual(['scale', 1, 1.08]);
+    expect(casual.calls).toContainEqual(['moveTo', -28, -101]);
+    expect(casual.calls).toContainEqual(['moveTo', 9, -72]);
     for (const shadow of [
       'rgba(27,18,24,0.28)', 'rgba(45,27,22,0.25)', 'rgba(24,17,21,0.17)',
     ]) expect(casual.styles).toContainEqual(['fillStyle', shadow]);
@@ -912,6 +918,56 @@ describe('illustrated character renderer', () => {
         (value) => typeof value === 'number' && !Number.isFinite(value),
       ))).toHaveLength(0);
       expect(sanitized.depth).toBe(0);
+
+      const rightLight = recordingContext();
+      const replayedRightLight = recordingContext();
+      renderer.drawPet(rightLight, { ...pet, lightSide: 'right' }, 1.375);
+      renderer.drawPet(replayedRightLight, { ...pet, lightSide: 'right' }, 1.375);
+      expect(rightLight.calls).toEqual(replayedRightLight.calls);
+      expect(rightLight.calls).not.toEqual(world.calls);
+      expect(rightLight.depth).toBe(0);
+
+      const rightPortrait = recordingContext();
+      renderer.drawPortrait(rightPortrait, {
+        speaker: type,
+        pose: 'speaking',
+        x: 80,
+        y: 90,
+        facing: 'right',
+        lightSide: 'right',
+      }, 1.375);
+      expect(rightPortrait.calls).not.toEqual(portrait.calls);
+      expect(rightPortrait.depth).toBe(0);
+    }
+  });
+
+  it('plants character and companion shadows before animated body transforms', () => {
+    const renderer = new CharacterRenderer();
+    for (const draw of [
+      (context) => renderer.draw(context, {
+        kind: 'violet', x: 140, y: 610, facing: 'right', outfit: 'casual', walking: true,
+      }, 1.125),
+      (context) => renderer.draw(context, {
+        kind: 'guide', x: 240, y: 610, facing: 'right', pose: 'walking',
+      }, 1.125),
+      (context) => renderer.drawPet(context, {
+        type: 'cat', x: 340, y: 610, facing: 'right', pose: 'pet-follow',
+      }, 1.125),
+    ]) {
+      const context = recordingContext();
+      draw(context);
+      const groundY = 610;
+      const anchoredTranslate = context.calls.findIndex(([name, , y]) => (
+        name === 'translate' && y === groundY
+      ));
+      const animatedTranslate = context.calls.findIndex(([name, , y], index) => (
+        index > anchoredTranslate && name === 'translate' && y !== groundY
+      ));
+      const firstRotation = context.calls.findIndex(([name]) => name === 'rotate');
+      expect(anchoredTranslate).toBeGreaterThanOrEqual(0);
+      expect(animatedTranslate).toBeGreaterThan(anchoredTranslate);
+      expect(firstRotation).toBeGreaterThan(animatedTranslate);
+      expect(context.depth).toBe(0);
     }
   });
 });

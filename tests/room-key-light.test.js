@@ -63,6 +63,60 @@ describe('room-authored character lighting', () => {
     );
   });
 
+  it.each(['left', 'right'])('forwards a %s key light to companions, the post owl, and shop pets', (keyLight) => {
+    const characterRenderer = {
+      draw: vi.fn(),
+      drawPet: vi.fn(),
+    };
+    const game = Object.create(Game.prototype);
+    Object.assign(game, {
+      characterRenderer,
+      reducedMotion: false,
+      simTime: 1.25,
+      world: { flags: {} },
+    });
+    const player = {
+      kind: 'violet', x: 500, y: 610, facing: 'right', walking: false,
+    };
+
+    game.drawCharacters({}, {
+      roomId: 'ch1.bedroom',
+      cameraX: 80,
+      keyLight,
+      player,
+      pet: { type: 'cat', x: 560, y: 610, facing: 'right', pose: 'idle' },
+      occupants: [{
+        npc: 'npc.owlPost', x: 1060, y: 210, facing: 'left', pose: 'perch',
+      }],
+    });
+
+    expect(characterRenderer.drawPet).toHaveBeenCalledTimes(2);
+    expect(characterRenderer.drawPet).toHaveBeenCalledWith(
+      {},
+      expect.objectContaining({ type: 'cat', lightSide: keyLight }),
+      1.25,
+    );
+    expect(characterRenderer.drawPet).toHaveBeenCalledWith(
+      {},
+      expect.objectContaining({ type: 'owl', variant: 'post', lightSide: keyLight }),
+      1.25,
+    );
+
+    characterRenderer.drawPet.mockClear();
+    game.drawCharacters({}, {
+      roomId: 'ch1.menagerie',
+      cameraX: 80,
+      keyLight,
+      player,
+      pet: null,
+      occupants: [],
+    });
+    expect(characterRenderer.drawPet).toHaveBeenCalledTimes(3);
+    expect(characterRenderer.drawPet.mock.calls.every(([, pet]) => (
+      pet.lightSide === keyLight
+    ))).toBe(true);
+  });
+
   it('uses the bedroom light from the right and defaults an unannotated room to the left', () => {
     const bedroom = createWorldAt({
       scene: 'ch1.letter',

@@ -59,8 +59,8 @@ export const UI_RECTS = Object.freeze({
   satchel: { x: 28, y: 584, width: 108, height: 108 },
   wand: { x: 1144, y: 584, width: 108, height: 108 },
   dialogueReplay: { x: 998, y: 522, width: 88, height: 88 },
-  letterHear: { x: 238, y: 594, width: 374, height: 96 },
-  letterContinue: { x: 668, y: 594, width: 374, height: 96 },
+  letterHear: { x: 60, y: 594, width: 280, height: 96 },
+  letterContinue: { x: 360, y: 594, width: 280, height: 96 },
   robeConfirm: { x: 742, y: 548, width: 338, height: 102 },
   debugReset: { x: 510, y: 18, width: 260, height: 88 },
   satchelMapTab: { x: 205, y: 145, width: 210, height: 88 },
@@ -99,11 +99,21 @@ export const UI_RECTS = Object.freeze({
 
 const DIALOGUE_FRAME = Object.freeze({
   y: 520,
+  topY: 32,
+  middleY: 270,
   height: 182,
   maximumWidth: 900,
+  minimumWidth: 384,
   margin: 32,
   speakerGap: 30,
   portraitOverhang: 62,
+});
+const LETTER_READING_INVITATION = Object.freeze({
+  x: 350,
+  y: 318,
+  scale: 0.87,
+  localWidth: 650,
+  localHeight: 430,
 });
 // Conservative painted bounds for Violet's wispiest hair, shoes, and grounding
 // shadow across the robe-preview idle motion.
@@ -119,18 +129,24 @@ export function dialogueSceneContext(state, dialogue = state?.dialogue) {
   const violetOutfit = state?.player?.outfit ?? 'robes';
   const violetRobeTrim = state?.player?.robeTrim ?? PALETTE.violet;
   const speaker = dialogue?.speaker;
+  const cameraX = state?.cameraX ?? 0;
+  const characterBounds = visibleCharacterBounds(state, cameraX);
+  const sceneryBounds = visibleObjectiveSceneryBounds(state, cameraX);
+  const avoidance = Object.freeze([...characterBounds, ...sceneryBounds]);
   if (!speaker || speaker === 'npc.narrator') {
     return {
       night,
       lightSide,
       speakerPosition: null,
       speakerBounds: null,
+      characterBounds,
+      sceneryBounds,
+      avoidBounds: avoidance,
       violetOutfit,
       violetRobeTrim,
     };
   }
 
-  const cameraX = state?.cameraX ?? 0;
   let actor = null;
   if (speaker === 'npc.violet' && state?.player) actor = state.player;
   else if (speaker.startsWith('npc.pet.') && state?.pet) actor = state.pet;
@@ -141,6 +157,9 @@ export function dialogueSceneContext(state, dialogue = state?.dialogue) {
       lightSide,
       speakerPosition: null,
       speakerBounds: null,
+      characterBounds,
+      sceneryBounds,
+      avoidBounds: avoidance,
       violetOutfit,
       violetRobeTrim,
     };
@@ -155,43 +174,54 @@ export function dialogueSceneContext(state, dialogue = state?.dialogue) {
     violetRobeTrim,
     speakerPosition: position,
     speakerBounds: {
+      id: speaker,
       left: position.x - dimensions.width / 2,
       right: position.x + dimensions.width / 2,
       top: position.y - dimensions.height,
       bottom: position.y + dimensions.ground,
     },
+    characterBounds,
+    sceneryBounds,
+    avoidBounds: avoidance,
   };
 }
 
-export function dialogueScrollLayout({ speakerBounds = null } = {}) {
-  const frame = {
-    x: (WORLD.width - DIALOGUE_FRAME.maximumWidth) / 2,
-    y: DIALOGUE_FRAME.y,
-    width: DIALOGUE_FRAME.maximumWidth,
-    height: DIALOGUE_FRAME.height,
-  };
-  let side = 'center';
-  const overlapsDialogueBand = speakerBounds
-    && speakerBounds.bottom >= frame.y - 8
-    && speakerBounds.top <= frame.y + frame.height + 8;
+export function dialogueScrollLayout(scene = {}) {
+  const speakerBounds = validLayoutBounds(scene?.speakerBounds) ? scene.speakerBounds : null;
+  const suppliedAvoidance = [
+    ...(Array.isArray(scene?.characterBounds) ? scene.characterBounds : []),
+    ...(Array.isArray(scene?.sceneryBounds) ? scene.sceneryBounds : []),
+    ...(Array.isArray(scene?.avoidBounds) ? scene.avoidBounds : []),
+  ].filter(validLayoutBounds);
+  const avoidBounds = uniqueLayoutBounds([
+    ...suppliedAvoidance,
+    ...(speakerBounds ? [speakerBounds] : []),
+  ]);
+  const speakerCenter = speakerBounds ? (speakerBounds.left + speakerBounds.right) / 2 : null;
+  const preferredSide = speakerCenter === null || speakerCenter <= WORLD.width / 2 ? 'right' : 'left';
+  const yCandidates = [DIALOGUE_FRAME.y, DIALOGUE_FRAME.topY, DIALOGUE_FRAME.middleY];
+  let placement = null;
 
-  if (overlapsDialogueBand) {
-    const leftEdge = speakerBounds.left - DIALOGUE_FRAME.speakerGap - DIALOGUE_FRAME.portraitOverhang;
-    const leftSpace = Math.max(0, leftEdge - DIALOGUE_FRAME.margin);
-    const rightEdge = speakerBounds.right + DIALOGUE_FRAME.speakerGap + DIALOGUE_FRAME.portraitOverhang;
-    const rightSpace = Math.max(0, WORLD.width - DIALOGUE_FRAME.margin - rightEdge);
-    if (rightSpace >= leftSpace) {
-      side = 'right';
-      frame.x = rightEdge;
-      frame.width = Math.min(DIALOGUE_FRAME.maximumWidth, rightSpace);
-    } else {
-      side = 'left';
-      frame.width = Math.min(DIALOGUE_FRAME.maximumWidth, leftSpace);
-      frame.x = leftEdge - frame.width;
+  for (const y of yCandidates) {
+    const bandBounds = avoidBounds.filter((bounds) => boundsOverlapVerticalBand(
+      bounds,
+      y,
+      DIALOGUE_FRAME.height,
+    ));
+    if (bandBounds.length === 0) {
+      placement = centeredDialoguePlacement(y, speakerCenter);
+      break;
     }
+
+    const candidates = dialogueSidePlacements(y, bandBounds);
+    placement = candidates.find((candidate) => candidate.side === preferredSide)
+      ?? candidates.sort((first, second) => second.frame.width - first.frame.width)[0]
+      ?? null;
+    if (placement) break;
   }
 
-  const portraitSide = side === 'left' ? 'right' : 'left';
+  placement ??= centeredDialoguePlacement(DIALOGUE_FRAME.topY, speakerCenter);
+  const { frame, side, portraitSide } = placement;
   const controlsSide = portraitSide === 'left' ? 'right' : 'left';
   const portrait = {
     x: portraitSide === 'left' ? frame.x : frame.x + frame.width,
@@ -210,6 +240,12 @@ export function dialogueScrollLayout({ speakerBounds = null } = {}) {
     controlsSide,
     frame,
     portrait,
+    portraitBounds: {
+      left: portrait.x - DIALOGUE_FRAME.portraitOverhang,
+      right: portrait.x + DIALOGUE_FRAME.portraitOverhang,
+      top: portrait.y - DIALOGUE_FRAME.portraitOverhang,
+      bottom: portrait.y + DIALOGUE_FRAME.portraitOverhang,
+    },
     captionRect: {
       x: captionLeft,
       y: frame.y + 18,
@@ -219,7 +255,171 @@ export function dialogueScrollLayout({ speakerBounds = null } = {}) {
     controlX,
     replayRect,
     advanceRect,
+    avoidBounds,
     rotation: 0,
+  };
+}
+
+export function letterReadingLayout() {
+  const { x, y, scale, localWidth, localHeight } = LETTER_READING_INVITATION;
+  return Object.freeze({
+    invitationPose: Object.freeze({ x, y, scale }),
+    invitationBounds: Object.freeze({
+      left: x - localWidth * scale / 2,
+      right: x + localWidth * scale / 2,
+      top: y - localHeight * scale / 2,
+      bottom: y + localHeight * scale / 2,
+    }),
+    hear: Object.freeze({ ...UI_RECTS.letterHear }),
+    continue: Object.freeze({ ...UI_RECTS.letterContinue }),
+  });
+}
+
+function visibleCharacterBounds(state, cameraX) {
+  const bounds = [];
+  if (state?.player) bounds.push(characterLayoutBounds('npc.violet', state.player, cameraX));
+  for (const occupant of state?.occupants ?? []) {
+    if (occupant.npc === 'npc.violet' || occupant.npc.startsWith('npc.pet.')) continue;
+    const yOffset = occupant.npc === 'npc.owlPost' ? 80 : 0;
+    bounds.push(characterLayoutBounds(occupant.npc, occupant, cameraX, yOffset));
+  }
+  if (state?.pet?.type) {
+    bounds.push(characterLayoutBounds(`npc.pet.${state.pet.type}`, state.pet, cameraX));
+  }
+
+  // These three shop animals are drawn directly by Game while the pet-shopping
+  // scene is active, so mirror those existing positions without requiring new
+  // snapshot fields merely to keep the dialogue card off them.
+  if (state?.roomId === 'ch1.menagerie' && state?.sceneId === 'ch1.petShopping') {
+    bounds.push(
+      characterLayoutBounds('preview.pet.cat', { x: 650, y: 585 }, cameraX),
+      characterLayoutBounds('preview.pet.owl', { x: 900, y: 520 }, cameraX),
+      characterLayoutBounds('preview.pet.toad', { x: 1110, y: 595 }, cameraX),
+    );
+  }
+  return Object.freeze(bounds);
+}
+
+function characterLayoutBounds(id, actor, cameraX, yOffset = 0) {
+  const dimensionId = id.startsWith('preview.pet.')
+    ? `npc.pet.${id.split('.').at(-1)}`
+    : id;
+  const dimensions = speakerDimensions(dimensionId);
+  const x = actor.x - cameraX;
+  const y = actor.y + yOffset;
+  return Object.freeze({
+    id,
+    left: x - dimensions.width / 2,
+    right: x + dimensions.width / 2,
+    top: y - dimensions.height,
+    bottom: y + dimensions.ground,
+  });
+}
+
+function visibleObjectiveSceneryBounds(state, cameraX) {
+  const bounds = (state?.targets ?? [])
+    .filter((target) => target?.salience?.tier === 'thread' && target.hitArea)
+    .map((target) => hitAreaLayoutBounds(target, cameraX))
+    .filter(Boolean);
+  return Object.freeze(bounds);
+}
+
+function hitAreaLayoutBounds(target, cameraX) {
+  const hitArea = target.hitArea;
+  if (hitArea.shape === 'rect') {
+    return Object.freeze({
+      id: `scenery:${target.id}`,
+      left: hitArea.x - cameraX,
+      right: hitArea.x - cameraX + hitArea.width,
+      top: hitArea.y,
+      bottom: hitArea.y + hitArea.height,
+    });
+  }
+  const radius = hitArea.radius ?? hitArea.r;
+  if (!Number.isFinite(radius)) return null;
+  return Object.freeze({
+    id: `scenery:${target.id}`,
+    left: hitArea.x - cameraX - radius,
+    right: hitArea.x - cameraX + radius,
+    top: hitArea.y - radius,
+    bottom: hitArea.y + radius,
+  });
+}
+
+function validLayoutBounds(bounds) {
+  return bounds
+    && [bounds.left, bounds.right, bounds.top, bounds.bottom].every(Number.isFinite)
+    && bounds.right > bounds.left
+    && bounds.bottom > bounds.top;
+}
+
+function uniqueLayoutBounds(bounds) {
+  const seen = new Set();
+  return bounds.filter((entry) => {
+    const key = `${entry.id ?? ''}:${entry.left}:${entry.right}:${entry.top}:${entry.bottom}`;
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+}
+
+function boundsOverlapVerticalBand(bounds, y, height) {
+  return bounds.bottom > y && bounds.top < y + height;
+}
+
+function dialogueSidePlacements(y, bandBounds) {
+  const minLeft = Math.min(...bandBounds.map((bounds) => bounds.left));
+  const maxRight = Math.max(...bandBounds.map((bounds) => bounds.right));
+  const placements = [];
+  const rightX = Math.max(
+    DIALOGUE_FRAME.margin,
+    maxRight + DIALOGUE_FRAME.speakerGap + DIALOGUE_FRAME.portraitOverhang,
+  );
+  const rightWidth = Math.min(
+    DIALOGUE_FRAME.maximumWidth,
+    WORLD.width - DIALOGUE_FRAME.margin - rightX,
+  );
+  if (rightWidth >= DIALOGUE_FRAME.minimumWidth) {
+    placements.push({
+      side: 'right',
+      portraitSide: 'left',
+      frame: { x: rightX, y, width: rightWidth, height: DIALOGUE_FRAME.height },
+    });
+  }
+
+  const leftEdge = Math.min(
+    WORLD.width - DIALOGUE_FRAME.margin,
+    minLeft - DIALOGUE_FRAME.speakerGap - DIALOGUE_FRAME.portraitOverhang,
+  );
+  const leftWidth = Math.min(
+    DIALOGUE_FRAME.maximumWidth,
+    leftEdge - DIALOGUE_FRAME.margin,
+  );
+  if (leftWidth >= DIALOGUE_FRAME.minimumWidth) {
+    placements.push({
+      side: 'left',
+      portraitSide: 'right',
+      frame: {
+        x: leftEdge - leftWidth,
+        y,
+        width: leftWidth,
+        height: DIALOGUE_FRAME.height,
+      },
+    });
+  }
+  return placements;
+}
+
+function centeredDialoguePlacement(y, speakerCenter) {
+  return {
+    side: 'center',
+    portraitSide: speakerCenter !== null && speakerCenter > WORLD.width / 2 ? 'right' : 'left',
+    frame: {
+      x: (WORLD.width - DIALOGUE_FRAME.maximumWidth) / 2,
+      y,
+      width: DIALOGUE_FRAME.maximumWidth,
+      height: DIALOGUE_FRAME.height,
+    },
   };
 }
 
@@ -511,12 +711,19 @@ export class UIRenderer {
     if (state.overlay || state.dialogue || state.selection || state.screen !== 'playing') return;
     const animationTime = reducedMotion ? 0 : time;
     drawQuestButton(context, UI_RECTS.quest, animationTime, Boolean(state.newObjective) && !reducedMotion);
-    drawSatchelButton(context, UI_RECTS.satchel);
-    drawAffordancePresentation(
-      context,
-      hudGoldenThreadPresentation(state, time, { reducedMotion }),
-    );
-    drawWandButton(context, UI_RECTS.wand, Boolean(state.hasWand), animationTime);
+    if (state.hasSatchel) {
+      drawSatchelButton(context, UI_RECTS.satchel);
+      drawAffordancePresentation(
+        context,
+        hudGoldenThreadPresentation(state, time, { reducedMotion }),
+      );
+    }
+    if (state.hasWand) drawWandButton(context, UI_RECTS.wand, true, animationTime);
+    return Object.freeze({
+      quest: true,
+      satchel: Boolean(state.hasSatchel),
+      wand: Boolean(state.hasWand),
+    });
   }
 
   drawDialogue(context, dialogue, time, muted = false, reducedMotion = false, scene = {}) {
@@ -564,19 +771,21 @@ export class UIRenderer {
   }
 
   drawLetterReading(context) {
+    const layout = letterReadingLayout();
     context.fillStyle = 'rgba(20,17,38,0.66)';
     context.fillRect(0, 0, WORLD.width, WORLD.height);
-    drawReadableInvitation(context);
-    drawParchmentAction(context, UI_RECTS.letterHear, {
+    drawReadableInvitation(context, layout.invitationPose);
+    drawParchmentAction(context, layout.hear, {
       label: childFacingUiText('Hear the letter', 'action'),
       icon: vectorControlIcon('speaker'),
       selected: true,
     });
-    drawParchmentAction(context, UI_RECTS.letterContinue, {
+    drawParchmentAction(context, layout.continue, {
       label: childFacingUiText('Let’s go!', 'action'),
       icon: vectorControlIcon('check'),
       selected: true,
     });
+    return layout;
   }
 
   drawRobePicker(context, state, time = 0, reducedMotion = false) {
