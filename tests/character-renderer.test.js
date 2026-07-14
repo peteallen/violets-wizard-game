@@ -474,8 +474,11 @@ describe('illustrated character renderer', () => {
 
   it('builds Violet from her full storybook palette and hand-drawn dark-green glasses', () => {
     expect(VIOLET_STYLE).toMatchObject({
-      hairBase: '#806f62',
-      hairShadow: '#514640',
+      hairBase: '#9b7654',
+      hairMid: '#7d5b40',
+      hairShadow: '#584033',
+      hairLight: 'rgba(239, 203, 154, 0.38)',
+      hairRim: 'rgba(245, 215, 170, 0.46)',
       skinBase: '#d9a17b',
       cheek: 'rgba(189, 82, 91, 0.24)',
       iris: '#5a3d28',

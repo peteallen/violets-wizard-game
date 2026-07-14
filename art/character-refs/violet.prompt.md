@@ -7,6 +7,7 @@ This is a style target only; it is not shipped by the game.
 - Accepted file: `violet.png`
 - SHA-256: `7b43bf91b32b9ff4edbe31db02ca926b4d801a781f547c1fed0d55e8a72a96f2`
 - What changed vs. the prior accepted candidate (below): guided by a real photo Pete supplied — Violet now wears **dark-green rectangular glasses**, and her hair tone is a cooler **ash light-brown** (D37; ART_DIRECTION.md updated to match).
+- Runtime color correction (D44, 2026-07-13): the cooler accepted-sheet tone read gray at gameplay scale, so the shipped code-drawn puppet now uses unmistakably **warm light-brown** hair. The sheet remains the face, hair-shape, glasses, and robed-look reference; its cooler hair color is no longer the palette target. The next regeneration should carry D44’s warmer tone and record its prompt here.
 - **Provenance gap:** the photo-guided revision prompts were not recorded by the session that generated this revision. The prompts below describe the *prior* candidate only. Whoever regenerates or edits this sheet next: record your prompts here (the reference photo itself is private and is never committed).
 
 ## Prior accepted candidate metadata (superseded 2026-07-13)

@@ -20,11 +20,11 @@ const PORTRAIT_CAMEO_STYLE = Object.freeze({
 });
 
 export const VIOLET_STYLE = Object.freeze({
-  hairBase: '#806f62',
-  hairMid: '#695a50',
-  hairShadow: '#514640',
-  hairLight: 'rgba(231, 218, 198, 0.32)',
-  hairRim: 'rgba(220, 205, 184, 0.42)',
+  hairBase: '#9b7654',
+  hairMid: '#7d5b40',
+  hairShadow: '#584033',
+  hairLight: 'rgba(239, 203, 154, 0.38)',
+  hairRim: 'rgba(245, 215, 170, 0.46)',
   skinBase: '#d9a17b',
   skinShadow: '#b87968',
   skinLight: 'rgba(255, 225, 181, 0.28)',
