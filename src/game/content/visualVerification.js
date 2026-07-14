@@ -178,6 +178,13 @@ const REVIEW_SCENE_ILLUSION_CHECKS = Object.freeze({
     'Part edges show no pale keying halo and no fragments of neighboring sheet parts; the walking figure’s leg swing pivots at the hips without separating from the torso.',
     'Posture reads confident and upright at 2×: weight balanced over the feet, visible shoulder line, chin level, arms resting beside the body with hands near the outer thighs — never curled inward, hunched, or creeping.',
   ],
+  'hagrid-sprite-review': [
+    'Exactly five labeled figures remain separated on plinths: two code-drawn Hagrids on the left, three painted sprite-part Hagrids on the right, each with a grounded contact shadow.',
+    'Each painted figure reads as one connected half-giant at gameplay scale: head, mane, torso, both arms, and both legs join with no visible gaps, floating parts, or double edges at idle, mid-stride, and mid-beckon.',
+    'The painted figures keep the reference identity: wild dark-brown mane and beard with a visible warm smile, patched deep-brown coat with brass toggles, deep-green waistcoat, plum scarf, and matching two-buckle boots.',
+    'Part edges show no pale keying halo and no fragments of neighboring sheet parts; the beckoning arm raises from the shoulder without detaching or covering the face.',
+    'Posture reads grounded and mighty at 2×: weight over the feet, level chin, the resting arm beside the coat, and the painted Hagrid stands clearly taller and broader than the painted child puppet — never hunched, floating, or knock-kneed.',
+  ],
 });
 
 // A fixture belongs here only when it renders no surface visible to Violet or an assisting grown-up.

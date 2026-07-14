@@ -429,6 +429,10 @@ registry
     'character-sprite-spike-review',
     'SP-E spike: the code-drawn Violet beside the painted sprite-part Violet, idle and walking.',
   ))
+  .register('hagrid-sprite-review', characterReviewFixture(
+    'hagrid-sprite-review',
+    'The code-drawn Hagrid beside the painted sprite-part Hagrid, idle, walking, and beckoning.',
+  ))
   .register('ui-dialogue-review', characterReviewFixture(
     'ui-dialogue-review',
     'The illustrated dialogue parchment, animated Hagrid cameo, short caption, and replay control.',

@@ -176,6 +176,9 @@ registry
   .register('character-sprite-spike-review', createFixture(
     'Hold the code-drawn and painted-part Violets side by side on deterministic loops.',
   ))
+  .register('hagrid-sprite-review', createFixture(
+    'Hold the code-drawn and painted-part Hagrids side by side on deterministic loops.',
+  ))
   .register('ui-dialogue-review', createFixture(
     'Hold the illustrated voiced-dialogue frame and replay control.',
   ))

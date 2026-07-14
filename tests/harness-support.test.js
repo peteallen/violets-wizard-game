@@ -94,6 +94,7 @@ describe('state fixtures', () => {
       'character-portraits-review',
       'owl-motion-review',
       'character-sprite-spike-review',
+      'hagrid-sprite-review',
       'ui-dialogue-review',
       'ui-dialogue-night-review',
       'ui-dialogue-center-review',

@@ -11,13 +11,16 @@ export class SpriteRig {
    *   shoulderDrop, neckOverlap, backHairLift (sheet pixels).
    * @param {Object} config.shadow — { rx, ry } ground-shadow radii (world units).
    * @param {Object} [config.motion] — overrides: armRest, armSwing, legSwing.
+   * @param {Object} [config.beckonPivot] — { x, y, mirror } pivot for the
+   *   armBeckon part (fractions of the part box; the shoulder attach point).
    */
-  constructor({ partUrls, sheetToWorld, rig, shadow, motion = {} }) {
+  constructor({ partUrls, sheetToWorld, rig, shadow, motion = {}, beckonPivot = {} }) {
     this.partUrls = partUrls;
     this.sheetToWorld = sheetToWorld;
     this.rig = rig;
     this.shadow = shadow;
     this.motion = { armRest: 0.05, armSwing: 0.22, legSwing: 0.18, ...motion };
+    this.beckonPivot = { x: 0.4, y: 0, mirror: false, ...beckonPivot };
     this.images = null;
     this.ready = false;
     this.failed = false;
@@ -39,7 +42,8 @@ export class SpriteRig {
   }
 
   // Returns true when it drew; false lets callers fall back to the code-drawn puppet.
-  draw(context, { x = 0, y = 0, scale = 1, facing = 'right', pose = 'idle', time = 0, phase = 0 } = {}) {
+  // Pass shadow: false when the caller plants its own grounding shadow (D47).
+  draw(context, { x = 0, y = 0, scale = 1, facing = 'right', pose = 'idle', time = 0, phase = 0, shadow = true } = {}) {
     this.ensureLoading();
     if (!this.ready || this.failed) return false;
 
@@ -58,14 +62,16 @@ export class SpriteRig {
     context.translate(x, y);
     context.scale(direction * scale, scale);
 
-    context.fillStyle = 'rgba(27, 18, 24, 0.28)';
-    context.beginPath();
-    context.ellipse(2, 8, this.shadow.rx, this.shadow.ry, 0, 0, Math.PI * 2);
-    context.fill();
-    context.fillStyle = 'rgba(45, 27, 22, 0.22)';
-    context.beginPath();
-    context.ellipse(-1, 6.5, this.shadow.rx * 0.71, this.shadow.ry * 0.64, 0, 0, Math.PI * 2);
-    context.fill();
+    if (shadow) {
+      context.fillStyle = 'rgba(27, 18, 24, 0.28)';
+      context.beginPath();
+      context.ellipse(2, 8, this.shadow.rx, this.shadow.ry, 0, 0, Math.PI * 2);
+      context.fill();
+      context.fillStyle = 'rgba(45, 27, 22, 0.22)';
+      context.beginPath();
+      context.ellipse(-1, 6.5, this.shadow.rx * 0.71, this.shadow.ry * 0.64, 0, 0, Math.PI * 2);
+      context.fill();
+    }
 
     context.translate(0, bob);
     context.rotate(sway);
@@ -100,7 +106,12 @@ export class SpriteRig {
     drawPart(img.arm, -shoulderX, shoulderY, { pivotX: 0.62, rotate: -armRest + armSwing, mirror: true });
     if (beckoning) {
       const beckonLift = Math.sin(time * 2.4 + phase) * 0.05;
-      drawPart(img.armBeckon, shoulderX, shoulderY, { pivotX: 0.4, rotate: beckonLift });
+      drawPart(img.armBeckon, shoulderX, shoulderY, {
+        pivotX: this.beckonPivot.x,
+        pivotY: this.beckonPivot.y,
+        rotate: beckonLift,
+        mirror: this.beckonPivot.mirror,
+      });
     } else {
       drawPart(img.arm, shoulderX, shoulderY, { pivotX: 0.62, rotate: armRest - armSwing * 0.8 });
     }
