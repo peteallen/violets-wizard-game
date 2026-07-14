@@ -270,6 +270,21 @@ export function chapterCardLayout() {
   });
 }
 
+export function dialogueChoiceLayout(count) {
+  const safeCount = Math.max(1, Math.min(4, Number.isInteger(count) ? count : 1));
+  const gap = 30;
+  const width = Math.min(286, (980 - (safeCount - 1) * gap) / safeCount);
+  const height = 262;
+  const total = safeCount * width + (safeCount - 1) * gap;
+  const startX = (WORLD.width - total) / 2;
+  return Object.freeze(Array.from({ length: safeCount }, (_, index) => Object.freeze({
+    x: startX + index * (width + gap),
+    y: 202,
+    width,
+    height,
+  })));
+}
+
 function speakerDimensions(speaker) {
   if (speaker === 'npc.guide') return { width: 244, height: 340, ground: 35 };
   if (speaker === 'npc.violet') return { width: 148, height: 228, ground: 32 };
@@ -434,7 +449,7 @@ export class UIRenderer {
     context.fillStyle = scene.night ? 'rgba(13,10,24,0.1)' : 'rgba(20,17,38,0.14)';
     context.fillRect(0, 0, WORLD.width, WORLD.height);
     if (dialogue.type === 'choice' && dialogue.choices?.length) {
-      this.drawChoices(context, dialogue.choices);
+      this.drawChoices(context, dialogue.choices, time, reducedMotion);
       return null;
     }
     const layout = dialogueScrollLayout(scene);
@@ -553,27 +568,39 @@ export class UIRenderer {
     }, time, muted, reducedMotion, scene);
   }
 
-  drawChoices(context, choices) {
-    const width = 262;
-    const gap = 28;
-    const total = choices.length * width + (choices.length - 1) * gap;
-    const startX = (WORLD.width - total) / 2;
+  drawChoices(context, choices, time = 0, reducedMotion = false) {
+    const layout = dialogueChoiceLayout(choices.length);
+    const animationTime = reducedMotion ? 0 : time;
     choices.forEach((choice, index) => {
-      const rect = { x: startX + index * (width + gap), y: 244, width, height: 166 };
+      const rect = layout[index];
       choice.__rect = rect;
-      drawDeckledParchment(context, rect, { ornament: false });
-      drawWaxIcon(context, rect.x + width / 2, rect.y + 62, 43, choice.icon, { selected: true });
+      drawIllustratedChoiceTag(context, rect, index, choice.icon);
+      const petType = choicePetType(choice.icon);
+      if (petType && typeof this.characterRenderer?.drawPet === 'function') {
+        this.characterRenderer.drawPet(context, {
+          type: petType,
+          x: rect.x + rect.width / 2,
+          y: rect.y + 178,
+          scale: petType === 'toad' ? 1.18 : petType === 'owl' ? 0.72 : 0.82,
+          pose: 'idle',
+          facing: 'right',
+          reducedMotion,
+        }, animationTime);
+      } else {
+        drawChoiceEmblem(context, rect, choice.icon, choiceAccent(choice.icon, index));
+      }
       context.fillStyle = '#382a24';
       context.textAlign = 'center';
       context.font = '700 29px "Andika", "Trebuchet MS", sans-serif';
       fitText(
         context,
         childFacingUiText(choice.caption, 'caption'),
-        rect.x + width / 2,
-        rect.y + 134,
-        width - 34,
+        rect.x + rect.width / 2,
+        rect.y + rect.height - 24,
+        rect.width - 34,
       );
     });
+    return layout;
   }
 
   drawSatchel(context, state, cardDefinitions = [], {
@@ -696,18 +723,8 @@ export class UIRenderer {
     selection.options.forEach((option, index) => {
       const rect = { x: x + index * (width + 26), y: 273, width, height: 244 };
       option.__rect = rect;
-      drawDeckledParchment(context, rect, { ornament: false });
-      context.fillStyle = option.color ?? '#6e4b68';
-      context.beginPath();
-      context.arc(rect.x + width / 2, rect.y + 91, 60, 0, Math.PI * 2);
-      context.fill();
-      context.strokeStyle = PALETTE.candle;
-      context.lineWidth = 5;
-      context.stroke();
-      drawVectorIcon(context, option.icon, rect.x + width / 2, rect.y + 91, 88, {
-        color: '#fff8e8',
-        secondary: '#f4d58d',
-      });
+      drawIllustratedChoiceTag(context, rect, index, option.icon);
+      drawChoiceEmblem(context, rect, option.icon, option.color ?? '#6e4b68');
       context.textAlign = 'center';
       context.fillStyle = '#382a24';
       context.font = '700 29px "Andika", "Trebuchet MS", sans-serif';
@@ -720,6 +737,7 @@ export class UIRenderer {
       );
     });
     drawClose(context);
+    return selection.options.map(({ __rect }) => __rect);
   }
 
   drawObjective(context, objective, time = 0, { reducedMotion = false } = {}) {
@@ -1181,6 +1199,161 @@ function drawWandButton(context, rect, enabled, time = 0) {
 
 function drawClose(context) {
   drawWaxIcon(context, 1090, 120, 45, 'close');
+}
+
+function drawIllustratedChoiceTag(context, rect, index, icon) {
+  const phase = (index + 1) * 0.37 + String(icon ?? '').length * 0.041;
+  const paper = ['#ead8b4', '#e4cfaa', '#f0dfbd', '#dcc39e'][index % 4];
+  context.save();
+  context.fillStyle = 'rgba(48,31,29,0.26)';
+  traceChoiceTag(context, { ...rect, x: rect.x + 7, y: rect.y + 9 }, phase + 0.2);
+  context.fill();
+  context.fillStyle = paper;
+  traceChoiceTag(context, rect, phase);
+  context.fill();
+  context.strokeStyle = '#76522c';
+  context.lineWidth = 4.2;
+  context.stroke();
+
+  context.save();
+  traceChoiceTag(context, rect, phase);
+  context.clip();
+  context.fillStyle = 'rgba(255,245,213,0.33)';
+  context.beginPath();
+  context.moveTo(rect.x - 3, rect.y + 2);
+  context.bezierCurveTo(
+    rect.x + rect.width * 0.28,
+    rect.y - 4,
+    rect.x + rect.width * 0.57,
+    rect.y + 3,
+    rect.x + rect.width * 0.76,
+    rect.y + rect.height * 0.16,
+  );
+  context.bezierCurveTo(
+    rect.x + rect.width * 0.52,
+    rect.y + rect.height * 0.25,
+    rect.x + rect.width * 0.2,
+    rect.y + rect.height * 0.28,
+    rect.x - 3,
+    rect.y + rect.height * 0.36,
+  );
+  context.closePath();
+  context.fill();
+  context.fillStyle = 'rgba(92,57,39,0.14)';
+  context.beginPath();
+  context.moveTo(rect.x - 4, rect.y + rect.height * 0.76);
+  context.bezierCurveTo(
+    rect.x + rect.width * 0.34,
+    rect.y + rect.height * 0.69,
+    rect.x + rect.width * 0.68,
+    rect.y + rect.height * 0.82,
+    rect.x + rect.width + 4,
+    rect.y + rect.height * 0.68,
+  );
+  context.bezierCurveTo(
+    rect.x + rect.width + 3,
+    rect.y + rect.height * 0.9,
+    rect.x + rect.width * 0.7,
+    rect.y + rect.height + 4,
+    rect.x - 4,
+    rect.y + rect.height + 3,
+  );
+  context.closePath();
+  context.fill();
+  context.restore();
+
+  context.strokeStyle = 'rgba(111,75,43,0.18)';
+  context.lineWidth = 1.15;
+  context.beginPath();
+  for (let mark = 0; mark < 5; mark += 1) {
+    const y = rect.y + 35 + mark * 43;
+    context.moveTo(rect.x + 18 + (mark % 2) * 3, y);
+    context.quadraticCurveTo(
+      rect.x + rect.width * 0.48,
+      y + (mark % 2 ? 2 : -2),
+      rect.x + rect.width - 19,
+      y + (mark % 2 ? -1 : 1),
+    );
+  }
+  context.stroke();
+  context.restore();
+}
+
+function traceChoiceTag(context, rect, phase) {
+  const wobble = 3 + Math.sin(phase * 7) * 1.1;
+  const { x, y, width, height } = rect;
+  context.beginPath();
+  context.moveTo(x + 24 + wobble, y + 1);
+  context.bezierCurveTo(
+    x + width * 0.32,
+    y - wobble * 0.35,
+    x + width * 0.68,
+    y + wobble * 0.42,
+    x + width - 22,
+    y + 1,
+  );
+  context.bezierCurveTo(
+    x + width + wobble * 0.24,
+    y + height * 0.28,
+    x + width - wobble * 0.38,
+    y + height * 0.7,
+    x + width - 17,
+    y + height - 3,
+  );
+  context.bezierCurveTo(
+    x + width * 0.72,
+    y + height + wobble * 0.32,
+    x + width * 0.29,
+    y + height - wobble * 0.46,
+    x + 18,
+    y + height - 2,
+  );
+  context.bezierCurveTo(
+    x - wobble * 0.28,
+    y + height * 0.72,
+    x + wobble * 0.4,
+    y + height * 0.27,
+    x + 24 + wobble,
+    y + 1,
+  );
+  context.closePath();
+}
+
+function drawChoiceEmblem(context, rect, icon, accent) {
+  const centerX = rect.x + rect.width / 2;
+  const centerY = rect.y + 92;
+  context.fillStyle = 'rgba(55,35,31,0.24)';
+  traceOrganicSpot(context, centerX + 5, centerY + 7, 66, 57, 0.13);
+  context.fill();
+  context.fillStyle = accent;
+  traceOrganicSpot(context, centerX, centerY, 64, 55, -0.11);
+  context.fill();
+  context.strokeStyle = '#5f402b';
+  context.lineWidth = 4;
+  context.stroke();
+  context.fillStyle = 'rgba(255,239,191,0.27)';
+  traceOrganicSpot(context, centerX - 17, centerY - 17, 28, 18, 0.18);
+  context.fill();
+  drawVectorIcon(context, icon, centerX, centerY, 84, {
+    color: '#fff4d8',
+    secondary: '#f4d58d',
+  });
+}
+
+function choicePetType(icon) {
+  const value = String(icon ?? '').toLowerCase();
+  if (value.includes('cat')) return 'cat';
+  if (value.includes('owl')) return 'owl';
+  if (value.includes('toad')) return 'toad';
+  return null;
+}
+
+function choiceAccent(icon, index) {
+  const petType = choicePetType(icon);
+  if (petType === 'cat') return '#8f684e';
+  if (petType === 'owl') return '#596882';
+  if (petType === 'toad') return '#667a53';
+  return ['#6e4b68', '#4f6c75', '#89663f', '#5d6750'][index % 4];
 }
 
 function drawObjectiveCompass(context, rect, time, { reducedMotion = false } = {}) {
