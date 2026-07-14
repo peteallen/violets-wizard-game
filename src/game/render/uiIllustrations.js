@@ -15,6 +15,12 @@ const PAPER_GRAIN = Object.freeze([
   [0.54, 0.29, 0.046, 0.018], [0.61, 0.76, 0.058, -0.012], [0.69, 0.47, 0.073, 0.015],
   [0.77, 0.16, 0.049, -0.014], [0.84, 0.66, 0.064, 0.012], [0.91, 0.35, 0.052, -0.017],
 ]);
+const KEYHOLE_PROGRESS_MARKS = Object.freeze([
+  [-0.11, 0.43, -0.08, 0.92], [-0.3, 0.35, -0.42, 1.04], [-0.42, 0.19, -0.78, 0.9],
+  [-0.44, -0.03, -1.03, 1.05], [-0.36, -0.25, -1.22, 0.94], [-0.19, -0.41, -1.43, 1.01],
+  [0.04, -0.46, -1.66, 0.91], [0.25, -0.38, -1.9, 1.08], [0.39, -0.21, -2.14, 0.93],
+  [0.44, 0.02, -2.31, 1.05], [0.36, 0.25, -2.55, 0.96], [0.2, 0.39, -2.82, 1.03],
+]);
 
 export function traceDeckledRect(context, x, y, width, height, depth = 7) {
   const top = [0, 0.16, -0.08, 0.12, -0.05, 0.1, 0];
@@ -381,125 +387,463 @@ export function drawBrassCameoFrame(context, x, y, radius, { active = true } = {
 export function drawBrassKeyhole(context, rect, { progress = 0 } = {}) {
   const centerX = rect.x + rect.width / 2;
   const centerY = rect.y + rect.height / 2;
-  const radius = Math.min(rect.width, rect.height) * 0.37;
-  const phase = 0.314159;
+  const size = Math.min(rect.width, rect.height);
+  const plateWidth = size * 0.64;
+  const plateHeight = size * 0.79;
+  const clampedProgress = Number.isFinite(progress)
+    ? Math.max(0, Math.min(1, progress))
+    : 0;
   context.save();
 
   context.fillStyle = 'rgba(42, 27, 25, 0.42)';
-  traceBrassKeyholePlate(context, centerX + 5, centerY + 7, radius * 1.12, phase + 0.2);
+  traceBrassEscutcheon(
+    context,
+    centerX + size * 0.045,
+    centerY + size * 0.058,
+    plateWidth * 1.08,
+    plateHeight * 1.04,
+    0.73,
+  );
   context.fill();
 
   context.fillStyle = BRASS_DARK;
-  traceBrassKeyholePlate(context, centerX, centerY, radius * 1.12, phase);
+  traceBrassEscutcheon(context, centerX, centerY, plateWidth, plateHeight, 0.18);
   context.fill();
   context.strokeStyle = OUTLINE;
-  context.lineWidth = 4.6;
+  context.lineWidth = Math.max(3, size * 0.044);
   context.stroke();
 
   context.fillStyle = BRASS;
-  traceBrassKeyholePlate(context, centerX, centerY - 1, radius * 0.94, phase + 0.13);
+  traceBrassEscutcheon(
+    context,
+    centerX - size * 0.012,
+    centerY - size * 0.016,
+    plateWidth * 0.84,
+    plateHeight * 0.86,
+    0.61,
+  );
   context.fill();
   context.strokeStyle = BRASS_LIGHT;
-  context.lineWidth = 2.5;
+  context.lineWidth = Math.max(1.8, size * 0.024);
   context.stroke();
 
-  context.fillStyle = 'rgba(248, 218, 139, 0.38)';
-  context.beginPath();
-  context.moveTo(centerX - radius * 0.62, centerY - radius * 0.46);
-  context.bezierCurveTo(
-    centerX - radius * 0.24,
-    centerY - radius * 0.9,
-    centerX + radius * 0.45,
-    centerY - radius * 0.72,
-    centerX + radius * 0.62,
-    centerY - radius * 0.28,
-  );
-  context.bezierCurveTo(
-    centerX + radius * 0.15,
-    centerY - radius * 0.43,
-    centerX - radius * 0.21,
-    centerY - radius * 0.24,
-    centerX - radius * 0.62,
-    centerY - radius * 0.46,
-  );
-  context.closePath();
+  context.fillStyle = '#e2b95f';
+  traceEscutcheonUpperLight(context, centerX, centerY, plateWidth, plateHeight);
   context.fill();
 
-  context.fillStyle = '#342823';
-  traceKeyholeCutout(context, centerX, centerY, radius * 0.72);
+  context.fillStyle = '#9b7136';
+  traceEscutcheonLowerShade(context, centerX, centerY, plateWidth, plateHeight);
   context.fill();
-  context.strokeStyle = '#6f4b29';
-  context.lineWidth = 2.4;
+
+  drawEscutcheonHammerMarks(context, centerX, centerY, size);
+  drawEscutcheonOwlEngraving(context, centerX, centerY, size);
+
+  context.save();
+  context.globalAlpha = clampedProgress * 0.36;
+  context.fillStyle = PALETTE.interactive;
+  traceKeyholeWarmth(context, centerX, centerY + size * 0.012, size * 0.35);
+  context.fill();
+  context.restore();
+
+  context.fillStyle = '#6b482b';
+  traceKeyholeCutout(context, centerX, centerY + size * 0.015, size * 0.34);
+  context.fill();
+  context.strokeStyle = '#4a3225';
+  context.lineWidth = Math.max(2, size * 0.027);
   context.stroke();
 
-  context.fillStyle = 'rgba(240, 207, 121, 0.24)';
-  traceKeyholeCutout(context, centerX - radius * 0.08, centerY - radius * 0.09, radius * 0.33);
+  context.fillStyle = '#2f2724';
+  traceKeyholeCutout(context, centerX + size * 0.005, centerY + size * 0.018, size * 0.275);
   context.fill();
 
-  const clampedProgress = Math.max(0, Math.min(1, progress));
-  const litPetals = Math.ceil(clampedProgress * 10);
-  for (let index = 0; index < litPetals; index += 1) {
-    const petalProgress = Math.max(0, Math.min(1, clampedProgress * 10 - index));
-    const angle = -Math.PI / 2 + index * TAU / 10;
-    context.save();
-    context.translate(
-      centerX + Math.cos(angle) * radius * 1.28,
-      centerY + Math.sin(angle) * radius * 1.28,
-    );
-    context.rotate(angle);
-    context.globalAlpha = 0.4 + petalProgress * 0.6;
-    context.fillStyle = PALETTE.interactive;
-    traceBrassProgressPetal(context, radius * 0.19, index);
-    context.fill();
-    context.restore();
-  }
+  context.fillStyle = '#f2d382';
+  traceKeyholeReflectedEdge(context, centerX, centerY, size);
+  context.fill();
+
+  drawBrassHoldProgress(context, centerX, centerY, size, clampedProgress);
   context.restore();
 }
 
-function traceBrassKeyholePlate(context, x, y, radius, phase) {
-  const points = [];
-  for (let index = 0; index < 14; index += 1) {
-    const angle = index * TAU / 14;
-    const wobble = 0.94 + Math.sin(phase * 17 + index * 1.93) * 0.045;
-    points.push({
-      x: x + Math.cos(angle) * radius * wobble,
-      y: y + Math.sin(angle) * radius * 1.08 * (2 - wobble),
-    });
-  }
-  traceSoftLoop(context, points);
-}
-
-function traceKeyholeCutout(context, x, y, radius) {
+function traceBrassEscutcheon(context, x, y, width, height, variant) {
+  const halfWidth = width / 2;
+  const halfHeight = height / 2;
+  const lean = (variant - 0.5) * halfWidth * 0.08;
   context.beginPath();
-  context.moveTo(x, y - radius * 0.78);
+  context.moveTo(x - halfWidth * 0.09 + lean, y - halfHeight * 0.98);
   context.bezierCurveTo(
-    x - radius * 0.62,
-    y - radius * 0.76,
-    x - radius * 0.67,
-    y - radius * 0.05,
-    x - radius * 0.22,
-    y + radius * 0.08,
+    x + halfWidth * 0.14,
+    y - halfHeight * 1.04,
+    x + halfWidth * 0.34 + lean,
+    y - halfHeight * 0.9,
+    x + halfWidth * 0.28,
+    y - halfHeight * 0.72,
   );
-  context.quadraticCurveTo(x - radius * 0.33, y + radius * 0.55, x - radius * 0.39, y + radius);
-  context.quadraticCurveTo(x, y + radius * 0.88, x + radius * 0.39, y + radius);
-  context.quadraticCurveTo(x + radius * 0.33, y + radius * 0.55, x + radius * 0.22, y + radius * 0.08);
   context.bezierCurveTo(
-    x + radius * 0.67,
-    y - radius * 0.05,
-    x + radius * 0.62,
-    y - radius * 0.76,
-    x,
-    y - radius * 0.78,
+    x + halfWidth * 0.62,
+    y - halfHeight * 0.72,
+    x + halfWidth * 0.94,
+    y - halfHeight * 0.49,
+    x + halfWidth * 0.86,
+    y - halfHeight * 0.24,
+  );
+  context.bezierCurveTo(
+    x + halfWidth * 1.04,
+    y - halfHeight * 0.02,
+    x + halfWidth * 0.88,
+    y + halfHeight * 0.18,
+    x + halfWidth * 0.66,
+    y + halfHeight * 0.28,
+  );
+  context.bezierCurveTo(
+    x + halfWidth * 0.72,
+    y + halfHeight * 0.54,
+    x + halfWidth * 0.42,
+    y + halfHeight * 0.81,
+    x + halfWidth * 0.11,
+    y + halfHeight * 0.95,
+  );
+  context.bezierCurveTo(
+    x - halfWidth * 0.05,
+    y + halfHeight * 1.02,
+    x - halfWidth * 0.18 - lean,
+    y + halfHeight * 0.98,
+    x - halfWidth * 0.26,
+    y + halfHeight * 0.87,
+  );
+  context.bezierCurveTo(
+    x - halfWidth * 0.57,
+    y + halfHeight * 0.75,
+    x - halfWidth * 0.79,
+    y + halfHeight * 0.51,
+    x - halfWidth * 0.64,
+    y + halfHeight * 0.27,
+  );
+  context.bezierCurveTo(
+    x - halfWidth * 0.91,
+    y + halfHeight * 0.15,
+    x - halfWidth * 1.02,
+    y - halfHeight * 0.06,
+    x - halfWidth * 0.8,
+    y - halfHeight * 0.25,
+  );
+  context.bezierCurveTo(
+    x - halfWidth * 0.88,
+    y - halfHeight * 0.49,
+    x - halfWidth * 0.54,
+    y - halfHeight * 0.7,
+    x - halfWidth * 0.27,
+    y - halfHeight * 0.69,
+  );
+  context.bezierCurveTo(
+    x - halfWidth * 0.35,
+    y - halfHeight * 0.88,
+    x - halfWidth * 0.24,
+    y - halfHeight * 0.98,
+    x - halfWidth * 0.09 + lean,
+    y - halfHeight * 0.98,
   );
   context.closePath();
 }
 
-function traceBrassProgressPetal(context, size, index) {
+function traceEscutcheonUpperLight(context, x, y, width, height) {
+  context.beginPath();
+  context.moveTo(x - width * 0.29, y - height * 0.25);
+  context.bezierCurveTo(
+    x - width * 0.17,
+    y - height * 0.4,
+    x + width * 0.1,
+    y - height * 0.42,
+    x + width * 0.27,
+    y - height * 0.25,
+  );
+  context.bezierCurveTo(
+    x + width * 0.08,
+    y - height * 0.3,
+    x - width * 0.09,
+    y - height * 0.22,
+    x - width * 0.29,
+    y - height * 0.25,
+  );
+  context.closePath();
+}
+
+function traceEscutcheonLowerShade(context, x, y, width, height) {
+  context.beginPath();
+  context.moveTo(x - width * 0.27, y + height * 0.18);
+  context.bezierCurveTo(
+    x - width * 0.06,
+    y + height * 0.25,
+    x + width * 0.18,
+    y + height * 0.14,
+    x + width * 0.29,
+    y + height * 0.08,
+  );
+  context.bezierCurveTo(
+    x + width * 0.23,
+    y + height * 0.32,
+    x + width * 0.07,
+    y + height * 0.41,
+    x - width * 0.09,
+    y + height * 0.43,
+  );
+  context.bezierCurveTo(
+    x - width * 0.16,
+    y + height * 0.36,
+    x - width * 0.22,
+    y + height * 0.25,
+    x - width * 0.27,
+    y + height * 0.18,
+  );
+  context.closePath();
+}
+
+function drawEscutcheonHammerMarks(context, x, y, size) {
+  const marks = [
+    [-0.2, -0.2, 0.055, 0.032, -1], [0.22, -0.13, 0.043, 0.029, 1],
+    [-0.24, 0.08, 0.048, 0.027, 1], [0.23, 0.17, 0.052, 0.031, -1],
+    [-0.08, 0.31, 0.039, 0.025, 1], [0.1, -0.33, 0.045, 0.026, -1],
+  ];
+  for (let index = 0; index < marks.length; index += 1) {
+    const [offsetX, offsetY, width, height, lean] = marks[index];
+    context.fillStyle = index % 2 === 0 ? '#80572e' : '#efd083';
+    traceHammerMark(
+      context,
+      x + size * offsetX,
+      y + size * offsetY,
+      size * width,
+      size * height,
+      lean,
+    );
+    context.fill();
+  }
+}
+
+function traceHammerMark(context, x, y, width, height, lean) {
+  context.beginPath();
+  context.moveTo(x - width * 0.52, y + height * 0.08 * lean);
+  context.bezierCurveTo(
+    x - width * 0.24,
+    y - height * 0.68,
+    x + width * 0.34,
+    y - height * 0.47 * lean,
+    x + width * 0.51,
+    y - height * 0.05,
+  );
+  context.bezierCurveTo(
+    x + width * 0.23,
+    y + height * 0.62,
+    x - width * 0.36,
+    y + height * 0.45 * lean,
+    x - width * 0.52,
+    y + height * 0.08 * lean,
+  );
+  context.closePath();
+}
+
+function drawEscutcheonOwlEngraving(context, x, y, size) {
+  context.strokeStyle = '#79532c';
+  context.lineWidth = Math.max(1.1, size * 0.015);
+  context.lineCap = 'round';
+  context.beginPath();
+  context.moveTo(x - size * 0.215, y - size * 0.105);
+  context.bezierCurveTo(
+    x - size * 0.155,
+    y - size * 0.17,
+    x - size * 0.075,
+    y - size * 0.16,
+    x - size * 0.025,
+    y - size * 0.095,
+  );
+  context.moveTo(x + size * 0.025, y - size * 0.095);
+  context.bezierCurveTo(
+    x + size * 0.085,
+    y - size * 0.165,
+    x + size * 0.17,
+    y - size * 0.145,
+    x + size * 0.21,
+    y - size * 0.075,
+  );
+  context.stroke();
+
+  context.strokeStyle = '#f0ce7e';
+  context.lineWidth = Math.max(0.9, size * 0.01);
+  context.beginPath();
+  context.moveTo(x - size * 0.205, y - size * 0.12);
+  context.bezierCurveTo(
+    x - size * 0.145,
+    y - size * 0.18,
+    x - size * 0.078,
+    y - size * 0.17,
+    x - size * 0.035,
+    y - size * 0.11,
+  );
+  context.moveTo(x + size * 0.035, y - size * 0.11);
+  context.bezierCurveTo(
+    x + size * 0.09,
+    y - size * 0.17,
+    x + size * 0.16,
+    y - size * 0.15,
+    x + size * 0.2,
+    y - size * 0.09,
+  );
+  context.stroke();
+}
+
+function traceKeyholeWarmth(context, x, y, size) {
+  context.beginPath();
+  context.moveTo(x - size * 0.43, y - size * 0.13);
+  context.bezierCurveTo(
+    x - size * 0.47,
+    y - size * 0.52,
+    x + size * 0.02,
+    y - size * 0.67,
+    x + size * 0.38,
+    y - size * 0.26,
+  );
+  context.bezierCurveTo(
+    x + size * 0.55,
+    y + size * 0.08,
+    x + size * 0.28,
+    y + size * 0.58,
+    x - size * 0.12,
+    y + size * 0.51,
+  );
+  context.bezierCurveTo(
+    x - size * 0.37,
+    y + size * 0.37,
+    x - size * 0.44,
+    y + size * 0.1,
+    x - size * 0.43,
+    y - size * 0.13,
+  );
+  context.closePath();
+}
+
+function traceKeyholeCutout(context, x, y, size) {
+  context.beginPath();
+  context.moveTo(x - size * 0.025, y - size * 0.29);
+  context.bezierCurveTo(
+    x - size * 0.18,
+    y - size * 0.3,
+    x - size * 0.245,
+    y - size * 0.16,
+    x - size * 0.19,
+    y - size * 0.035,
+  );
+  context.bezierCurveTo(
+    x - size * 0.155,
+    y + size * 0.035,
+    x - size * 0.105,
+    y + size * 0.055,
+    x - size * 0.09,
+    y + size * 0.1,
+  );
+  context.bezierCurveTo(
+    x - size * 0.11,
+    y + size * 0.19,
+    x - size * 0.155,
+    y + size * 0.31,
+    x - size * 0.17,
+    y + size * 0.39,
+  );
+  context.quadraticCurveTo(x, y + size * 0.44, x + size * 0.16, y + size * 0.38);
+  context.bezierCurveTo(
+    x + size * 0.14,
+    y + size * 0.29,
+    x + size * 0.095,
+    y + size * 0.18,
+    x + size * 0.085,
+    y + size * 0.1,
+  );
+  context.bezierCurveTo(
+    x + size * 0.105,
+    y + size * 0.055,
+    x + size * 0.16,
+    y + size * 0.025,
+    x + size * 0.19,
+    y - size * 0.045,
+  );
+  context.bezierCurveTo(
+    x + size * 0.25,
+    y - size * 0.18,
+    x + size * 0.14,
+    y - size * 0.3,
+    x - size * 0.025,
+    y - size * 0.29,
+  );
+  context.closePath();
+}
+
+function traceKeyholeReflectedEdge(context, x, y, size) {
+  context.beginPath();
+  context.moveTo(x - size * 0.07, y - size * 0.083);
+  context.bezierCurveTo(
+    x - size * 0.048,
+    y - size * 0.13,
+    x - size * 0.016,
+    y - size * 0.145,
+    x + size * 0.008,
+    y - size * 0.143,
+  );
+  context.bezierCurveTo(
+    x - size * 0.032,
+    y - size * 0.115,
+    x - size * 0.042,
+    y - size * 0.078,
+    x - size * 0.052,
+    y - size * 0.035,
+  );
+  context.bezierCurveTo(
+    x - size * 0.073,
+    y - size * 0.045,
+    x - size * 0.078,
+    y - size * 0.061,
+    x - size * 0.07,
+    y - size * 0.083,
+  );
+  context.closePath();
+}
+
+function drawBrassHoldProgress(context, x, y, size, progress) {
+  for (let index = 0; index < KEYHOLE_PROGRESS_MARKS.length; index += 1) {
+    const [offsetX, offsetY, rotation, scale] = KEYHOLE_PROGRESS_MARKS[index];
+    context.save();
+    context.translate(x + size * offsetX, y + size * offsetY);
+    context.rotate(rotation);
+    context.fillStyle = '#604027';
+    traceBrassProgressLeaf(context, size * 0.063 * scale, index);
+    context.fill();
+    context.strokeStyle = '#3f2d23';
+    context.lineWidth = Math.max(1.1, size * 0.014);
+    context.stroke();
+    context.restore();
+  }
+
+  const progressAcrossMarks = progress * KEYHOLE_PROGRESS_MARKS.length;
+  const litMarks = Math.ceil(progressAcrossMarks);
+  for (let index = 0; index < litMarks; index += 1) {
+    const [offsetX, offsetY, rotation, scale] = KEYHOLE_PROGRESS_MARKS[index];
+    const markProgress = Math.max(0, Math.min(1, progressAcrossMarks - index));
+    context.save();
+    context.translate(x + size * offsetX, y + size * offsetY);
+    context.rotate(rotation);
+    context.globalAlpha = 0.28 + markProgress * 0.72;
+    context.fillStyle = PALETTE.interactive;
+    traceBrassProgressLeaf(context, size * 0.052 * scale, index);
+    context.fill();
+    context.strokeStyle = BRASS_LIGHT;
+    context.lineWidth = Math.max(0.85, size * 0.01);
+    context.stroke();
+    context.restore();
+  }
+}
+
+function traceBrassProgressLeaf(context, size, index) {
   const lean = index % 2 === 0 ? 1 : -1;
   context.beginPath();
-  context.moveTo(-size * 0.7, 0);
-  context.quadraticCurveTo(-size * 0.1, -size * (0.55 + lean * 0.08), size * 0.78, 0);
-  context.quadraticCurveTo(-size * 0.05, size * (0.48 - lean * 0.06), -size * 0.7, 0);
+  context.moveTo(-size * 0.72, size * 0.04 * lean);
+  context.quadraticCurveTo(-size * 0.08, -size * (0.53 + lean * 0.07), size * 0.79, 0);
+  context.quadraticCurveTo(-size * 0.03, size * (0.46 - lean * 0.05), -size * 0.72, size * 0.04 * lean);
   context.closePath();
 }
 

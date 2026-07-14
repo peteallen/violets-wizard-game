@@ -100,15 +100,83 @@ describe('illustrated interface primitives', () => {
     expect(night.depth).toBe(0);
   });
 
-  it('draws the grown-up control as an organic brass keyhole rather than a software gear', () => {
-    const context = recordingContext();
-    drawBrassKeyhole(context, { x: 20, y: 20, width: 96, height: 96 }, { progress: 0.65 });
+  it('turns the three-second grown-up hold into deterministic, clamped brass inlay progress', () => {
+    const rect = { x: 20, y: 20, width: 96, height: 96 };
+    const draw = (progress) => {
+      const context = recordingContext();
+      drawBrassKeyhole(context, rect, { progress });
+      return context;
+    };
+    const empty = draw(0);
+    const emptyRepeat = draw(0);
+    const underflow = draw(-0.4);
+    const nonFinite = draw(Number.NaN);
+    const partial = draw(0.42);
+    const full = draw(1);
+    const overflow = draw(1.6);
+    const interactiveWrites = (context) => context.propertyWrites
+      .filter(([property, value]) => property === 'fillStyle' && value === '#ffd76a')
+      .length;
 
-    expect(context.calls.filter(([name]) => name === 'fill').length).toBeGreaterThan(8);
-    expect(context.calls.some(([name]) => name === 'bezierCurveTo')).toBe(true);
-    expect(context.calls.some(([name]) => ['arc', 'ellipse', 'fillRect', 'rect', 'setLineDash'].includes(name)))
-      .toBe(false);
-    expect(context.depth).toBe(0);
+    expect(empty.calls).toEqual(emptyRepeat.calls);
+    expect(empty.propertyWrites).toEqual(emptyRepeat.propertyWrites);
+    expect(underflow.calls).toEqual(empty.calls);
+    expect(underflow.propertyWrites).toEqual(empty.propertyWrites);
+    expect(nonFinite.calls).toEqual(empty.calls);
+    expect(nonFinite.propertyWrites).toEqual(empty.propertyWrites);
+    expect(overflow.calls).toEqual(full.calls);
+    expect(overflow.propertyWrites).toEqual(full.propertyWrites);
+    expect(partial.calls.length).toBeGreaterThan(empty.calls.length);
+    expect(full.calls.length).toBeGreaterThan(partial.calls.length);
+    expect(interactiveWrites(empty)).toBeLessThan(interactiveWrites(partial));
+    expect(interactiveWrites(partial)).toBeLessThan(interactiveWrites(full));
+  });
+
+  it('builds the keyhole from organic, finite, layered brass paths with balanced Canvas state', () => {
+    const forbiddenGeometry = new Set([
+      'arc', 'arcTo', 'ellipse', 'fillRect', 'rect', 'roundRect', 'setLineDash',
+      'createLinearGradient', 'createRadialGradient',
+    ]);
+
+    for (const progress of [0, 0.42, 1]) {
+      const context = recordingContext();
+      drawBrassKeyhole(
+        context,
+        { x: -14.5, y: 27.25, width: 117.5, height: 96.25 },
+        { progress },
+      );
+
+      expect(context.calls.filter(([name]) => name === 'bezierCurveTo').length)
+        .toBeGreaterThan(30);
+      expect(context.calls.filter(([name]) => name === 'quadraticCurveTo').length)
+        .toBeGreaterThan(20);
+      expect(context.calls.some(([name]) => forbiddenGeometry.has(name))).toBe(false);
+      expect(context.calls.some(([name]) => name === 'fillText')).toBe(false);
+      expect(context.propertyWrites.some(([property]) => [
+        'filter', 'shadowBlur', 'shadowColor',
+      ].includes(property))).toBe(false);
+
+      const numericGeometry = context.calls
+        .flatMap(([, ...args]) => args.filter((value) => typeof value === 'number'));
+      const numericProperties = context.propertyWrites
+        .map(([, value]) => value)
+        .filter((value) => typeof value === 'number');
+      expect(numericGeometry.length).toBeGreaterThan(250);
+      expect(numericGeometry.every(Number.isFinite)).toBe(true);
+      expect(numericProperties.every(Number.isFinite)).toBe(true);
+
+      const tones = new Set(context.propertyWrites
+        .filter(([property, value]) => ['fillStyle', 'strokeStyle'].includes(property)
+          && typeof value === 'string')
+        .map(([, value]) => value));
+      expect(tones.size).toBeGreaterThanOrEqual(14);
+      for (const tone of ['#c89d45', '#f4d58d', '#76522c', '#ffd76a', '#2f2724']) {
+        expect(tones.has(tone)).toBe(true);
+      }
+      expect(context.calls.filter(([name]) => name === 'save').length)
+        .toBe(context.calls.filter(([name]) => name === 'restore').length);
+      expect(context.depth).toBe(0);
+    }
   });
 
   it('draws satchel tabs as stitched, multi-tone organic leather bookmarks', () => {
