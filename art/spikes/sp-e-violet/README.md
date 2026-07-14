@@ -72,7 +72,19 @@ character.
   each other; the walking pair shares the standing hip-to-floor height;
   EXACTLY NINE parts, shared swatches, one upper-left key light, finger-width
   clearances.
-- Art Director verdict: pending at time of writing; recorded here when ruled.
+- **Art Director verdict: NOT A PASS — 1 CRITICAL, 5 MAJOR, 5 MINOR. Never
+  sliced.** The standing legs are ONE fused connected component — spec slots
+  7/8 don't exist and can't be rectangle-sliced or hip-pivoted (C1); the
+  right arm is a mirror-COPY of the left including its paint, so its key
+  light comes from the upper RIGHT (M1); both arms bow 8.5% off vertical
+  with droopy splayed hands (M2); the blink head is a whole-head repaint —
+  only ~56% of diff pixels fall in the eye band (M3; clean slice-time
+  workaround: graft the lens interiors, since the glasses measured
+  pixel-identical on both heads); the hair is a smooth straight bob vs the
+  reference's long wavy strand-painted look (M4); the walk pair is 8.3%
+  short of the standing column (M5). Measured clean and to protect: glasses
+  identical across heads, walk-pose mechanics, every join continuity Δ≤3,
+  the three-tone jersey, and 1:3.04 assembled proportions.
 
 ## v3 generation prompt
 
@@ -119,4 +131,78 @@ base color, soft shadow, and gentle highlight from the one upper-left light;
 hair has interior strand groupings; fabric has soft fold shading. 
 Picture-book child proportions with a large head. Original character design, 
 not any existing actor or film character.
+```
+
+## sheet-v4.png
+
+- Generated 2026-07-13 via OpenRouter, `google/gemini-3.1-flash-image-preview`
+  (model upgraded from lite for the protagonist — same reasoning as the
+  Wandmaker reference: the craft ceiling was part of the problem), cost
+  $0.0701, 16:9 at 1K → 1376×768. `sheet-v4-clean.png` is the sips-normalized
+  PNG.
+- Prompt: block below — every v3 finding encoded: legs as TWO separate
+  pieces with a background gap (C1), the right arm painted with its OWN
+  upper-left light instead of mirror-copied paint (M1), plumb-vertical arms
+  with fingers together (M2), blink changed only at the eyelids (M3), LONG
+  WAVY strand-painted hair per the reference (M4), walk pair at the exact
+  standing column height (M5), slight toe turnout (m1), rich warm never-pastel
+  palette (m4).
+- Art Director verdict: pending at time of writing; recorded here when ruled.
+
+## v4 generation prompt
+
+```text
+Children's storybook illustration, FULLY PAINTED gouache and watercolor with 
+soft painted edges, gentle paper texture, warm candlelit palette with deep 
+violet accents, RICH WARM color depth — skin with warm rosy depth, colors 
+saturated like aged gouache, never pale, never pastel — soft dark-brown 
+painted outlines with subtly varying weight. ONE warm key light from the 
+UPPER LEFT on every single part: every part's highlight side is its left side 
+and its soft shadow side is its right side, including BOTH arms and BOTH legs 
+— never mirrored lighting. A cutout puppet part sheet for ONE character, laid 
+out like a paper-doll kit in a neat grid on a plain flat pale-cream 
+background, EXACTLY NINE separate parts and nothing else — no duplicates, no 
+extra pieces, no props; every part fully separated with at least a 
+finger-width of empty background between any two parts — the two legs 
+especially are TWO separate pieces with a clear gap of background between 
+them, never joined at the hip — no overlapping, all parts at one consistent 
+scale, no drop shadows, no text. The character: an original six-year-old girl 
+with a warm medium-light complexion, LONG WAVY warm light-brown hair falling 
+past her shoulders with soft flyaway strand clusters and painted interior 
+wave structure, warm brown eyes with two small catchlights, softly expressive 
+eyebrows, rosy cheeks, a small dimensional nose, a bright gentle smile, and 
+DARK-GREEN RECTANGULAR GLASSES. SHARED SWATCHES used identically wherever 
+they appear: jersey = three-tone purple with a white V-collar; leggings = 
+dark plum; sneakers = ONE single purple sneaker design with painted seams. 
+The nine parts: (1) her head and face, eyes OPEN, wearing the dark-green 
+rectangular glasses, long wavy hair framing the face with a few soft flyaway 
+wisps; (2) the IDENTICAL head with eyes gently closed — an exact copy of part 
+1 changed ONLY at the eyelids: the SAME dark-green rectangular glasses, 
+identical wavy hair and wisps, identical eyebrows, identical cheeks, 
+identical smile, identical outline, identical size; (3) the back-of-hair 
+piece alone: the long WAVY warm light-brown hair mass that hangs behind her 
+body past her shoulders, with painted wave ridges and strand groups; (4) her 
+torso wearing the three-tone purple soccer jersey with the white V-collar and 
+short puffed sleeve caps, a defined little shoulder line, standing tall and 
+straight, no arms, no head, a short skin neck stub at the collar; (5) her 
+left arm from shoulder to hand hanging PLUMB VERTICAL, perfectly straight and 
+relaxed, bare forearm, the small child hand relaxed with fingers TOGETHER 
+pointing straight down and a visible thumb resting against the side — never 
+splayed, never drooping, never grasping; (6) her right arm: the same straight 
+relaxed vertical arm mirrored in SHAPE only, exactly the same length — but 
+painted with its OWN light still from the upper left of the picture, its 
+highlight on the same left side as every other part on the sheet; (7) her 
+LEFT leg alone, from hip to foot, one single separate straight vertical leg, 
+dark plum legging, the purple sneaker planted FLAT, the toe turned only 
+SLIGHTLY outward toward the left, nearly pointing forward; (8) her RIGHT leg 
+alone: a separate mirror of part 7 standing in its own clear space on the 
+sheet, same height, same sneaker design, its toe turned only slightly toward 
+the right; (9) a walking leg pair EXACTLY AS TALL from hip to floor as parts 
+7 and 8: both feet pointing the same direction of travel, the LEADING foot 
+planted completely FLAT, the TRAILING heel lifted with toe touching, same 
+plum leggings, same purple sneakers. Every part has base color, soft shadow, 
+and gentle highlight from the one upper-left light; hair has interior strand 
+groupings and wave structure; fabric has soft fold shading. Picture-book 
+child proportions with a large head. Original character design, not any 
+existing actor or film character.
 ```
