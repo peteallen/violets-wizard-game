@@ -9,7 +9,7 @@ import {
   drawLetterEnvelopeFront,
   envelopeWorldBounds,
 } from './LetterRenderer.js';
-import { drawVectorOwl, sampleOwlDelivery } from './OwlRenderer.js';
+import { drawOwlBookplate, drawVectorOwl, sampleOwlDelivery } from './OwlRenderer.js';
 
 export const BRICK_GRID = Object.freeze({
   x: 278,
@@ -40,9 +40,11 @@ export class SetPieceRenderer {
   constructor({
     resolveAsset = () => null,
     imageFactory = defaultImageFactory,
+    owlRenderer = drawVectorOwl,
   } = {}) {
     this.resolveAsset = resolveAsset;
     this.imageFactory = imageFactory;
+    this.owlRenderer = owlRenderer;
     this.imageRecords = new Map();
     this.brickWallWasActive = false;
   }
@@ -55,7 +57,12 @@ export class SetPieceRenderer {
     }
     const id = String(active.requestedId ?? active.id ?? '');
     const normalized = id.toLowerCase();
-    if (normalized.includes('letter')) this.drawLetter(context, active, { reducedMotion });
+    if (normalized.includes('letter')) {
+      this.drawLetter(context, active, {
+        reducedMotion,
+        lightSide: worldState?.keyLight,
+      });
+    }
     else if (normalized.includes('brick')) {
       this.brickWallWasActive = true;
       this.drawBrickWall(context, active, { reducedMotion });
@@ -118,27 +125,28 @@ export class SetPieceRenderer {
     }
   }
 
-  drawLetter(context, active, { reducedMotion = false } = {}) {
+  drawLetter(context, active, { reducedMotion = false, lightSide = 'left' } = {}) {
     const variant = active.params?.variant ?? active.descriptor?.params?.variant;
     const id = String(active.requestedId ?? active.id ?? '').toLowerCase();
     if (variant === 'open-invitation' || id.includes('letteropen')) {
       this.drawLetterOpen(context, active, { reducedMotion });
       return;
     }
-    this.drawLetterDelivery(context, active, { reducedMotion });
+    this.drawLetterDelivery(context, active, { reducedMotion, lightSide });
   }
 
-  drawLetterDelivery(context, active, { reducedMotion = false } = {}) {
+  drawLetterDelivery(context, active, { reducedMotion = false, lightSide = 'left' } = {}) {
     const t = active.time;
     const delivery = sampleOwlDelivery(t, { reducedMotion });
     context.fillStyle = 'rgba(20,17,38,0.16)';
     context.fillRect(0, 0, WORLD.width, WORLD.height);
 
     if (delivery.owl.opacity > 0) {
-      drawVectorOwl(context, {
+      this.owlRenderer(context, {
         ...delivery.owl,
         variant: 'post',
         facing: 'left',
+        lightSide: lightSide === 'right' ? 'right' : 'left',
         reducedMotion,
         lookX: -0.25,
         lookY: 0.2,
@@ -748,47 +756,19 @@ function deckledPanel(context, x, y, width, height, radius) {
 function drawInvitationOwlCrest(context, x, y) {
   context.save();
   context.translate(x, y);
-  context.fillStyle = '#7a2940';
-  context.beginPath();
-  context.moveTo(-25, 12);
-  context.quadraticCurveTo(-31, -12, -13, -25);
-  context.lineTo(-4, -11);
-  context.lineTo(0, -29);
-  context.lineTo(5, -11);
-  context.lineTo(14, -25);
-  context.quadraticCurveTo(32, -12, 25, 12);
-  context.quadraticCurveTo(20, 30, 0, 34);
-  context.quadraticCurveTo(-20, 30, -25, 12);
+  context.fillStyle = 'rgba(84,34,55,0.22)';
+  traceOrganicOval(context, 2, 5, 31, 34, 0.46);
   context.fill();
-  context.strokeStyle = '#542237';
-  context.lineWidth = 2;
+  drawOwlBookplate(context, 0, 0, 1.12, {
+    color: '#7a2940',
+    accent: '#f4d58d',
+  });
+  context.strokeStyle = 'rgba(255,235,179,0.55)';
+  context.lineWidth = 1.8;
+  context.beginPath();
+  context.moveTo(-18, -19);
+  context.bezierCurveTo(-13, -27, -7, -30, -1, -30);
   context.stroke();
-
-  context.fillStyle = '#f4d58d';
-  context.beginPath();
-  context.ellipse(-10, 1, 8, 10, -0.2, 0, Math.PI * 2);
-  context.ellipse(10, 1, 8, 10, 0.2, 0, Math.PI * 2);
-  context.fill();
-  context.fillStyle = '#542237';
-  context.beginPath();
-  context.arc(-9, 1, 3.2, 0, Math.PI * 2);
-  context.arc(9, 1, 3.2, 0, Math.PI * 2);
-  context.fill();
-  context.fillStyle = '#f4d58d';
-  context.beginPath();
-  context.moveTo(-4, 11);
-  context.lineTo(0, 17);
-  context.lineTo(4, 11);
-  context.closePath();
-  context.fill();
-  context.strokeStyle = 'rgba(244,213,141,0.72)';
-  context.lineWidth = 2;
-  for (const side of [-1, 1]) {
-    context.beginPath();
-    context.moveTo(side * 9, 17);
-    context.quadraticCurveTo(side * 15, 22, side * 13, 29);
-    context.stroke();
-  }
   context.restore();
 }
 
@@ -837,6 +817,137 @@ function drawBrickDust(context, state) {
   context.globalAlpha = 1;
 }
 
+function traceOrganicOval(context, x, y, radiusX, radiusY, phase = 0) {
+  const lean = Math.sin(phase * 7.3 + 0.4) * 0.045;
+  const lift = Math.cos(phase * 5.1 + 0.8) * 0.035;
+  context.beginPath();
+  context.moveTo(x + radiusX * (0.03 + lean), y - radiusY);
+  context.bezierCurveTo(
+    x + radiusX * 0.63,
+    y - radiusY * (1.03 - lift),
+    x + radiusX * (1.03 + lean),
+    y - radiusY * 0.44,
+    x + radiusX,
+    y + radiusY * lift,
+  );
+  context.bezierCurveTo(
+    x + radiusX * (0.98 - lean),
+    y + radiusY * 0.64,
+    x + radiusX * 0.43,
+    y + radiusY * (1.03 + lift),
+    x - radiusX * (0.03 - lean),
+    y + radiusY,
+  );
+  context.bezierCurveTo(
+    x - radiusX * 0.66,
+    y + radiusY * (0.98 - lift),
+    x - radiusX * (1.03 - lean),
+    y + radiusY * 0.39,
+    x - radiusX,
+    y - radiusY * lift,
+  );
+  context.bezierCurveTo(
+    x - radiusX * (0.97 + lean),
+    y - radiusY * 0.67,
+    x - radiusX * 0.42,
+    y - radiusY * (1.02 - lift),
+    x + radiusX * (0.03 + lean),
+    y - radiusY,
+  );
+  context.closePath();
+}
+
+function traceLoosePaper(context, offsetX, offsetY, phase) {
+  const topDrift = Math.sin(phase * 2.1) * 1.4;
+  const sideDrift = Math.cos(phase * 1.7) * 1.2;
+  const bottomDrift = Math.sin(phase * 2.7 + 0.8) * 1.3;
+  context.beginPath();
+  context.moveTo(-19 + offsetX, -13 + topDrift + offsetY);
+  context.bezierCurveTo(
+    -9 + offsetX,
+    -16 - topDrift * 0.3 + offsetY,
+    8 + offsetX,
+    -12 + topDrift * 0.25 + offsetY,
+    20 + sideDrift * 0.25 + offsetX,
+    -13 + offsetY,
+  );
+  context.bezierCurveTo(
+    22 + sideDrift + offsetX,
+    -5 + offsetY,
+    18 - sideDrift * 0.3 + offsetX,
+    6 + offsetY,
+    20 + offsetX,
+    13 + bottomDrift + offsetY,
+  );
+  context.bezierCurveTo(
+    7 + offsetX,
+    15 - bottomDrift * 0.25 + offsetY,
+    -8 + offsetX,
+    12 + bottomDrift * 0.35 + offsetY,
+    -20 - sideDrift * 0.2 + offsetX,
+    14 + offsetY,
+  );
+  context.bezierCurveTo(
+    -22 - sideDrift + offsetX,
+    6 + offsetY,
+    -18 + sideDrift * 0.2 + offsetX,
+    -5 + offsetY,
+    -19 + offsetX,
+    -13 + topDrift + offsetY,
+  );
+  context.closePath();
+}
+
+function traceVaseBody(context) {
+  context.beginPath();
+  context.moveTo(-20, -47);
+  context.bezierCurveTo(-21, -36, -40, -25, -43, -2);
+  context.bezierCurveTo(-47, 27, -34, 52, -12, 63);
+  context.bezierCurveTo(-3, 68, 12, 66, 25, 57);
+  context.bezierCurveTo(44, 39, 47, 8, 35, -18);
+  context.bezierCurveTo(30, -31, 21, -37, 20, -47);
+  context.bezierCurveTo(8, -51, -8, -50, -20, -47);
+  context.closePath();
+}
+
+function traceSoftLoop(context, points) {
+  const firstPoint = points[0];
+  const lastPoint = points.at(-1);
+  context.beginPath();
+  context.moveTo(
+    (lastPoint.x + firstPoint.x) / 2,
+    (lastPoint.y + firstPoint.y) / 2,
+  );
+  for (let index = 0; index < points.length; index += 1) {
+    const point = points[index];
+    const next = points[(index + 1) % points.length];
+    context.quadraticCurveTo(
+      point.x,
+      point.y,
+      (point.x + next.x) / 2,
+      (point.y + next.y) / 2,
+    );
+  }
+  context.closePath();
+}
+
+function pointBounds(points) {
+  const xs = points.map(({ x }) => x);
+  const ys = points.map(({ y }) => y);
+  const minX = Math.min(...xs);
+  const maxX = Math.max(...xs);
+  const minY = Math.min(...ys);
+  const maxY = Math.max(...ys);
+  return Object.freeze({
+    minX,
+    maxX,
+    minY,
+    maxY,
+    centerX: (minX + maxX) / 2,
+    centerY: (minY + maxY) / 2,
+  });
+}
+
 function drawPaperChaos(context, time, duration, { reducedMotion = false } = {}) {
   for (let index = 0; index < 16; index += 1) {
     const delay = index * 0.035;
@@ -849,34 +960,88 @@ function drawPaperChaos(context, time, duration, { reducedMotion = false } = {})
     context.translate(x, y);
     context.rotate(reducedMotion ? 0 : index + progress * 7);
     context.globalAlpha = progress > 0.92 ? 1 - (progress - 0.92) / 0.08 : 1;
+    const phase = index * 0.73 + progress * 0.19;
+    context.fillStyle = 'rgba(45,31,36,0.24)';
+    traceLoosePaper(context, 3, 4, phase + 0.41);
+    context.fill();
     context.fillStyle = index % 2 ? PALETTE.parchment : '#d9c5a2';
-    context.fillRect(-20, -14, 40, 28);
+    traceLoosePaper(context, 0, 0, phase);
+    context.fill();
     context.strokeStyle = '#8b7152';
     context.lineWidth = 2;
-    context.strokeRect(-20, -14, 40, 28);
+    context.stroke();
+
+    context.fillStyle = 'rgba(255,247,218,0.32)';
+    context.beginPath();
+    context.moveTo(-16, -10 + Math.sin(phase) * 0.8);
+    context.bezierCurveTo(-7, -14, 7, -12, 17, -8 + Math.cos(phase) * 0.7);
+    context.bezierCurveTo(7, -6, -5, -7, -16, -5);
+    context.bezierCurveTo(-18, -7, -18, -9, -16, -10 + Math.sin(phase) * 0.8);
+    context.closePath();
+    context.fill();
+
+    context.strokeStyle = 'rgba(91,66,51,0.38)';
+    context.lineWidth = 1.05;
+    for (let mark = 0; mark < 2; mark += 1) {
+      const markY = 2 + mark * 5;
+      context.beginPath();
+      context.moveTo(-13 + mark * 2, markY + Math.sin(phase + mark) * 0.7);
+      context.bezierCurveTo(-5, markY - 1, 5, markY + 1.4, 13 - mark * 3, markY - 0.5);
+      context.stroke();
+    }
     context.restore();
   }
 }
 
 function drawVase(context) {
+  context.fillStyle = 'rgba(35,28,48,0.22)';
+  traceOrganicOval(context, 3, 63, 39, 8, 0.62);
+  context.fill();
+
   context.fillStyle = '#7e72aa';
   context.strokeStyle = '#403958';
   context.lineWidth = 5;
+  traceVaseBody(context);
+  context.fill();
+  context.stroke();
+
+  context.save();
+  traceVaseBody(context);
+  context.clip();
+  context.fillStyle = 'rgba(51,43,82,0.32)';
   context.beginPath();
-  context.moveTo(-22, -55);
-  context.lineTo(22, -55);
-  context.lineTo(19, -36);
-  context.bezierCurveTo(48, -17, 44, 38, 24, 57);
-  context.quadraticCurveTo(0, 70, -24, 57);
-  context.bezierCurveTo(-44, 38, -48, -17, -19, -36);
+  context.moveTo(8, -46);
+  context.bezierCurveTo(34, -28, 45, -1, 35, 32);
+  context.bezierCurveTo(30, 49, 18, 61, 5, 65);
+  context.bezierCurveTo(18, 29, 18, -10, 8, -46);
   context.closePath();
   context.fill();
-  context.stroke();
-  context.fillStyle = '#a99bc7';
+
+  context.fillStyle = 'rgba(225,215,247,0.28)';
   context.beginPath();
-  context.ellipse(0, -54, 23, 8, 0, 0, Math.PI * 2);
+  context.moveTo(-17, -42);
+  context.bezierCurveTo(-34, -24, -35, 7, -26, 29);
+  context.bezierCurveTo(-21, 39, -16, 43, -12, 38);
+  context.bezierCurveTo(-19, 8, -17, -19, -7, -39);
+  context.bezierCurveTo(-9, -44, -13, -45, -17, -42);
+  context.closePath();
+  context.fill();
+  context.restore();
+
+  context.fillStyle = '#a99bc7';
+  traceOrganicOval(context, 0, -52, 24, 8.5, 0.34);
   context.fill();
   context.stroke();
+  context.fillStyle = '#514768';
+  traceOrganicOval(context, 1, -53, 17, 4.8, 0.91);
+  context.fill();
+  context.strokeStyle = 'rgba(235,220,248,0.5)';
+  context.lineWidth = 2;
+  context.beginPath();
+  context.moveTo(-17, -55);
+  context.bezierCurveTo(-8, -60, 5, -59, 15, -55);
+  context.stroke();
+
   context.strokeStyle = '#d3b86e';
   context.lineWidth = 4;
   context.beginPath();
@@ -894,16 +1059,39 @@ function drawVaseShard(context, shard, pose) {
   context.fillStyle = shard.color;
   context.strokeStyle = '#403958';
   context.lineWidth = 3;
-  context.beginPath();
-  shard.points.forEach(([x, y], index) => {
-    const localX = x - shard.offset[0];
-    const localY = y - shard.offset[1];
-    if (index === 0) context.moveTo(localX, localY);
-    else context.lineTo(localX, localY);
-  });
-  context.closePath();
+  const points = shard.points.map(([x, y]) => ({
+    x: x - shard.offset[0],
+    y: y - shard.offset[1],
+  }));
+  traceSoftLoop(context, points);
   context.fill();
   context.stroke();
+
+  const bounds = pointBounds(points);
+  context.save();
+  traceSoftLoop(context, points);
+  context.clip();
+  context.fillStyle = 'rgba(43,34,69,0.2)';
+  context.beginPath();
+  context.moveTo(bounds.minX - 4, bounds.centerY);
+  context.bezierCurveTo(
+    bounds.centerX - 2,
+    bounds.centerY - 5,
+    bounds.maxX + 5,
+    bounds.maxY - 2,
+    bounds.maxX + 7,
+    bounds.maxY + 5,
+  );
+  context.bezierCurveTo(bounds.centerX, bounds.maxY + 8, bounds.minX - 5, bounds.maxY + 3, bounds.minX - 4, bounds.centerY);
+  context.closePath();
+  context.fill();
+  context.strokeStyle = 'rgba(237,225,255,0.34)';
+  context.lineWidth = 1.35;
+  context.beginPath();
+  context.moveTo(bounds.minX + 4, bounds.minY + 7);
+  context.bezierCurveTo(bounds.centerX - 2, bounds.minY + 2, bounds.centerX + 5, bounds.centerY, bounds.maxX - 4, bounds.centerY - 3);
+  context.stroke();
+  context.restore();
   context.restore();
 }
 
@@ -918,6 +1106,13 @@ function drawShardPlinks(context, time, { reducedMotion = false } = {}) {
   }
 }
 
+function polarPoint(angle, radius) {
+  return Object.freeze({
+    x: Math.cos(angle) * radius,
+    y: Math.sin(angle) * radius,
+  });
+}
+
 function drawGoldenRays(context, state) {
   const reach = 80 + state.crescendo * 430;
   context.save();
@@ -926,11 +1121,38 @@ function drawGoldenRays(context, state) {
     const angle = index * Math.PI / 9 + 0.08;
     const inner = 35 + (index % 3) * 8;
     const outer = reach * (0.58 + (index % 4) * 0.11);
+    const halfWidth = 0.026 + (index % 3) * 0.004;
+    const tipDrift = Math.sin(index * 2.37) * 0.012;
+    const startLeft = polarPoint(angle - halfWidth, inner);
+    const startRight = polarPoint(angle + halfWidth, inner * 0.96);
+    const tip = polarPoint(angle + tipDrift, outer);
+    const leftControl = polarPoint(angle - halfWidth * 0.68, inner + (outer - inner) * 0.58);
+    const rightControl = polarPoint(angle + halfWidth * 0.74, inner + (outer - inner) * 0.55);
     context.fillStyle = index % 2 ? 'rgba(255,232,141,0.18)' : 'rgba(255,195,73,0.13)';
     context.beginPath();
-    context.moveTo(Math.cos(angle - 0.025) * inner, Math.sin(angle - 0.025) * inner);
-    context.lineTo(Math.cos(angle) * outer, Math.sin(angle) * outer);
-    context.lineTo(Math.cos(angle + 0.025) * inner, Math.sin(angle + 0.025) * inner);
+    context.moveTo(startLeft.x, startLeft.y);
+    context.bezierCurveTo(
+      leftControl.x,
+      leftControl.y,
+      tip.x - Math.sin(angle) * 3.5,
+      tip.y + Math.cos(angle) * 3.5,
+      tip.x,
+      tip.y,
+    );
+    context.bezierCurveTo(
+      tip.x + Math.sin(angle) * 3.2,
+      tip.y - Math.cos(angle) * 3.2,
+      rightControl.x,
+      rightControl.y,
+      startRight.x,
+      startRight.y,
+    );
+    context.quadraticCurveTo(
+      Math.cos(angle) * inner * 0.76,
+      Math.sin(angle) * inner * 0.76,
+      startLeft.x,
+      startLeft.y,
+    );
     context.closePath();
     context.fill();
   }
@@ -942,11 +1164,18 @@ function drawGoldenRings(context, state) {
   context.globalAlpha = state.burst * (1 - state.settle * 0.72);
   for (let index = 0; index < 3; index += 1) {
     const radius = 68 + state.crescendo * (105 + index * 65);
+    const radiusY = radius * (0.42 + index * 0.06);
+    context.save();
+    context.rotate(index * 0.55);
+    context.strokeStyle = 'rgba(104,66,37,0.26)';
+    context.lineWidth = 7 - index;
+    traceOrganicOval(context, 2.5, 3.5, radius, radiusY, index * 0.73 + 0.24);
+    context.stroke();
     context.strokeStyle = index === 1 ? '#fff0ad' : '#e8b44f';
     context.lineWidth = 5 - index;
-    context.beginPath();
-    context.ellipse(0, 0, radius, radius * (0.42 + index * 0.06), index * 0.55, 0, Math.PI * 2);
+    traceOrganicOval(context, 0, 0, radius, radiusY, index * 0.73);
     context.stroke();
+    context.restore();
   }
   context.restore();
 }
@@ -963,36 +1192,86 @@ function drawGoldenColumn(context, time, state, { reducedMotion = false } = {}) 
   }
 }
 
+function traceWandShaft(context, startX, endX, halfWidth, phase) {
+  const rise = Math.sin(phase * 7.1) * 1.2;
+  const taper = halfWidth * 0.38;
+  context.beginPath();
+  context.moveTo(startX, -halfWidth * 0.62 + rise);
+  context.bezierCurveTo(
+    startX + (endX - startX) * 0.31,
+    -halfWidth - rise,
+    startX + (endX - startX) * 0.72,
+    -taper + rise * 0.3,
+    endX,
+    -taper,
+  );
+  context.bezierCurveTo(endX + 6, -2, endX + 6, 2, endX, taper * 0.72);
+  context.bezierCurveTo(
+    startX + (endX - startX) * 0.7,
+    halfWidth * 0.48 - rise * 0.25,
+    startX + (endX - startX) * 0.28,
+    halfWidth + rise,
+    startX,
+    halfWidth * 0.7,
+  );
+  context.bezierCurveTo(startX - 5, halfWidth * 0.28, startX - 5, -halfWidth * 0.27, startX, -halfWidth * 0.62 + rise);
+  context.closePath();
+}
+
+function traceWandHandle(context) {
+  context.beginPath();
+  context.moveTo(-146, -14);
+  context.bezierCurveTo(-132, -19, -108, -17, -94, -10);
+  context.bezierCurveTo(-90, -6, -91, 7, -97, 11);
+  context.bezierCurveTo(-111, 17, -134, 18, -147, 13);
+  context.bezierCurveTo(-154, 8, -155, -8, -146, -14);
+  context.closePath();
+}
+
 function drawChosenWand(context, state) {
   context.save();
   context.translate(640, 382);
   context.rotate(-0.75);
   context.globalAlpha = 0.82 + state.wandGlow * 0.18;
-  context.strokeStyle = '#3d251e';
-  context.lineWidth = 16;
-  context.lineCap = 'round';
-  context.beginPath();
-  context.moveTo(-118, 0);
-  context.quadraticCurveTo(-8, -5, 152, 0);
+  context.fillStyle = '#3d251e';
+  traceWandShaft(context, -121, 154, 9.5, 0.17);
+  context.fill();
+  context.strokeStyle = '#2b1d1a';
+  context.lineWidth = 2.4;
   context.stroke();
-  context.strokeStyle = '#8a5635';
-  context.lineWidth = 9;
-  context.stroke();
+
+  context.fillStyle = '#8a5635';
+  traceWandShaft(context, -117, 151, 5.8, 0.61);
+  context.fill();
   context.strokeStyle = '#d39b54';
-  context.lineWidth = 3;
+  context.lineWidth = 2.6;
   context.beginPath();
   context.moveTo(-105, -3);
-  context.quadraticCurveTo(20, -6, 143, -3);
+  context.bezierCurveTo(-42, -7, 64, -6, 143, -2);
   context.stroke();
+
   context.fillStyle = '#5b3427';
-  roundRect(context, -148, -16, 56, 32, 14);
+  traceWandHandle(context);
   context.fill();
-  context.strokeStyle = '#c28a47';
+  context.strokeStyle = '#34231f';
   context.lineWidth = 3;
-  for (let x = -139; x < -97; x += 10) {
+  context.stroke();
+
+  context.fillStyle = 'rgba(166,101,58,0.42)';
+  context.beginPath();
+  context.moveTo(-144, -9);
+  context.bezierCurveTo(-130, -15, -108, -13, -96, -7);
+  context.bezierCurveTo(-111, -4, -130, -3, -143, 1);
+  context.bezierCurveTo(-148, -2, -149, -6, -144, -9);
+  context.closePath();
+  context.fill();
+
+  context.strokeStyle = '#c28a47';
+  context.lineWidth = 2.6;
+  for (let x = -140; x < -99; x += 10) {
     context.beginPath();
-    context.moveTo(x, -11);
-    context.lineTo(x + 7, 11);
+    context.moveTo(x, -10 + Math.sin(x) * 0.5);
+    context.bezierCurveTo(x + 1, -3, x + 6, 4, x + 7, 10 + Math.cos(x) * 0.4);
     context.stroke();
   }
   context.restore();
@@ -1256,17 +1535,34 @@ function drawStar(context, x, y, size, color, alpha = 1) {
   context.save();
   context.translate(x, y);
   context.globalAlpha *= alpha;
-  context.fillStyle = color;
-  context.beginPath();
+  const points = [];
+  const outerScale = [1, 0.93, 1.04, 0.96];
+  const innerScale = [0.3, 0.25, 0.32, 0.27];
   for (let index = 0; index < 8; index += 1) {
-    const radius = index % 2 === 0 ? size : size * 0.28;
-    const angle = -Math.PI / 2 + index * Math.PI / 4;
-    const px = Math.cos(angle) * radius;
-    const py = Math.sin(angle) * radius;
-    if (index === 0) context.moveTo(px, py);
-    else context.lineTo(px, py);
+    const outer = index % 2 === 0;
+    const scale = outer
+      ? outerScale[index / 2]
+      : innerScale[(index - 1) / 2];
+    const angle = -Math.PI / 2 + index * Math.PI / 4 + Math.sin(index * 2.31) * 0.025;
+    points.push({
+      x: Math.cos(angle) * size * scale,
+      y: Math.sin(angle) * size * scale,
+    });
   }
-  context.closePath();
+
+  context.fillStyle = 'rgba(91,57,36,0.2)';
+  context.save();
+  context.translate(size * 0.08, size * 0.11);
+  traceSoftLoop(context, points);
+  context.fill();
+  context.restore();
+
+  context.fillStyle = color;
+  traceSoftLoop(context, points);
+  context.fill();
+
+  context.fillStyle = 'rgba(255,249,215,0.48)';
+  traceOrganicOval(context, -size * 0.08, -size * 0.12, size * 0.13, size * 0.1, size * 0.07);
   context.fill();
   context.restore();
 }

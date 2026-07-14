@@ -22,7 +22,8 @@ function recordingTicketContext() {
   const methods = new Set([
     'arc', 'arcTo', 'beginPath', 'bezierCurveTo', 'clip', 'closePath', 'ellipse', 'fill',
     'fillRect', 'fillText', 'lineTo', 'moveTo', 'quadraticCurveTo', 'rect', 'restore',
-    'rotate', 'roundRect', 'save', 'scale', 'setLineDash', 'stroke', 'strokeRect', 'translate',
+    'rotate', 'roundRect', 'save', 'scale', 'setLineDash', 'stroke', 'strokeRect', 'strokeText',
+    'translate',
   ]);
   const target = {
     assignments,
@@ -51,6 +52,24 @@ function recordingTicketContext() {
   });
 }
 
+function expectOrganicSetPiece(context, label, { fullScreenFills = 0 } = {}) {
+  const forbiddenGeometry = new Set([
+    'arc', 'arcTo', 'ellipse', 'lineTo', 'rect', 'roundRect', 'setLineDash', 'strokeRect',
+  ]);
+  expect(context.calls.some(([method]) => forbiddenGeometry.has(method)), label).toBe(false);
+  expect(context.calls.filter(([method]) => method === 'fillRect'), label)
+    .toEqual(Array.from(
+      { length: fullScreenFills },
+      () => ['fillRect', 0, 0, 1280, 720],
+    ));
+  expect(context.calls.flatMap(([, ...args]) => args)
+    .filter((value) => typeof value === 'number')
+    .every(Number.isFinite), label).toBe(true);
+  expect(context.assignments.filter(([, value]) => typeof value === 'number')
+    .every(([, value]) => Number.isFinite(value)), label).toBe(true);
+  expect(context.depth, label).toBe(0);
+}
+
 describe('SetPieceRenderer dispatch', () => {
   it('draws the Chapter Two preview ticket regardless of ID casing', () => {
     const renderer = new SetPieceRenderer();
@@ -71,6 +90,31 @@ describe('SetPieceRenderer dispatch', () => {
     expect(deliveryLetteringAlpha(0.1, { reducedMotion: true })).toBe(0.9);
     expect(deliveryLetteringAlpha(0.37, { reducedMotion: true })).toBe(0.9);
     expect(deliveryLetteringAlpha(0.1)).not.toBe(deliveryLetteringAlpha(0.37));
+  });
+
+  it('threads the bedroom key light into the delivering owl puppet', () => {
+    const owlRenderer = vi.fn();
+    const renderer = new SetPieceRenderer({ owlRenderer });
+    const context = recordingTicketContext();
+    const active = {
+      id: 'sp.letter',
+      requestedId: 'sp.letter',
+      time: 0.1,
+      descriptor: { duration: 2 },
+    };
+
+    renderer.draw(context, active, { keyLight: 'right' }, { reducedMotion: true });
+
+    expect(owlRenderer).toHaveBeenCalledWith(
+      context,
+      expect.objectContaining({
+        variant: 'post',
+        facing: 'left',
+        lightSide: 'right',
+        reducedMotion: true,
+      }),
+      0.1,
+    );
   });
 
   it('stages the seal crack before three non-intersecting letter folds and a readable push-in', () => {
@@ -121,6 +165,29 @@ describe('SetPieceRenderer dispatch', () => {
     drawReadableInvitation(context);
 
     expect(fillText.mock.calls.map(([text]) => text)).toEqual(chapter1LetterLines);
+  });
+
+  it('draws the readable invitation and owl crest entirely from organic layered curves', () => {
+    const first = recordingTicketContext();
+    const replayed = recordingTicketContext();
+
+    drawReadableInvitation(first);
+    drawReadableInvitation(replayed);
+
+    expect(first.calls).toEqual(replayed.calls);
+    expect(first.assignments).toEqual(replayed.assignments);
+    expect(first.texts).toEqual(chapter1LetterLines);
+    expectOrganicSetPiece(first, 'readable invitation');
+    expect(first.calls.filter(([method]) => [
+      'bezierCurveTo', 'quadraticCurveTo',
+    ].includes(method)).length).toBeGreaterThan(65);
+    expect(first.assignments.filter(([property]) => property === 'fillStyle').map(([, value]) => value))
+      .toEqual(expect.arrayContaining([
+        '#f4e7c6',
+        '#7a2940',
+        '#f4d58d',
+        'rgba(84,34,55,0.22)',
+      ]));
   });
 
   it('opens an exact ten-by-eight brick grid from the center before the corners', () => {
@@ -183,6 +250,53 @@ describe('SetPieceRenderer dispatch', () => {
     expect(vaseShardPose(0, 1.06, { reducedMotion: true }).settled).toBe(true);
   });
 
+  it('renders swirling papers, the intact vase, and every fragment as layered organic forms', () => {
+    const renderer = new SetPieceRenderer();
+    const paper = recordingTicketContext();
+    const paperReplay = recordingTicketContext();
+    const paperActive = { time: 1, descriptor: { duration: 2 } };
+    renderer.drawWandChaos(paper, paperActive, { reducedMotion: true });
+    renderer.drawWandChaos(paperReplay, paperActive, { reducedMotion: true });
+
+    expect(paper.calls).toEqual(paperReplay.calls);
+    expect(paper.assignments).toEqual(paperReplay.assignments);
+    expectOrganicSetPiece(paper, 'paper chaos');
+    expect(paper.calls.filter(([method]) => method === 'bezierCurveTo').length)
+      .toBeGreaterThan(180);
+    expect(paper.assignments.filter(([property]) => property === 'fillStyle').map(([, value]) => value))
+      .toEqual(expect.arrayContaining([
+        '#f0e3c8',
+        '#d9c5a2',
+        'rgba(45,31,36,0.24)',
+        'rgba(255,247,218,0.32)',
+      ]));
+
+    const intactVase = recordingTicketContext();
+    renderer.drawVaseChaos(intactVase, {
+      time: 0.8,
+      descriptor: { duration: 2 },
+    }, { reducedMotion: true });
+    expectOrganicSetPiece(intactVase, 'intact vase');
+    expect(intactVase.assignments.filter(([property]) => property === 'fillStyle').map(([, value]) => value))
+      .toEqual(expect.arrayContaining([
+        '#7e72aa',
+        '#a99bc7',
+        '#514768',
+        'rgba(51,43,82,0.32)',
+        'rgba(225,215,247,0.28)',
+      ]));
+
+    const fragments = recordingTicketContext();
+    renderer.drawVaseChaos(fragments, {
+      time: 1.4,
+      descriptor: { duration: 2 },
+    });
+    expectOrganicSetPiece(fragments, 'vase fragments');
+    expect(fragments.calls.filter(([method]) => [
+      'bezierCurveTo', 'quadraticCurveTo',
+    ].includes(method)).length).toBeGreaterThan(120);
+  });
+
   it('builds the chosen-wand crescendo without white clipping or reduced-motion camera drift', () => {
     const early = wandChosenState(0.4);
     const peak = wandChosenState(1.65);
@@ -191,6 +305,32 @@ describe('SetPieceRenderer dispatch', () => {
     expect(peak.washAlpha).toBeLessThanOrEqual(0.58);
     expect(finish.settle).toBeGreaterThan(0.8);
     expect(wandChosenState(1.65, 3, { reducedMotion: true }).cameraScale).toBe(1);
+  });
+
+  it('builds the chosen-wand rays, rings, sparks, shaft, and handle without rigid geometry', () => {
+    const renderer = new SetPieceRenderer();
+    const first = recordingTicketContext();
+    const replayed = recordingTicketContext();
+    const active = { time: 1.65, descriptor: { duration: 3 } };
+
+    renderer.drawWandChosen(first, active, {}, { reducedMotion: true });
+    renderer.drawWandChosen(replayed, active, {}, { reducedMotion: true });
+
+    expect(first.calls).toEqual(replayed.calls);
+    expect(first.assignments).toEqual(replayed.assignments);
+    expectOrganicSetPiece(first, 'chosen wand', { fullScreenFills: 1 });
+    expect(first.calls.filter(([method]) => [
+      'bezierCurveTo', 'quadraticCurveTo',
+    ].includes(method)).length).toBeGreaterThan(430);
+    expect(first.assignments.filter(([property]) => property === 'fillStyle').map(([, value]) => value))
+      .toEqual(expect.arrayContaining([
+        '#3d251e',
+        '#8a5635',
+        '#5b3427',
+        'rgba(166,101,58,0.42)',
+        'rgba(255,232,141,0.18)',
+        'rgba(255,195,73,0.13)',
+      ]));
   });
 
   it('settles the Chapter Two ticket without bobbing in reduced motion', () => {
