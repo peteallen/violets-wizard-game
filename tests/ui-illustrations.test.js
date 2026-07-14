@@ -12,6 +12,7 @@ import {
   drawWaxIcon,
   traceDeckledRect,
 } from '../src/game/render/uiIllustrations.js';
+import { STORYBOOK_INK, STORYBOOK_LINE_WEIGHT } from '../src/game/render/storybookInk.js';
 
 function recordingContext() {
   const calls = [];
@@ -61,6 +62,23 @@ function recordingContext() {
 }
 
 describe('illustrated interface primitives', () => {
+  it('uses the shared storybook ink family with separate contour and emphasis weights', () => {
+    const context = recordingContext();
+    drawCompassQuest(context, { x: 20, y: 20, width: 104, height: 104 }, 0, { pulse: false });
+    drawVectorIcon(context, 'name-pip', 180, 72, 88);
+
+    const colors = context.propertyWrites
+      .filter(([property]) => property === 'fillStyle' || property === 'strokeStyle')
+      .map(([, value]) => value);
+    const lineWidths = context.propertyWrites
+      .filter(([property, value]) => property === 'lineWidth' && Number.isFinite(value))
+      .map(([, value]) => value);
+    for (const ink of Object.values(STORYBOOK_INK)) expect(colors).toContain(ink);
+    expect(lineWidths).toContain(STORYBOOK_LINE_WEIGHT.contour);
+    expect(lineWidths).toContain(STORYBOOK_LINE_WEIGHT.emphasis);
+    expect(new Set(lineWidths).size).toBeGreaterThan(1);
+  });
+
   it('draws every authored choice icon deterministically without text glyph stand-ins', () => {
     const icons = [
       'owl', 'cat', 'toad', 'wand', 'eyes', 'map', 'cards', 'replay', 'quill', 'satchel',

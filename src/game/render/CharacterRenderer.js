@@ -1,8 +1,9 @@
 import { PALETTE } from '../config.js';
 import { drawVectorOwl } from './OwlRenderer.js';
+import { STORYBOOK_INK, STORYBOOK_LINE_WEIGHT } from './storybookInk.js';
 
-const OUTLINE = '#49372e';
-const DEEP_OUTLINE = '#342720';
+const OUTLINE = STORYBOOK_INK.primary;
+const DEEP_OUTLINE = STORYBOOK_INK.deep;
 const RIM_LIGHT = 'rgba(255, 224, 158, 0.34)';
 const SHADOW_WASH = 'rgba(37, 26, 35, 0.26)';
 const WARM_BOUNCE = 'rgba(229, 170, 93, 0.18)';
@@ -1761,7 +1762,7 @@ function drawVioletEyes(context, blinking, gazeX, gazeY, pose, time, detail) {
     context.closePath();
     context.fill();
 
-    context.strokeStyle = 'rgba(73, 55, 46, 0.62)';
+    context.strokeStyle = STORYBOOK_INK.soft;
     context.lineWidth = 1.15;
     context.beginPath();
     context.moveTo(eye.x - eye.width, eye.y + 0.2);
@@ -3203,7 +3204,7 @@ function drawGuideBeckonArms(context, palette, time, { reducedMotion = false } =
   context.fill();
   context.stroke();
   context.strokeStyle = palette.accent;
-  context.lineWidth = 2.2;
+  context.lineWidth = STORYBOOK_LINE_WEIGHT.contour;
   context.beginPath();
   context.moveTo(64, -46);
   context.quadraticCurveTo(58, -40, 49, -42);
@@ -3881,7 +3882,7 @@ function drawWandmakerNose(context) {
   context.closePath();
   context.fill();
   context.strokeStyle = 'rgba(99, 65, 58, 0.48)';
-  context.lineWidth = 1.1;
+  context.lineWidth = STORYBOOK_LINE_WEIGHT.detail;
   context.beginPath();
   context.moveTo(-1, -145);
   context.bezierCurveTo(-2, -135, -5, -126, -3, -122);
@@ -6621,7 +6622,7 @@ function drawHand(context, x, y, color, radius) {
   context.quadraticCurveTo(0, radius * 1.05, -side * radius * 0.72, radius * 0.52);
   context.quadraticCurveTo(-side * radius, 0, -side * radius * 0.7, -radius * 0.65);
   context.closePath();
-  fillStroke(context, 2.2);
+  fillStroke(context, STORYBOOK_LINE_WEIGHT.contour);
 
   context.fillStyle = 'rgba(255, 218, 174, 0.3)';
   context.beginPath();
@@ -6635,7 +6636,7 @@ function drawHand(context, x, y, color, radius) {
   context.stroke();
 
   context.strokeStyle = 'rgba(255,231,168,0.4)';
-  context.lineWidth = 1.5;
+  context.lineWidth = STORYBOOK_LINE_WEIGHT.feature;
   context.beginPath();
   context.moveTo(-radius * 0.62, -radius * 0.18);
   context.bezierCurveTo(
@@ -6648,7 +6649,7 @@ function drawHand(context, x, y, color, radius) {
   );
   context.stroke();
   context.strokeStyle = 'rgba(87,52,42,0.35)';
-  context.lineWidth = 1.1;
+  context.lineWidth = STORYBOOK_LINE_WEIGHT.detail;
   context.beginPath();
   for (const fingerY of [-0.38, -0.04, 0.3]) {
     context.moveTo(side * radius * 0.55, radius * fingerY);

@@ -17,10 +17,12 @@ import {
   sampleVioletMotion,
   tracePortraitCameoSilhouette,
 } from '../src/game/render/CharacterRenderer.js';
+import { STORYBOOK_INK, STORYBOOK_LINE_WEIGHT } from '../src/game/render/storybookInk.js';
 
 function recordingContext() {
   const calls = [];
   const styles = [];
+  const lineWidths = [];
   let depth = 0;
   const gradient = { addColorStop: (...args) => calls.push(['addColorStop', ...args]) };
   const methods = new Set([
@@ -28,7 +30,13 @@ function recordingContext() {
     'fillText', 'lineTo', 'moveTo', 'quadraticCurveTo', 'rect', 'restore', 'rotate', 'roundRect',
     'save', 'scale', 'setLineDash', 'stroke', 'strokeRect', 'translate',
   ]);
-  const target = { globalAlpha: 1, calls, styles, get depth() { return depth; } };
+  const target = {
+    globalAlpha: 1,
+    calls,
+    styles,
+    lineWidths,
+    get depth() { return depth; },
+  };
   return new Proxy(target, {
     get(object, property) {
       if (property === 'createLinearGradient' || property === 'createRadialGradient') {
@@ -45,6 +53,7 @@ function recordingContext() {
     },
     set(object, property, value) {
       if (property === 'fillStyle' || property === 'strokeStyle') styles.push([property, value]);
+      if (property === 'lineWidth' && Number.isFinite(value)) lineWidths.push(value);
       object[property] = value;
       return true;
     },
@@ -52,6 +61,25 @@ function recordingContext() {
 }
 
 describe('illustrated character renderer', () => {
+  it('uses the shared storybook ink family with distinct detail and contour weights', () => {
+    const renderer = new CharacterRenderer();
+    const context = recordingContext();
+    renderer.draw(context, {
+      kind: 'violet', x: 320, y: 610, facing: 'right', outfit: 'casual', lightSide: 'right',
+    }, 1.375);
+    renderer.draw(context, {
+      kind: 'guide', x: 720, y: 610, facing: 'left', pose: 'idle', lightSide: 'right',
+    }, 1.375);
+
+    const colors = context.styles.map(([, value]) => value);
+    for (const ink of Object.values(STORYBOOK_INK)) expect(colors).toContain(ink);
+    expect(context.lineWidths).toContain(STORYBOOK_LINE_WEIGHT.detail);
+    expect(context.lineWidths).toContain(STORYBOOK_LINE_WEIGHT.feature);
+    expect(context.lineWidths).toContain(STORYBOOK_LINE_WEIGHT.contour);
+    expect(new Set(context.lineWidths.filter(Number.isFinite)).size).toBeGreaterThan(1);
+    expect(Object.values(STORYBOOK_INK).some((ink) => /#(?:000|000000)\b/i.test(ink))).toBe(false);
+  });
+
   it('draws every registered review surface deterministically without leaking canvas state', () => {
     const renderer = new CharacterRenderer();
     for (const scene of CHARACTER_REVIEW_SCENES) {

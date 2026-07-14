@@ -1,9 +1,10 @@
 import { PALETTE } from '../config.js';
+import { STORYBOOK_INK, STORYBOOK_LINE_WEIGHT } from './storybookInk.js';
 import { traceRoundedRect } from './uiPrimitives.js';
 
 const TAU = Math.PI * 2;
-const INK = '#382a24';
-const OUTLINE = '#3a2d22';
+const INK = STORYBOOK_INK.deep;
+const OUTLINE = STORYBOOK_INK.primary;
 const BRASS = '#c89d45';
 const BRASS_LIGHT = '#f4d58d';
 const BRASS_DARK = '#76522c';
@@ -1310,7 +1311,7 @@ export function drawCompassQuest(context, rect, time = 0, { pulse = false } = {}
   traceCompassCase(context, 0, 0, radius, 0.19);
   context.fill();
   context.strokeStyle = '#49331f';
-  context.lineWidth = 3.4;
+  context.lineWidth = STORYBOOK_LINE_WEIGHT.emphasis;
   context.stroke();
 
   context.fillStyle = BRASS;
@@ -1361,14 +1362,14 @@ export function drawCompassQuest(context, rect, time = 0, { pulse = false } = {}
   traceCompassSouthNeedle(context, radius);
   context.fill();
   context.strokeStyle = OUTLINE;
-  context.lineWidth = 2.2;
+  context.lineWidth = STORYBOOK_LINE_WEIGHT.contour;
   context.stroke();
 
   context.fillStyle = '#70416e';
   traceCompassNorthNeedle(context, radius);
   context.fill();
   context.strokeStyle = OUTLINE;
-  context.lineWidth = 2.2;
+  context.lineWidth = STORYBOOK_LINE_WEIGHT.contour;
   context.stroke();
 
   context.fillStyle = '#b987b0';
@@ -4015,7 +4016,7 @@ function tracePipLeaf(context, x, y, direction) {
 }
 
 function drawPipIcon(context, color, secondary) {
-  context.strokeStyle = 'rgba(65, 49, 35, 0.42)';
+  context.strokeStyle = STORYBOOK_INK.soft;
   context.lineWidth = 8;
   context.beginPath();
   context.moveTo(3, -14);

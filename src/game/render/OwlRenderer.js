@@ -1,7 +1,8 @@
 import { clamp, easeInOutCubic, easeOutCubic, lerp } from '../core/math.js';
 import { LETTER_ENVELOPE_POSE } from './LetterRenderer.js';
+import { STORYBOOK_INK, STORYBOOK_LINE_WEIGHT } from './storybookInk.js';
 
-const OUTLINE = '#30251f';
+const OUTLINE = STORYBOOK_INK.primary;
 
 const OWL_PALETTES = Object.freeze({
   post: Object.freeze({
@@ -196,7 +197,7 @@ export function drawVectorOwl(context, owl = {}, time = 0) {
   context.lineCap = 'round';
   context.lineJoin = 'round';
   context.strokeStyle = OUTLINE;
-  context.lineWidth = 3;
+  context.lineWidth = STORYBOOK_LINE_WEIGHT.bold;
 
   drawTail(context, palette, motion);
   drawFarWing(context, palette, motion);
@@ -545,7 +546,7 @@ function drawHead(context, palette, variant, motion, lightDirection = -1) {
 
   context.strokeStyle = palette.rim;
   context.globalAlpha = 0.76;
-  context.lineWidth = 2.2;
+  context.lineWidth = STORYBOOK_LINE_WEIGHT.contour;
   context.beginPath();
   context.moveTo(-32, -96);
   context.bezierCurveTo(-31, -108, -27, pet ? -117 : -121, -22, pet ? -114 : -117);
@@ -568,10 +569,10 @@ function drawOwlEye(context, x, y, palette, motion) {
   context.fillStyle = palette.iris;
   traceOrganicOval(context, motion.eyeX, motion.eyeY, 6.8, 7.1, x < 0 ? 0.18 : -0.21);
   context.fill();
-  context.strokeStyle = palette.fleck;
+  context.strokeStyle = STORYBOOK_INK.soft;
   context.lineWidth = 1.4;
   context.stroke();
-  context.fillStyle = '#171311';
+  context.fillStyle = STORYBOOK_INK.deep;
   traceOrganicOval(context, motion.eyeX, motion.eyeY, 3.7, 4.1, x < 0 ? -0.16 : 0.22);
   context.fill();
   context.fillStyle = 'rgba(255,244,218,0.92)';

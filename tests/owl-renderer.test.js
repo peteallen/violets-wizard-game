@@ -6,17 +6,25 @@ import {
   sampleOwlMotion,
 } from '../src/game/render/OwlRenderer.js';
 import { LETTER_ENVELOPE_POSE } from '../src/game/render/LetterRenderer.js';
+import { STORYBOOK_INK, STORYBOOK_LINE_WEIGHT } from '../src/game/render/storybookInk.js';
 
 function recordingContext() {
   const calls = [];
   const styles = [];
+  const lineWidths = [];
   let depth = 0;
   const methods = new Set([
     'arc', 'arcTo', 'beginPath', 'bezierCurveTo', 'closePath', 'ellipse', 'fill',
     'fillRect', 'lineTo', 'moveTo', 'quadraticCurveTo', 'rect', 'restore', 'rotate',
     'roundRect', 'save', 'scale', 'setLineDash', 'stroke', 'strokeRect', 'translate',
   ]);
-  const target = { calls, styles, globalAlpha: 1, get depth() { return depth; } };
+  const target = {
+    calls,
+    styles,
+    lineWidths,
+    globalAlpha: 1,
+    get depth() { return depth; },
+  };
   return new Proxy(target, {
     get(object, property) {
       if (property === 'createLinearGradient' || property === 'createRadialGradient') {
@@ -36,6 +44,7 @@ function recordingContext() {
     },
     set(object, property, value) {
       if (property === 'fillStyle' || property === 'strokeStyle') styles.push([property, value]);
+      if (property === 'lineWidth' && Number.isFinite(value)) lineWidths.push(value);
       object[property] = value;
       return true;
     },
@@ -86,6 +95,19 @@ describe('storybook owl drawing', () => {
     'arc', 'arcTo', 'ellipse', 'fillRect', 'lineTo', 'rect', 'roundRect',
     'setLineDash', 'strokeRect', 'createLinearGradient', 'createRadialGradient',
   ]);
+
+  it('uses the shared storybook ink family with separate contour and bold weights', () => {
+    const context = recordingContext();
+    drawVectorOwl(context, {
+      variant: 'pet', pose: 'pet-follow', facing: 'left', x: 280, y: 340,
+    }, 3.875);
+
+    const colors = context.styles.map(([, value]) => value);
+    for (const ink of Object.values(STORYBOOK_INK)) expect(colors).toContain(ink);
+    expect(context.lineWidths).toContain(STORYBOOK_LINE_WEIGHT.contour);
+    expect(context.lineWidths).toContain(STORYBOOK_LINE_WEIGHT.bold);
+    expect(new Set(context.lineWidths.filter(Number.isFinite)).size).toBeGreaterThan(1);
+  });
 
   it('draws both owl identities as deterministic layered organic puppets', () => {
     const variants = [
