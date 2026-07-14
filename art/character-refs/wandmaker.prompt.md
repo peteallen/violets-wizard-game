@@ -4,27 +4,44 @@ This is a style target for the Wandmaker's painted sprite parts (D48) and the
 identity source for every art-director judgment of his future part sheets. It
 is reference-only material and is never shipped by the game.
 
-## Current file (v3)
+## Current file (v4)
 
 - Status: **under fresh art-director review (D49)** — accepted only on a PASS
   verdict; this line is updated when the ruling lands
 - Generated: 2026-07-13
-- Workflow: OpenRouter Image API via the `openrouter-image` skill, 16:9 at 1K
-- Model identifier: `google/gemini-3.1-flash-image-preview`
-- Cost: $0.0676
+- Workflow: OpenRouter Image API via the `openrouter-image` skill
+- Model identifier: `black-forest-labs/flux.2-pro` — a deliberate model-family
+  switch after three same-locus failures (hands, full-body shadow cooling,
+  skin/field tooth) across two Gemini tiers; FLUX's prior is strong on
+  texture and hands
+- Cost: $0.03. Requested 16:9; FLUX returned 1024×1024 square (format drift
+  noted for the judge)
 - Reference images: none — text-to-image only
-- File: `wandmaker.png` (uncropped, exactly two views, close-up fills the
-  right half)
-- SHA-256: `3739379077e2c76e058fb311f931dcaa90ede6c74cafbcd064b67aa91cf19240`
-- Prompt: v3 block below — every v2 finding encoded: hands with FOUR
-  separated fingers plus visible thumbs (M1), violet-blue shadow cooling on
-  the FULL-BODY figure too, not just the close-up (M2), woven canvas tooth in
-  every skin tone (M3), one silver-grey iris pigment and silver-white hair in
-  both views (m1/m2), upright-relaxed pose kept deliberately (the stoop moves
-  to rig/pose level per the v2 ruling), close-up maximized for detail budget
-  (m4).
+- File: `wandmaker.png`
+- SHA-256: `490e92f99502925d11fa76160027ca3feb61daff29a760510e760772f07eecc5`
+- Prompt: v4 block below — rewritten in plainer descriptive language for the
+  new model family, all v3 findings encoded: hands no larger than half the
+  face, resting in contact with the thighs, thumb + curled fingers with
+  shadow gaps (C1); one almost-colorless cool slate-grey iris pigment in both
+  views (C2); violet-blue shadow cooling named per surface on the full-body
+  figure (M1); weave demanded through skin, gold bloom, and the darkest
+  corners (M2/M3); catchlights pinned upper-left (m1); same age both views
+  (m2).
 
 ## History
+
+- **v3** (`google/gemini-3.1-flash-image-preview`, $0.0676, SHA-256
+  `3739379077e2c76e058fb311f931dcaa90ede6c74cafbcd064b67aa91cf19240`,
+  committed at `426a5ef`): **FAILED D49 review — 2 CRITICAL, 3 MAJOR,
+  2 MINOR.** Posture, wardrobe lock, composition, expression, and hygiene
+  all measured clean, but both hands were merged-finger droops ~45%
+  oversized with one floating off the thigh (C1); the two views disagreed on
+  iris pigment with the full-body reading hazel-warm (C2); full-body shadows
+  stayed warm-only while the close-up cooled correctly (M1); full-body skin
+  was airbrush-smooth and the close-up's tooth was the thinnest in the
+  family (M2); the dark field went airbrush-dead at the edges (M3); minors:
+  catchlights upper-right against the upper-left key, and a decade of
+  age drift between views.
 
 - **v2** (`google/gemini-3.1-flash-image-preview`, $0.0693, SHA-256
   `beb95328193ed78607606d932989f811bdb27246545230ee22e924a9f1a576f5`,
@@ -68,8 +85,8 @@ sleeves, dove-grey cravat, warm charcoal-brown trousers, amber-brown shoes) so
 his part-sheet arms can carry cream shirt sleeves that match the torso's
 rolled cuffs. No actor likeness, no film costume.
 
-## Generation prompt (v3)
+## Generation prompt (v4)
 
 ```text
-Premium children's storybook illustration, FULLY PAINTED dense gouache rendering with NO ink outlines and NO contour linework — every form built purely from painted values, soft edges, dry-brush texture, and visible woven canvas tooth in EVERY tone INCLUDING ALL SKIN: cheeks, forehead, nose, and hands all show paper grain and dry-brush stipple up close, never airbrushed smooth gradients, never slick digital blends. RICH DEEP color values glowing like candlelight: aged parchment, deep candle gold, deep night blue, dusty violet, warm umber — never washed out, no pure black or pure white. A character reference sheet, wide landscape 16:9, the two views filling the frame edge to edge: the exact same character shown exactly TWICE — a front-facing full-body standing pose on the left, and a face-and-shoulders close-up occupying the entire right half of the frame from top edge to bottom edge, as large as possible — identical face shape, identity, outfit, and colors in both views: one broader, gently jowled, kind old face in BOTH views, never a third figure, never a duplicate. The background is ONE continuous atmospheric painted field behind both views, warm candle-gold parchment light melting into deep night blue toward the edges — never panels, no scenery, no text, no borders. The character: an original very old wandmaker and shopkeeper, small and slight, standing upright and relaxed, bright-eyed and quietly delighted, as if he has just recognized something wonderful. Large luminous PALE SILVER-GREY eyes with the exact same silver-grey iris pigment in BOTH views — never blue, never hazel, never warm brown — soft relaxed aged lids, medium pupils, warm upper-left catchlights; wispy flyaway SILVER-WHITE hair in both views, rising like soft smoke around a high forehead, with only the faintest warm light on its lit edge; tufty white eyebrows; large gentle ears; a warm knowing closed-mouth smile with deep kind smile lines. Both arms hang relaxed at his sides with his hands resting calmly against his outer thighs: each hand painted with FOUR clearly separated fingers side by side — small shadow gaps between every finger — and a visible THUMB in front, natural knuckles, fingers gently together, never splayed, never clawed, never merged into a mitten. He stands naturally, feet planted flat beneath his hips, toes turned only slightly outward. Wardrobe, original design: a dusty deep-plum waistcoat with small cloth-covered buttons over a soft cream shirt with gently rolled sleeves, a loosely knotted dove-grey neck cravat, warm charcoal-brown trousers with a clear brown warmth, worn amber-brown leather shoes, and a soft yellow cloth measuring tape with tick marks draped around his neck like a scarf, hanging down both sides. ONE warm upper-left key light obeyed identically in BOTH views: a clear candle-gold rim glowing along the lit left edge, and every shadow side — sleeves, trousers, hair underside, jaw — cooling to VIOLET-BLUE, never warm brown shadows, in the full-body figure just as much as in the close-up. The emotional read: whispery, wise, a little mysterious, quietly delighted — friendly and safe, never creepy, never startled. Fabric has woven grain and painted fold bands; hair is soft shaded wisps with interior strands. Picture-book proportions. Original character design, not any existing actor or film character.
+A premium children's storybook character reference sheet, painted in dense traditional gouache with visible woven canvas tooth in every tone — the paper weave shows through the darkest navy corners, through the gold glow, and through all skin, with dry-brush stipple grain on cheeks, forehead, and hands; no ink outlines anywhere, no airbrush-smooth gradients, no slick digital blending. Wide landscape sheet showing the exact same character exactly twice on one continuous atmospheric background of warm candle-gold parchment light melting into deep night blue: on the left, his full body standing; filling the entire right half, a large face-and-shoulders close-up. Identical identity in both views: the same broader, gently jowled, kind old face, the same age, the same colors, never a third figure. He is an original very old wandmaker and shopkeeper: small, slight, upright and relaxed, bright-eyed and quietly delighted, as if he has just recognized something wonderful. Both views give him large luminous pale silver-grey eyes of the exact same almost-colorless cool slate-grey pigment — not blue, not hazel, not brown — with soft relaxed aged lids, medium pupils, and a small warm catchlight at the upper left of each eye. Wispy flyaway silver-white hair rises like soft smoke around his high forehead in both views; tufty white eyebrows; large gentle ears; a warm knowing closed-mouth smile with deep kind smile lines. His arms hang relaxed and his small elderly hands rest flat against his outer thighs, the thumb and gently curled fingers clearly drawn with soft shadow gaps between them — natural small hands at rest touching the trouser fabric, never claws, never mittens, never floating away from the leg, and no larger than half his face. He stands with feet planted flat, toes only slightly turned out. He wears a dusty deep-plum waistcoat with small cloth-covered buttons over a soft cream shirt with rolled sleeves, a loosely knotted dove-grey cravat, warm charcoal-brown trousers, worn amber-brown leather shoes, and a soft yellow cloth measuring tape with tick marks draped around his neck, hanging down both sides. One warm key light from the upper left, obeyed identically in both views: a candle-gold rim along his lit left edge, and every shadow — sleeve cores, trouser folds, hair underside, and the shadowed side of his face and jaw — cooling clearly into violet-blue, on the full-body figure exactly as strongly as in the close-up. He reads as whispery, wise, slightly mysterious, quietly delighted; friendly and safe for a young child, never creepy, never startled. No text, no labels, no borders, no scenery. An original character design, not any existing actor or film character.
 ```
