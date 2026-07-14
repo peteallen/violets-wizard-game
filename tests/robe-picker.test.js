@@ -8,6 +8,7 @@ import {
   robeTrimColor,
 } from '../src/game/core/RobeTrims.js';
 import {
+  UI_REVIEW_SCENES,
   UIRenderer,
   robePickerLayout,
 } from '../src/game/render/UIRenderer.js';
@@ -18,8 +19,16 @@ function center(rect) {
   return { x: rect.x + rect.width / 2, y: rect.y + rect.height / 2 };
 }
 
+function rectsOverlap(first, second) {
+  return first.x < second.x + second.width
+    && first.x + first.width > second.x
+    && first.y < second.y + second.height
+    && first.y + first.height > second.y;
+}
+
 function recordingContext() {
   const calls = [];
+  const assignments = [];
   const texts = [];
   let depth = 0;
   const methods = new Set([
@@ -29,6 +38,7 @@ function recordingContext() {
   ]);
   const target = {
     calls,
+    assignments,
     texts,
     font: '700 24px "Andika"',
     globalAlpha: 1,
@@ -53,6 +63,7 @@ function recordingContext() {
       return object[property];
     },
     set(object, property, value) {
+      assignments.push([property, value]);
       object[property] = value;
       return true;
     },
@@ -186,6 +197,53 @@ describe('touch-first robe picker', () => {
     ]));
     expect(context.calls.filter(([name]) => name === 'bezierCurveTo').length).toBeGreaterThan(120);
     expect(context.depth).toBe(0);
+  });
+
+  it('registers a deterministic real-picker review with a hue-independent selected state', () => {
+    const characterRenderer = { draw: vi.fn() };
+    const renderer = new UIRenderer({ characterRenderer });
+    const context = recordingContext();
+    const gradient = { addColorStop: vi.fn() };
+    context.createLinearGradient = vi.fn(() => gradient);
+
+    expect(UI_REVIEW_SCENES).toContain('ui-robe-picker-review');
+    expect(renderer.drawReviewScene(context, 'ui-robe-picker-review', 3.25, {
+      reducedMotion: true,
+    })).toBe(true);
+    expect(characterRenderer.draw).toHaveBeenCalledWith(
+      context,
+      expect.objectContaining({
+        kind: 'violet',
+        outfit: 'robes',
+        pose: 'wonder',
+        scale: 1.68,
+        robeTrim: '#d4a944',
+      }),
+      0,
+    );
+
+    const selectedOutline = context.assignments.findIndex(([property, value], index, entries) => (
+      property === 'strokeStyle'
+      && value === '#382a24'
+      && entries[index + 1]?.[0] === 'lineWidth'
+      && entries[index + 1]?.[1] === 10
+      && entries[index + 2]?.[0] === 'strokeStyle'
+      && entries[index + 2]?.[1] === '#ffd76a'
+      && entries[index + 3]?.[0] === 'lineWidth'
+      && entries[index + 3]?.[1] === 4.5
+    ));
+    expect(selectedOutline).toBeGreaterThanOrEqual(0);
+
+    const layout = robePickerLayout('gold');
+    expect(layout.swatches).toHaveLength(12);
+    for (let first = 0; first < layout.swatches.length; first += 1) {
+      for (let second = first + 1; second < layout.swatches.length; second += 1) {
+        expect(rectsOverlap(layout.swatches[first].rect, layout.swatches[second].rect)).toBe(false);
+      }
+      expect(rectsOverlap(layout.swatches[first].rect, layout.preview)).toBe(false);
+      expect(rectsOverlap(layout.swatches[first].rect, layout.confirm)).toBe(false);
+    }
+    expect(rectsOverlap(layout.preview, layout.confirm)).toBe(false);
   });
 
   it('routes swatch and confirmation taps without advancing an abstract dialogue choice', () => {

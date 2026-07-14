@@ -67,6 +67,30 @@ function recordingDialogueContext() {
 }
 
 describe('adaptive dialogue card', () => {
+  it('keeps the two synthetic pre-Malkin Violet review scenes in her casual clothes', () => {
+    const characterRenderer = { draw: vi.fn(), drawPortrait: vi.fn() };
+    const renderer = new UIRenderer({ characterRenderer });
+
+    for (const scene of ['ui-broom-caption-review', 'ui-dialogue-center-review']) {
+      const context = recordingDialogueContext();
+      context.createLinearGradient = () => ({ addColorStop: () => {} });
+      characterRenderer.draw.mockClear();
+      characterRenderer.drawPortrait.mockClear();
+
+      expect(renderer.drawReviewScene(context, scene, 0, { reducedMotion: true })).toBe(true);
+      expect(characterRenderer.draw).toHaveBeenCalledWith(
+        context,
+        expect.objectContaining({ kind: 'violet', outfit: 'casual' }),
+        0,
+      );
+      expect(characterRenderer.drawPortrait).toHaveBeenCalledWith(
+        context,
+        expect.objectContaining({ speaker: 'npc.violet', outfit: 'casual' }),
+        0,
+      );
+    }
+  });
+
   it('derives the visible active speaker from deterministic world state', () => {
     const guideState = dialogueState();
     const guide = dialogueSceneContext(guideState);

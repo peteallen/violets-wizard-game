@@ -99,6 +99,7 @@ describe('state fixtures', () => {
       'ui-dialogue-night-live-review',
       'ui-broom-caption-review',
       'ui-letter-reading-review',
+      'ui-robe-picker-review',
       'ui-choices-review',
       'ui-satchel-map-review',
       'ui-satchel-cards-review',
@@ -191,6 +192,18 @@ describe('registered harness scenarios', () => {
       expect(ACTION_FIXTURE_IDS).toContain(id);
       expect(parseHarnessRequest(`?scene=${id}`)).toMatchObject({ scene: id, state: id, actions: id });
     }
+  });
+
+  it('registers the real robe picker as a deterministic review scene before its choice is committed', () => {
+    const id = 'ui-robe-picker-review';
+    expect(STATE_FIXTURE_IDS).toContain(id);
+    expect(ACTION_FIXTURE_IDS).toContain(id);
+    expect(parseHarnessRequest(`?scene=${id}`)).toMatchObject({ scene: id, state: id, actions: id });
+    expect(getStateFixture(id).save).toMatchObject({
+      resume: { scene: 'ch1.robeShopping', room: 'ch1.malkins' },
+      character: { appearance: { robeTrim: null } },
+    });
+    expect(getActionFixture(id).actions).toEqual([]);
   });
 
   it('registers the signature Chapter One set pieces and Chapter Two ticket as direct deterministic review scenes', () => {

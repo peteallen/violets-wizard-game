@@ -42,6 +42,12 @@ const REVIEW_SCENE_ILLUSION_CHECKS = Object.freeze({
     'The complete invitation remains visible above two distinct, non-overlapping 88px-or-larger reading actions.',
     'The written invitation matches its narration and contains zero unrelated dialogue captions.',
   ],
+  'ui-robe-picker-review': [
+    'Violet’s real full-body robe puppet remains visible from hair to shoes inside the dressing mirror, with the selected trim applied to the preview.',
+    'Exactly twelve named swatches appear as distinct, non-overlapping targets that are each at least 88×88.',
+    'The selected swatch remains readable independently of its hue through one dark outer outline, one light inner outline, and one check marker.',
+    'The mirror, twelve swatch targets, and 88px-or-larger confirmation control remain mutually non-overlapping.',
+  ],
   'ui-choices-review': [
     'Exactly three pet choices appear as distinct, non-overlapping targets that are each at least 88×88.',
   ],

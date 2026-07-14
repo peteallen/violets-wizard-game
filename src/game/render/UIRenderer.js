@@ -44,6 +44,7 @@ export const UI_REVIEW_SCENES = Object.freeze([
   'ui-dialogue-center-review',
   'ui-broom-caption-review',
   'ui-letter-reading-review',
+  'ui-robe-picker-review',
   'ui-choices-review',
   'ui-satchel-map-review',
   'ui-satchel-cards-review',
@@ -361,7 +362,9 @@ export class UIRenderer {
         type: 'line', speaker: 'npc.violet', speakerLabel: 'Violet', portraitPose: 'wonder',
         caption: 'Flying broom!', text: 'That broom looks fast!',
       };
-      const player = { kind: 'violet', x: 1060, y: 665, facing: 'left', pose: 'wonder', wand: true };
+      const player = {
+        kind: 'violet', x: 1060, y: 665, facing: 'left', pose: 'wonder', outfit: 'casual', wand: true,
+      };
       this.characterRenderer.draw(context, player, time);
       this.drawDialogue(
         context,
@@ -408,7 +411,9 @@ export class UIRenderer {
         type: 'line', speaker: 'npc.violet', speakerLabel: 'Violet', portraitPose: 'talk',
         caption: 'Spells come later!', text: 'I need a spell!',
       };
-      const player = { kind: 'violet', x: 640, y: 665, facing: 'right', pose: 'speaking', wand: true };
+      const player = {
+        kind: 'violet', x: 640, y: 665, facing: 'right', pose: 'speaking', outfit: 'casual', wand: true,
+      };
       this.characterRenderer.draw(context, player, time);
       this.drawDialogue(
         context,
@@ -427,6 +432,10 @@ export class UIRenderer {
           { id: 'toad', icon: 'pet-toad', caption: 'Toad' },
         ],
       }, time, false, reducedMotion);
+    } else if (scene === 'ui-robe-picker-review') {
+      this.drawRobePicker(context, {
+        overlay: { surface: 'robe-picker', selectedTrim: 'gold' },
+      }, time, reducedMotion);
     } else if (scene === 'ui-satchel-map-review') {
       this.drawSatchel(context, {
         overlay: { surface: 'satchel', tab: 'map' },
@@ -2948,9 +2957,18 @@ function drawFabricSwatch(context, swatch, index) {
   context.fillStyle = swatch.color;
   traceFabricSwatch(context, fabric, phase);
   context.fill();
-  context.strokeStyle = swatch.selected ? PALETTE.interactive : '#513b31';
-  context.lineWidth = swatch.selected ? 6 : 3.5;
-  context.stroke();
+  if (swatch.selected) {
+    context.strokeStyle = '#382a24';
+    context.lineWidth = 10;
+    context.stroke();
+    context.strokeStyle = PALETTE.interactive;
+    context.lineWidth = 4.5;
+    context.stroke();
+  } else {
+    context.strokeStyle = '#513b31';
+    context.lineWidth = 3.5;
+    context.stroke();
+  }
 
   context.fillStyle = 'rgba(37,27,38,0.24)';
   traceFabricFold(context, fabric, phase);

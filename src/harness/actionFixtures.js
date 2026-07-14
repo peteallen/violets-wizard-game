@@ -193,6 +193,9 @@ registry
   .register('ui-letter-reading-review', createFixture(
     'Hold the readable invitation and its explicit hear-the-letter action.',
   ))
+  .register('ui-robe-picker-review', createFixture(
+    'Hold the real robe picker with Gold selected for deterministic full-body, swatch, and control review.',
+  ))
   .register('ui-choices-review', createFixture(
     'Hold a complete set of authored vector choice cards.',
   ))

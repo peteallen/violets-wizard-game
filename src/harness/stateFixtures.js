@@ -462,6 +462,17 @@ registry
     'ui-letter-reading-review',
     'The fully opened Hogwarts invitation held until Violet chooses to hear it read aloud.',
   ))
+  .register('ui-robe-picker-review', createFixture(
+    'The real dressing-mirror robe picker with a full-body Violet preview, all twelve trims, and Gold selected but not yet committed.',
+    { chapter: 1, scene: 'ui-robe-picker-review' },
+    createSave({
+      scene: 'ch1.robeShopping',
+      room: 'ch1.malkins',
+      spawn: 'malkins.entry',
+      questFlags: throughWandFlags,
+      wandId: 'violet-first-wand',
+    }),
+  ))
   .register('ui-choices-review', characterReviewFixture(
     'ui-choices-review',
     'Three authored companion choice cards without font-glyph stand-ins.',
