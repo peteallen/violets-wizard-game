@@ -1,0 +1,32 @@
+{
+  "schema_version": 1,
+  "character": "violet",
+  "appearance": "casual",
+  "status": "owner-accepted-canonical",
+  "accepted_on": "2026-07-14",
+  "decision": "D55",
+  "model": "google/gemini-3.1-flash-image",
+  "canonical_model_slug": "google/gemini-3.1-flash-image-20260528",
+  "provider": "google-ai-studio",
+  "source_raw": {
+    "path": "casual-v8-fresh-room-painted-raw.jpg",
+    "media_type": "image/jpeg",
+    "sha256": "70b1135acddf0f00e80271a80f514db1fe6d35f9d179aef6ba9703f822aef20f"
+  },
+  "approved_source": {
+    "path": "casual-approved.png",
+    "media_type": "image/png",
+    "width": 896,
+    "height": 1200,
+    "bytes": 1139914,
+    "sha256": "68e9871ceecc32b9fbf50cbf36eecbae226eb184ad5337f67bbca2e53266e033"
+  },
+  "pixel_equivalence": {
+    "comparison": "decoded RGB values",
+    "pixels_compared": 1075200,
+    "exact_pixel_fraction": 1,
+    "mean_absolute_channel_error": 0,
+    "maximum_channel_error": 0
+  },
+  "instruction": "Do not regenerate the neutral source. Every production refinement must use casual-approved.png as its canonical input and preserve unchanged pixels mechanically."
+}

@@ -1,13 +1,11 @@
 # Violet casual canonical candidate v8: fresh room-painted master
 
-Status: discarded before formal review or derivation. Removing rejected
-character candidates from the inputs restored deeper chestnut hair, darker
-rectangular glasses, irregular attached wisps, and softer paint modeling, but
-Gemini ignored the abstract mannequin's compact scale and returned a figure of
-roughly 4.2 head-heights. The cyan field also retained a mild vignette and the
-provider returned JPEG despite the requested PNG. Do not derive, slice, or ship
-this candidate; it may be used only as a measured identity/layout input after
-mechanical compression.
+Status: **OWNER-ACCEPTED CANONICAL SOURCE.** On 2026-07-14 Pete selected this
+exact image as perfect and directed that canonical iteration stop. D55
+explicitly decides away the automated proportion concerns that had caused this
+source to be discarded. Every production expression, pose, outfit, and lighting
+variant derives from `casual-approved.png`, whose RGB pixels are exactly equal
+to this JPEG's decoded pixels. Do not regenerate or redesign the neutral source.
 
 Model: `google/gemini-3.1-flash-image`
 
@@ -31,6 +29,12 @@ The request used 2,359 prompt tokens and 1,120 image-completion tokens and cost
 `$0.0699185`. Response metadata, request controls, hashed reference provenance,
 and the safe response body without image bytes are recorded in
 `casual-v8-fresh-room-painted.metadata.json`.
+
+Owner-selected lossless source: `casual-approved.png`, 896 by 1200 RGB PNG,
+SHA-256 `68e9871ceecc32b9fbf50cbf36eecbae226eb184ad5337f67bbca2e53266e033`.
+Pixel comparison against the decoded raw JPEG found zero differing RGB channel
+values across all 1,075,200 pixels. Acceptance provenance is recorded in
+`casual-approved.metadata.json`.
 
 Input references, in order:
 

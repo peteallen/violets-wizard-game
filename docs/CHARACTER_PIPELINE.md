@@ -20,6 +20,58 @@ any expression, limb, outfit, lighting, or action variant is generated. A
 rejected canonical source is never sliced and never becomes an input to a
 shipping derivative.
 
+## Reproducible generation command
+
+Production generations use `npm run assets:character-image -- --request
+<request.json>`. The command itself fixes the model to
+`google/gemini-3.1-flash-image`, the reviewed canonical model slug to
+`google/gemini-3.1-flash-image-20260528`, and the provider to
+`google-vertex/global`. A request file cannot override any of those values. It
+names one Markdown prompt section, the reference images in their semantic
+order, the requested aspect ratio and resolution, and new image and provenance
+paths. Every path is relative to the repository root.
+
+```json
+{
+  "schema_version": 1,
+  "prompt": {
+    "path": "art/characters/violet/canonical/casual-v8.prompt.md",
+    "section": "Prompt"
+  },
+  "references": [
+    {
+      "path": "art/character-refs/violet.png",
+      "role": "exact identity and age"
+    },
+    {
+      "path": "art/raw/ch1-bedroom.png",
+      "role": "painted room material language"
+    }
+  ],
+  "generation": {
+    "aspect_ratio": "3:4",
+    "resolution": "1K"
+  },
+  "output": {
+    "image": "art/characters/violet/canonical/casual-v8-raw.png",
+    "provenance": "art/characters/violet/canonical/casual-v8.metadata.json"
+  }
+}
+```
+
+Adding `--dry-run` reads and hashes the local inputs and verifies the current
+read-only OpenRouter model catalogs, but it does not require a key, call the
+cost-bearing image endpoint, or write a file. A real generation reads
+`OPENROUTER_API_KEY` only from the environment after catalog validation. It
+makes exactly one generation request, never retries automatically, refuses any
+existing output path, validates the returned PNG, and installs the PNG and its
+safe provenance atomically. The provenance retains the prompt, reference,
+request, catalog, response, and output hashes together with dimensions, usage,
+cost, timestamps, runtime, and repository commit; it never retains image bytes
+inside the response JSON or any credential. This cost-bearing command is
+deliberately outside `npm run build`; its offline contract tests remain part of
+the normal deterministic test gate.
+
 ## Atomic image editing and preserved pixels
 
 A refinement changes one visual concern at a time. Examples are closing the
