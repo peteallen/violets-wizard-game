@@ -3,6 +3,7 @@ import { chapter1Map } from '../src/game/content/chapters/ch1.js';
 import { buildMapState, MAP_FOG_STATES } from '../src/game/core/MapState.js';
 import {
   createIllustratedMapPresentation,
+  ILLUSTRATED_MAP_PAINTED_ASSET_STATUS,
   ILLUSTRATED_MAP_RENDERER_STATUS,
   IllustratedMapRenderer,
   sampleQuillRouteMarks,
@@ -87,9 +88,11 @@ describe('code-only illustrated map renderer foundation', () => {
     const first = createIllustratedMapPresentation(model, state, 3.25);
     const replayed = createIllustratedMapPresentation(model, state, 3.25);
 
-    expect(ILLUSTRATED_MAP_RENDERER_STATUS).toBe('code-only-foundation');
+    expect(ILLUSTRATED_MAP_RENDERER_STATUS).toBe('code-only-integrated');
+    expect(ILLUSTRATED_MAP_PAINTED_ASSET_STATUS).toBe('paused-for-pete-review');
     expect(first).toEqual(replayed);
-    expect(first.kind).toBe('code-only-foundation');
+    expect(first.kind).toBe('code-only-integrated');
+    expect(first.paintedAssetStatus).toBe('paused-for-pete-review');
     expect(first.locations).toHaveLength(chapter1Map.locations.length);
     expect(first.routes).toHaveLength(chapter1Map.routes.length);
     expect(new Set(first.locations.map(({ kind }) => kind))).toEqual(

@@ -10,9 +10,11 @@ const ARTBOARD = Object.freeze({ x: 0, y: 0, width: WORLD.width, height: WORLD.h
 const MAP_FIELD = Object.freeze({ x: 88, y: 218, width: 1104, height: 412 });
 const VIGNETTE_KINDS = new Set(['street', 'wand-shop', 'robes-shop', 'pet-shop']);
 
-// This is the deterministic, code-only layer for VU-05. It deliberately does
-// not claim that the paused painted-map asset or its review has been completed.
-export const ILLUSTRATED_MAP_RENDERER_STATUS = 'code-only-foundation';
+// The deterministic VU-05 composition is integrated into the live satchel.
+// The shared painted map asset remains paused for Pete's review, so this
+// status describes the code-only map without claiming that painting.
+export const ILLUSTRATED_MAP_RENDERER_STATUS = 'code-only-integrated';
+export const ILLUSTRATED_MAP_PAINTED_ASSET_STATUS = 'paused-for-pete-review';
 
 export class IllustratedMapRenderer {
   draw(context, mapState, worldSnapshot, time = 0, options = {}) {
@@ -61,6 +63,7 @@ export function createIllustratedMapPresentation(
 
   return Object.freeze({
     kind: ILLUSTRATED_MAP_RENDERER_STATUS,
+    paintedAssetStatus: ILLUSTRATED_MAP_PAINTED_ASSET_STATUS,
     mapId: mapState.id,
     frame: normalizedFrame,
     field,
