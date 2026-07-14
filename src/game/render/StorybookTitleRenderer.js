@@ -106,7 +106,7 @@ export function createStorybookTitlePresentation(
       pose: 'wonder',
       walking: false,
       wand: false,
-      robeTrim: '#7a4fc9',
+      outfit: 'casual',
     }),
     owl: Object.freeze({
       variant: 'post',

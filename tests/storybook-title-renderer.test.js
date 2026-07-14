@@ -101,8 +101,10 @@ describe('code-only storybook title illustration', () => {
       kind: 'violet',
       facing: 'left',
       pose: 'wonder',
-      robeTrim: '#7a4fc9',
+      outfit: 'casual',
+      wand: false,
     });
+    expect(first.hero.violet).not.toHaveProperty('robeTrim');
     expect(first.hero.owl).toMatchObject({ variant: 'post', pose: 'perch', facing: 'left' });
     expect(overlaps(first.hero.bounds, first.safeAreas.masthead)).toBe(false);
     expect(overlaps(first.hero.bounds, first.safeAreas.envelope)).toBe(false);
