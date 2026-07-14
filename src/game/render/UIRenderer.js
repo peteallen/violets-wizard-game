@@ -285,6 +285,45 @@ export function dialogueChoiceLayout(count) {
   })));
 }
 
+export function albumCardLayout(entry) {
+  const rect = entry?.__rect;
+  if (!rect) throw new TypeError('albumCardLayout requires an album entry with a card rectangle.');
+  return Object.freeze({
+    card: Object.freeze({ ...rect }),
+    portrait: Object.freeze({
+      x: rect.x + 32,
+      y: rect.y + 28,
+      width: rect.width - 64,
+      height: 226,
+    }),
+    nameplate: Object.freeze({
+      x: rect.x + 43,
+      y: rect.y + 282,
+      width: rect.width - 86,
+      height: 58,
+    }),
+  });
+}
+
+export function yearbookLayout(count, index = 0) {
+  const safeCount = Number.isInteger(count) && count > 0 ? count : 0;
+  const safeIndex = safeCount > 0
+    ? Math.max(0, Math.min(safeCount - 1, Number.isInteger(index) ? index : 0))
+    : 0;
+  return Object.freeze({
+    safeIndex,
+    spread: Object.freeze({ x: 72, y: 32, width: 1136, height: 652 }),
+    close: Object.freeze({ ...UI_RECTS.close }),
+    photoMount: Object.freeze({ x: 286, y: 140, width: 708, height: 410 }),
+    photo: Object.freeze({ x: 304, y: 158, width: 672, height: 378 }),
+    caption: Object.freeze({ x: 405, y: 542, width: 470, height: 54 }),
+    pageMarks: Object.freeze({ x: 430, y: 607, width: 420, height: 40 }),
+    empty: Object.freeze({ x: 360, y: 176, width: 560, height: 344 }),
+    previous: Object.freeze({ ...UI_RECTS.yearbookPrevious }),
+    next: Object.freeze({ ...UI_RECTS.yearbookNext }),
+  });
+}
+
 function speakerDimensions(speaker) {
   if (speaker === 'npc.guide') return { width: 244, height: 340, ground: 35 };
   if (speaker === 'npc.violet') return { width: 148, height: 228, ground: 32 };
@@ -413,8 +452,8 @@ export class UIRenderer {
         objective: { mapStar: { room: 'ch1.diagonStreet', hotspot: 'street.menagerieDoor' } },
         cards: ['morgana'],
       }, [
-        { id: 'morgana', name: 'Morgana', portraitAsset: null },
-        { id: 'dumbledore', name: 'Dumbledore', portraitAsset: null },
+        { id: 'morgana', name: 'Morgana', portraitAsset: 'cards/morgana/portrait' },
+        { id: 'dumbledore', name: 'Dumbledore', portraitAsset: 'cards/dumbledore/portrait' },
       ]);
     } else if (scene === 'ui-objective-review') {
       this.drawObjective(
@@ -658,39 +697,34 @@ export class UIRenderer {
 
   drawCardAlbumContent(context, state, cardDefinitions) {
     const entries = buildCardAlbumEntries(cardDefinitions, state.cards ?? []);
-    for (const entry of entries) this.drawAlbumCard(context, entry);
+    if (entries.length === 0) drawEmptyAlbumPocket(context);
+    else for (const entry of entries) this.drawAlbumCard(context, entry);
     state.__cardSlots = entries;
     return entries;
   }
 
   drawAlbumCard(context, entry) {
-    const rect = entry.__rect;
+    const layout = albumCardLayout(entry);
+    const phase = keepsakePhase(entry.id);
     context.save();
-    drawDeckledParchment(context, rect, {
-      fill: entry.earned ? '#6a4c35' : '#5a5264',
-      edge: entry.earned ? PALETTE.candle : '#9a8fa2',
-      ornament: false,
-      lighting: 'dark',
-    });
-
-    const portrait = { x: rect.x + 38, y: rect.y + 28, width: rect.width - 76, height: 250 };
+    drawKeepsakeCard(context, layout.card, entry.earned, phase);
     if (entry.earned) {
+      drawKeepsakePhotoMount(context, layout.portrait, phase);
       const image = this.imageFor(entry.portraitAsset);
-      if (image?.complete && image.naturalWidth > 0) drawCoverImage(context, image, portrait, 20);
-      else drawPortraitLoading(context, portrait);
-    } else drawLockedPortrait(context, portrait);
-
-    if (entry.earned) {
-      context.textAlign = 'center';
-      context.fillStyle = PALETTE.parchment;
-      context.font = '700 31px "Andika", "Trebuchet MS", sans-serif';
-      context.fillText(
+      if (image?.complete && image.naturalWidth > 0) {
+        drawOrganicCoverImage(context, image, layout.portrait, phase);
+      } else drawDevelopingPhoto(context, layout.portrait, phase);
+      drawKeepsakePhotoCorners(context, layout.portrait, phase);
+      drawKeepsakeNameplate(
+        context,
+        layout.nameplate,
         childFacingUiText(entry.name, 'proper-name'),
-        rect.x + rect.width / 2,
-        rect.y + 327,
+        phase,
       );
-    }
+    } else drawClosedKeepsakePocket(context, layout, phase);
+    drawKeepsakeStitches(context, layout.card, entry.earned, phase);
     context.restore();
+    return layout;
   }
 
   imageFor(key) {
@@ -975,45 +1009,49 @@ export class UIRenderer {
   }
 
   drawYearbook(context, entries, index = 0) {
-    drawStorybookSpread(context, { x: 72, y: 32, width: 1136, height: 652 }, {
+    const layout = yearbookLayout(entries.length, index);
+    drawStorybookSpread(context, layout.spread, {
       title: childFacingUiText('Violet’s Yearbook', 'proper-name'),
     });
     drawClose(context);
 
     if (entries.length === 0) {
-      drawWaxMedallion(context, WORLD.width / 2, 340, 76, vectorControlIcon('cards'));
-      return;
+      drawEmptyYearbookPage(context, layout.empty);
+      return layout;
     }
 
-    const safeIndex = Math.max(0, Math.min(entries.length - 1, index));
-    const entry = entries[safeIndex];
-    const photo = { x: 300, y: 155, width: 680, height: 382 };
-    context.fillStyle = '#5b4231';
-    traceRoundedRect(context, photo.x - 13, photo.y - 13, photo.width + 26, photo.height + 26, 28);
-    context.fill();
-    context.strokeStyle = PALETTE.candle;
-    context.lineWidth = 6;
-    context.stroke();
+    const entry = entries[layout.safeIndex];
+    const phase = keepsakePhase(entry.id);
+    context.save();
+    drawYearbookPhotoMount(context, layout.photoMount, phase);
     const image = this.yearbookImageFor(entry);
-    if (image?.complete && image.naturalWidth > 0) drawCoverImage(context, image, photo, 18);
-    else drawPortraitLoading(context, photo);
-
-    context.fillStyle = '#382a24';
-    context.textAlign = 'center';
-    context.font = '700 29px "Andika", "Trebuchet MS", sans-serif';
-    context.fillText(childFacingUiText(entry.caption, 'caption'), WORLD.width / 2, 585);
+    if (image?.complete && image.naturalWidth > 0) {
+      drawOrganicCoverImage(context, image, layout.photo, phase);
+    } else drawDevelopingPhoto(context, layout.photo, phase);
+    drawYearbookPhotoCorners(context, layout.photo, phase);
+    drawYearbookCaption(
+      context,
+      layout.caption,
+      childFacingUiText(entry.caption, 'caption'),
+      phase,
+    );
     if (entries.length > 1) {
-      drawYearbookPageDots(context, entries.length, safeIndex);
-      drawParchmentAction(context, UI_RECTS.yearbookPrevious, {
-        icon: childFacingUiText('‹', 'symbol'),
-        compact: true,
-      });
-      drawParchmentAction(context, UI_RECTS.yearbookNext, {
-        label: childFacingUiText('Next', 'action'),
-        icon: childFacingUiText('›', 'symbol'),
-        compact: true,
-      });
+      drawYearbookPageDots(context, entries.length, layout.safeIndex, layout.pageMarks);
+      drawYearbookTurnControl(
+        context,
+        layout.previous,
+        'previous',
+        childFacingUiText('Back', 'action'),
+      );
+      drawYearbookTurnControl(
+        context,
+        layout.next,
+        'next',
+        childFacingUiText('Next', 'action'),
+      );
     }
+    context.restore();
+    return layout;
   }
 
   yearbookImageFor(entry) {
@@ -1028,61 +1066,97 @@ export class UIRenderer {
   }
 }
 
-export function drawYearbookPageDots(context, count, activeIndex) {
-  const spacing = 22;
-  const startX = WORLD.width / 2 - ((count - 1) * spacing) / 2;
+export function drawYearbookPageDots(
+  context,
+  count,
+  activeIndex,
+  area = yearbookLayout(count, activeIndex).pageMarks,
+) {
+  const safeCount = Number.isInteger(count) && count > 0 ? count : 0;
+  if (safeCount === 0) return;
+  const safeIndex = Math.max(0, Math.min(safeCount - 1, Number.isInteger(activeIndex) ? activeIndex : 0));
+  const spacing = safeCount > 1 ? Math.min(34, area.width / (safeCount - 1)) : 0;
+  const startX = area.x + area.width / 2 - ((safeCount - 1) * spacing) / 2;
+  const centerY = area.y + area.height / 2;
   context.save();
-  for (let index = 0; index < count; index += 1) {
-    context.fillStyle = index === activeIndex ? '#66405f' : '#b9a17d';
-    traceYearbookPageDot(
-      context,
-      startX + index * spacing,
-      624,
-      index === activeIndex ? 7 : 5,
-      index,
-    );
+  context.lineCap = 'round';
+  for (let index = 0; index < safeCount; index += 1) {
+    const active = index === safeIndex;
+    const x = startX + index * spacing;
+    const size = active ? 12 : 8.5;
+    context.fillStyle = active ? '#b7793b' : '#9b8769';
+    traceYearbookLeaf(context, x, centerY, size, index);
     context.fill();
+    context.strokeStyle = active ? '#5b3828' : '#756249';
+    context.lineWidth = active ? 2.2 : 1.5;
+    context.stroke();
+    context.fillStyle = active ? 'rgba(255,231,163,0.48)' : 'rgba(242,214,151,0.22)';
+    traceYearbookLeafLight(context, x, centerY, size, index);
+    context.fill();
+    context.strokeStyle = active ? '#f0c96d' : '#c1a579';
+    context.lineWidth = active ? 1.8 : 1.2;
+    traceYearbookLeafVein(context, x, centerY, size, index);
+    context.stroke();
   }
   context.restore();
 }
 
-function traceYearbookPageDot(context, x, y, radius, index) {
-  const wobble = [-0.09, 0.04, 0.11][index % 3];
+function traceYearbookLeaf(context, x, y, size, index) {
+  const lean = [-0.13, 0.08, -0.03, 0.15][index % 4];
   context.beginPath();
-  context.moveTo(x - radius * (0.92 + wobble), y - radius * 0.14);
+  context.moveTo(x - size * 0.82, y + size * (0.21 + lean * 0.18));
   context.bezierCurveTo(
-    x - radius * (0.82 - wobble),
-    y - radius * (0.72 + wobble),
-    x - radius * (0.22 + wobble),
-    y - radius * (1.04 - wobble),
-    x + radius * (0.38 - wobble),
-    y - radius * (0.88 + wobble),
+    x - size * 0.58,
+    y - size * (0.62 - lean),
+    x + size * 0.16,
+    y - size * (0.84 + lean * 0.4),
+    x + size * 0.88,
+    y - size * (0.13 - lean),
   );
   context.bezierCurveTo(
-    x + radius * (0.92 + wobble),
-    y - radius * (0.58 - wobble),
-    x + radius * (1.02 - wobble),
-    y + radius * (0.06 + wobble),
-    x + radius * (0.78 + wobble),
-    y + radius * (0.54 - wobble),
-  );
-  context.bezierCurveTo(
-    x + radius * (0.45 - wobble),
-    y + radius * (1.02 + wobble),
-    x - radius * (0.17 - wobble),
-    y + radius * (0.96 - wobble),
-    x - radius * (0.66 + wobble),
-    y + radius * (0.68 + wobble),
-  );
-  context.bezierCurveTo(
-    x - radius * (1.02 - wobble),
-    y + radius * (0.38 - wobble),
-    x - radius * (1.04 + wobble),
-    y + radius * (0.06 - wobble),
-    x - radius * (0.92 + wobble),
-    y - radius * 0.14,
+    x + size * 0.28,
+    y + size * (0.77 + lean * 0.2),
+    x - size * 0.43,
+    y + size * (0.72 - lean * 0.3),
+    x - size * 0.82,
+    y + size * (0.21 + lean * 0.18),
   );
   context.closePath();
+}
+
+function traceYearbookLeafLight(context, x, y, size, index) {
+  const lean = [-0.13, 0.08, -0.03, 0.15][index % 4];
+  context.beginPath();
+  context.moveTo(x - size * 0.55, y + size * 0.05);
+  context.bezierCurveTo(
+    x - size * 0.34,
+    y - size * (0.43 - lean),
+    x + size * 0.12,
+    y - size * (0.56 + lean * 0.4),
+    x + size * 0.55,
+    y - size * (0.14 - lean),
+  );
+  context.bezierCurveTo(
+    x + size * 0.08,
+    y - size * 0.13,
+    x - size * 0.2,
+    y + size * 0.08,
+    x - size * 0.55,
+    y + size * 0.05,
+  );
+  context.closePath();
+}
+
+function traceYearbookLeafVein(context, x, y, size, index) {
+  const lean = [-0.13, 0.08, -0.03, 0.15][index % 4];
+  context.beginPath();
+  context.moveTo(x - size * 0.62, y + size * 0.2);
+  context.quadraticCurveTo(
+    x - size * 0.04,
+    y + size * (0.01 + lean * 0.16),
+    x + size * 0.63,
+    y - size * (0.12 - lean),
+  );
 }
 
 export function buildCardAlbumEntries(cardDefinitions, earnedCardIds) {
@@ -1104,6 +1178,866 @@ export function buildCardAlbumEntries(cardDefinitions, earnedCardIds) {
   }));
 }
 
+const KEEPSAKE_GRAIN = Object.freeze([
+  [0.09, 0.18, 0.2, -0.018], [0.16, 0.48, 0.27, 0.016], [0.1, 0.78, 0.24, -0.012],
+  [0.38, 0.12, 0.18, 0.014], [0.44, 0.36, 0.31, -0.019], [0.39, 0.7, 0.25, 0.017],
+  [0.68, 0.2, 0.21, -0.015], [0.72, 0.55, 0.2, 0.013], [0.67, 0.84, 0.25, -0.01],
+]);
+
+function keepsakePhase(id) {
+  const value = String(id ?? 'keepsake');
+  let hash = 17;
+  for (let index = 0; index < value.length; index += 1) {
+    hash = (hash * 31 + value.charCodeAt(index)) % 997;
+  }
+  return hash / 997;
+}
+
+function drawKeepsakeCard(context, rect, earned, phase) {
+  drawHandmadeMaterial(context, rect, phase, earned
+    ? {
+        shadow: 'rgba(42,25,26,0.4)',
+        base: '#704a31',
+        light: 'rgba(255,229,159,0.24)',
+        shade: 'rgba(40,25,34,0.3)',
+        edge: '#c99a4e',
+        grain: 'rgba(244,205,126,0.13)',
+      }
+    : {
+        shadow: 'rgba(30,24,38,0.42)',
+        base: '#50445b',
+        light: 'rgba(244,213,141,0.15)',
+        shade: 'rgba(25,20,34,0.34)',
+        edge: '#9b876d',
+        grain: 'rgba(220,194,151,0.11)',
+      });
+}
+
+function drawKeepsakePhotoMount(context, rect, phase) {
+  const mat = {
+    x: rect.x - 9,
+    y: rect.y - 8,
+    width: rect.width + 18,
+    height: rect.height + 16,
+  };
+  drawHandmadeMaterial(context, mat, phase + 0.13, {
+    shadow: 'rgba(27,18,24,0.34)',
+    base: '#d2b77f',
+    light: 'rgba(255,242,202,0.46)',
+    shade: 'rgba(103,67,39,0.2)',
+    edge: '#6f4a31',
+    grain: 'rgba(105,72,43,0.14)',
+  }, 4);
+}
+
+function drawKeepsakePhotoCorners(context, rect, phase) {
+  const size = Math.min(30, rect.width * 0.12);
+  drawPhotoCorner(context, rect.x + 2, rect.y + 2, 1, 1, size, phase);
+  drawPhotoCorner(context, rect.x + rect.width - 2, rect.y + 2, -1, 1, size, phase + 0.17);
+  drawPhotoCorner(context, rect.x + 2, rect.y + rect.height - 2, 1, -1, size, phase + 0.31);
+  drawPhotoCorner(
+    context,
+    rect.x + rect.width - 2,
+    rect.y + rect.height - 2,
+    -1,
+    -1,
+    size,
+    phase + 0.47,
+  );
+}
+
+function drawKeepsakeNameplate(context, rect, label, phase) {
+  context.save();
+  context.fillStyle = 'rgba(39,25,29,0.28)';
+  traceKeepsakePanel(context, { ...rect, x: rect.x + 4, y: rect.y + 6 }, phase + 0.21);
+  context.fill();
+  context.fillStyle = '#e6d2aa';
+  traceKeepsakePanel(context, rect, phase);
+  context.fill();
+  context.save();
+  traceKeepsakePanel(context, rect, phase);
+  context.clip();
+  context.fillStyle = 'rgba(255,244,210,0.4)';
+  traceUpperLeftLight(context, rect, phase);
+  context.fill();
+  context.fillStyle = 'rgba(102,64,39,0.16)';
+  traceLowerRightShade(context, rect, phase);
+  context.fill();
+  drawMaterialMarks(context, rect, phase, 'rgba(105,72,43,0.13)');
+  context.restore();
+  context.strokeStyle = '#8c6239';
+  context.lineWidth = 3.5;
+  traceKeepsakePanel(context, rect, phase);
+  context.stroke();
+  context.textAlign = 'center';
+  context.fillStyle = '#3a2d22';
+  context.font = '700 29px "Andika", "Trebuchet MS", sans-serif';
+  fitText(context, label, rect.x + rect.width / 2, rect.y + rect.height / 2 + 10, rect.width - 34);
+  context.restore();
+}
+
+function drawClosedKeepsakePocket(context, layout, phase) {
+  const pocket = {
+    x: layout.portrait.x - 7,
+    y: layout.portrait.y - 6,
+    width: layout.portrait.width + 14,
+    height: layout.portrait.height + 84,
+  };
+  drawHandmadeMaterial(context, pocket, phase + 0.09, {
+    shadow: 'rgba(25,20,34,0.38)',
+    base: '#3f354a',
+    light: 'rgba(226,197,148,0.14)',
+    shade: 'rgba(17,14,25,0.35)',
+    edge: '#7e6a73',
+    grain: 'rgba(216,187,147,0.1)',
+  }, 4);
+
+  const flap = {
+    x: pocket.x + 8,
+    y: pocket.y + 9,
+    width: pocket.width - 16,
+    height: 112,
+  };
+  context.fillStyle = '#62546c';
+  tracePocketFlap(context, flap, phase);
+  context.fill();
+  context.fillStyle = 'rgba(244,213,141,0.16)';
+  tracePocketFlapLight(context, flap, phase);
+  context.fill();
+  context.strokeStyle = '#9a846f';
+  context.lineWidth = 3.2;
+  tracePocketFlap(context, flap, phase);
+  context.stroke();
+
+  const ribbon = {
+    x: pocket.x + pocket.width * 0.44,
+    y: pocket.y + 12,
+    width: pocket.width * 0.13,
+    height: pocket.height - 24,
+  };
+  context.fillStyle = '#6f3f59';
+  traceKeepsakePanel(context, ribbon, phase + 0.51);
+  context.fill();
+  context.fillStyle = 'rgba(239,194,167,0.18)';
+  traceUpperLeftLight(context, ribbon, phase + 0.51);
+  context.fill();
+  context.strokeStyle = '#392938';
+  context.lineWidth = 2.4;
+  traceKeepsakePanel(context, ribbon, phase + 0.51);
+  context.stroke();
+
+  const claspX = pocket.x + pocket.width / 2;
+  const claspY = pocket.y + 126;
+  context.fillStyle = '#8b632e';
+  traceBrassLeaf(context, claspX + 3, claspY + 4, 28, phase + 0.18);
+  context.fill();
+  context.fillStyle = '#c99d4c';
+  traceBrassLeaf(context, claspX, claspY, 26, phase);
+  context.fill();
+  context.strokeStyle = '#573b27';
+  context.lineWidth = 2.5;
+  context.stroke();
+  context.fillStyle = 'rgba(255,236,174,0.47)';
+  traceBrassLeafLight(context, claspX, claspY, 26, phase);
+  context.fill();
+
+  context.strokeStyle = 'rgba(220,194,151,0.25)';
+  context.lineWidth = 2;
+  context.beginPath();
+  context.moveTo(pocket.x + 24, pocket.y + pocket.height - 46);
+  context.bezierCurveTo(
+    pocket.x + pocket.width * 0.34,
+    pocket.y + pocket.height - 56,
+    pocket.x + pocket.width * 0.67,
+    pocket.y + pocket.height - 34,
+    pocket.x + pocket.width - 24,
+    pocket.y + pocket.height - 48,
+  );
+  context.stroke();
+}
+
+function drawKeepsakeStitches(context, rect, earned, phase) {
+  context.save();
+  context.strokeStyle = earned ? '#e0bc77' : '#a99786';
+  context.lineWidth = 2;
+  context.lineCap = 'round';
+  for (const progress of [0.16, 0.35, 0.58, 0.79]) {
+    const drift = Math.sin((phase + progress) * 17) * 1.5;
+    for (const y of [rect.y + 14, rect.y + rect.height - 14]) {
+      context.beginPath();
+      context.moveTo(rect.x + rect.width * progress - 6, y + drift);
+      context.quadraticCurveTo(
+        rect.x + rect.width * progress,
+        y - drift * 0.35,
+        rect.x + rect.width * progress + 6,
+        y + drift * 0.2,
+      );
+      context.stroke();
+    }
+  }
+  for (const progress of [0.3, 0.58, 0.78]) {
+    const drift = Math.cos((phase + progress) * 19) * 1.4;
+    for (const x of [rect.x + 14, rect.x + rect.width - 14]) {
+      context.beginPath();
+      context.moveTo(x + drift, rect.y + rect.height * progress - 6);
+      context.quadraticCurveTo(
+        x - drift * 0.3,
+        rect.y + rect.height * progress,
+        x + drift * 0.2,
+        rect.y + rect.height * progress + 6,
+      );
+      context.stroke();
+    }
+  }
+  context.restore();
+}
+
+function drawEmptyAlbumPocket(context) {
+  const pocket = { x: 430, y: 298, width: 420, height: 286 };
+  drawHandmadeMaterial(context, pocket, 0.37, {
+    shadow: 'rgba(31,23,34,0.38)',
+    base: '#5a4b61',
+    light: 'rgba(244,213,141,0.16)',
+    shade: 'rgba(25,19,33,0.31)',
+    edge: '#9a826b',
+    grain: 'rgba(224,199,154,0.11)',
+  });
+  const paper = { x: 478, y: 340, width: 324, height: 188 };
+  drawHandmadeMaterial(context, paper, 0.61, {
+    shadow: 'rgba(30,22,27,0.25)',
+    base: '#ddc99f',
+    light: 'rgba(255,244,210,0.42)',
+    shade: 'rgba(101,64,39,0.16)',
+    edge: '#86613d',
+    grain: 'rgba(104,72,43,0.13)',
+  }, 4);
+  drawPressedSprig(context, 640, 434, 72, 0.2);
+}
+
+function drawYearbookPhotoMount(context, rect, phase) {
+  drawHandmadeMaterial(context, rect, phase + 0.07, {
+    shadow: 'rgba(37,23,27,0.42)',
+    base: '#63432e',
+    light: 'rgba(255,226,153,0.24)',
+    shade: 'rgba(39,24,31,0.31)',
+    edge: '#c79a4a',
+    grain: 'rgba(237,197,119,0.13)',
+  }, 5);
+  const innerMat = {
+    x: rect.x + 10,
+    y: rect.y + 10,
+    width: rect.width - 20,
+    height: rect.height - 20,
+  };
+  context.fillStyle = '#d6bc89';
+  traceKeepsakePanel(context, innerMat, phase + 0.29);
+  context.fill();
+  context.fillStyle = 'rgba(255,242,202,0.38)';
+  traceUpperLeftLight(context, innerMat, phase + 0.29);
+  context.fill();
+  context.strokeStyle = '#84603a';
+  context.lineWidth = 3;
+  traceKeepsakePanel(context, innerMat, phase + 0.29);
+  context.stroke();
+}
+
+function drawYearbookPhotoCorners(context, rect, phase) {
+  const size = 38;
+  drawPhotoCorner(context, rect.x + 1, rect.y + 1, 1, 1, size, phase);
+  drawPhotoCorner(context, rect.x + rect.width - 1, rect.y + 1, -1, 1, size, phase + 0.2);
+  drawPhotoCorner(context, rect.x + 1, rect.y + rect.height - 1, 1, -1, size, phase + 0.34);
+  drawPhotoCorner(
+    context,
+    rect.x + rect.width - 1,
+    rect.y + rect.height - 1,
+    -1,
+    -1,
+    size,
+    phase + 0.49,
+  );
+}
+
+function drawYearbookCaption(context, rect, caption, phase) {
+  context.save();
+  context.fillStyle = 'rgba(40,25,28,0.3)';
+  traceKeepsakePanel(context, { ...rect, x: rect.x + 5, y: rect.y + 7 }, phase + 0.23);
+  context.fill();
+  context.fillStyle = '#ead7ae';
+  traceKeepsakePanel(context, rect, phase);
+  context.fill();
+  context.fillStyle = 'rgba(255,244,210,0.4)';
+  traceUpperLeftLight(context, rect, phase);
+  context.fill();
+  context.fillStyle = 'rgba(102,64,39,0.16)';
+  traceLowerRightShade(context, rect, phase);
+  context.fill();
+  context.strokeStyle = '#8c6138';
+  context.lineWidth = 3.5;
+  traceKeepsakePanel(context, rect, phase);
+  context.stroke();
+  drawMaterialMarks(context, rect, phase, 'rgba(105,72,43,0.12)');
+  context.textAlign = 'center';
+  context.fillStyle = '#382a24';
+  context.font = '700 29px "Andika", "Trebuchet MS", sans-serif';
+  fitText(context, caption, rect.x + rect.width / 2, rect.y + rect.height / 2 + 10, rect.width - 42);
+  context.restore();
+}
+
+function drawYearbookTurnControl(context, rect, direction, label) {
+  const phase = direction === 'previous' ? 0.23 : 0.71;
+  context.save();
+  context.fillStyle = 'rgba(39,24,29,0.34)';
+  tracePageTurnControl(context, { ...rect, x: rect.x + 5, y: rect.y + 7 }, direction, phase);
+  context.fill();
+  context.fillStyle = '#67442f';
+  tracePageTurnControl(context, rect, direction, phase);
+  context.fill();
+  context.save();
+  tracePageTurnControl(context, rect, direction, phase);
+  context.clip();
+  context.fillStyle = 'rgba(255,226,153,0.24)';
+  traceUpperLeftLight(context, rect, phase);
+  context.fill();
+  context.fillStyle = 'rgba(35,23,31,0.3)';
+  traceLowerRightShade(context, rect, phase);
+  context.fill();
+  drawMaterialMarks(context, rect, phase, 'rgba(239,199,122,0.13)');
+  context.restore();
+  context.strokeStyle = '#d0a24f';
+  context.lineWidth = 4;
+  tracePageTurnControl(context, rect, direction, phase);
+  context.stroke();
+  drawPageTurnArrow(context, rect.x + 49, rect.y + rect.height / 2, direction);
+  context.fillStyle = '#fff1c9';
+  context.textAlign = 'center';
+  context.font = '700 25px "Andika", "Trebuchet MS", sans-serif';
+  context.fillText(label, rect.x + 145, rect.y + rect.height / 2 + 9);
+  context.restore();
+}
+
+function drawEmptyYearbookPage(context, rect) {
+  context.save();
+  drawHandmadeMaterial(context, rect, 0.42, {
+    shadow: 'rgba(35,24,34,0.34)',
+    base: '#5c5068',
+    light: 'rgba(244,213,141,0.17)',
+    shade: 'rgba(25,20,34,0.31)',
+    edge: '#9b8268',
+    grain: 'rgba(221,196,151,0.11)',
+  }, 5);
+  const blankPhoto = {
+    x: rect.x + 54,
+    y: rect.y + 38,
+    width: rect.width - 108,
+    height: rect.height - 92,
+  };
+  drawHandmadeMaterial(context, blankPhoto, 0.63, {
+    shadow: 'rgba(31,22,28,0.24)',
+    base: '#d9c59b',
+    light: 'rgba(255,244,210,0.44)',
+    shade: 'rgba(103,67,39,0.17)',
+    edge: '#82603d',
+    grain: 'rgba(104,72,43,0.13)',
+  }, 4);
+  drawPressedSprig(
+    context,
+    blankPhoto.x + blankPhoto.width * 0.72,
+    blankPhoto.y + blankPhoto.height * 0.58,
+    88,
+    0.37,
+  );
+  context.fillStyle = '#714158';
+  traceLooseRibbon(context, blankPhoto.x + 36, blankPhoto.y + blankPhoto.height - 34, 170, 28, 0.51);
+  context.fill();
+  context.fillStyle = 'rgba(244,205,181,0.2)';
+  traceLooseRibbonLight(context, blankPhoto.x + 36, blankPhoto.y + blankPhoto.height - 34, 170, 28, 0.51);
+  context.fill();
+  context.restore();
+}
+
+function drawHandmadeMaterial(context, rect, phase, colors, edgeDepth = 7) {
+  context.save();
+  context.fillStyle = colors.shadow;
+  traceKeepsakePanel(context, { ...rect, x: rect.x + 7, y: rect.y + 9 }, phase + 0.19, edgeDepth);
+  context.fill();
+  context.fillStyle = colors.base;
+  traceKeepsakePanel(context, rect, phase, edgeDepth);
+  context.fill();
+  context.save();
+  traceKeepsakePanel(context, rect, phase, edgeDepth);
+  context.clip();
+  context.fillStyle = colors.light;
+  traceUpperLeftLight(context, rect, phase);
+  context.fill();
+  context.fillStyle = colors.shade;
+  traceLowerRightShade(context, rect, phase);
+  context.fill();
+  drawMaterialMarks(context, rect, phase, colors.grain);
+  context.restore();
+  context.strokeStyle = colors.edge;
+  context.lineWidth = 4;
+  traceKeepsakePanel(context, rect, phase, edgeDepth);
+  context.stroke();
+  context.restore();
+}
+
+function traceKeepsakePanel(context, rect, phase = 0, edgeDepth = 7) {
+  const { x, y, width, height } = rect;
+  const wobble = (index) => Math.sin((phase + index * 0.173) * 19) * edgeDepth * 0.34;
+  context.beginPath();
+  context.moveTo(x + 19, y + 1 + wobble(0));
+  context.bezierCurveTo(
+    x + width * 0.28,
+    y + wobble(1),
+    x + width * 0.68,
+    y + wobble(2),
+    x + width - 18,
+    y + 1 + wobble(3),
+  );
+  context.bezierCurveTo(
+    x + width - 5 + wobble(4) * 0.3,
+    y + 5,
+    x + width + wobble(5) * 0.25,
+    y + height * 0.3,
+    x + width - 1 + wobble(6) * 0.22,
+    y + height * 0.53,
+  );
+  context.bezierCurveTo(
+    x + width + wobble(7) * 0.22,
+    y + height * 0.74,
+    x + width - 3 + wobble(8) * 0.25,
+    y + height - 7,
+    x + width - 20,
+    y + height - 1 + wobble(9),
+  );
+  context.bezierCurveTo(
+    x + width * 0.69,
+    y + height + wobble(10),
+    x + width * 0.29,
+    y + height + wobble(11),
+    x + 18,
+    y + height - 1 + wobble(12),
+  );
+  context.bezierCurveTo(
+    x + 5 - wobble(13) * 0.3,
+    y + height - 7,
+    x - wobble(14) * 0.25,
+    y + height * 0.71,
+    x + 1 - wobble(15) * 0.2,
+    y + height * 0.47,
+  );
+  context.bezierCurveTo(
+    x - wobble(16) * 0.2,
+    y + height * 0.27,
+    x + 3 - wobble(17) * 0.28,
+    y + 7,
+    x + 19,
+    y + 1 + wobble(0),
+  );
+  context.closePath();
+}
+
+function traceUpperLeftLight(context, rect, phase) {
+  const drift = Math.sin(phase * 23) * rect.height * 0.012;
+  context.beginPath();
+  context.moveTo(rect.x - 4, rect.y - 3);
+  context.bezierCurveTo(
+    rect.x + rect.width * 0.24,
+    rect.y + 1 + drift,
+    rect.x + rect.width * 0.52,
+    rect.y - 2 - drift,
+    rect.x + rect.width * 0.67,
+    rect.y + rect.height * 0.14,
+  );
+  context.bezierCurveTo(
+    rect.x + rect.width * 0.52,
+    rect.y + rect.height * 0.24,
+    rect.x + rect.width * 0.22,
+    rect.y + rect.height * 0.31,
+    rect.x - 4,
+    rect.y + rect.height * 0.4,
+  );
+  context.bezierCurveTo(
+    rect.x - 2,
+    rect.y + rect.height * 0.2,
+    rect.x - 3,
+    rect.y + rect.height * 0.07,
+    rect.x - 4,
+    rect.y - 3,
+  );
+  context.closePath();
+}
+
+function traceLowerRightShade(context, rect, phase) {
+  const drift = Math.cos(phase * 17) * rect.height * 0.012;
+  context.beginPath();
+  context.moveTo(rect.x + rect.width * 0.37, rect.y + rect.height * 0.73 + drift);
+  context.bezierCurveTo(
+    rect.x + rect.width * 0.62,
+    rect.y + rect.height * 0.68,
+    rect.x + rect.width * 0.87,
+    rect.y + rect.height * 0.64 + drift,
+    rect.x + rect.width + 4,
+    rect.y + rect.height * 0.55,
+  );
+  context.bezierCurveTo(
+    rect.x + rect.width + 3,
+    rect.y + rect.height * 0.82,
+    rect.x + rect.width - 10,
+    rect.y + rect.height + 4,
+    rect.x + rect.width * 0.66,
+    rect.y + rect.height + 4,
+  );
+  context.bezierCurveTo(
+    rect.x + rect.width * 0.55,
+    rect.y + rect.height * 0.93,
+    rect.x + rect.width * 0.46,
+    rect.y + rect.height * 0.83,
+    rect.x + rect.width * 0.37,
+    rect.y + rect.height * 0.73 + drift,
+  );
+  context.closePath();
+}
+
+function drawMaterialMarks(context, rect, phase, color) {
+  context.strokeStyle = color;
+  context.lineWidth = 1.4;
+  context.lineCap = 'round';
+  for (let index = 0; index < KEEPSAKE_GRAIN.length; index += 1) {
+    const [grainX, grainY, grainLength, grainBend] = KEEPSAKE_GRAIN[index];
+    const startX = rect.x + rect.width * grainX;
+    const startY = rect.y + rect.height * grainY;
+    const length = rect.width * grainLength;
+    const drift = Math.sin((phase + index) * 13) * rect.height * 0.004;
+    context.beginPath();
+    context.moveTo(startX, startY + drift);
+    context.bezierCurveTo(
+      startX + length * 0.3,
+      startY + rect.height * grainBend,
+      startX + length * 0.7,
+      startY - rect.height * grainBend * 0.5,
+      startX + length,
+      startY + drift * 0.4,
+    );
+    context.stroke();
+  }
+}
+
+function tracePocketFlap(context, rect, phase) {
+  const drift = Math.sin(phase * 29) * 4;
+  context.beginPath();
+  context.moveTo(rect.x + 12, rect.y + 2);
+  context.bezierCurveTo(
+    rect.x + rect.width * 0.3,
+    rect.y - 2 + drift,
+    rect.x + rect.width * 0.7,
+    rect.y + 3 - drift,
+    rect.x + rect.width - 12,
+    rect.y + 1,
+  );
+  context.bezierCurveTo(
+    rect.x + rect.width + 1,
+    rect.y + rect.height * 0.21,
+    rect.x + rect.width * 0.72,
+    rect.y + rect.height * 0.75,
+    rect.x + rect.width / 2,
+    rect.y + rect.height,
+  );
+  context.bezierCurveTo(
+    rect.x + rect.width * 0.28,
+    rect.y + rect.height * 0.72,
+    rect.x - 1,
+    rect.y + rect.height * 0.22,
+    rect.x + 12,
+    rect.y + 2,
+  );
+  context.closePath();
+}
+
+function tracePocketFlapLight(context, rect, phase) {
+  const drift = Math.cos(phase * 23) * 3;
+  context.beginPath();
+  context.moveTo(rect.x + 16, rect.y + 8);
+  context.bezierCurveTo(
+    rect.x + rect.width * 0.31,
+    rect.y + 2 + drift,
+    rect.x + rect.width * 0.55,
+    rect.y + 8 - drift,
+    rect.x + rect.width * 0.67,
+    rect.y + rect.height * 0.2,
+  );
+  context.bezierCurveTo(
+    rect.x + rect.width * 0.47,
+    rect.y + rect.height * 0.33,
+    rect.x + rect.width * 0.24,
+    rect.y + rect.height * 0.35,
+    rect.x + 16,
+    rect.y + 8,
+  );
+  context.closePath();
+}
+
+function traceBrassLeaf(context, x, y, size, phase) {
+  const lean = Math.sin(phase * 17) * size * 0.08;
+  context.beginPath();
+  context.moveTo(x - size * 0.72, y + size * 0.08);
+  context.bezierCurveTo(
+    x - size * 0.42,
+    y - size * 0.72 + lean,
+    x + size * 0.3,
+    y - size * 0.67 - lean,
+    x + size * 0.72,
+    y - size * 0.03,
+  );
+  context.bezierCurveTo(
+    x + size * 0.33,
+    y + size * 0.65 - lean,
+    x - size * 0.37,
+    y + size * 0.62 + lean,
+    x - size * 0.72,
+    y + size * 0.08,
+  );
+  context.closePath();
+}
+
+function traceBrassLeafLight(context, x, y, size, phase) {
+  const lean = Math.sin(phase * 17) * size * 0.05;
+  context.beginPath();
+  context.moveTo(x - size * 0.46, y - size * 0.02);
+  context.bezierCurveTo(
+    x - size * 0.25,
+    y - size * 0.48 + lean,
+    x + size * 0.14,
+    y - size * 0.48 - lean,
+    x + size * 0.43,
+    y - size * 0.13,
+  );
+  context.bezierCurveTo(
+    x + size * 0.05,
+    y - size * 0.15,
+    x - size * 0.18,
+    y + size * 0.01,
+    x - size * 0.46,
+    y - size * 0.02,
+  );
+  context.closePath();
+}
+
+function drawPhotoCorner(context, x, y, horizontal, vertical, size, phase) {
+  context.fillStyle = 'rgba(43,27,29,0.25)';
+  tracePhotoCorner(context, x + horizontal * 2, y + vertical * 3, horizontal, vertical, size, phase);
+  context.fill();
+  context.fillStyle = '#b58a43';
+  tracePhotoCorner(context, x, y, horizontal, vertical, size, phase);
+  context.fill();
+  context.strokeStyle = '#65452d';
+  context.lineWidth = 2;
+  context.stroke();
+  context.fillStyle = 'rgba(255,235,174,0.42)';
+  tracePhotoCornerLight(context, x, y, horizontal, vertical, size, phase);
+  context.fill();
+}
+
+function tracePhotoCorner(context, x, y, horizontal, vertical, size, phase) {
+  const drift = Math.sin(phase * 31) * size * 0.05;
+  context.beginPath();
+  context.moveTo(x, y + vertical * size * 0.08);
+  context.quadraticCurveTo(
+    x + horizontal * size * 0.57,
+    y + vertical * drift,
+    x + horizontal * size,
+    y + vertical * size * 0.19,
+  );
+  context.quadraticCurveTo(
+    x + horizontal * size * 0.48,
+    y + vertical * size * 0.5,
+    x + horizontal * size * 0.18,
+    y + vertical * size,
+  );
+  context.quadraticCurveTo(
+    x + horizontal * drift,
+    y + vertical * size * 0.57,
+    x,
+    y + vertical * size * 0.08,
+  );
+  context.closePath();
+}
+
+function tracePhotoCornerLight(context, x, y, horizontal, vertical, size, phase) {
+  const drift = Math.cos(phase * 19) * size * 0.03;
+  context.beginPath();
+  context.moveTo(x + horizontal * size * 0.08, y + vertical * size * 0.11);
+  context.quadraticCurveTo(
+    x + horizontal * size * 0.48,
+    y + vertical * drift,
+    x + horizontal * size * 0.68,
+    y + vertical * size * 0.17,
+  );
+  context.quadraticCurveTo(
+    x + horizontal * size * 0.36,
+    y + vertical * size * 0.25,
+    x + horizontal * size * 0.08,
+    y + vertical * size * 0.11,
+  );
+  context.closePath();
+}
+
+function tracePageTurnControl(context, rect, direction, phase) {
+  const notchSide = direction === 'previous' ? -1 : 1;
+  const drift = Math.sin(phase * 27) * 3;
+  context.beginPath();
+  context.moveTo(rect.x + 17, rect.y + 1 + drift);
+  context.bezierCurveTo(
+    rect.x + rect.width * 0.34,
+    rect.y - 2,
+    rect.x + rect.width * 0.69,
+    rect.y + 3,
+    rect.x + rect.width - 17,
+    rect.y + 1 - drift,
+  );
+  context.bezierCurveTo(
+    rect.x + rect.width + 1,
+    rect.y + rect.height * 0.22,
+    rect.x + rect.width - 3,
+    rect.y + rect.height * 0.7,
+    rect.x + rect.width - 15,
+    rect.y + rect.height - 1,
+  );
+  context.bezierCurveTo(
+    rect.x + rect.width * 0.71,
+    rect.y + rect.height + 2,
+    rect.x + rect.width * 0.62,
+    rect.y + rect.height - notchSide * 8,
+    rect.x + rect.width / 2,
+    rect.y + rect.height - notchSide * 3,
+  );
+  context.bezierCurveTo(
+    rect.x + rect.width * 0.37,
+    rect.y + rect.height + notchSide * 7,
+    rect.x + rect.width * 0.27,
+    rect.y + rect.height - 2,
+    rect.x + 15,
+    rect.y + rect.height - 1,
+  );
+  context.bezierCurveTo(
+    rect.x - 1,
+    rect.y + rect.height * 0.75,
+    rect.x + 2,
+    rect.y + rect.height * 0.24,
+    rect.x + 17,
+    rect.y + 1 + drift,
+  );
+  context.closePath();
+}
+
+function drawPageTurnArrow(context, x, y, direction) {
+  const horizontal = direction === 'previous' ? -1 : 1;
+  context.strokeStyle = '#fff1c9';
+  context.lineWidth = 5;
+  context.lineCap = 'round';
+  context.beginPath();
+  context.moveTo(x - horizontal * 14, y + 1);
+  context.bezierCurveTo(
+    x - horizontal * 3,
+    y - 10,
+    x + horizontal * 8,
+    y - 7,
+    x + horizontal * 17,
+    y,
+  );
+  context.stroke();
+  context.fillStyle = '#e4b65a';
+  context.beginPath();
+  context.moveTo(x + horizontal * 18, y);
+  context.quadraticCurveTo(x + horizontal * 7, y - 14, x + horizontal * 3, y - 20);
+  context.quadraticCurveTo(x + horizontal * 10, y - 1, x + horizontal * 18, y);
+  context.quadraticCurveTo(x + horizontal * 9, y + 5, x + horizontal * 2, y + 18);
+  context.quadraticCurveTo(x + horizontal * 9, y + 9, x + horizontal * 18, y);
+  context.closePath();
+  context.fill();
+  context.strokeStyle = '#573b27';
+  context.lineWidth = 2;
+  context.stroke();
+}
+
+function drawPressedSprig(context, x, y, size, phase) {
+  context.save();
+  context.strokeStyle = '#6f5b3c';
+  context.lineWidth = Math.max(2, size * 0.035);
+  context.lineCap = 'round';
+  context.beginPath();
+  context.moveTo(x - size * 0.42, y + size * 0.35);
+  context.bezierCurveTo(
+    x - size * 0.16,
+    y + size * 0.13,
+    x + size * 0.05,
+    y - size * 0.18,
+    x + size * 0.33,
+    y - size * 0.42,
+  );
+  context.stroke();
+  for (let index = 0; index < 4; index += 1) {
+    const progress = 0.16 + index * 0.2;
+    const centerX = x - size * 0.38 + size * progress * 0.9;
+    const centerY = y + size * 0.31 - size * progress * 0.68;
+    const leafSize = size * (0.14 - index * 0.008);
+    context.fillStyle = index % 2 === 0 ? '#8b794d' : '#776844';
+    traceYearbookLeaf(context, centerX, centerY, leafSize, index + Math.round(phase * 10));
+    context.fill();
+    context.fillStyle = 'rgba(244,219,155,0.22)';
+    traceYearbookLeafLight(context, centerX, centerY, leafSize, index + Math.round(phase * 10));
+    context.fill();
+  }
+  context.restore();
+}
+
+function traceLooseRibbon(context, x, y, width, height, phase) {
+  const drift = Math.sin(phase * 29) * height * 0.14;
+  context.beginPath();
+  context.moveTo(x, y + height * 0.2);
+  context.bezierCurveTo(
+    x + width * 0.27,
+    y - drift,
+    x + width * 0.53,
+    y + height * 0.36 + drift,
+    x + width,
+    y + height * 0.08,
+  );
+  context.bezierCurveTo(
+    x + width * 0.74,
+    y + height * 0.78,
+    x + width * 0.37,
+    y + height * 0.51 - drift,
+    x,
+    y + height * 0.92,
+  );
+  context.bezierCurveTo(x + 8, y + height * 0.64, x + 6, y + height * 0.39, x, y + height * 0.2);
+  context.closePath();
+}
+
+function traceLooseRibbonLight(context, x, y, width, height, phase) {
+  const drift = Math.cos(phase * 23) * height * 0.1;
+  context.beginPath();
+  context.moveTo(x + width * 0.05, y + height * 0.25);
+  context.bezierCurveTo(
+    x + width * 0.27,
+    y + drift,
+    x + width * 0.43,
+    y + height * 0.3 - drift,
+    x + width * 0.62,
+    y + height * 0.28,
+  );
+  context.bezierCurveTo(
+    x + width * 0.39,
+    y + height * 0.39,
+    x + width * 0.2,
+    y + height * 0.24,
+    x + width * 0.05,
+    y + height * 0.25,
+  );
+  context.closePath();
+}
+
 function drawSatchelTab(context, rect, icon, label, active) {
   context.save();
   drawLeatherBookmark(context, rect, { active });
@@ -1118,7 +2052,7 @@ function drawSatchelTab(context, rect, icon, label, active) {
   context.restore();
 }
 
-function drawCoverImage(context, image, rect, radius) {
+function drawOrganicCoverImage(context, image, rect, phase) {
   const imageRatio = image.naturalWidth / image.naturalHeight;
   const rectRatio = rect.width / rect.height;
   let sourceX = 0;
@@ -1133,35 +2067,58 @@ function drawCoverImage(context, image, rect, radius) {
     sourceY = (image.naturalHeight - sourceHeight) / 2;
   }
   context.save();
-  roundRect(context, rect.x, rect.y, rect.width, rect.height, radius);
+  traceKeepsakePanel(context, rect, phase, 4);
   context.clip();
   context.drawImage(image, sourceX, sourceY, sourceWidth, sourceHeight, rect.x, rect.y, rect.width, rect.height);
+  context.fillStyle = 'rgba(255,235,178,0.16)';
+  traceUpperLeftLight(context, rect, phase);
+  context.fill();
+  context.fillStyle = 'rgba(35,23,31,0.18)';
+  traceLowerRightShade(context, rect, phase);
+  context.fill();
   context.restore();
-}
-
-function drawPortraitLoading(context, rect) {
-  context.fillStyle = '#3d3347';
-  roundRect(context, rect.x, rect.y, rect.width, rect.height, 20);
-  context.fill();
-  drawVectorIcon(context, 'owl', rect.x + rect.width / 2, rect.y + rect.height / 2, 98, {
-    color: PALETTE.candle,
-    secondary: '#6f5d78',
-  });
-}
-
-function drawLockedPortrait(context, rect) {
-  context.fillStyle = '#403949';
-  roundRect(context, rect.x, rect.y, rect.width, rect.height, 20);
-  context.fill();
-  context.strokeStyle = '#82768c';
-  context.lineWidth = 5;
-  roundRect(context, rect.x + 15, rect.y + 15, rect.width - 30, rect.height - 30, 14);
+  context.strokeStyle = '#493328';
+  context.lineWidth = 3;
+  traceKeepsakePanel(context, rect, phase, 4);
   context.stroke();
-  drawVectorIcon(context, 'owl', rect.x + rect.width / 2, rect.y + rect.height / 2 - 9, 104, {
-    color: '#a99daf',
-    secondary: '#51495a',
-  });
-  drawWaxIcon(context, rect.x + rect.width / 2, rect.y + rect.height - 43, 28, 'close');
+}
+
+function drawDevelopingPhoto(context, rect, phase) {
+  context.save();
+  context.fillStyle = '#746774';
+  traceKeepsakePanel(context, rect, phase, 4);
+  context.fill();
+  context.save();
+  traceKeepsakePanel(context, rect, phase, 4);
+  context.clip();
+  context.fillStyle = 'rgba(255,235,178,0.26)';
+  traceUpperLeftLight(context, rect, phase);
+  context.fill();
+  context.fillStyle = 'rgba(36,27,42,0.32)';
+  traceLowerRightShade(context, rect, phase);
+  context.fill();
+  context.strokeStyle = 'rgba(239,207,143,0.2)';
+  context.lineWidth = Math.max(2, rect.height * 0.008);
+  context.lineCap = 'round';
+  for (const progress of [0.26, 0.48, 0.71]) {
+    context.beginPath();
+    context.moveTo(rect.x + rect.width * 0.14, rect.y + rect.height * progress);
+    context.bezierCurveTo(
+      rect.x + rect.width * 0.34,
+      rect.y + rect.height * (progress - 0.08),
+      rect.x + rect.width * 0.67,
+      rect.y + rect.height * (progress + 0.06),
+      rect.x + rect.width * 0.86,
+      rect.y + rect.height * (progress - 0.02),
+    );
+    context.stroke();
+  }
+  context.restore();
+  context.strokeStyle = '#4b3947';
+  context.lineWidth = 3;
+  traceKeepsakePanel(context, rect, phase, 4);
+  context.stroke();
+  context.restore();
 }
 
 function drawQuestButton(context, rect, time, pulse) {

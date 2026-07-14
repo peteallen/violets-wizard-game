@@ -191,11 +191,10 @@ describe('player-visible copy', () => {
           { id: 'first', caption: 'First wand', dataUrl: null },
           { id: 'second', caption: 'New friend', dataUrl: null },
         ], 0),
-        expected: ['Violet’s Yearbook', 'First wand', '‹', '›', 'Next'],
+        expected: ['Violet’s Yearbook', 'First wand', 'Back', 'Next'],
         roles: {
           properNames: ['Violet’s Yearbook'],
-          actions: ['Next'],
-          symbols: ['‹', '›'],
+          actions: ['Back', 'Next'],
         },
       },
       {
@@ -231,16 +230,19 @@ describe('player-visible copy', () => {
     expect(objectiveTexts).toEqual([]);
   });
 
-  it('draws yearbook page dots as deterministic organic curves, never perfect geometry', () => {
+  it('draws yearbook page leaves as deterministic organic curves, never perfect geometry', () => {
     const context = recordingContext();
 
     drawYearbookPageDots(context, 3, 1);
 
-    expect(context.calls.filter(([method]) => method === 'beginPath')).toHaveLength(3);
-    expect(context.calls.filter(([method]) => method === 'moveTo')).toHaveLength(3);
+    expect(context.calls.filter(([method]) => method === 'beginPath')).toHaveLength(9);
+    expect(context.calls.filter(([method]) => method === 'moveTo')).toHaveLength(9);
     expect(context.calls.filter(([method]) => method === 'bezierCurveTo')).toHaveLength(12);
-    expect(context.calls.filter(([method]) => method === 'closePath')).toHaveLength(3);
-    expect(context.calls.some(([method]) => method === 'arc' || method === 'ellipse')).toBe(false);
+    expect(context.calls.filter(([method]) => method === 'quadraticCurveTo')).toHaveLength(3);
+    expect(context.calls.filter(([method]) => method === 'closePath')).toHaveLength(6);
+    expect(context.calls.some(([method]) => [
+      'arc', 'arcTo', 'ellipse', 'rect', 'roundRect',
+    ].includes(method))).toBe(false);
   });
 
   it('keeps the removed story overlays out of the set-piece renderer', () => {
