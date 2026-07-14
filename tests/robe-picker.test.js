@@ -12,6 +12,7 @@ import {
   UIRenderer,
   robePickerLayout,
 } from '../src/game/render/UIRenderer.js';
+import { CharacterRenderer } from '../src/game/render/CharacterRenderer.js';
 import { createSaveV1 } from '../src/game/systems/Save.js';
 import { World } from '../src/game/world/World.js';
 
@@ -24,6 +25,99 @@ function rectsOverlap(first, second) {
     && first.x + first.width > second.x
     && first.y < second.y + second.height
     && first.y + first.height > second.y;
+}
+
+function rectContains(container, child) {
+  return child.x >= container.x
+    && child.y >= container.y
+    && child.x + child.width <= container.x + container.width
+    && child.y + child.height <= container.y + container.height;
+}
+
+function geometryContext() {
+  let matrix = [1, 0, 0, 1, 0, 0];
+  const stack = [];
+  const extent = {
+    left: Number.POSITIVE_INFINITY,
+    top: Number.POSITIVE_INFINITY,
+    right: Number.NEGATIVE_INFINITY,
+    bottom: Number.NEGATIVE_INFINITY,
+  };
+  const recordPoint = (x, y) => {
+    const [a, b, c, d, e, f] = matrix;
+    const transformedX = a * x + c * y + e;
+    const transformedY = b * x + d * y + f;
+    extent.left = Math.min(extent.left, transformedX);
+    extent.top = Math.min(extent.top, transformedY);
+    extent.right = Math.max(extent.right, transformedX);
+    extent.bottom = Math.max(extent.bottom, transformedY);
+  };
+  const recordPairs = (...coordinates) => {
+    for (let index = 0; index < coordinates.length; index += 2) {
+      recordPoint(coordinates[index], coordinates[index + 1]);
+    }
+  };
+  const context = {
+    globalAlpha: 1,
+    lineWidth: 1,
+    save() { stack.push([...matrix]); },
+    restore() { matrix = stack.pop() ?? matrix; },
+    translate(x, y) {
+      const [a, b, c, d, e, f] = matrix;
+      matrix = [a, b, c, d, a * x + c * y + e, b * x + d * y + f];
+    },
+    scale(x, y) {
+      const [a, b, c, d, e, f] = matrix;
+      matrix = [a * x, b * x, c * y, d * y, e, f];
+    },
+    rotate(angle) {
+      const [a, b, c, d, e, f] = matrix;
+      const cosine = Math.cos(angle);
+      const sine = Math.sin(angle);
+      matrix = [
+        a * cosine + c * sine,
+        b * cosine + d * sine,
+        c * cosine - a * sine,
+        d * cosine - b * sine,
+        e,
+        f,
+      ];
+    },
+    beginPath() {},
+    closePath() {},
+    clip() {},
+    fill() {},
+    stroke() {},
+    moveTo: recordPairs,
+    lineTo: recordPairs,
+    quadraticCurveTo: recordPairs,
+    bezierCurveTo: recordPairs,
+    arc(x, y, radius) {
+      recordPairs(x - radius, y - radius, x + radius, y + radius);
+    },
+    ellipse(x, y, radiusX, radiusY) {
+      const radius = Math.max(radiusX, radiusY);
+      recordPairs(x - radius, y - radius, x + radius, y + radius);
+    },
+    fillRect(x, y, width, height) {
+      recordPairs(x, y, x + width, y + height);
+    },
+    strokeRect(x, y, width, height) {
+      recordPairs(x, y, x + width, y + height);
+    },
+    createLinearGradient() { return { addColorStop() {} }; },
+  };
+  Object.defineProperty(context, 'bounds', {
+    get() {
+      return {
+        x: extent.left - 4,
+        y: extent.top - 4,
+        width: extent.right - extent.left + 8,
+        height: extent.bottom - extent.top + 8,
+      };
+    },
+  });
+  return context;
 }
 
 function recordingContext() {
@@ -185,7 +279,7 @@ describe('touch-first robe picker', () => {
       expect.objectContaining({
         kind: 'violet',
         outfit: 'robes',
-        scale: 1.68,
+        ...layout.previewCharacter,
         robeTrim: '#4e83b7',
       }),
       4.2,
@@ -197,6 +291,33 @@ describe('touch-first robe picker', () => {
     ]));
     expect(context.calls.filter(([name]) => name === 'bezierCurveTo').length).toBeGreaterThan(120);
     expect(context.depth).toBe(0);
+  });
+
+  it('keeps the declared hair-to-shoes figure wholly inside the dressing-mirror glass', () => {
+    const layout = robePickerLayout('purple');
+    const figureBottom = layout.previewFigure.y + layout.previewFigure.height;
+    const glassBottom = layout.previewGlass.y + layout.previewGlass.height;
+    const geometry = geometryContext();
+    new CharacterRenderer().draw(geometry, {
+      kind: 'violet',
+      ...layout.previewCharacter,
+      facing: 'right',
+      pose: 'wonder',
+      outfit: 'robes',
+      walking: false,
+      wand: false,
+      robeTrim: '#7a4fc9',
+    }, 4.2);
+
+    expect(rectContains(layout.previewGlass, layout.previewFigure)).toBe(true);
+    expect(rectContains(layout.previewFigure, geometry.bounds)).toBe(true);
+    expect(rectContains(layout.previewGlass, geometry.bounds)).toBe(true);
+    expect(layout.previewFigure.y).toBeLessThan(layout.previewCharacter.y);
+    expect(figureBottom).toBeGreaterThan(layout.previewCharacter.y);
+    expect(glassBottom - figureBottom).toBeGreaterThanOrEqual(6);
+    expect(Object.isFrozen(layout.previewGlass)).toBe(true);
+    expect(Object.isFrozen(layout.previewCharacter)).toBe(true);
+    expect(Object.isFrozen(layout.previewFigure)).toBe(true);
   });
 
   it('registers a deterministic real-picker review with a hue-independent selected state', () => {
@@ -216,7 +337,7 @@ describe('touch-first robe picker', () => {
         kind: 'violet',
         outfit: 'robes',
         pose: 'wonder',
-        scale: 1.68,
+        ...robePickerLayout('gold').previewCharacter,
         robeTrim: '#d4a944',
       }),
       0,

@@ -7,7 +7,10 @@ import {
 
 const TAU = Math.PI * 2;
 const ARTBOARD = Object.freeze({ x: 0, y: 0, width: WORLD.width, height: WORLD.height });
-const MAP_FIELD = Object.freeze({ x: 88, y: 218, width: 1104, height: 412 });
+// The satchel's leather tabs and brass keyhole end at y=237. The extra space
+// keeps even the field's irregular painted edge visually clear of those controls.
+const MAP_FIELD = Object.freeze({ x: 88, y: 264, width: 1104, height: 366 });
+const MAP_CONTENT_OFFSET_Y = 48;
 const VIGNETTE_KINDS = new Set(['street', 'wand-shop', 'robes-shop', 'pet-shop']);
 
 // The deterministic VU-05 composition is integrated into the live satchel.
@@ -88,7 +91,7 @@ export function drawIllustratedMapPresentation(context, presentation) {
 }
 
 function locationPresentation(location, transform) {
-  const vignette = transformRect(location.vignette, transform);
+  const vignette = transformRect(offsetRect(location.vignette, 0, MAP_CONTENT_OFFSET_Y), transform);
   const phase = stablePhase(location.id);
   return Object.freeze({
     id: location.id,
@@ -122,7 +125,10 @@ function routePresentation(route, transform) {
     fogState: route.fogState,
     phase: stablePhase(route.id),
     markScale: Math.min(transform.scaleX, transform.scaleY),
-    points: Object.freeze(route.points.map((point) => Object.freeze(transformPoint(point, transform)))),
+    points: Object.freeze(route.points.map((point) => Object.freeze(transformPoint({
+      x: point.x,
+      y: point.y + MAP_CONTENT_OFFSET_Y,
+    }, transform)))),
   });
 }
 

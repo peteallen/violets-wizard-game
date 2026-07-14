@@ -103,6 +103,14 @@ const DIALOGUE_FRAME = Object.freeze({
   speakerGap: 30,
   portraitOverhang: 62,
 });
+// Conservative painted bounds for Violet's wispiest hair, shoes, and grounding
+// shadow across the robe-preview idle motion.
+const ROBE_PREVIEW_VIOLET_LOCAL_BOUNDS = Object.freeze({
+  x: -68,
+  y: -204,
+  width: 136,
+  height: 244,
+});
 const VISIBLE_UI_WORD = /[\p{L}\p{N}]+(?:[’'-][\p{L}\p{N}]+)*/gu;
 
 export function isAllowedChildFacingUiText(text, role) {
@@ -214,6 +222,15 @@ export function dialogueScrollLayout({ speakerBounds = null } = {}) {
 
 export function robePickerLayout(selectedTrim = 'purple') {
   const selected = normalizeRobeTrim(selectedTrim);
+  const preview = Object.freeze({ x: 96, y: 84, width: 438, height: 548 });
+  const previewGlass = Object.freeze(dressingMirrorGlassRect(preview));
+  const previewCharacter = Object.freeze({ x: 315, y: 530, scale: 1.6 });
+  const previewFigure = Object.freeze({
+    x: previewCharacter.x + ROBE_PREVIEW_VIOLET_LOCAL_BOUNDS.x * previewCharacter.scale,
+    y: previewCharacter.y + ROBE_PREVIEW_VIOLET_LOCAL_BOUNDS.y * previewCharacter.scale,
+    width: ROBE_PREVIEW_VIOLET_LOCAL_BOUNDS.width * previewCharacter.scale,
+    height: ROBE_PREVIEW_VIOLET_LOCAL_BOUNDS.height * previewCharacter.scale,
+  });
   const swatches = ROBE_TRIMS.map((trim, index) => {
     const column = index % 6;
     const row = Math.floor(index / 6);
@@ -230,7 +247,10 @@ export function robePickerLayout(selectedTrim = 'purple') {
   });
   return Object.freeze({
     selectedTrim: selected,
-    preview: Object.freeze({ x: 96, y: 84, width: 438, height: 548 }),
+    preview,
+    previewGlass,
+    previewCharacter,
+    previewFigure,
     swatches: Object.freeze(swatches),
     confirm: UI_RECTS.robeConfirm,
   });
@@ -582,9 +602,7 @@ export class UIRenderer {
     drawDressingMirror(context, layout.preview, animationTime, reducedMotion);
     this.characterRenderer.draw(context, {
       kind: 'violet',
-      x: 315,
-      y: 650,
-      scale: 1.68,
+      ...layout.previewCharacter,
       facing: 'right',
       pose: 'wonder',
       outfit: 'robes',
@@ -2914,12 +2932,7 @@ function drawDressingMirror(context, rect, time, reducedMotion) {
   context.lineWidth = 6;
   context.stroke();
 
-  const glass = {
-    x: rect.x + 25,
-    y: rect.y + 27,
-    width: rect.width - 50,
-    height: rect.height - 59,
-  };
+  const glass = dressingMirrorGlassRect(rect);
   context.fillStyle = '#34445d';
   traceDressingMirror(context, glass, 1.27);
   context.fill();
@@ -2944,6 +2957,15 @@ function drawDressingMirror(context, rect, time, reducedMotion) {
   traceMirrorPedestal(context, rect.x + 92, rect.y + rect.height - 25, rect.width - 190, 15, 3.4);
   context.fill();
   context.restore();
+}
+
+function dressingMirrorGlassRect(rect) {
+  return {
+    x: rect.x + 25,
+    y: rect.y + 27,
+    width: rect.width - 50,
+    height: rect.height - 59,
+  };
 }
 
 function drawFabricSwatch(context, swatch, index) {

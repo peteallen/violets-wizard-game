@@ -10,6 +10,13 @@ function center(rect) {
   return { x: rect.x + rect.width / 2, y: rect.y + rect.height / 2 };
 }
 
+function rectsOverlap(first, second) {
+  return first.x < second.x + second.width
+    && first.x + first.width > second.x
+    && first.y < second.y + second.height
+    && first.y + first.height > second.y;
+}
+
 function gameStub() {
   const game = Object.create(Game.prototype);
   game.world = {
@@ -84,6 +91,35 @@ describe('satchel card album', () => {
     expect(game.world.runActions).toHaveBeenCalledWith(chapter1Map.locations[1].onSelect);
     expect(game.sound.playSfx).toHaveBeenCalledWith('sfx/ui/travel', 'flourish');
     expect(state).toEqual(originalState);
+  });
+
+  it('keeps the map field and generous location targets beneath every visible satchel control', () => {
+    const game = gameStub();
+    const state = {
+      overlay: { surface: 'satchel', tab: 'map' },
+      roomId: 'ch1.diagonStreet',
+      unlockedRooms: ['ch1.ollivanders'],
+    };
+    const presentation = game.uiRenderer.mapPresentation(state);
+    const controls = [
+      UI_RECTS.satchelMapTab,
+      UI_RECTS.satchelCardsTab,
+      UI_RECTS.satchelKeyhole,
+      UI_RECTS.close,
+    ];
+    const headerBottom = Math.max(...controls.map((rect) => rect.y + rect.height));
+
+    expect(presentation.field.y).toBeGreaterThan(headerBottom);
+    for (const control of controls) {
+      expect(rectsOverlap(presentation.field, control)).toBe(false);
+    }
+    for (const target of presentation.hitTargets) {
+      expect(target.hitArea.width).toBeGreaterThanOrEqual(88);
+      expect(target.hitArea.height).toBeGreaterThanOrEqual(88);
+      for (const control of controls) {
+        expect(rectsOverlap(target.hitArea, control)).toBe(false);
+      }
+    }
   });
 
   it('keeps softly fogged map destinations non-travelling but still tappable', () => {
