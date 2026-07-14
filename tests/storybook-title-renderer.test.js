@@ -196,7 +196,9 @@ describe('code-only storybook title illustration', () => {
     const renderer = new StorybookTitleRenderer();
     renderer.draw(context, 4.25);
 
-    expect(context.calls.some(([name]) => name === 'arc' || name === 'ellipse')).toBe(true);
+    expect(context.calls.some(([name]) => [
+      'arc', 'ellipse', 'fillRect', 'lineTo', 'rect', 'roundRect', 'strokeRect',
+    ].includes(name))).toBe(false);
     const assignedStyles = context.assignments
       .filter(([property]) => property === 'fillStyle' || property === 'strokeStyle')
       .map(([, value]) => value);

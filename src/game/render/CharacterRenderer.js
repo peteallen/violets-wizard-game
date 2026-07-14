@@ -190,6 +190,11 @@ export const CHARACTER_REVIEW_SCENES = Object.freeze([
   'owl-motion-review',
 ]);
 
+export const OWL_RUNTIME_REVIEW_POSES = Object.freeze({
+  post: Object.freeze(['perch', 'takeoff', 'delivery', 'flight', 'settle']),
+  pet: Object.freeze(['idle', 'perch', 'pet-follow']),
+});
+
 const CHARACTER_COLORS = Object.freeze({
   guide: {
     robe: HAGRID_STYLE.coatBase,
@@ -457,17 +462,32 @@ export class CharacterRenderer {
   }
 
   drawOwlMotionReview(context, time, reducedMotion) {
-    const poses = ['perch', 'idle', 'takeoff', 'flight', 'settle', 'pet-follow'];
-    poses.forEach((pose, index) => {
-      const x = 118 + index * 209;
-      const flight = pose === 'flight';
-      drawReviewPlinth(context, x, 605, pose.replace('-', ' '));
-      this.drawPet(context, {
-        type: 'owl', variant: index === 0 ? 'post' : 'pet', pose,
-        x, y: flight ? 505 : 550, scale: 1.03,
-        reducedMotion, lookX: (index - 2.5) / 3.2, lookY: index % 2 ? -0.25 : 0.18,
-        phase: index * 0.31,
-      }, time);
+    const rows = [
+      {
+        variant: 'post', poses: OWL_RUNTIME_REVIEW_POSES.post,
+        left: 150, right: 1130, owlY: 337, plinthY: 382, scale: 0.84,
+      },
+      {
+        variant: 'pet', poses: OWL_RUNTIME_REVIEW_POSES.pet,
+        left: 290, right: 990, owlY: 552, plinthY: 607, scale: 0.94,
+      },
+    ];
+
+    rows.forEach((row, rowIndex) => {
+      row.poses.forEach((pose, index) => {
+        const progress = row.poses.length === 1 ? 0.5 : index / (row.poses.length - 1);
+        const x = row.left + (row.right - row.left) * progress;
+        const airborne = pose === 'delivery' || pose === 'flight';
+        drawReviewPlinth(context, x, row.plinthY, `${row.variant} · ${pose.replace('-', ' ')}`);
+        this.drawPet(context, {
+          type: 'owl', variant: row.variant, pose,
+          x, y: airborne ? row.owlY - 32 : row.owlY, scale: row.scale,
+          reducedMotion,
+          lookX: progress * 1.6 - 0.8,
+          lookY: index % 2 ? -0.2 : 0.16,
+          phase: rowIndex * 0.43 + index * 0.31,
+        }, time);
+      });
     });
   }
 }

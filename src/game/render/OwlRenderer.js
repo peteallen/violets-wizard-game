@@ -8,13 +8,13 @@ const OWL_PALETTES = Object.freeze({
     body: '#a77b4f', bodyLight: '#c39a68', bodyShadow: '#6f5038',
     wing: '#7d5a3f', wingDark: '#56402f', facial: '#f0dfb9',
     facialShadow: '#d5bd91', iris: '#d79a2f', beak: '#d6a142',
-    foot: '#a87935', fleck: '#4b392c', accent: '#f4d58d',
+    foot: '#a87935', fleck: '#4b392c', accent: '#f4d58d', rim: '#efd19a',
   }),
   pet: Object.freeze({
     body: '#83788b', bodyLight: '#a79aab', bodyShadow: '#5b5264',
     wing: '#665d72', wingDark: '#474150', facial: '#f1e8d5',
     facialShadow: '#d4c8c4', iris: '#d5a642', beak: '#d6a142',
-    foot: '#a87935', fleck: '#443c4d', accent: '#c8a7dc',
+    foot: '#a87935', fleck: '#443c4d', accent: '#c8a7dc', rim: '#dec8e3',
   }),
 });
 
@@ -219,12 +219,10 @@ function drawOwlShadow(context, pose, motion) {
   context.translate(0, motion.hop - motion.bodyBob);
   context.globalAlpha *= 1 - lift;
   context.fillStyle = 'rgba(25,17,24,0.22)';
-  context.beginPath();
-  context.ellipse(2, 7, 34 - lift * 7, 7 - lift * 1.5, 0, 0, Math.PI * 2);
+  traceOrganicOval(context, 2, 7, 34 - lift * 7, 7 - lift * 1.5, 0.28);
   context.fill();
   context.fillStyle = 'rgba(121,77,43,0.1)';
-  context.beginPath();
-  context.ellipse(-3, 5, 23 - lift * 5, 3.5, 0, 0, Math.PI * 2);
+  traceOrganicOval(context, -3, 5, 23 - lift * 5, 3.5, -0.34);
   context.fill();
   context.restore();
 }
@@ -238,29 +236,30 @@ export function drawOwlBookplate(context, x, y, scale = 1, { color = '#5e4634', 
   context.lineWidth = 2.5;
   context.beginPath();
   context.moveTo(-22, -12);
-  context.lineTo(-13, -27);
-  context.quadraticCurveTo(0, -34, 13, -27);
-  context.lineTo(22, -12);
-  context.quadraticCurveTo(25, 8, 0, 25);
-  context.quadraticCurveTo(-25, 8, -22, -12);
+  context.bezierCurveTo(-20, -20, -17, -29, -12, -27);
+  context.quadraticCurveTo(0, -34, 14, -26);
+  context.bezierCurveTo(18, -28, 21, -18, 22, -11);
+  context.quadraticCurveTo(25, 8, 1, 25);
+  context.quadraticCurveTo(-24, 9, -22, -12);
   context.closePath();
   context.fill();
   context.stroke();
   context.fillStyle = '#fff8e8';
-  context.beginPath();
-  context.ellipse(-8, -9, 7.5, 9, 0.2, 0, Math.PI * 2);
-  context.ellipse(8, -9, 7.5, 9, -0.2, 0, Math.PI * 2);
+  traceOrganicOval(context, -8, -9, 7.5, 9, 0.34);
+  context.fill();
+  traceOrganicOval(context, 8, -9, 7.5, 9, -0.28);
   context.fill();
   context.fillStyle = '#241b18';
-  context.beginPath();
-  context.arc(-7, -8, 3, 0, Math.PI * 2);
-  context.arc(7, -8, 3, 0, Math.PI * 2);
+  traceOrganicOval(context, -7, -8, 3, 3.2, -0.25);
+  context.fill();
+  traceOrganicOval(context, 7, -8, 3, 3.2, 0.31);
   context.fill();
   context.fillStyle = accent;
   context.beginPath();
   context.moveTo(-3, 0);
-  context.lineTo(0, 6);
-  context.lineTo(3, 0);
+  context.quadraticCurveTo(-1, 4, 0, 6);
+  context.quadraticCurveTo(2, 3, 3, 0);
+  context.quadraticCurveTo(0, 1, -3, 0);
   context.closePath();
   context.fill();
   context.restore();
@@ -348,7 +347,12 @@ function drawBody(context, palette, variant) {
 
   context.fillStyle = palette.bodyLight;
   context.beginPath();
-  context.ellipse(0, -39, 23, 39, 0, 0, Math.PI * 2);
+  context.moveTo(-18, -70);
+  context.bezierCurveTo(-29, -56, -26, -25, -16, -7);
+  context.quadraticCurveTo(1, 6, 18, -8);
+  context.bezierCurveTo(27, -28, 27, -58, 13, -73);
+  context.quadraticCurveTo(-2, -82, -18, -70);
+  context.closePath();
   context.fill();
 
   context.fillStyle = palette.bodyShadow;
@@ -403,6 +407,15 @@ function drawBody(context, palette, variant) {
   context.moveTo(-18, -73);
   context.bezierCurveTo(-27, -53, -25, -26, -18, -9);
   context.stroke();
+
+  context.strokeStyle = palette.rim;
+  context.globalAlpha = 0.72;
+  context.lineWidth = 2.4;
+  context.beginPath();
+  context.moveTo(-24, -84);
+  context.bezierCurveTo(-39, -67, -36, -31, -24, -12);
+  context.stroke();
+  context.globalAlpha = 1;
 }
 
 function drawFeet(context, palette, pose) {
@@ -413,7 +426,7 @@ function drawFeet(context, palette, pose) {
     context.lineWidth = 4;
     context.beginPath();
     context.moveTo(side * 13, -15);
-    context.lineTo(side * 13, footY);
+    context.bezierCurveTo(side * 12.2, -10, side * 13.8, footY - 4, side * 13, footY);
     if (!tucked) {
       context.moveTo(side * 13, footY);
       context.quadraticCurveTo(side * 20, 4, side * 25, 1);
@@ -425,14 +438,15 @@ function drawFeet(context, palette, pose) {
 }
 
 function drawHead(context, palette, variant, motion) {
+  const pet = variant === 'pet';
   context.fillStyle = palette.body;
   context.beginPath();
   context.moveTo(-35, -91);
-  context.lineTo(-27, -120);
-  context.lineTo(-12, -111);
-  context.quadraticCurveTo(0, -119, 14, -110);
-  context.lineTo(29, -121);
-  context.lineTo(35, -91);
+  context.bezierCurveTo(-34, -101, -32, pet ? -115 : -122, pet ? -25 : -27, pet ? -116 : -120);
+  context.quadraticCurveTo(pet ? -18 : -16, pet ? -114 : -108, -12, -111);
+  context.quadraticCurveTo(0, pet ? -117 : -119, 14, -110);
+  context.quadraticCurveTo(pet ? 21 : 18, pet ? -116 : -109, pet ? 28 : 29, pet ? -117 : -121);
+  context.bezierCurveTo(pet ? 33 : 31, pet ? -110 : -116, 35, -100, 35, -91);
   context.quadraticCurveTo(32, -68, 0, -61);
   context.quadraticCurveTo(-32, -68, -35, -91);
   context.closePath();
@@ -490,7 +504,8 @@ function drawHead(context, palette, variant, motion) {
   context.beginPath();
   context.moveTo(-5, -81);
   context.quadraticCurveTo(0, -74 + motion.beakOpen * 5, 5, -81);
-  context.lineTo(0, -66 - motion.beakOpen * 2);
+  context.bezierCurveTo(4, -77, 2, -70, 0, -66 - motion.beakOpen * 2);
+  context.quadraticCurveTo(-3, -71, -5, -81);
   context.closePath();
   fillStroke(context, 1.8);
 
@@ -500,8 +515,7 @@ function drawHead(context, palette, variant, motion) {
     ? [[-27, -88], [28, -85], [-21, -72], [23, -71]]
     : [[-27, -102], [27, -99], [-30, -84], [30, -82], [-21, -70], [22, -70]];
   for (const [x, y] of flecks) {
-    context.beginPath();
-    context.ellipse(x, y, 2.2, 4.2, x < 0 ? -0.35 : 0.35, 0, Math.PI * 2);
+    traceOrganicOval(context, x, y, 2.2, 4.2, x < 0 ? -0.55 : 0.46);
     context.fill();
   }
   context.globalAlpha = 1;
@@ -511,53 +525,108 @@ function drawHead(context, palette, variant, motion) {
   context.moveTo(-29, -103);
   context.quadraticCurveTo(-18, -119, -5, -112);
   context.stroke();
+
+  context.strokeStyle = palette.rim;
+  context.globalAlpha = 0.76;
+  context.lineWidth = 2.2;
+  context.beginPath();
+  context.moveTo(-32, -96);
+  context.bezierCurveTo(-31, -108, -27, pet ? -117 : -121, -22, pet ? -114 : -117);
+  context.quadraticCurveTo(-16, -111, -11, -110);
+  context.stroke();
+  context.globalAlpha = 1;
 }
 
 function drawOwlEye(context, x, y, palette, motion) {
   context.save();
   context.translate(x, y);
   context.fillStyle = '#fff8e8';
-  context.beginPath();
-  context.ellipse(0, 0, 10, 11, 0, 0, Math.PI * 2);
+  traceOrganicOval(context, 0, 0, 10, 11, x < 0 ? -0.24 : 0.31);
   context.fill();
   context.strokeStyle = OUTLINE;
   context.lineWidth = 2.2;
   context.stroke();
 
   context.fillStyle = palette.iris;
-  context.beginPath();
-  context.arc(motion.eyeX, motion.eyeY, 6.8, 0, Math.PI * 2);
+  traceOrganicOval(context, motion.eyeX, motion.eyeY, 6.8, 7.1, x < 0 ? 0.18 : -0.21);
   context.fill();
   context.strokeStyle = palette.fleck;
   context.lineWidth = 1.4;
   context.stroke();
   context.fillStyle = '#171311';
-  context.beginPath();
-  context.arc(motion.eyeX, motion.eyeY, 3.7, 0, Math.PI * 2);
+  traceOrganicOval(context, motion.eyeX, motion.eyeY, 3.7, 4.1, x < 0 ? -0.16 : 0.22);
   context.fill();
-  context.fillStyle = 'rgba(255,255,255,0.9)';
-  context.beginPath();
-  context.arc(motion.eyeX - 2.2, motion.eyeY - 2.7, 1.8, 0, Math.PI * 2);
+  context.fillStyle = 'rgba(255,244,218,0.92)';
+  traceOrganicOval(context, motion.eyeX - 2.2, motion.eyeY - 2.7, 1.8, 1.55, 0.34);
   context.fill();
 
   if (motion.blink > 0) {
     const cover = clamp(motion.blink, 0, 1);
+    const upperSeam = -9.5 + cover * 9.6;
+    const lowerSeam = 9.7 - cover * 9.4;
     context.fillStyle = palette.facialShadow;
     context.beginPath();
-    context.ellipse(0, -11 + cover * 10.5, 10.4, 11, 0, Math.PI, Math.PI * 2);
+    context.moveTo(-9.8, upperSeam);
+    context.bezierCurveTo(-10.6, -6.2, -7.4, -11.2, 0.6, -10.9);
+    context.bezierCurveTo(7.2, -10.7, 10.5, -5.8, 9.6, upperSeam + 0.2);
+    context.quadraticCurveTo(0.4, upperSeam + 1.4, -9.8, upperSeam);
+    context.closePath();
     context.fill();
     context.beginPath();
-    context.ellipse(0, 11 - cover * 10.5, 10.4, 11, 0, 0, Math.PI);
+    context.moveTo(-9.5, lowerSeam);
+    context.quadraticCurveTo(0.3, lowerSeam - 1.1, 9.7, lowerSeam + 0.1);
+    context.bezierCurveTo(10.2, 6.6, 6.9, 11.1, -0.5, 10.8);
+    context.bezierCurveTo(-7.2, 10.4, -10.4, 6.3, -9.5, lowerSeam);
+    context.closePath();
     context.fill();
     context.strokeStyle = OUTLINE;
     context.lineWidth = 2;
     context.beginPath();
-    context.moveTo(-8, 0);
-    context.quadraticCurveTo(0, 2, 8, 0);
+    context.moveTo(-8.4, (upperSeam + lowerSeam) * 0.5);
+    context.quadraticCurveTo(0.2, 1.7, 8.3, (upperSeam + lowerSeam) * 0.5 + 0.1);
     context.globalAlpha = cover;
     context.stroke();
   }
   context.restore();
+}
+
+function traceOrganicOval(context, centerX, centerY, radiusX, radiusY, asymmetry = 0) {
+  const wobble = clamp(asymmetry, -1, 1);
+  context.beginPath();
+  context.moveTo(centerX - radiusX * (1 + wobble * 0.025), centerY + radiusY * 0.04);
+  context.bezierCurveTo(
+    centerX - radiusX * 1.02,
+    centerY - radiusY * (0.52 + wobble * 0.04),
+    centerX - radiusX * (0.55 - wobble * 0.05),
+    centerY - radiusY * (1.01 + wobble * 0.025),
+    centerX + radiusX * (0.03 + wobble * 0.035),
+    centerY - radiusY * (0.98 - wobble * 0.02),
+  );
+  context.bezierCurveTo(
+    centerX + radiusX * (0.59 + wobble * 0.035),
+    centerY - radiusY * (0.96 - wobble * 0.04),
+    centerX + radiusX * (1 - wobble * 0.018),
+    centerY - radiusY * 0.46,
+    centerX + radiusX * (0.98 - wobble * 0.02),
+    centerY + radiusY * (0.06 - wobble * 0.025),
+  );
+  context.bezierCurveTo(
+    centerX + radiusX * 0.96,
+    centerY + radiusY * (0.57 + wobble * 0.04),
+    centerX + radiusX * (0.48 - wobble * 0.04),
+    centerY + radiusY * (1 + wobble * 0.018),
+    centerX - radiusX * (0.05 - wobble * 0.03),
+    centerY + radiusY * (0.97 + wobble * 0.025),
+  );
+  context.bezierCurveTo(
+    centerX - radiusX * (0.57 + wobble * 0.025),
+    centerY + radiusY * (0.94 - wobble * 0.035),
+    centerX - radiusX * 0.99,
+    centerY + radiusY * 0.5,
+    centerX - radiusX * (1 + wobble * 0.025),
+    centerY + radiusY * 0.04,
+  );
+  context.closePath();
 }
 
 function fillStroke(context, lineWidth = null) {

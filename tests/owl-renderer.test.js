@@ -1,6 +1,46 @@
 import { describe, expect, it } from 'vitest';
-import { sampleOwlDelivery, sampleOwlMotion } from '../src/game/render/OwlRenderer.js';
+import {
+  drawOwlBookplate,
+  drawVectorOwl,
+  sampleOwlDelivery,
+  sampleOwlMotion,
+} from '../src/game/render/OwlRenderer.js';
 import { LETTER_ENVELOPE_POSE } from '../src/game/render/LetterRenderer.js';
+
+function recordingContext() {
+  const calls = [];
+  const styles = [];
+  let depth = 0;
+  const methods = new Set([
+    'arc', 'arcTo', 'beginPath', 'bezierCurveTo', 'closePath', 'ellipse', 'fill',
+    'fillRect', 'lineTo', 'moveTo', 'quadraticCurveTo', 'rect', 'restore', 'rotate',
+    'roundRect', 'save', 'scale', 'setLineDash', 'stroke', 'strokeRect', 'translate',
+  ]);
+  const target = { calls, styles, globalAlpha: 1, get depth() { return depth; } };
+  return new Proxy(target, {
+    get(object, property) {
+      if (property === 'createLinearGradient' || property === 'createRadialGradient') {
+        return (...args) => {
+          calls.push([property, ...args]);
+          return { addColorStop: (...stop) => calls.push(['addColorStop', ...stop]) };
+        };
+      }
+      if (methods.has(property)) {
+        return (...args) => {
+          calls.push([property, ...args]);
+          if (property === 'save') depth += 1;
+          if (property === 'restore') depth -= 1;
+        };
+      }
+      return object[property];
+    },
+    set(object, property, value) {
+      if (property === 'fillStyle' || property === 'strokeStyle') styles.push([property, value]);
+      object[property] = value;
+      return true;
+    },
+  });
+}
 
 describe('vector owl motion', () => {
   it('is deterministic and keeps sampled transforms finite and bounded', () => {
@@ -38,6 +78,67 @@ describe('vector owl motion', () => {
     expect(reduced.wingSpread).toBeLessThan(full.wingSpread);
     expect(Math.abs(reduced.headTurn)).toBeGreaterThan(0);
     expect(Math.abs(reduced.bodyBob)).toBeLessThan(Math.abs(full.bodyBob));
+  });
+});
+
+describe('storybook owl drawing', () => {
+  const forbiddenGeometry = new Set([
+    'arc', 'arcTo', 'ellipse', 'fillRect', 'lineTo', 'rect', 'roundRect',
+    'setLineDash', 'strokeRect', 'createLinearGradient', 'createRadialGradient',
+  ]);
+
+  it('draws both owl identities as deterministic layered organic puppets', () => {
+    const variants = [
+      {
+        owl: { variant: 'post', pose: 'delivery', facing: 'right', x: 280, y: 340 },
+        tones: ['#a77b4f', '#c39a68', '#6f5038', '#7d5a3f', '#efd19a'],
+      },
+      {
+        owl: { variant: 'pet', pose: 'pet-follow', facing: 'left', x: 280, y: 340 },
+        tones: ['#83788b', '#a79aab', '#5b5264', '#665d72', '#dec8e3'],
+      },
+    ];
+
+    for (const { owl, tones } of variants) {
+      const first = recordingContext();
+      const replayed = recordingContext();
+      drawVectorOwl(first, owl, 3.875);
+      drawVectorOwl(replayed, owl, 3.875);
+
+      expect(first.calls).toEqual(replayed.calls);
+      expect(first.styles).toEqual(replayed.styles);
+      expect(first.calls.filter(([name]) => name === 'bezierCurveTo').length).toBeGreaterThan(45);
+      expect(first.calls.filter(([name]) => name === 'quadraticCurveTo').length).toBeGreaterThan(45);
+      expect(first.calls.some(([name]) => forbiddenGeometry.has(name))).toBe(false);
+      expect(first.calls.every(([, ...values]) => values.every(
+        (value) => typeof value !== 'number' || Number.isFinite(value),
+      ))).toBe(true);
+      expect(first.styles.some(([property]) => ['filter', 'shadowBlur'].includes(property))).toBe(false);
+      for (const tone of tones) expect(first.styles.some(([, value]) => value === tone)).toBe(true);
+      expect(first.depth).toBe(0);
+    }
+  });
+
+  it('closes shaped eyelids over the same organic eyes without reverting to geometric covers', () => {
+    const open = recordingContext();
+    const blink = recordingContext();
+    drawVectorOwl(open, { variant: 'post', pose: 'perch' }, 0);
+    drawVectorOwl(blink, { variant: 'post', pose: 'perch' }, 5.23);
+
+    expect(sampleOwlMotion({ time: 5.23, variant: 'post' }).blink).toBeGreaterThan(0.5);
+    expect(blink.calls.filter(([name]) => name === 'fill').length)
+      .toBeGreaterThan(open.calls.filter(([name]) => name === 'fill').length);
+    expect(blink.calls.some(([name]) => forbiddenGeometry.has(name))).toBe(false);
+    expect(blink.depth).toBe(0);
+  });
+
+  it('uses the same organic shape language for the recurring owl bookplate', () => {
+    const context = recordingContext();
+    drawOwlBookplate(context, 80, 90, 1.4);
+
+    expect(context.calls.filter(([name]) => name === 'bezierCurveTo').length).toBeGreaterThan(10);
+    expect(context.calls.some(([name]) => forbiddenGeometry.has(name))).toBe(false);
+    expect(context.depth).toBe(0);
   });
 });
 

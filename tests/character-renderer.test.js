@@ -5,6 +5,7 @@ import {
   CharacterRenderer,
   HAGRID_STYLE,
   KEEPER_STYLE,
+  OWL_RUNTIME_REVIEW_POSES,
   TAILOR_STYLE,
   TOAD_STYLE,
   VIOLET_STYLE,
@@ -66,6 +67,38 @@ describe('illustrated character renderer', () => {
       expect(first.depth).toBe(0);
     }
     expect(renderer.drawReviewScene(recordingContext(), 'unrelated-scene', 0)).toBe(false);
+  });
+
+  it('reviews each owl identity in every pose that identity uses at runtime', () => {
+    const recordReview = (reducedMotion) => {
+      const renderer = new CharacterRenderer();
+      const owls = [];
+      renderer.drawPet = (_context, owl, time) => owls.push({ ...owl, time });
+      renderer.drawOwlMotionReview(recordingContext(), 1.375, reducedMotion);
+      return owls;
+    };
+    const first = recordReview(false);
+    const replayed = recordReview(false);
+    const reduced = recordReview(true);
+    const expectedCases = Object.entries(OWL_RUNTIME_REVIEW_POSES).flatMap(
+      ([variant, poses]) => poses.map((pose) => [variant, pose]),
+    );
+
+    expect(first).toEqual(replayed);
+    expect(first.map(({ variant, pose }) => [variant, pose])).toEqual(expectedCases);
+    expect(first).toHaveLength(8);
+    expect(first).toEqual(expect.arrayContaining([
+      expect.objectContaining({ variant: 'post', pose: 'delivery' }),
+      expect.objectContaining({ variant: 'post', pose: 'flight' }),
+      expect.objectContaining({ variant: 'pet', pose: 'pet-follow' }),
+    ]));
+    expect(first.every(({ x, y, scale, lookX, lookY, phase, time }) => (
+      [x, y, scale, lookX, lookY, phase, time].every(Number.isFinite)
+    ))).toBe(true);
+    expect(first.every(({ x }) => x >= 88 && x <= 1192)).toBe(true);
+    expect(first.every(({ reducedMotion }) => reducedMotion === false)).toBe(true);
+    expect(reduced.map(({ variant, pose }) => [variant, pose])).toEqual(expectedCases);
+    expect(reduced.every(({ reducedMotion }) => reducedMotion === true)).toBe(true);
   });
 
   it('provides one balanced portrait API for the whole dialogue cast and narrator', () => {

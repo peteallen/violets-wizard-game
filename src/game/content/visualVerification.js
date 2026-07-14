@@ -76,8 +76,9 @@ const REVIEW_SCENE_ILLUSION_CHECKS = Object.freeze({
     'Exactly nine labeled portraits remain separated, fully inside their frames, and recognizable as the same characters used at gameplay scale.',
   ],
   'owl-motion-review': [
-    'Exactly six labeled owl poses remain distinct, with two intact eyes and a continuous head/body silhouette in every pose.',
-    'Full-motion and reduced-motion frames preserve the same owl proportions and material treatment.',
+    'Exactly eight labeled owl renderings remain distinct: the post owl in perch, takeoff, delivery, flight, and settle poses, plus the pet owl in idle, perch, and follow poses.',
+    'Post and pet identities remain recognizable in every pose, with two intact eyes and one continuous head/body silhouette per owl.',
+    'Full-motion and reduced-motion frames preserve each owl variant’s proportions and material treatment.',
   ],
 });
 
