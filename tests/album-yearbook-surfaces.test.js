@@ -80,6 +80,23 @@ function expectGenerousDisjointTargets(rects) {
   }
 }
 
+function expectOnlyIllustratedCloseTransforms(context) {
+  const translations = context.calls.filter(([name]) => name === 'translate');
+  const scales = context.calls.filter(([name]) => name === 'scale');
+
+  expect(translations).toEqual([
+    ['translate', 1090, 120],
+    ['translate', 3, 4],
+  ]);
+  expect(scales).toHaveLength(3);
+  expect(scales[0][1]).toBeCloseTo(0.549);
+  expect(scales[0][2]).toBeCloseTo(0.549);
+  expect(scales.slice(1)).toEqual([
+    ['scale', 1, -1],
+    ['scale', 1, -1],
+  ]);
+}
+
 function expectOrganicFiniteBalanced(context, minimumBezierCurves = 30) {
   expect(context.calls.some(([name]) => FORBIDDEN_CONTENT_GEOMETRY.has(name))).toBe(false);
   expect(context.calls.filter(([name]) => name === 'bezierCurveTo').length)
@@ -214,10 +231,9 @@ describe('storybook yearbook', () => {
     expect(first.assignments).toEqual(replayed.assignments);
     expect(first.texts).toEqual(['Violet’s Yearbook', 'First wand', 'Back', 'Next']);
     expect(first.calls.filter(([name]) => name === 'drawImage')).toHaveLength(1);
-    // The one transformed vector is the permitted global close control; the
-    // memory, frame, page marks, and turn controls add no mascot/icon filler.
-    expect(first.calls.filter(([name]) => name === 'translate')).toHaveLength(1);
-    expect(first.calls.filter(([name]) => name === 'scale')).toHaveLength(1);
+    // Every transform belongs to the permitted global close control, including
+    // its offset painted shadow; the memory and page controls add no icon filler.
+    expectOnlyIllustratedCloseTransforms(first);
     const fills = assignedStyles(first, 'fillStyle');
     expect(fills).toContain('#63432e');
     expect(fills).toContain('rgba(255,226,153,0.24)');
@@ -257,8 +273,7 @@ describe('storybook yearbook', () => {
     expect(first.assignments).toEqual(replayed.assignments);
     expect(first.texts).toEqual(['Violet’s Yearbook']);
     expect(first.calls.some(([name]) => name === 'drawImage')).toBe(false);
-    expect(first.calls.filter(([name]) => name === 'translate')).toHaveLength(1);
-    expect(first.calls.filter(([name]) => name === 'scale')).toHaveLength(1);
+    expectOnlyIllustratedCloseTransforms(first);
     const fills = assignedStyles(first, 'fillStyle');
     expect(fills).toContain('#5c5068');
     expect(fills).toContain('#d9c59b');

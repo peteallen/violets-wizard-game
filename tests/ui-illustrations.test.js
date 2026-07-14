@@ -67,6 +67,64 @@ describe('illustrated interface primitives', () => {
     }
   });
 
+  it('builds every live child-facing icon from balanced organic storybook paths', () => {
+    const icons = [
+      'speaker', 'check', 'map', 'cards', 'close', 'replay', 'quill',
+      'owl', 'cat', 'toad', 'wand', 'eyes', 'satchel', 'quest',
+    ];
+    const forbiddenGeometry = new Set([
+      'arc', 'arcTo', 'ellipse', 'lineTo', 'rect', 'roundRect', 'setLineDash',
+    ]);
+    const pureNeutrals = new Set([
+      '#000', '#0000', '#000000', '#00000000', '#000f', '#000000ff',
+      '#fff', '#ffff', '#ffffff', '#ffffffff', 'black', 'white',
+      'rgb(0,0,0)', 'rgba(0,0,0,1)', 'rgb(255,255,255)', 'rgba(255,255,255,1)',
+    ]);
+
+    for (const icon of icons) {
+      const first = recordingContext();
+      const second = recordingContext();
+      drawVectorIcon(first, icon, 0, 0, 100);
+      drawVectorIcon(second, icon, 0, 0, 100);
+
+      expect(first.calls, `${icon} geometry should be deterministic`).toEqual(second.calls);
+      expect(first.propertyWrites, `${icon} palette should be deterministic`)
+        .toEqual(second.propertyWrites);
+      expect(first.calls.some(([method]) => forbiddenGeometry.has(method)), icon).toBe(false);
+      expect(first.calls.some(([method]) => method === 'fillText'), icon).toBe(false);
+
+      const curves = first.calls.filter(([method]) => [
+        'bezierCurveTo', 'quadraticCurveTo',
+      ].includes(method));
+      expect(curves.length, `${icon} should be shaped by authored curves`).toBeGreaterThan(10);
+      expect(first.calls.filter(([method]) => method === 'fill').length, icon)
+        .toBeGreaterThanOrEqual(2);
+      expect(first.calls.filter(([method]) => method === 'stroke').length, icon)
+        .toBeGreaterThanOrEqual(1);
+
+      const numericGeometry = first.calls
+        .flatMap(([, ...args]) => args.filter((value) => typeof value === 'number'));
+      const numericProperties = first.propertyWrites
+        .map(([, value]) => value)
+        .filter((value) => typeof value === 'number');
+      expect(numericGeometry.length, icon).toBeGreaterThan(50);
+      expect(numericGeometry.every(Number.isFinite), icon).toBe(true);
+      expect(numericProperties.every(Number.isFinite), icon).toBe(true);
+
+      const materialTones = first.propertyWrites
+        .filter(([property, value]) => ['fillStyle', 'strokeStyle'].includes(property)
+          && typeof value === 'string')
+        .map(([, value]) => value.toLowerCase().replaceAll(' ', ''));
+      expect(new Set(materialTones).size, `${icon} should have painted light, body, and ink tones`)
+        .toBeGreaterThanOrEqual(4);
+      expect(materialTones.some((tone) => pureNeutrals.has(tone)), icon).toBe(false);
+
+      expect(first.calls.filter(([method]) => method === 'save').length, icon)
+        .toBe(first.calls.filter(([method]) => method === 'restore').length);
+      expect(first.depth, `${icon} should restore Canvas state`).toBe(0);
+    }
+  });
+
   it('keeps the parchment, wax, brass, leather, compass, and holster drawings balanced', () => {
     const context = recordingContext();
     traceDeckledRect(context, 10, 12, 300, 160);

@@ -9,6 +9,10 @@ const BRASS_LIGHT = '#f4d58d';
 const BRASS_DARK = '#76522c';
 const LEATHER = '#6d452d';
 const LEATHER_DARK = '#3f2b23';
+const ICON_CREAM = '#f7e7c2';
+const ICON_LIGHT = '#ffe3a0';
+const ICON_MID = '#b98448';
+const ICON_SHADOW = '#684936';
 const PAPER_GRAIN = Object.freeze([
   [0.08, 0.23, 0.055, -0.012], [0.15, 0.71, 0.072, 0.016], [0.23, 0.42, 0.044, -0.018],
   [0.31, 0.82, 0.061, 0.011], [0.38, 0.18, 0.052, 0.014], [0.46, 0.58, 0.067, -0.013],
@@ -2304,222 +2308,672 @@ function normalizeIcon(icon) {
   return value;
 }
 
+function traceOrganicOval(context, x, y, radiusX, radiusY, phase = 0) {
+  const lean = Math.sin(phase * 7.3 + 0.4) * 0.045;
+  const lift = Math.cos(phase * 5.1 + 0.8) * 0.035;
+  context.beginPath();
+  context.moveTo(x + radiusX * (0.03 + lean), y - radiusY);
+  context.bezierCurveTo(
+    x + radiusX * 0.61,
+    y - radiusY * (1.03 - lift),
+    x + radiusX * 1.03,
+    y - radiusY * 0.48,
+    x + radiusX * (0.97 + lean * 0.25),
+    y + radiusY * 0.08,
+  );
+  context.bezierCurveTo(
+    x + radiusX * 0.93,
+    y + radiusY * 0.68,
+    x + radiusX * 0.43,
+    y + radiusY * 1.02,
+    x - radiusX * (0.08 - lean),
+    y + radiusY * 0.98,
+  );
+  context.bezierCurveTo(
+    x - radiusX * 0.64,
+    y + radiusY * 0.94,
+    x - radiusX * 1.02,
+    y + radiusY * 0.47,
+    x - radiusX * (0.96 - lean * 0.2),
+    y - radiusY * 0.09,
+  );
+  context.bezierCurveTo(
+    x - radiusX * 0.9,
+    y - radiusY * 0.65,
+    x - radiusX * 0.45,
+    y - radiusY * (0.98 + lift),
+    x + radiusX * (0.03 + lean),
+    y - radiusY,
+  );
+  context.closePath();
+}
+
+function traceOrganicCard(context, x, y, width, height, phase = 0) {
+  const drift = Math.sin(phase * 9.7 + 0.2) * 1.8;
+  const left = x - width / 2;
+  const right = x + width / 2;
+  const top = y - height / 2;
+  const bottom = y + height / 2;
+  context.beginPath();
+  context.moveTo(left + 8, top + drift);
+  context.bezierCurveTo(
+    x - width * 0.15,
+    top - 1.6,
+    x + width * 0.19,
+    top + 1.4,
+    right - 7,
+    top + 2 - drift * 0.25,
+  );
+  context.quadraticCurveTo(right + 1.5, top + 5, right - 0.5, top + 13);
+  context.bezierCurveTo(
+    right + 1.3,
+    y - height * 0.08,
+    right - 1.8,
+    y + height * 0.23,
+    right - 2 + drift * 0.2,
+    bottom - 8,
+  );
+  context.quadraticCurveTo(right - 5, bottom + 1.5, right - 13, bottom - 0.5);
+  context.bezierCurveTo(
+    x + width * 0.17,
+    bottom + 1.4,
+    x - width * 0.2,
+    bottom - 1.2,
+    left + 7,
+    bottom - 2 + drift * 0.2,
+  );
+  context.quadraticCurveTo(left - 1.3, bottom - 5, left + 0.5, bottom - 13);
+  context.bezierCurveTo(
+    left - 1.5,
+    y + height * 0.12,
+    left + 1.4,
+    y - height * 0.22,
+    left + 1.5,
+    top + 8,
+  );
+  context.quadraticCurveTo(left + 4, top + 1, left + 8, top + drift);
+  context.closePath();
+}
+
+function traceCloseArm(context) {
+  context.beginPath();
+  context.moveTo(-34, -27);
+  context.quadraticCurveTo(-31, -34, -25, -33);
+  context.bezierCurveTo(-13, -23, -4, -13, 3, -5);
+  context.bezierCurveTo(13, 5, 24, 18, 34, 27);
+  context.quadraticCurveTo(35, 33, 28, 35);
+  context.bezierCurveTo(18, 27, 7, 14, -2, 5);
+  context.bezierCurveTo(-11, -5, -22, -16, -34, -27);
+  context.closePath();
+}
+
+function traceCheckMark(context, offsetX = 0, offsetY = 0) {
+  context.beginPath();
+  context.moveTo(-38 + offsetX, -2 + offsetY);
+  context.quadraticCurveTo(-34 + offsetX, -10 + offsetY, -27 + offsetX, -6 + offsetY);
+  context.bezierCurveTo(
+    -20 + offsetX,
+    1 + offsetY,
+    -14 + offsetX,
+    9 + offsetY,
+    -8 + offsetX,
+    15 + offsetY,
+  );
+  context.bezierCurveTo(
+    2 + offsetX,
+    3 + offsetY,
+    20 + offsetX,
+    -21 + offsetY,
+    33 + offsetX,
+    -34 + offsetY,
+  );
+  context.quadraticCurveTo(40 + offsetX, -37 + offsetY, 42 + offsetX, -29 + offsetY);
+  context.bezierCurveTo(
+    27 + offsetX,
+    -12 + offsetY,
+    6 + offsetX,
+    17 + offsetY,
+    -6 + offsetX,
+    31 + offsetY,
+  );
+  context.quadraticCurveTo(-12 + offsetX, 34 + offsetY, -17 + offsetX, 28 + offsetY);
+  context.bezierCurveTo(
+    -24 + offsetX,
+    18 + offsetY,
+    -32 + offsetX,
+    8 + offsetY,
+    -38 + offsetX,
+    -2 + offsetY,
+  );
+  context.closePath();
+}
+
+function traceSpeakerBody(context, offsetX = 0, offsetY = 0) {
+  context.beginPath();
+  context.moveTo(-42 + offsetX, -16 + offsetY);
+  context.quadraticCurveTo(-39 + offsetX, -21 + offsetY, -33 + offsetX, -20 + offsetY);
+  context.quadraticCurveTo(-25 + offsetX, -18 + offsetY, -18 + offsetX, -20 + offsetY);
+  context.bezierCurveTo(
+    -10 + offsetX,
+    -28 + offsetY,
+    -2 + offsetX,
+    -36 + offsetY,
+    7 + offsetX,
+    -41 + offsetY,
+  );
+  context.quadraticCurveTo(13 + offsetX, -42 + offsetY, 14 + offsetX, -35 + offsetY);
+  context.bezierCurveTo(
+    12 + offsetX,
+    -13 + offsetY,
+    15 + offsetX,
+    14 + offsetY,
+    13 + offsetX,
+    36 + offsetY,
+  );
+  context.quadraticCurveTo(10 + offsetX, 43 + offsetY, 4 + offsetX, 39 + offsetY);
+  context.bezierCurveTo(
+    -4 + offsetX,
+    32 + offsetY,
+    -11 + offsetX,
+    24 + offsetY,
+    -18 + offsetX,
+    19 + offsetY,
+  );
+  context.quadraticCurveTo(-27 + offsetX, 21 + offsetY, -36 + offsetX, 19 + offsetY);
+  context.quadraticCurveTo(-42 + offsetX, 18 + offsetY, -42 + offsetX, 12 + offsetY);
+  context.quadraticCurveTo(-45 + offsetX, -2 + offsetY, -42 + offsetX, -16 + offsetY);
+  context.closePath();
+}
+
+function traceSoundRibbon(context, x, halfHeight, width, phase = 0) {
+  const drift = Math.sin(phase * 11.3) * 1.4;
+  context.beginPath();
+  context.moveTo(x, -halfHeight + drift);
+  context.bezierCurveTo(
+    x + width * 0.72,
+    -halfHeight * 0.72,
+    x + width,
+    -halfHeight * 0.32,
+    x + width,
+    0,
+  );
+  context.bezierCurveTo(
+    x + width,
+    halfHeight * 0.35,
+    x + width * 0.72,
+    halfHeight * 0.75,
+    x,
+    halfHeight - drift,
+  );
+  context.quadraticCurveTo(x - 3.5, halfHeight - 3, x + 1.5, halfHeight - 8);
+  context.bezierCurveTo(
+    x + width * 0.5,
+    halfHeight * 0.58,
+    x + width * 0.7,
+    halfHeight * 0.25,
+    x + width * 0.69,
+    0,
+  );
+  context.bezierCurveTo(
+    x + width * 0.68,
+    -halfHeight * 0.24,
+    x + width * 0.49,
+    -halfHeight * 0.58,
+    x + 1.5,
+    -halfHeight + 8,
+  );
+  context.quadraticCurveTo(x - 3, -halfHeight + 3, x, -halfHeight + drift);
+  context.closePath();
+}
+
 function drawOwlIcon(context, color, secondary) {
   context.fillStyle = secondary;
   context.beginPath();
-  context.moveTo(-35, -28);
-  context.lineTo(-15, -43);
-  context.quadraticCurveTo(0, -51, 15, -43);
-  context.lineTo(35, -28);
-  context.quadraticCurveTo(42, 6, 27, 35);
-  context.quadraticCurveTo(0, 51, -27, 35);
-  context.quadraticCurveTo(-42, 6, -35, -28);
+  context.moveTo(-36, -26);
+  context.quadraticCurveTo(-28, -36, -17, -44);
+  context.quadraticCurveTo(-6, -39, 1, -45);
+  context.quadraticCurveTo(11, -39, 19, -44);
+  context.quadraticCurveTo(31, -36, 36, -25);
+  context.bezierCurveTo(43, -6, 40, 20, 26, 37);
+  context.bezierCurveTo(10, 49, -10, 48, -28, 35);
+  context.bezierCurveTo(-42, 18, -43, -8, -36, -26);
   context.closePath();
   context.fill();
   context.strokeStyle = color;
+  context.lineWidth = 6;
   context.stroke();
-  context.fillStyle = '#fff8e8';
-  for (const eyeX of [-15, 15]) {
-    context.beginPath();
-    context.arc(eyeX, -13, 13, 0, Math.PI * 2);
-    context.fill();
-    context.stroke();
-    context.fillStyle = color;
-    context.beginPath();
-    context.arc(eyeX, -12, 5, 0, Math.PI * 2);
-    context.fill();
-    context.fillStyle = '#fff8e8';
-  }
-  context.fillStyle = color;
+
+  context.fillStyle = 'rgba(104, 73, 54, 0.3)';
   context.beginPath();
-  context.moveTo(-7, 5);
-  context.lineTo(7, 5);
-  context.lineTo(0, 14);
+  context.moveTo(2, 42);
+  context.bezierCurveTo(22, 36, 34, 18, 35, -5);
+  context.bezierCurveTo(29, 19, 17, 33, 2, 42);
   context.closePath();
   context.fill();
-  context.lineWidth = 4;
-  for (let row = 0; row < 2; row += 1) {
-    for (let column = -1; column <= 1; column += 1) {
-      const featherX = column * 14 + (row % 2 ? 7 : 0);
-      context.beginPath();
-      context.arc(featherX, 22 + row * 11, 8, 0.18, Math.PI - 0.18);
-      context.stroke();
-    }
+
+  context.fillStyle = 'rgba(255, 229, 166, 0.52)';
+  context.beginPath();
+  context.moveTo(-31, -27);
+  context.bezierCurveTo(-24, -36, -13, -39, -3, -41);
+  context.bezierCurveTo(-13, -27, -24, -17, -36, -8);
+  context.bezierCurveTo(-36, -17, -34, -24, -31, -27);
+  context.closePath();
+  context.fill();
+
+  for (const [eyeX, phase] of [[-15, 0.17], [15, 0.53]]) {
+    context.fillStyle = ICON_CREAM;
+    traceOrganicOval(context, eyeX, -12, 13.5, 14, phase);
+    context.fill();
+    context.strokeStyle = color;
+    context.lineWidth = 3.8;
+    context.stroke();
+    context.fillStyle = ICON_SHADOW;
+    traceOrganicOval(context, eyeX + 0.8, -11, 5.2, 6.5, phase + 0.4);
+    context.fill();
+    context.fillStyle = ICON_LIGHT;
+    traceOrganicOval(context, eyeX - 1.2, -14.2, 1.7, 2.1, phase + 0.8);
+    context.fill();
+  }
+
+  context.fillStyle = ICON_MID;
+  context.beginPath();
+  context.moveTo(-7, 4);
+  context.quadraticCurveTo(0, 7, 7, 4.5);
+  context.quadraticCurveTo(3, 12, -0.5, 15);
+  context.quadraticCurveTo(-4, 11, -7, 4);
+  context.closePath();
+  context.fill();
+  context.strokeStyle = color;
+  context.lineWidth = 2.4;
+  context.stroke();
+
+  context.strokeStyle = ICON_SHADOW;
+  context.lineWidth = 3.3;
+  for (const [offsetX, offsetY, bend] of [
+    [-17, 21, -2], [-2, 20, 2], [14, 22, -2], [-10, 31, 2], [7, 32, -1],
+  ]) {
+    context.beginPath();
+    context.moveTo(offsetX - 6, offsetY - 1);
+    context.quadraticCurveTo(offsetX + bend, offsetY + 7, offsetX + 7, offsetY);
+    context.stroke();
   }
 }
 
 function drawCatIcon(context, color, secondary) {
   context.fillStyle = secondary;
   context.beginPath();
-  context.moveTo(-34, -31);
-  context.lineTo(-28, -48);
-  context.lineTo(-10, -37);
-  context.quadraticCurveTo(0, -41, 10, -37);
-  context.lineTo(28, -48);
-  context.lineTo(34, -31);
-  context.quadraticCurveTo(42, 1, 27, 29);
-  context.quadraticCurveTo(0, 45, -27, 29);
-  context.quadraticCurveTo(-42, 1, -34, -31);
+  context.moveTo(-35, -29);
+  context.quadraticCurveTo(-34, -43, -28, -49);
+  context.quadraticCurveTo(-18, -44, -10, -36);
+  context.quadraticCurveTo(0, -41, 11, -36);
+  context.quadraticCurveTo(21, -44, 29, -48);
+  context.quadraticCurveTo(35, -39, 35, -28);
+  context.bezierCurveTo(43, -8, 40, 18, 27, 31);
+  context.bezierCurveTo(11, 44, -12, 43, -28, 29);
+  context.bezierCurveTo(-41, 15, -43, -10, -35, -29);
   context.closePath();
   context.fill();
   context.strokeStyle = color;
+  context.lineWidth = 6;
   context.stroke();
-  context.fillStyle = color;
-  for (const eyeX of [-13, 13]) {
-    context.beginPath();
-    context.ellipse(eyeX, -8, 4, 8, 0, 0, Math.PI * 2);
-    context.fill();
-  }
+
+  context.fillStyle = 'rgba(100, 66, 48, 0.28)';
   context.beginPath();
-  context.moveTo(-5, 8);
-  context.lineTo(5, 8);
-  context.lineTo(0, 14);
+  context.moveTo(2, 38);
+  context.bezierCurveTo(22, 34, 35, 16, 36, -9);
+  context.bezierCurveTo(28, 20, 16, 32, 2, 38);
   context.closePath();
   context.fill();
-  context.lineWidth = 4;
+
+  context.fillStyle = 'rgba(255, 228, 165, 0.48)';
+  context.beginPath();
+  context.moveTo(-31, -30);
+  context.quadraticCurveTo(-27, -40, -24, -42);
+  context.quadraticCurveTo(-17, -37, -12, -31);
+  context.bezierCurveTo(-20, -26, -27, -18, -34, -8);
+  context.quadraticCurveTo(-35, -20, -31, -30);
+  context.closePath();
+  context.fill();
+
+  for (const [eyeX, phase] of [[-13, 0.1], [13, 0.7]]) {
+    context.fillStyle = ICON_LIGHT;
+    traceOrganicOval(context, eyeX, -8, 7.5, 10.5, phase);
+    context.fill();
+    context.strokeStyle = color;
+    context.lineWidth = 2.6;
+    context.stroke();
+    context.fillStyle = ICON_SHADOW;
+    traceOrganicOval(context, eyeX + 0.4, -7, 2.7, 7, phase + 0.3);
+    context.fill();
+  }
+
+  context.fillStyle = ICON_MID;
+  context.beginPath();
+  context.moveTo(-5, 8);
+  context.quadraticCurveTo(0, 6, 5, 8);
+  context.quadraticCurveTo(2, 13, 0, 14);
+  context.quadraticCurveTo(-3, 12, -5, 8);
+  context.closePath();
+  context.fill();
+  context.strokeStyle = color;
+  context.lineWidth = 2.2;
+  context.stroke();
+
+  context.strokeStyle = color;
+  context.lineWidth = 3;
+  context.beginPath();
+  context.moveTo(-7, 15);
+  context.quadraticCurveTo(0, 21, 7, 15);
+  context.stroke();
   for (const side of [-1, 1]) {
     context.beginPath();
     context.moveTo(side * 8, 15);
-    context.lineTo(side * 43, 9);
+    context.quadraticCurveTo(side * 27, 9, side * 43, 11);
     context.moveTo(side * 8, 19);
-    context.lineTo(side * 43, 23);
+    context.quadraticCurveTo(side * 27, 25, side * 43, 22);
     context.stroke();
   }
 }
 
 function drawToadIcon(context, color, secondary) {
   context.fillStyle = secondary;
-  context.beginPath();
-  context.ellipse(0, 14, 42, 29, 0, 0, Math.PI * 2);
+  traceOrganicOval(context, 0, 15, 42, 29, 0.21);
   context.fill();
   context.strokeStyle = color;
+  context.lineWidth = 6;
   context.stroke();
-  for (const eyeX of [-22, 22]) {
+
+  context.fillStyle = 'rgba(91, 65, 45, 0.31)';
+  context.beginPath();
+  context.moveTo(-2, 40);
+  context.bezierCurveTo(20, 38, 36, 28, 41, 11);
+  context.bezierCurveTo(31, 27, 16, 35, -2, 40);
+  context.closePath();
+  context.fill();
+  context.fillStyle = 'rgba(255, 231, 167, 0.5)';
+  context.beginPath();
+  context.moveTo(-35, 8);
+  context.bezierCurveTo(-28, -1, -14, -5, -2, 0);
+  context.bezierCurveTo(-15, 5, -25, 12, -35, 19);
+  context.quadraticCurveTo(-38, 13, -35, 8);
+  context.closePath();
+  context.fill();
+
+  for (const [eyeX, phase] of [[-22, 0.31], [22, 0.74]]) {
     context.fillStyle = secondary;
-    context.beginPath();
-    context.arc(eyeX, -13, 14, 0, Math.PI * 2);
+    traceOrganicOval(context, eyeX, -12, 14.5, 15, phase);
     context.fill();
+    context.strokeStyle = color;
+    context.lineWidth = 5;
     context.stroke();
-    context.fillStyle = color;
-    context.beginPath();
-    context.arc(eyeX, -13, 5, 0, Math.PI * 2);
+    context.fillStyle = ICON_SHADOW;
+    traceOrganicOval(context, eyeX + 0.7, -11, 5, 6, phase + 0.2);
+    context.fill();
+    context.fillStyle = ICON_LIGHT;
+    traceOrganicOval(context, eyeX - 1, -14, 1.6, 2.1, phase + 0.6);
     context.fill();
   }
-  context.lineWidth = 4;
+
+  context.strokeStyle = color;
+  context.lineWidth = 3.5;
   context.beginPath();
   context.moveTo(-13, 22);
-  context.quadraticCurveTo(0, 31, 13, 22);
+  context.quadraticCurveTo(0, 30, 14, 21);
   context.stroke();
-  context.beginPath();
-  context.moveTo(-35, 30);
-  context.lineTo(-49, 42);
-  context.moveTo(35, 30);
-  context.lineTo(49, 42);
-  context.stroke();
+
+  for (const side of [-1, 1]) {
+    context.beginPath();
+    context.moveTo(side * 32, 29);
+    context.quadraticCurveTo(side * 43, 33, side * 49, 42);
+    context.quadraticCurveTo(side * 40, 41, side * 34, 38);
+    context.stroke();
+  }
+
+  context.fillStyle = ICON_MID;
+  for (const [spotX, spotY, radius] of [[-17, 9, 3.2], [12, 7, 2.7], [25, 20, 2.5]]) {
+    traceOrganicOval(context, spotX, spotY, radius, radius * 0.78, spotX * 0.04);
+    context.fill();
+  }
 }
 
 function drawWandIcon(context, color, secondary) {
+  context.fillStyle = 'rgba(72, 48, 38, 0.34)';
+  context.beginPath();
+  context.moveTo(-37, 41);
+  context.bezierCurveTo(-32, 33, 13, -22, 26, -31);
+  context.quadraticCurveTo(31, -31, 32, -25);
+  context.bezierCurveTo(19, -12, -24, 38, -32, 44);
+  context.quadraticCurveTo(-36, 45, -37, 41);
+  context.closePath();
+  context.fill();
+
+  context.fillStyle = ICON_MID;
+  context.beginPath();
+  context.moveTo(-41, 35);
+  context.bezierCurveTo(-33, 27, 12, -27, 24, -35);
+  context.quadraticCurveTo(29, -34, 30, -29);
+  context.bezierCurveTo(17, -16, -26, 33, -36, 39);
+  context.quadraticCurveTo(-40, 40, -41, 35);
+  context.closePath();
+  context.fill();
   context.strokeStyle = color;
-  context.lineWidth = 11;
-  context.beginPath();
-  context.moveTo(-36, 36);
-  context.lineTo(25, -28);
+  context.lineWidth = 5;
   context.stroke();
-  context.strokeStyle = secondary;
-  context.lineWidth = 4;
+
+  context.fillStyle = 'rgba(255, 229, 165, 0.66)';
   context.beginPath();
-  context.moveTo(-31, 31);
-  context.lineTo(27, -30);
-  context.stroke();
+  context.moveTo(-33, 30);
+  context.bezierCurveTo(-21, 15, 6, -17, 20, -29);
+  context.quadraticCurveTo(16, -21, 5, -7, -7, 7);
+  context.bezierCurveTo(-18, 19, -27, 28, -33, 30);
+  context.closePath();
+  context.fill();
+
+  context.fillStyle = ICON_SHADOW;
+  context.beginPath();
+  context.moveTo(-42, 34);
+  context.quadraticCurveTo(-37, 35, -33, 39);
+  context.quadraticCurveTo(-36, 45, -42, 42);
+  context.quadraticCurveTo(-45, 39, -42, 34);
+  context.closePath();
+  context.fill();
   drawStarIconAt(context, 32, -35, 15, secondary, color);
+
+  context.fillStyle = ICON_LIGHT;
+  for (const [sparkX, sparkY, radius, phase] of [
+    [11, -37, 3.4, 0.2], [39, -13, 4.1, 0.6], [47, -37, 2.8, 0.9],
+  ]) {
+    traceOrganicOval(context, sparkX, sparkY, radius, radius * 0.72, phase);
+    context.fill();
+  }
 }
 
 function drawEyesIcon(context, color, secondary) {
-  context.fillStyle = secondary;
-  for (const eyeX of [-22, 22]) {
-    context.beginPath();
-    context.ellipse(eyeX, 0, 19, 27, 0, 0, Math.PI * 2);
-    context.fill();
-    context.strokeStyle = color;
-    context.stroke();
-    context.fillStyle = color;
-    context.beginPath();
-    context.ellipse(eyeX, 2, 7, 14, 0, 0, Math.PI * 2);
+  for (const [eyeX, phase] of [[-22, 0.15], [22, 0.61]]) {
+    context.fillStyle = 'rgba(86, 58, 43, 0.3)';
+    traceOrganicOval(context, eyeX + 2, 4, 20, 28, phase + 0.2);
     context.fill();
     context.fillStyle = secondary;
+    traceOrganicOval(context, eyeX, 0, 19, 27, phase);
+    context.fill();
+    context.strokeStyle = color;
+    context.lineWidth = 5;
+    context.stroke();
+    context.fillStyle = 'rgba(255, 232, 171, 0.5)';
+    context.beginPath();
+    context.moveTo(eyeX - 13, -13);
+    context.bezierCurveTo(eyeX - 8, -23, eyeX + 2, -25, eyeX + 8, -19);
+    context.bezierCurveTo(eyeX + 1, -14, eyeX - 7, -10, eyeX - 13, -13);
+    context.closePath();
+    context.fill();
+    context.fillStyle = ICON_SHADOW;
+    traceOrganicOval(context, eyeX + 0.7, 2, 7, 14, phase + 0.35);
+    context.fill();
+    context.fillStyle = ICON_LIGHT;
+    traceOrganicOval(context, eyeX - 1.4, -4, 2.1, 3.7, phase + 0.7);
+    context.fill();
   }
 }
 
 function drawMapIcon(context, color, secondary) {
   context.fillStyle = secondary;
   context.beginPath();
-  context.moveTo(-42, -31);
-  context.lineTo(-13, -39);
-  context.lineTo(14, -29);
-  context.lineTo(42, -38);
-  context.lineTo(42, 32);
-  context.lineTo(14, 40);
-  context.lineTo(-13, 30);
-  context.lineTo(-42, 39);
+  context.moveTo(-43, -31);
+  context.quadraticCurveTo(-28, -35, -13, -39);
+  context.quadraticCurveTo(1, -35, 14, -29);
+  context.quadraticCurveTo(29, -34, 42, -38);
+  context.bezierCurveTo(44, -17, 41, 10, 43, 32);
+  context.quadraticCurveTo(29, 35, 14, 40);
+  context.quadraticCurveTo(0, 35, -13, 30);
+  context.quadraticCurveTo(-28, 35, -42, 39);
+  context.bezierCurveTo(-44, 18, -41, -8, -43, -31);
   context.closePath();
   context.fill();
   context.strokeStyle = color;
+  context.lineWidth = 5.5;
   context.stroke();
-  context.lineWidth = 4;
+
+  context.fillStyle = 'rgba(104, 73, 48, 0.24)';
   context.beginPath();
-  context.moveTo(-13, -39);
-  context.lineTo(-13, 30);
   context.moveTo(14, -29);
-  context.lineTo(14, 40);
+  context.quadraticCurveTo(29, -34, 42, -38);
+  context.bezierCurveTo(44, -12, 41, 13, 43, 32);
+  context.quadraticCurveTo(29, 35, 14, 40);
+  context.bezierCurveTo(17, 18, 12, -7, 14, -29);
+  context.closePath();
+  context.fill();
+
+  context.fillStyle = 'rgba(255, 234, 176, 0.52)';
+  context.beginPath();
+  context.moveTo(-39, -27);
+  context.quadraticCurveTo(-27, -31, -15, -34);
+  context.bezierCurveTo(-16, -24, -18, -13, -17, -4);
+  context.quadraticCurveTo(-29, -1, -40, 3);
+  context.bezierCurveTo(-41, -8, -40, -19, -39, -27);
+  context.closePath();
+  context.fill();
+
+  context.strokeStyle = color;
+  context.lineWidth = 3;
+  context.beginPath();
+  context.moveTo(-13, -38);
+  context.bezierCurveTo(-15, -18, -11, 9, -13, 30);
+  context.moveTo(14, -29);
+  context.bezierCurveTo(12, -8, 17, 18, 14, 40);
   context.stroke();
-  context.setLineDash([7, 6]);
+
+  context.strokeStyle = ICON_MID;
+  context.lineWidth = 4.5;
   context.beginPath();
   context.moveTo(-31, 18);
-  context.quadraticCurveTo(-3, -21, 27, 5);
+  context.bezierCurveTo(-22, 4, -12, -16, 1, -13);
+  context.bezierCurveTo(12, -11, 17, 1, 27, 5);
   context.stroke();
-  context.setLineDash([]);
   drawStarIconAt(context, 28, 5, 10, color, secondary);
 }
 
 function drawCardsIcon(context, color, secondary) {
   context.save();
   context.rotate(-0.16);
+  context.fillStyle = 'rgba(78, 52, 40, 0.3)';
+  traceOrganicCard(context, -4, 3, 56, 74, 0.12);
+  context.fill();
   context.fillStyle = secondary;
-  traceRoundedRect(context, -35, -37, 56, 74, 7);
+  traceOrganicCard(context, -7, -1, 56, 74, 0.34);
   context.fill();
   context.strokeStyle = color;
+  context.lineWidth = 5;
   context.stroke();
+  context.fillStyle = 'rgba(255, 232, 171, 0.5)';
+  context.beginPath();
+  context.moveTo(-28, -31);
+  context.bezierCurveTo(-17, -35, -5, -34, 4, -31);
+  context.quadraticCurveTo(-8, -24, -27, -20);
+  context.quadraticCurveTo(-30, -25, -28, -31);
+  context.closePath();
+  context.fill();
   context.restore();
+
   context.save();
   context.rotate(0.13);
-  context.fillStyle = '#fff8e8';
-  traceRoundedRect(context, -17, -37, 56, 74, 7);
+  context.fillStyle = 'rgba(78, 52, 40, 0.32)';
+  traceOrganicCard(context, 13, 3, 56, 74, 0.68);
+  context.fill();
+  context.fillStyle = ICON_CREAM;
+  traceOrganicCard(context, 10, -1, 56, 74, 0.83);
   context.fill();
   context.strokeStyle = color;
+  context.lineWidth = 5;
   context.stroke();
+  context.fillStyle = 'rgba(255, 238, 190, 0.72)';
+  context.beginPath();
+  context.moveTo(-11, -30);
+  context.bezierCurveTo(0, -35, 13, -34, 22, -30);
+  context.quadraticCurveTo(9, -24, -9, -20);
+  context.quadraticCurveTo(-13, -25, -11, -30);
+  context.closePath();
+  context.fill();
   drawOwlIconMini(context, 11, 1, color, secondary);
   context.restore();
 }
 
 function drawReplayIcon(context, color, secondary) {
+  context.strokeStyle = 'rgba(74, 49, 38, 0.34)';
+  context.lineWidth = 13;
+  context.beginPath();
+  context.moveTo(-28, -19);
+  context.bezierCurveTo(-10, -43, 24, -37, 34, -13);
+  context.bezierCurveTo(44, 11, 27, 38, 2, 40);
+  context.bezierCurveTo(-18, 42, -34, 29, -37, 13);
+  context.stroke();
+
   context.strokeStyle = color;
   context.lineWidth = 9;
   context.beginPath();
-  context.arc(2, 2, 31, -0.8, Math.PI * 1.45);
+  context.moveTo(-29, -22);
+  context.bezierCurveTo(-10, -42, 21, -36, 32, -14);
+  context.bezierCurveTo(42, 8, 27, 34, 3, 37);
+  context.bezierCurveTo(-17, 39, -32, 27, -35, 12);
   context.stroke();
+
+  context.strokeStyle = ICON_LIGHT;
+  context.lineWidth = 3;
+  context.beginPath();
+  context.moveTo(-18, -29);
+  context.bezierCurveTo(-1, -39, 19, -31, 27, -16);
+  context.stroke();
+
   context.fillStyle = secondary;
   context.beginPath();
-  context.moveTo(-39, -13);
-  context.lineTo(-12, -17);
-  context.lineTo(-27, 5);
+  context.moveTo(-39, -16);
+  context.quadraticCurveTo(-26, -19, -12, -18);
+  context.quadraticCurveTo(-20, -7, -28, 6);
+  context.quadraticCurveTo(-31, -6, -39, -16);
   context.closePath();
   context.fill();
   context.strokeStyle = color;
   context.lineWidth = 4;
   context.stroke();
+
+  context.fillStyle = ICON_LIGHT;
+  context.beginPath();
+  context.moveTo(-34, -14);
+  context.quadraticCurveTo(-27, -15, -20, -15);
+  context.quadraticCurveTo(-26, -10, -29, -5);
+  context.quadraticCurveTo(-31, -10, -34, -14);
+  context.closePath();
+  context.fill();
 }
 
 function drawQuillIcon(context, color, secondary) {
+  context.fillStyle = 'rgba(76, 50, 39, 0.33)';
+  context.beginPath();
+  context.moveTo(-30, 41);
+  context.bezierCurveTo(-25, 0, -1, -36, 40, -40);
+  context.bezierCurveTo(38, -7, 16, 29, -30, 41);
+  context.closePath();
+  context.fill();
+
   context.fillStyle = secondary;
   context.strokeStyle = color;
   context.beginPath();
@@ -2528,109 +2982,310 @@ function drawQuillIcon(context, color, secondary) {
   context.bezierCurveTo(39, -9, 14, 27, -33, 37);
   context.closePath();
   context.fill();
-  context.stroke();
   context.lineWidth = 5;
+  context.stroke();
+
+  context.fillStyle = 'rgba(255, 232, 171, 0.54)';
+  context.beginPath();
+  context.moveTo(-25, 26);
+  context.bezierCurveTo(-18, -2, 2, -29, 29, -37);
+  context.bezierCurveTo(13, -20, -1, -2, -12, 17);
+  context.quadraticCurveTo(-19, 24, -25, 26);
+  context.closePath();
+  context.fill();
+
+  context.strokeStyle = color;
+  context.lineWidth = 4.5;
   context.beginPath();
   context.moveTo(-39, 45);
-  context.lineTo(26, -28);
+  context.bezierCurveTo(-20, 25, 5, -4, 27, -29);
   context.stroke();
   for (const offset of [-18, -3, 12]) {
     context.beginPath();
     context.moveTo(offset, -offset * 0.8 - 4);
-    context.lineTo(offset + 20, -offset * 0.8 - 9);
+    context.quadraticCurveTo(
+      offset + 10,
+      -offset * 0.8 - 3,
+      offset + 20,
+      -offset * 0.8 - 9,
+    );
     context.stroke();
   }
+
+  context.fillStyle = ICON_MID;
+  context.beginPath();
+  context.moveTo(-42, 47);
+  context.quadraticCurveTo(-36, 39, -31, 36);
+  context.quadraticCurveTo(-34, 44, -38, 49);
+  context.quadraticCurveTo(-41, 51, -42, 47);
+  context.closePath();
+  context.fill();
 }
 
 function drawSatchelIcon(context, color, secondary) {
-  context.strokeStyle = color;
-  context.lineWidth = 8;
+  context.fillStyle = 'rgba(72, 48, 38, 0.34)';
   context.beginPath();
-  context.arc(0, -22, 25, Math.PI, 0);
-  context.stroke();
-  context.fillStyle = secondary;
-  traceRoundedRect(context, -39, -25, 78, 64, 12);
+  context.moveTo(-29, -17);
+  context.bezierCurveTo(-31, -39, -17, -48, 1, -47);
+  context.bezierCurveTo(20, -47, 31, -37, 29, -16);
+  context.quadraticCurveTo(23, -12, 18, -17);
+  context.bezierCurveTo(19, -30, 12, -36, 1, -36);
+  context.bezierCurveTo(-11, -37, -18, -30, -18, -17);
+  context.quadraticCurveTo(-23, -12, -29, -17);
+  context.closePath();
   context.fill();
-  context.stroke();
+
+  context.fillStyle = ICON_SHADOW;
   context.beginPath();
-  context.moveTo(-36, -15);
-  context.quadraticCurveTo(0, 18, 36, -15);
+  context.moveTo(-30, -21);
+  context.bezierCurveTo(-31, -41, -16, -49, 1, -48);
+  context.bezierCurveTo(19, -48, 30, -38, 29, -18);
+  context.quadraticCurveTo(24, -14, 19, -18);
+  context.bezierCurveTo(19, -31, 12, -38, 1, -38);
+  context.bezierCurveTo(-11, -38, -19, -31, -19, -19);
+  context.quadraticCurveTo(-24, -15, -30, -21);
+  context.closePath();
+  context.fill();
+  context.strokeStyle = color;
+  context.lineWidth = 4.5;
   context.stroke();
-  drawOwlIconMini(context, 0, 13, color, '#fff8e8');
+
+  context.fillStyle = 'rgba(255, 226, 157, 0.42)';
+  context.beginPath();
+  context.moveTo(-25, -24);
+  context.bezierCurveTo(-24, -37, -13, -44, -2, -43);
+  context.bezierCurveTo(-11, -39, -17, -31, -17, -22);
+  context.quadraticCurveTo(-21, -20, -25, -24);
+  context.closePath();
+  context.fill();
+
+  context.fillStyle = 'rgba(71, 47, 37, 0.34)';
+  context.beginPath();
+  context.moveTo(-39, -19);
+  context.bezierCurveTo(-44, -2, -42, 25, -34, 42);
+  context.bezierCurveTo(-13, 49, 17, 49, 37, 41);
+  context.bezierCurveTo(44, 23, 44, -2, 39, -18);
+  context.bezierCurveTo(19, -25, -19, -26, -39, -19);
+  context.closePath();
+  context.fill();
+
+  context.fillStyle = secondary;
+  context.beginPath();
+  context.moveTo(-39, -24);
+  context.bezierCurveTo(-45, -5, -42, 22, -35, 39);
+  context.bezierCurveTo(-15, 46, 17, 47, 36, 39);
+  context.bezierCurveTo(43, 21, 44, -4, 38, -23);
+  context.bezierCurveTo(19, -29, -19, -30, -39, -24);
+  context.closePath();
+  context.fill();
+  context.strokeStyle = color;
+  context.lineWidth = 6;
+  context.stroke();
+
+  context.fillStyle = 'rgba(98, 68, 48, 0.3)';
+  context.beginPath();
+  context.moveTo(-38, -20);
+  context.bezierCurveTo(-19, -28, 18, -27, 38, -21);
+  context.quadraticCurveTo(24, 9, 0, 19);
+  context.quadraticCurveTo(-24, 8, -38, -20);
+  context.closePath();
+  context.fill();
+  context.strokeStyle = color;
+  context.lineWidth = 4;
+  context.stroke();
+
+  context.fillStyle = 'rgba(255, 234, 178, 0.5)';
+  context.beginPath();
+  context.moveTo(-34, -21);
+  context.bezierCurveTo(-23, -25, -10, -25, 2, -24);
+  context.quadraticCurveTo(-12, -17, -29, -11);
+  context.quadraticCurveTo(-34, -15, -34, -21);
+  context.closePath();
+  context.fill();
+
+  drawOwlIconMini(context, 0, 13, color, ICON_CREAM);
 }
 
 function drawCompassIcon(context, color, secondary) {
+  context.fillStyle = 'rgba(72, 48, 38, 0.34)';
+  traceOrganicOval(context, 3, 5, 43, 43, 0.31);
+  context.fill();
   context.fillStyle = secondary;
-  context.beginPath();
-  context.arc(0, 0, 42, 0, Math.PI * 2);
+  traceOrganicOval(context, 0, 0, 42, 42, 0.12);
   context.fill();
   context.strokeStyle = color;
+  context.lineWidth = 6;
   context.stroke();
-  context.fillStyle = color;
+
+  context.fillStyle = ICON_CREAM;
+  traceOrganicOval(context, -1, 0, 33, 34, 0.65);
+  context.fill();
+  context.strokeStyle = ICON_SHADOW;
+  context.lineWidth = 3;
+  context.stroke();
+
+  context.fillStyle = 'rgba(255, 238, 189, 0.7)';
   context.beginPath();
-  context.moveTo(0, -34);
-  context.lineTo(10, -7);
-  context.lineTo(0, 31);
-  context.lineTo(-10, -7);
+  context.moveTo(-26, -20);
+  context.bezierCurveTo(-17, -31, -4, -34, 8, -30);
+  context.bezierCurveTo(-2, -23, -14, -17, -26, -12);
+  context.quadraticCurveTo(-29, -16, -26, -20);
   context.closePath();
   context.fill();
-  context.fillStyle = '#fff8e8';
+
+  context.strokeStyle = ICON_MID;
+  context.lineWidth = 2.5;
+  for (const [startX, startY, controlX, controlY, endX, endY] of [
+    [0, -31, 1.5, -27, 1, -23],
+    [30, 0, 26, 1, 23, 0],
+    [0, 31, -1, 27, 0, 23],
+    [-30, 0, -26, -1, -23, 1],
+  ]) {
+    context.beginPath();
+    context.moveTo(startX, startY);
+    context.quadraticCurveTo(controlX, controlY, endX, endY);
+    context.stroke();
+  }
+
+  context.fillStyle = ICON_SHADOW;
   context.beginPath();
-  context.arc(0, 0, 5, 0, Math.PI * 2);
+  context.moveTo(-1, 31);
+  context.quadraticCurveTo(-9, 8, -8, -4);
+  context.quadraticCurveTo(-4, -7, 1, -5);
+  context.quadraticCurveTo(7, 8, -1, 31);
+  context.closePath();
+  context.fill();
+
+  context.fillStyle = color;
+  context.beginPath();
+  context.moveTo(1, -33);
+  context.quadraticCurveTo(10, -10, 8, 4);
+  context.quadraticCurveTo(3, 7, -2, 5);
+  context.quadraticCurveTo(-8, -10, 1, -33);
+  context.closePath();
+  context.fill();
+
+  context.fillStyle = ICON_MID;
+  traceOrganicOval(context, 0, 0, 6, 6.5, 0.44);
+  context.fill();
+  context.strokeStyle = color;
+  context.lineWidth = 2;
+  context.stroke();
+  context.fillStyle = ICON_LIGHT;
+  traceOrganicOval(context, -1.8, -2, 1.8, 1.5, 0.83);
   context.fill();
 }
 
 function drawCloseIcon(context, color, secondary) {
-  context.strokeStyle = color;
-  context.lineWidth = 10;
-  context.beginPath();
-  context.moveTo(-28, -28);
-  context.quadraticCurveTo(0, 0, 28, 28);
-  context.moveTo(28, -28);
-  context.quadraticCurveTo(0, 0, -28, 28);
-  context.stroke();
-  context.fillStyle = secondary;
-  context.beginPath();
-  context.moveTo(-5, -1);
-  context.bezierCurveTo(-4, -6, 4, -5, 5, 0);
-  context.bezierCurveTo(4, 5, -4, 6, -5, -1);
-  context.closePath();
+  context.save();
+  context.translate(3, 4);
+  context.fillStyle = 'rgba(72, 48, 38, 0.4)';
+  traceCloseArm(context);
   context.fill();
+  context.scale(1, -1);
+  traceCloseArm(context);
+  context.fill();
+  context.restore();
+
+  context.fillStyle = secondary;
+  traceCloseArm(context);
+  context.fill();
+  context.strokeStyle = color;
+  context.lineWidth = 4;
+  context.stroke();
+  context.save();
+  context.scale(1, -1);
+  traceCloseArm(context);
+  context.fill();
+  context.stroke();
+  context.restore();
+
+  context.strokeStyle = 'rgba(255, 235, 180, 0.78)';
+  context.lineWidth = 2.6;
+  for (const direction of [-1, 1]) {
+    context.beginPath();
+    context.moveTo(-25, direction * -25);
+    context.bezierCurveTo(-15, direction * -16, -7, direction * -7, 1, direction * 1);
+    context.stroke();
+  }
+
+  context.fillStyle = ICON_MID;
+  traceOrganicOval(context, 0, 0, 5.5, 5, 0.41);
+  context.fill();
+  context.strokeStyle = color;
+  context.lineWidth = 2;
+  context.stroke();
 }
 
 function drawCheckIcon(context, color, secondary) {
-  context.strokeStyle = color;
-  context.lineWidth = 12;
-  context.beginPath();
-  context.moveTo(-32, 0);
-  context.lineTo(-8, 27);
-  context.lineTo(36, -29);
-  context.stroke();
+  context.fillStyle = 'rgba(72, 48, 38, 0.4)';
+  traceCheckMark(context, 3, 4);
+  context.fill();
+
   context.fillStyle = secondary;
+  traceCheckMark(context);
+  context.fill();
+  context.strokeStyle = color;
+  context.lineWidth = 4;
+  context.stroke();
+
+  context.strokeStyle = 'rgba(255, 235, 180, 0.82)';
+  context.lineWidth = 2.8;
   context.beginPath();
-  context.arc(-8, 27, 4, 0, Math.PI * 2);
+  context.moveTo(-31, -3);
+  context.quadraticCurveTo(-22, 7, -10, 21);
+  context.bezierCurveTo(2, 7, 19, -17, 34, -31);
+  context.stroke();
+
+  context.fillStyle = ICON_MID;
+  traceOrganicOval(context, -9, 24, 4.5, 4.2, 0.27);
   context.fill();
 }
 
 function drawSpeakerIcon(context, color, secondary) {
+  context.fillStyle = 'rgba(72, 48, 38, 0.38)';
+  traceSpeakerBody(context, 3, 4);
+  context.fill();
+
   context.fillStyle = secondary;
   context.strokeStyle = color;
+  traceSpeakerBody(context);
+  context.fill();
+  context.lineWidth = 5;
+  context.stroke();
+
+  context.fillStyle = 'rgba(255, 235, 180, 0.6)';
   context.beginPath();
-  context.moveTo(-39, -15);
-  context.lineTo(-17, -15);
-  context.lineTo(8, -36);
-  context.lineTo(8, 36);
-  context.lineTo(-17, 15);
-  context.lineTo(-39, 15);
+  context.moveTo(-36, -15);
+  context.quadraticCurveTo(-27, -16, -19, -17);
+  context.bezierCurveTo(-12, -24, -5, -31, 4, -36);
+  context.quadraticCurveTo(1, -22, 2, -9);
+  context.bezierCurveTo(-10, -3, -23, -1, -37, -3);
+  context.quadraticCurveTo(-40, -9, -36, -15);
   context.closePath();
   context.fill();
+
+  context.fillStyle = ICON_SHADOW;
+  traceSoundRibbon(context, 17, 22, 14, 0.24);
+  context.fill();
+  context.strokeStyle = color;
+  context.lineWidth = 2.5;
   context.stroke();
-  context.lineWidth = 7;
+
+  context.fillStyle = ICON_MID;
+  traceSoundRibbon(context, 22, 36, 22, 0.67);
+  context.fill();
+  context.strokeStyle = color;
+  context.lineWidth = 2.8;
+  context.stroke();
+
+  context.fillStyle = ICON_LIGHT;
   context.beginPath();
-  context.arc(9, 0, 20, -0.85, 0.85);
-  context.moveTo(16, -31);
-  context.arc(14, 0, 34, -0.85, 0.85);
-  context.stroke();
+  context.moveTo(24, -27);
+  context.bezierCurveTo(33, -20, 37, -11, 38, -2);
+  context.quadraticCurveTo(34, -12, 25, -19, 24, -27);
+  context.closePath();
+  context.fill();
 }
 
 function drawNameIcon(context, color, secondary) {
@@ -2708,19 +3363,36 @@ function drawStarIcon(context, color, secondary) {
 function drawStarIconAt(context, x, y, radius, fill, stroke) {
   context.fillStyle = fill;
   context.strokeStyle = stroke;
+  const radii = [1, 0.35, 0.92, 0.38, 1.04, 0.33, 0.95, 0.37, 0.98, 0.34];
+  const angleDrift = [-0.02, 0.025, -0.035, 0.018, 0.03, -0.025, 0.022, -0.03, 0.015, -0.018];
+  const points = radii.map((scale, index) => {
+    const angle = -Math.PI / 2 + (index * Math.PI) / 5 + angleDrift[index];
+    return {
+      x: x + Math.cos(angle) * radius * scale,
+      y: y + Math.sin(angle) * radius * scale,
+    };
+  });
+  const last = points.at(-1);
+  const first = points[0];
   context.beginPath();
-  for (let index = 0; index < 8; index += 1) {
-    const angle = -Math.PI / 2 + (index * Math.PI) / 4;
-    const currentRadius = index % 2 === 0 ? radius : radius * 0.34;
-    const pointX = x + Math.cos(angle) * currentRadius;
-    const pointY = y + Math.sin(angle) * currentRadius;
-    if (index === 0) context.moveTo(pointX, pointY);
-    else context.lineTo(pointX, pointY);
+  context.moveTo((last.x + first.x) / 2, (last.y + first.y) / 2);
+  for (let index = 0; index < points.length; index += 1) {
+    const point = points[index];
+    const next = points[(index + 1) % points.length];
+    context.quadraticCurveTo(point.x, point.y, (point.x + next.x) / 2, (point.y + next.y) / 2);
   }
   context.closePath();
   context.fill();
   context.lineWidth = Math.max(2, radius * 0.14);
   context.stroke();
+
+  context.fillStyle = 'rgba(255, 235, 180, 0.72)';
+  context.beginPath();
+  context.moveTo(x - radius * 0.18, y - radius * 0.5);
+  context.quadraticCurveTo(x - radius * 0.03, y - radius * 0.68, x + radius * 0.08, y - radius * 0.43);
+  context.quadraticCurveTo(x - radius * 0.05, y - radius * 0.22, x - radius * 0.18, y - radius * 0.5);
+  context.closePath();
+  context.fill();
 }
 
 function drawOwlIconMini(context, x, y, color, secondary) {
