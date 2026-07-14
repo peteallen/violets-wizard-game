@@ -266,9 +266,9 @@ export class CharacterRenderer {
       drawVioletCasualArm(context, motion, 1, false, Boolean(character.wand));
       drawVioletCasualNeckline(context);
     } else {
-      drawVioletBackArm(context, motion);
+      drawVioletBackArm(context, trim, motion);
       drawVioletRobe(context, trim, motion);
-      drawVioletFrontArm(context, motion, Boolean(character.wand));
+      drawVioletFrontArm(context, trim, motion, Boolean(character.wand));
       drawVioletCollar(context, trim);
     }
     context.save();
@@ -1258,7 +1258,7 @@ function drawVioletCasualNeckline(context) {
   context.stroke();
 }
 
-function drawVioletBackArm(context, motion) {
+function drawVioletBackArm(context, trim, motion) {
   const swing = motion.armSwing;
   const cuffX = -45 - swing * 0.25;
   const cuffY = -36 + swing;
@@ -1277,8 +1277,8 @@ function drawVioletBackArm(context, motion) {
   context.bezierCurveTo(-41, -67, -36, -81, -34, -89);
   context.closePath();
   context.fill();
-  context.strokeStyle = VIOLET_STYLE.lining;
-  context.lineWidth = 3.4;
+  context.strokeStyle = trim;
+  context.lineWidth = 4.8;
   context.beginPath();
   context.moveTo(cuffX - 5, cuffY - 5);
   context.bezierCurveTo(cuffX - 1, cuffY - 1, cuffX + 4, cuffY + 2, cuffX + 9, cuffY);
@@ -1334,14 +1334,16 @@ function drawVioletRobe(context, trim, motion) {
   context.closePath();
   context.fill();
 
-  context.fillStyle = VIOLET_STYLE.lining;
-  context.globalAlpha = 0.9;
+  context.fillStyle = trim;
+  context.globalAlpha = 0.92;
   context.beginPath();
-  context.moveTo(-8, -91);
-  context.bezierCurveTo(-4, -69, -6, -38, -10, 3);
-  context.bezierCurveTo(-4, 7, 1, 8, 5, 7);
-  context.bezierCurveTo(2, -30, 3, -63, 8, -93);
-  context.quadraticCurveTo(0, -98, -8, -91);
+  context.moveTo(-17, -94);
+  context.bezierCurveTo(-13, -72, -17, -36, -22, 2);
+  context.bezierCurveTo(-15, 7, -7, 9, 1, 8);
+  context.bezierCurveTo(9, 10, 17, 7, 22, 2);
+  context.bezierCurveTo(17, -36, 13, -72, 17, -95);
+  context.bezierCurveTo(11, -100, 6, -101, 0, -97);
+  context.bezierCurveTo(-6, -101, -12, -99, -17, -94);
   context.closePath();
   context.fill();
   context.globalAlpha = 1;
@@ -1362,7 +1364,7 @@ function drawVioletRobe(context, trim, motion) {
   context.bezierCurveTo(-35, 9, -16, 12, 1, 8 + swing * 0.08);
   context.bezierCurveTo(19, 13, 39, 9, rightHem - 4, 0);
   context.stroke();
-  context.strokeStyle = VIOLET_STYLE.liningLight;
+  context.strokeStyle = 'rgba(255, 239, 211, 0.36)';
   context.lineWidth = 1.15;
   context.beginPath();
   context.moveTo(leftHem + 8, -1);
@@ -1387,7 +1389,7 @@ function drawVioletRobe(context, trim, motion) {
   context.stroke();
 }
 
-function drawVioletFrontArm(context, motion, hasWand) {
+function drawVioletFrontArm(context, trim, motion, hasWand) {
   const swing = -motion.armSwing;
   const cuffX = 43 + swing * 0.25;
   const cuffY = -36 + swing;
@@ -1408,8 +1410,8 @@ function drawVioletFrontArm(context, motion, hasWand) {
   context.closePath();
   context.fill();
   context.globalAlpha = 1;
-  context.strokeStyle = VIOLET_STYLE.lining;
-  context.lineWidth = 3.4;
+  context.strokeStyle = trim;
+  context.lineWidth = 4.8;
   context.beginPath();
   context.moveTo(cuffX + 5, cuffY - 5);
   context.bezierCurveTo(cuffX + 1, cuffY - 1, cuffX - 4, cuffY + 2, cuffX - 9, cuffY);
@@ -1833,7 +1835,7 @@ function traceVioletLens(context, x, y, width, height, skew) {
 }
 
 function drawVioletCollar(context, trim) {
-  context.fillStyle = VIOLET_STYLE.lining;
+  context.fillStyle = trim;
   context.beginPath();
   context.moveTo(-27, -101);
   context.bezierCurveTo(-18, -106, -9, -107, 0, -102);
@@ -1858,7 +1860,7 @@ function drawVioletCollar(context, trim) {
   context.bezierCurveTo(13, -87, 20, -94, 23, -101);
   context.closePath();
   fillStroke(context, 1.2);
-  context.strokeStyle = VIOLET_STYLE.liningLight;
+  context.strokeStyle = 'rgba(255, 239, 211, 0.36)';
   context.lineWidth = 1.25;
   context.beginPath();
   context.moveTo(-24, -99);

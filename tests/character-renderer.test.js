@@ -593,19 +593,32 @@ describe('illustrated character renderer', () => {
       expect(surface.styles.filter(([, style]) => style === VIOLET_STYLE.pupil)).toHaveLength(2);
     }
 
-    const customTrim = recordingContext();
-    renderer.draw(customTrim, {
-      kind: 'violet', x: 0, y: 0, facing: 'right', robeTrim: '#2b7770',
-    }, 0.75);
-    expect(customTrim.styles).toContainEqual(['strokeStyle', '#2b7770']);
-    expect(customTrim.styles).toContainEqual(['fillStyle', VIOLET_STYLE.lining]);
-    expect(customTrim.styles).toContainEqual(['strokeStyle', VIOLET_STYLE.lining]);
-
     const facingLeft = recordingContext();
     renderer.draw(facingLeft, { kind: 'violet', x: 0, y: 0, facing: 'left' }, 0.75);
     expect(facingLeft.calls.filter((call) => (
       call[0] === 'scale' && call[1] === -1 && call[2] === 1
     )).length).toBeGreaterThanOrEqual(2);
+  });
+
+  it('carries Violet’s chosen robe color through the broad lining and every garment edge', () => {
+    const renderer = new CharacterRenderer();
+    const customTrim = recordingContext();
+    const chosenColor = '#2b7770';
+
+    renderer.draw(customTrim, {
+      kind: 'violet', x: 0, y: 0, facing: 'right', outfit: 'robes', robeTrim: chosenColor,
+    }, 0.75);
+
+    expect(customTrim.styles.filter(([property, style]) => (
+      property === 'fillStyle' && style === chosenColor
+    )).length).toBeGreaterThanOrEqual(2);
+    expect(customTrim.styles.filter(([property, style]) => (
+      property === 'strokeStyle' && style === chosenColor
+    )).length).toBeGreaterThanOrEqual(4);
+    expect(customTrim.styles).not.toContainEqual(['fillStyle', VIOLET_STYLE.lining]);
+    expect(customTrim.styles).not.toContainEqual(['strokeStyle', VIOLET_STYLE.lining]);
+    expect(customTrim.styles).toContainEqual(['fillStyle', VIOLET_STYLE.robeBase]);
+    expect(customTrim.depth).toBe(0);
   });
 
   it('uses shaped lids for Violet’s blink and deterministic whole-puppet motion', () => {
