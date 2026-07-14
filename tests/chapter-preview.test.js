@@ -32,13 +32,17 @@ function contains(outer, inner) {
 function recordingContext() {
   const calls = [];
   const texts = [];
+  const fillStyles = [];
   let depth = 0;
   const methods = new Set([
-    'beginPath', 'bezierCurveTo', 'closePath', 'fill', 'fillRect', 'lineTo',
-    'moveTo', 'quadraticCurveTo', 'restore', 'save', 'setLineDash', 'stroke',
+    'arc', 'arcTo', 'beginPath', 'bezierCurveTo', 'closePath', 'ellipse', 'fill',
+    'fillRect', 'lineTo', 'moveTo', 'quadraticCurveTo', 'rect', 'restore',
+    'roundRect', 'save', 'setLineDash', 'stroke', 'strokeRect',
+    'createConicGradient', 'createLinearGradient', 'createRadialGradient',
   ]);
   const target = {
     calls,
+    fillStyles,
     texts,
     font: '700 24px "Andika"',
     globalAlpha: 1,
@@ -58,11 +62,16 @@ function recordingContext() {
           calls.push([property, ...args]);
           if (property === 'save') depth += 1;
           if (property === 'restore') depth -= 1;
+          if (property.startsWith('create') && property.endsWith('Gradient')) {
+            return { addColorStop: (...stop) => calls.push(['addColorStop', ...stop]) };
+          }
+          return undefined;
         };
       }
       return object[property];
     },
     set(object, property, value) {
+      if (property === 'fillStyle') fillStyles.push(value);
       object[property] = value;
       return true;
     },
@@ -169,10 +178,38 @@ describe('Chapter Two preview composition', () => {
       'Play again',
     ]);
     expect(first.texts.some((text) => text.toLowerCase().includes('owl'))).toBe(false);
-    expect(first.calls.some(([method]) => method === 'arc' || method === 'ellipse')).toBe(false);
     expect(first.calls).toEqual(second.calls);
     expect(first.depth).toBe(0);
     expect(second.depth).toBe(0);
+  });
+
+  it('builds the live panel from layered hand-drawn curves instead of rigid geometry or gradients', () => {
+    const renderer = new ChapterPreviewRenderer();
+    const context = recordingContext();
+    renderer.draw(context, { choices: previewState().dialogue.choices, showChoices: true });
+
+    const forbiddenMethods = new Set([
+      'arc',
+      'arcTo',
+      'createConicGradient',
+      'createLinearGradient',
+      'createRadialGradient',
+      'ellipse',
+      'fillRect',
+      'lineTo',
+      'rect',
+      'roundRect',
+      'setLineDash',
+      'strokeRect',
+    ]);
+    expect(context.calls.filter(([method]) => forbiddenMethods.has(method))).toEqual([]);
+
+    const curvedSegments = context.calls.filter(([method]) => (
+      method === 'bezierCurveTo' || method === 'quadraticCurveTo'
+    ));
+    expect(curvedSegments.length).toBeGreaterThanOrEqual(80);
+    expect(context.calls.filter(([method]) => method === 'fill').length).toBeGreaterThanOrEqual(24);
+    expect(new Set(context.fillStyles).size).toBeGreaterThanOrEqual(12);
   });
 
   it('keeps the hero painting and suppresses the generic choice overlay', () => {

@@ -157,22 +157,91 @@ function drawActionShelf(context, rect) {
   });
 
   context.save();
-  context.strokeStyle = 'rgba(238,199,116,0.5)';
-  context.lineWidth = 2;
-  context.setLineDash?.([7, 8]);
+  context.lineCap = 'round';
+  context.strokeStyle = 'rgba(32,21,25,0.72)';
+  context.lineWidth = 5;
   context.beginPath();
   context.moveTo(rect.x + 28, rect.y + 24);
   context.bezierCurveTo(
-    rect.x + rect.width * 0.3,
-    rect.y + 17,
-    rect.x + rect.width * 0.7,
-    rect.y + 30,
+    rect.x + rect.width * 0.24,
+    rect.y + 15,
+    rect.x + rect.width * 0.42,
+    rect.y + 31,
+    rect.x + rect.width * 0.52,
+    rect.y + 22,
+  );
+  context.bezierCurveTo(
+    rect.x + rect.width * 0.66,
+    rect.y + 13,
+    rect.x + rect.width * 0.78,
+    rect.y + 31,
     rect.x + rect.width - 28,
     rect.y + 22,
   );
   context.stroke();
-  context.setLineDash?.([]);
+
+  context.strokeStyle = 'rgba(248,218,151,0.58)';
+  context.lineWidth = 1.5;
+  context.beginPath();
+  context.moveTo(rect.x + 29, rect.y + 21);
+  context.bezierCurveTo(
+    rect.x + rect.width * 0.25,
+    rect.y + 12,
+    rect.x + rect.width * 0.42,
+    rect.y + 28,
+    rect.x + rect.width * 0.52,
+    rect.y + 19,
+  );
+  context.bezierCurveTo(
+    rect.x + rect.width * 0.66,
+    rect.y + 10,
+    rect.x + rect.width * 0.79,
+    rect.y + 28,
+    rect.x + rect.width - 29,
+    rect.y + 19,
+  );
+  context.stroke();
+
+  drawTooledLeaf(context, rect.x + rect.width * 0.49, rect.y + 21, -1);
+  drawTooledLeaf(context, rect.x + rect.width * 0.55, rect.y + 20, 1);
   context.restore();
+}
+
+function drawTooledLeaf(context, x, y, direction) {
+  const tipX = x + direction * 18;
+  context.fillStyle = 'rgba(114,71,48,0.92)';
+  context.beginPath();
+  context.moveTo(x, y + 1);
+  context.bezierCurveTo(
+    x + direction * 4,
+    y - 11,
+    x + direction * 15,
+    y - 10,
+    tipX,
+    y - 2,
+  );
+  context.bezierCurveTo(
+    x + direction * 13,
+    y + 5,
+    x + direction * 5,
+    y + 7,
+    x,
+    y + 1,
+  );
+  context.closePath();
+  context.fill();
+
+  context.strokeStyle = 'rgba(245,208,132,0.5)';
+  context.lineWidth = 1.25;
+  context.beginPath();
+  context.moveTo(x + direction * 2, y);
+  context.quadraticCurveTo(
+    x + direction * 10,
+    y - 3,
+    x + direction * 16,
+    y - 2,
+  );
+  context.stroke();
 }
 
 function drawChoiceAction(context, rect, { id, label }) {
@@ -233,7 +302,14 @@ function drawDeckledSurface(context, rect, { fill, light, shadow, edge, offset }
     rect.x + rect.width - 10,
     rect.y + 11,
   );
-  context.lineTo(rect.x + rect.width - 16, rect.y + rect.height * 0.37);
+  context.bezierCurveTo(
+    rect.x + rect.width - 12,
+    rect.y + rect.height * 0.16,
+    rect.x + rect.width - 20,
+    rect.y + rect.height * 0.27,
+    rect.x + rect.width - 16,
+    rect.y + rect.height * 0.37,
+  );
   context.bezierCurveTo(
     rect.x + rect.width * 0.68,
     rect.y + rect.height * 0.3,
@@ -256,7 +332,14 @@ function drawDeckledSurface(context, rect, { fill, light, shadow, edge, offset }
     rect.x + rect.width - 11,
     rect.y + rect.height * 0.7,
   );
-  context.lineTo(rect.x + rect.width - 8, rect.y + rect.height - 9);
+  context.bezierCurveTo(
+    rect.x + rect.width - 5,
+    rect.y + rect.height * 0.81,
+    rect.x + rect.width - 14,
+    rect.y + rect.height * 0.91,
+    rect.x + rect.width - 8,
+    rect.y + rect.height - 9,
+  );
   context.bezierCurveTo(
     rect.x + rect.width * 0.66,
     rect.y + rect.height + 1,
@@ -301,95 +384,725 @@ function traceDeckled(context, rect) {
 
 function drawWaxSeal(context, x, y, radius) {
   context.save();
+  context.fillStyle = 'rgba(42,25,39,0.38)';
+  traceWaxSeal(context, x + 2, y + 4, radius);
+  context.fill();
+
   context.fillStyle = VIOLET_WAX;
+  traceWaxSeal(context, x, y, radius);
+  context.fill();
+  context.strokeStyle = '#472a48';
+  context.lineWidth = 2.5;
+  context.stroke();
+
+  context.fillStyle = '#42273f';
   context.beginPath();
-  for (let index = 0; index < 18; index += 1) {
-    const angle = (index / 18) * Math.PI * 2;
-    const ripple = index % 2 === 0 ? 1 : 0.88;
-    const pointX = x + Math.cos(angle) * radius * ripple;
-    const pointY = y + Math.sin(angle) * radius * ripple;
-    if (index === 0) context.moveTo(pointX, pointY);
-    else context.lineTo(pointX, pointY);
-  }
+  context.moveTo(x - radius * 0.91, y + radius * 0.18);
+  context.bezierCurveTo(
+    x - radius * 0.62,
+    y + radius * 0.76,
+    x - radius * 0.08,
+    y + radius * 1.02,
+    x + radius * 0.58,
+    y + radius * 0.72,
+  );
+  context.bezierCurveTo(
+    x + radius * 0.86,
+    y + radius * 0.58,
+    x + radius * 0.96,
+    y + radius * 0.27,
+    x + radius * 0.86,
+    y + radius * 0.1,
+  );
+  context.bezierCurveTo(
+    x + radius * 0.32,
+    y + radius * 0.39,
+    x - radius * 0.33,
+    y + radius * 0.42,
+    x - radius * 0.91,
+    y + radius * 0.18,
+  );
   context.closePath();
   context.fill();
-  context.strokeStyle = BRASS_LIGHT;
-  context.lineWidth = 3;
+
+  context.fillStyle = '#8b5a83';
+  context.beginPath();
+  context.moveTo(x - radius * 0.7, y - radius * 0.43);
+  context.bezierCurveTo(
+    x - radius * 0.53,
+    y - radius * 0.82,
+    x + radius * 0.07,
+    y - radius * 0.94,
+    x + radius * 0.42,
+    y - radius * 0.63,
+  );
+  context.bezierCurveTo(
+    x + radius * 0.09,
+    y - radius * 0.48,
+    x - radius * 0.35,
+    y - radius * 0.27,
+    x - radius * 0.7,
+    y - radius * 0.43,
+  );
+  context.closePath();
+  context.fill();
+
+  context.strokeStyle = 'rgba(235,190,221,0.42)';
+  context.lineWidth = 1.4;
+  context.beginPath();
+  context.moveTo(x - radius * 0.58, y - radius * 0.33);
+  context.bezierCurveTo(
+    x - radius * 0.29,
+    y - radius * 0.67,
+    x + radius * 0.27,
+    y - radius * 0.68,
+    x + radius * 0.57,
+    y - radius * 0.34,
+  );
   context.stroke();
   context.restore();
+}
+
+function traceWaxSeal(context, x, y, radius) {
+  context.beginPath();
+  context.moveTo(x - radius * 0.08, y - radius * 0.98);
+  context.bezierCurveTo(
+    x + radius * 0.18,
+    y - radius * 1.05,
+    x + radius * 0.3,
+    y - radius * 0.84,
+    x + radius * 0.51,
+    y - radius * 0.79,
+  );
+  context.bezierCurveTo(
+    x + radius * 0.78,
+    y - radius * 0.79,
+    x + radius * 0.74,
+    y - radius * 0.56,
+    x + radius * 0.92,
+    y - radius * 0.41,
+  );
+  context.bezierCurveTo(
+    x + radius * 1.08,
+    y - radius * 0.2,
+    x + radius * 0.86,
+    y - radius * 0.02,
+    x + radius * 0.96,
+    y + radius * 0.2,
+  );
+  context.bezierCurveTo(
+    x + radius * 1.02,
+    y + radius * 0.47,
+    x + radius * 0.73,
+    y + radius * 0.51,
+    x + radius * 0.62,
+    y + radius * 0.74,
+  );
+  context.bezierCurveTo(
+    x + radius * 0.47,
+    y + radius * 0.99,
+    x + radius * 0.2,
+    y + radius * 0.83,
+    x - radius * 0.02,
+    y + radius * 0.96,
+  );
+  context.bezierCurveTo(
+    x - radius * 0.28,
+    y + radius * 1.05,
+    x - radius * 0.41,
+    y + radius * 0.79,
+    x - radius * 0.65,
+    y + radius * 0.76,
+  );
+  context.bezierCurveTo(
+    x - radius * 0.94,
+    y + radius * 0.7,
+    x - radius * 0.8,
+    y + radius * 0.41,
+    x - radius * 0.99,
+    y + radius * 0.22,
+  );
+  context.bezierCurveTo(
+    x - radius * 1.09,
+    y - radius * 0.02,
+    x - radius * 0.84,
+    y - radius * 0.18,
+    x - radius * 0.94,
+    y - radius * 0.42,
+  );
+  context.bezierCurveTo(
+    x - radius * 0.99,
+    y - radius * 0.67,
+    x - radius * 0.7,
+    y - radius * 0.71,
+    x - radius * 0.54,
+    y - radius * 0.83,
+  );
+  context.bezierCurveTo(
+    x - radius * 0.37,
+    y - radius * 1.02,
+    x - radius * 0.24,
+    y - radius * 0.89,
+    x - radius * 0.08,
+    y - radius * 0.98,
+  );
+  context.closePath();
 }
 
 function drawKeyhole(context, x, y, size) {
   context.save();
+  context.fillStyle = 'rgba(31,22,24,0.42)';
+  traceKeyholePlate(context, x + 2, y + 3, size);
+  context.fill();
+
   context.fillStyle = BRASS;
-  context.beginPath();
-  context.moveTo(x, y - size);
-  context.bezierCurveTo(x - size * 0.75, y - size, x - size, y - size * 0.38, x - size * 0.62, y + size * 0.08);
-  context.lineTo(x - size * 0.35, y + size);
-  context.quadraticCurveTo(x, y + size * 1.18, x + size * 0.35, y + size);
-  context.lineTo(x + size * 0.62, y + size * 0.08);
-  context.bezierCurveTo(x + size, y - size * 0.38, x + size * 0.75, y - size, x, y - size);
-  context.closePath();
+  traceKeyholePlate(context, x, y, size);
   context.fill();
-  context.strokeStyle = BRASS_LIGHT;
-  context.lineWidth = 2.5;
+  context.strokeStyle = BRASS_SHADOW;
+  context.lineWidth = 2.25;
   context.stroke();
-  context.fillStyle = DEEP_INK;
+
+  context.fillStyle = BRASS_LIGHT;
   context.beginPath();
-  context.moveTo(x, y - size * 0.48);
-  context.bezierCurveTo(x - size * 0.33, y - size * 0.47, x - size * 0.36, y - size * 0.08, x - size * 0.12, y + size * 0.05);
-  context.lineTo(x - size * 0.18, y + size * 0.58);
-  context.lineTo(x + size * 0.18, y + size * 0.58);
-  context.lineTo(x + size * 0.12, y + size * 0.05);
-  context.bezierCurveTo(x + size * 0.36, y - size * 0.08, x + size * 0.33, y - size * 0.47, x, y - size * 0.48);
+  context.moveTo(x - size * 0.62, y - size * 0.43);
+  context.bezierCurveTo(
+    x - size * 0.47,
+    y - size * 0.83,
+    x + size * 0.13,
+    y - size * 1.04,
+    x + size * 0.54,
+    y - size * 0.57,
+  );
+  context.bezierCurveTo(
+    x + size * 0.15,
+    y - size * 0.61,
+    x - size * 0.29,
+    y - size * 0.36,
+    x - size * 0.62,
+    y - size * 0.43,
+  );
   context.closePath();
   context.fill();
+
+  context.fillStyle = BRASS_SHADOW;
+  context.beginPath();
+  context.moveTo(x - size * 0.48, y + size * 0.18);
+  context.bezierCurveTo(
+    x - size * 0.31,
+    y + size * 0.92,
+    x + size * 0.18,
+    y + size * 1.12,
+    x + size * 0.48,
+    y + size * 0.25,
+  );
+  context.bezierCurveTo(
+    x + size * 0.13,
+    y + size * 0.46,
+    x - size * 0.14,
+    y + size * 0.42,
+    x - size * 0.48,
+    y + size * 0.18,
+  );
+  context.closePath();
+  context.fill();
+
+  context.fillStyle = DEEP_INK;
+  traceKeyholeOpening(context, x, y, size);
+  context.fill();
+
+  context.strokeStyle = 'rgba(255,238,190,0.52)';
+  context.lineWidth = 1.2;
+  context.beginPath();
+  context.moveTo(x - size * 0.55, y - size * 0.54);
+  context.bezierCurveTo(
+    x - size * 0.24,
+    y - size * 0.94,
+    x + size * 0.27,
+    y - size * 0.89,
+    x + size * 0.5,
+    y - size * 0.52,
+  );
+  context.stroke();
   context.restore();
+}
+
+function traceKeyholePlate(context, x, y, size) {
+  context.beginPath();
+  context.moveTo(x - size * 0.05, y - size * 1.04);
+  context.bezierCurveTo(
+    x + size * 0.45,
+    y - size * 1.08,
+    x + size * 0.87,
+    y - size * 0.69,
+    x + size * 0.82,
+    y - size * 0.2,
+  );
+  context.bezierCurveTo(
+    x + size * 0.79,
+    y + size * 0.13,
+    x + size * 0.53,
+    y + size * 0.25,
+    x + size * 0.45,
+    y + size * 0.63,
+  );
+  context.bezierCurveTo(
+    x + size * 0.36,
+    y + size * 1.08,
+    x + size * 0.11,
+    y + size * 1.16,
+    x - size * 0.11,
+    y + size * 1.08,
+  );
+  context.bezierCurveTo(
+    x - size * 0.38,
+    y + size * 1.01,
+    x - size * 0.4,
+    y + size * 0.68,
+    x - size * 0.49,
+    y + size * 0.39,
+  );
+  context.bezierCurveTo(
+    x - size * 0.58,
+    y + size * 0.1,
+    x - size * 0.86,
+    y - size * 0.16,
+    x - size * 0.8,
+    y - size * 0.49,
+  );
+  context.bezierCurveTo(
+    x - size * 0.73,
+    y - size * 0.88,
+    x - size * 0.37,
+    y - size * 1.01,
+    x - size * 0.05,
+    y - size * 1.04,
+  );
+  context.closePath();
+}
+
+function traceKeyholeOpening(context, x, y, size) {
+  context.beginPath();
+  context.moveTo(x - size * 0.03, y - size * 0.53);
+  context.bezierCurveTo(
+    x - size * 0.35,
+    y - size * 0.55,
+    x - size * 0.43,
+    y - size * 0.15,
+    x - size * 0.15,
+    y + size * 0.02,
+  );
+  context.bezierCurveTo(
+    x - size * 0.2,
+    y + size * 0.18,
+    x - size * 0.27,
+    y + size * 0.42,
+    x - size * 0.22,
+    y + size * 0.62,
+  );
+  context.bezierCurveTo(
+    x - size * 0.09,
+    y + size * 0.72,
+    x + size * 0.12,
+    y + size * 0.69,
+    x + size * 0.21,
+    y + size * 0.57,
+  );
+  context.bezierCurveTo(
+    x + size * 0.24,
+    y + size * 0.38,
+    x + size * 0.13,
+    y + size * 0.17,
+    x + size * 0.13,
+    y + size * 0.01,
+  );
+  context.bezierCurveTo(
+    x + size * 0.42,
+    y - size * 0.18,
+    x + size * 0.3,
+    y - size * 0.51,
+    x - size * 0.03,
+    y - size * 0.53,
+  );
+  context.closePath();
 }
 
 function drawMapMark(context, x, y, size) {
   context.save();
-  context.strokeStyle = '#fff1cf';
-  context.lineWidth = 3;
+  context.fillStyle = 'rgba(48,28,45,0.4)';
+  traceMapPaper(context, x + 1.5, y + 2.5, size);
+  context.fill();
+
+  context.fillStyle = '#f8e8c5';
+  traceMapPaper(context, x, y, size);
+  context.fill();
+  context.strokeStyle = '#3e283c';
+  context.lineWidth = 1.5;
+  context.stroke();
+
+  context.fillStyle = '#fff5dc';
   context.beginPath();
-  context.moveTo(x - size, y - size * 0.55);
-  context.quadraticCurveTo(x - size * 0.48, y - size * 0.83, x, y - size * 0.5);
-  context.quadraticCurveTo(x + size * 0.5, y - size * 0.82, x + size, y - size * 0.52);
-  context.lineTo(x + size * 0.82, y + size * 0.65);
-  context.quadraticCurveTo(x + size * 0.43, y + size * 0.42, x, y + size * 0.72);
-  context.quadraticCurveTo(x - size * 0.45, y + size * 0.42, x - size * 0.82, y + size * 0.66);
+  context.moveTo(x - size * 0.86, y - size * 0.5);
+  context.bezierCurveTo(
+    x - size * 0.68,
+    y - size * 0.64,
+    x - size * 0.47,
+    y - size * 0.67,
+    x - size * 0.2,
+    y - size * 0.54,
+  );
+  context.bezierCurveTo(
+    x - size * 0.26,
+    y - size * 0.15,
+    x - size * 0.23,
+    y + size * 0.25,
+    x - size * 0.18,
+    y + size * 0.54,
+  );
+  context.bezierCurveTo(
+    x - size * 0.43,
+    y + size * 0.39,
+    x - size * 0.64,
+    y + size * 0.4,
+    x - size * 0.75,
+    y + size * 0.52,
+  );
+  context.bezierCurveTo(
+    x - size * 0.83,
+    y + size * 0.17,
+    x - size * 0.91,
+    y - size * 0.16,
+    x - size * 0.86,
+    y - size * 0.5,
+  );
   context.closePath();
-  context.stroke();
+  context.fill();
+
+  context.fillStyle = '#c99d61';
   context.beginPath();
-  context.moveTo(x, y - size * 0.48);
-  context.quadraticCurveTo(x - 4, y, x, y + size * 0.7);
+  context.moveTo(x + size * 0.12, y - size * 0.48);
+  context.bezierCurveTo(
+    x + size * 0.38,
+    y - size * 0.62,
+    x + size * 0.67,
+    y - size * 0.65,
+    x + size * 0.88,
+    y - size * 0.5,
+  );
+  context.bezierCurveTo(
+    x + size * 0.91,
+    y - size * 0.14,
+    x + size * 0.82,
+    y + size * 0.19,
+    x + size * 0.79,
+    y + size * 0.5,
+  );
+  context.bezierCurveTo(
+    x + size * 0.6,
+    y + size * 0.38,
+    x + size * 0.34,
+    y + size * 0.4,
+    x + size * 0.1,
+    y + size * 0.54,
+  );
+  context.bezierCurveTo(
+    x + size * 0.17,
+    y + size * 0.21,
+    x + size * 0.18,
+    y - size * 0.18,
+    x + size * 0.12,
+    y - size * 0.48,
+  );
+  context.closePath();
+  context.fill();
+
+  context.strokeStyle = '#5a3655';
+  context.lineWidth = 1.25;
+  context.beginPath();
+  context.moveTo(x - size * 0.16, y - size * 0.51);
+  context.bezierCurveTo(
+    x - size * 0.24,
+    y - size * 0.08,
+    x - size * 0.18,
+    y + size * 0.25,
+    x - size * 0.14,
+    y + size * 0.55,
+  );
+  context.moveTo(x + size * 0.12, y - size * 0.49);
+  context.bezierCurveTo(
+    x + size * 0.2,
+    y - size * 0.08,
+    x + size * 0.15,
+    y + size * 0.24,
+    x + size * 0.11,
+    y + size * 0.52,
+  );
   context.stroke();
+
+  context.lineWidth = 2;
+  context.beginPath();
+  context.moveTo(x - size * 0.62, y + size * 0.22);
+  context.bezierCurveTo(
+    x - size * 0.38,
+    y - size * 0.18,
+    x - size * 0.04,
+    y + size * 0.29,
+    x + size * 0.23,
+    y - size * 0.12,
+  );
+  context.bezierCurveTo(
+    x + size * 0.36,
+    y - size * 0.3,
+    x + size * 0.52,
+    y - size * 0.2,
+    x + size * 0.63,
+    y - size * 0.37,
+  );
+  context.stroke();
+
+  context.fillStyle = '#5a3655';
+  context.beginPath();
+  context.moveTo(x + size * 0.62, y - size * 0.5);
+  context.bezierCurveTo(
+    x + size * 0.78,
+    y - size * 0.39,
+    x + size * 0.72,
+    y - size * 0.17,
+    x + size * 0.61,
+    y - size * 0.08,
+  );
+  context.bezierCurveTo(
+    x + size * 0.5,
+    y - size * 0.2,
+    x + size * 0.47,
+    y - size * 0.4,
+    x + size * 0.62,
+    y - size * 0.5,
+  );
+  context.closePath();
+  context.fill();
   context.restore();
+}
+
+function traceMapPaper(context, x, y, size) {
+  context.beginPath();
+  context.moveTo(x - size * 0.88, y - size * 0.5);
+  context.bezierCurveTo(
+    x - size * 0.63,
+    y - size * 0.7,
+    x - size * 0.4,
+    y - size * 0.66,
+    x - size * 0.16,
+    y - size * 0.51,
+  );
+  context.bezierCurveTo(
+    x - size * 0.02,
+    y - size * 0.61,
+    x + size * 0.03,
+    y - size * 0.59,
+    x + size * 0.13,
+    y - size * 0.49,
+  );
+  context.bezierCurveTo(
+    x + size * 0.41,
+    y - size * 0.68,
+    x + size * 0.67,
+    y - size * 0.65,
+    x + size * 0.89,
+    y - size * 0.48,
+  );
+  context.bezierCurveTo(
+    x + size * 0.91,
+    y - size * 0.12,
+    x + size * 0.83,
+    y + size * 0.22,
+    x + size * 0.8,
+    y + size * 0.52,
+  );
+  context.bezierCurveTo(
+    x + size * 0.55,
+    y + size * 0.37,
+    x + size * 0.34,
+    y + size * 0.43,
+    x + size * 0.1,
+    y + size * 0.57,
+  );
+  context.bezierCurveTo(
+    x - size * 0.05,
+    y + size * 0.46,
+    x - size * 0.1,
+    y + size * 0.45,
+    x - size * 0.16,
+    y + size * 0.56,
+  );
+  context.bezierCurveTo(
+    x - size * 0.39,
+    y + size * 0.39,
+    x - size * 0.61,
+    y + size * 0.41,
+    x - size * 0.77,
+    y + size * 0.54,
+  );
+  context.bezierCurveTo(
+    x - size * 0.82,
+    y + size * 0.18,
+    x - size * 0.91,
+    y - size * 0.13,
+    x - size * 0.88,
+    y - size * 0.5,
+  );
+  context.closePath();
 }
 
 function drawReplayMark(context, x, y, size) {
   context.save();
-  context.strokeStyle = '#fff1cf';
-  context.fillStyle = '#fff1cf';
-  context.lineWidth = 4;
+  context.fillStyle = 'rgba(47,27,44,0.42)';
+  traceReplayRibbon(context, x + 1.5, y + 2.5, size);
+  context.fill();
+
+  context.fillStyle = '#f8e8c5';
+  traceReplayRibbon(context, x, y, size);
+  context.fill();
+  context.strokeStyle = '#3e283c';
+  context.lineWidth = 1.5;
+  context.stroke();
+
+  context.strokeStyle = '#fff6de';
+  context.lineWidth = 1.5;
+  context.lineCap = 'round';
   context.beginPath();
-  context.moveTo(x + size * 0.7, y + size * 0.36);
+  context.moveTo(x + size * 0.63, y + size * 0.22);
   context.bezierCurveTo(
-    x + size * 0.95,
-    y - size * 0.5,
-    x + size * 0.1,
-    y - size * 0.92,
-    x - size * 0.56,
-    y - size * 0.4,
+    x + size * 0.74,
+    y - size * 0.39,
+    x + size * 0.06,
+    y - size * 0.77,
+    x - size * 0.46,
+    y - size * 0.35,
   );
   context.stroke();
+
+  context.fillStyle = '#c99d61';
   context.beginPath();
-  context.moveTo(x - size * 0.78, y - size * 0.68);
-  context.lineTo(x - size * 0.56, y - size * 0.4);
-  context.lineTo(x - size * 0.25, y - size * 0.61);
+  context.moveTo(x - size * 0.77, y - size * 0.66);
+  context.bezierCurveTo(
+    x - size * 0.59,
+    y - size * 0.6,
+    x - size * 0.36,
+    y - size * 0.55,
+    x - size * 0.18,
+    y - size * 0.62,
+  );
+  context.bezierCurveTo(
+    x - size * 0.33,
+    y - size * 0.42,
+    x - size * 0.47,
+    y - size * 0.2,
+    x - size * 0.58,
+    y - size * 0.03,
+  );
+  context.bezierCurveTo(
+    x - size * 0.66,
+    y - size * 0.24,
+    x - size * 0.72,
+    y - size * 0.48,
+    x - size * 0.77,
+    y - size * 0.66,
+  );
+  context.closePath();
+  context.fill();
+
+  context.fillStyle = '#fff6de';
+  context.beginPath();
+  context.moveTo(x - size * 0.68, y - size * 0.57);
+  context.bezierCurveTo(
+    x - size * 0.55,
+    y - size * 0.51,
+    x - size * 0.43,
+    y - size * 0.48,
+    x - size * 0.32,
+    y - size * 0.5,
+  );
+  context.bezierCurveTo(
+    x - size * 0.43,
+    y - size * 0.39,
+    x - size * 0.52,
+    y - size * 0.25,
+    x - size * 0.58,
+    y - size * 0.16,
+  );
+  context.bezierCurveTo(
+    x - size * 0.61,
+    y - size * 0.31,
+    x - size * 0.65,
+    y - size * 0.46,
+    x - size * 0.68,
+    y - size * 0.57,
+  );
   context.closePath();
   context.fill();
   context.restore();
+}
+
+function traceReplayRibbon(context, x, y, size) {
+  context.beginPath();
+  context.moveTo(x + size * 0.78, y + size * 0.42);
+  context.bezierCurveTo(
+    x + size * 0.99,
+    y - size * 0.22,
+    x + size * 0.72,
+    y - size * 0.76,
+    x + size * 0.17,
+    y - size * 0.91,
+  );
+  context.bezierCurveTo(
+    x - size * 0.12,
+    y - size * 1.01,
+    x - size * 0.42,
+    y - size * 0.82,
+    x - size * 0.62,
+    y - size * 0.61,
+  );
+  context.bezierCurveTo(
+    x - size * 0.7,
+    y - size * 0.54,
+    x - size * 0.76,
+    y - size * 0.5,
+    x - size * 0.83,
+    y - size * 0.53,
+  );
+  context.bezierCurveTo(
+    x - size * 0.68,
+    y - size * 0.26,
+    x - size * 0.53,
+    y - size * 0.03,
+    x - size * 0.44,
+    y + size * 0.18,
+  );
+  context.bezierCurveTo(
+    x - size * 0.35,
+    y + size * 0.02,
+    x - size * 0.24,
+    y - size * 0.12,
+    x - size * 0.08,
+    y - size * 0.2,
+  );
+  context.bezierCurveTo(
+    x + size * 0.28,
+    y - size * 0.4,
+    x + size * 0.61,
+    y - size * 0.08,
+    x + size * 0.48,
+    y + size * 0.27,
+  );
+  context.bezierCurveTo(
+    x + size * 0.4,
+    y + size * 0.5,
+    x + size * 0.57,
+    y + size * 0.57,
+    x + size * 0.78,
+    y + size * 0.42,
+  );
+  context.closePath();
 }
 
 function pointInRect(point, rect) {
