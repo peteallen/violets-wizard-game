@@ -23,15 +23,34 @@ function appendOwlMedallion(documentRef, parent) {
     'aria-hidden': 'true',
   });
   svg.append(
-    svgElement(documentRef, 'circle', { class: 'pet-name-owl-halo', cx: '60', cy: '60', r: '55' }),
+    svgElement(documentRef, 'path', {
+      class: 'pet-name-owl-halo',
+      d: 'M7 58C8 27 28 5 58 6c32-2 54 20 55 51 2 31-20 55-51 57C31 113 8 90 7 58Z',
+    }),
+    svgElement(documentRef, 'path', {
+      class: 'pet-name-owl-shadow',
+      d: 'M25 43 44 23c13-8 27-6 39 2l18 20c4 31-10 54-38 68C34 101 19 75 25 43Z',
+    }),
     svgElement(documentRef, 'path', {
       class: 'pet-name-owl-body',
       d: 'M22 38 41 19c12-7 26-7 38 0l19 19c5 33-8 56-38 72C30 94 17 71 22 38Z',
     }),
-    svgElement(documentRef, 'ellipse', { class: 'pet-name-owl-eye', cx: '44', cy: '52', rx: '17', ry: '19' }),
-    svgElement(documentRef, 'ellipse', { class: 'pet-name-owl-eye', cx: '76', cy: '52', rx: '17', ry: '19' }),
-    svgElement(documentRef, 'circle', { class: 'pet-name-owl-pupil', cx: '44', cy: '52', r: '6' }),
-    svgElement(documentRef, 'circle', { class: 'pet-name-owl-pupil', cx: '76', cy: '52', r: '6' }),
+    svgElement(documentRef, 'path', {
+      class: 'pet-name-owl-wing',
+      d: 'M24 53c8 13 17 18 30 21-9 10-18 15-27 15-6-11-8-23-3-36ZM96 53c-8 13-17 18-30 21 9 10 18 15 27 15 6-11 8-23 3-36Z',
+    }),
+    svgElement(documentRef, 'path', {
+      class: 'pet-name-owl-eye',
+      d: 'M27 50c4-18 27-21 34-4 1 18-22 27-34 4ZM59 46c9-16 32-11 34 7-11 20-34 13-34-7Z',
+    }),
+    svgElement(documentRef, 'path', {
+      class: 'pet-name-owl-pupil',
+      d: 'M39 50c2-9 13-10 17-2 0 10-11 13-17 2ZM69 49c4-8 15-6 17 3-4 10-15 9-17-3Z',
+    }),
+    svgElement(documentRef, 'path', {
+      class: 'pet-name-owl-catchlight',
+      d: 'M41 44c2-4 6-4 8-1-1 4-6 5-8 1ZM71 44c2-4 6-3 8 1-2 4-6 4-8-1Z',
+    }),
     svgElement(documentRef, 'path', { class: 'pet-name-owl-beak', d: 'm52 69 8 10 8-10Z' }),
     svgElement(documentRef, 'path', { class: 'pet-name-owl-feathers', d: 'M38 85q11 11 22 0 11 11 22 0' }),
   );

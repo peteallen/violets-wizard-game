@@ -109,6 +109,17 @@ describe('PetNameDialog', () => {
     expect(dialog.elements.submitButton.textContent).toBe('Use this name');
     expect(dialog.elements.cancelButton.textContent).toBe('Name cards');
     expect(dialog.elements.cancelButton.getAttribute('aria-label')).toBe('Choose a name card instead');
+    const owl = dialog.elements.dialog.children.find(
+      (child) => child.getAttribute('class') === 'pet-name-owl',
+    );
+    expect(owl.children.every(({ tagName }) => tagName === 'PATH')).toBe(true);
+    expect(owl.children.map((child) => child.getAttribute('class'))).toEqual(expect.arrayContaining([
+      'pet-name-owl-body',
+      'pet-name-owl-wing',
+      'pet-name-owl-eye',
+      'pet-name-owl-pupil',
+      'pet-name-owl-catchlight',
+    ]));
     expect(documentRef.activeElement).toBe(dialog.elements.input);
 
     dialog.elements.input.value = '  Star\n Light  ';
