@@ -4,7 +4,7 @@ Keep reports conversational and explain player-visible behavior in context. Pres
 
 The documentation under `docs/` is the product source of truth. Shared contracts live in `src/game/contracts.js`; change them deliberately and update their tests and the decision log together. Simulation code must remain deterministic and independent of Canvas, audio, the DOM, wall-clock APIs, and unseeded randomness.
 
-Visual changes require a registered harness scene and captured review frames. Generated assets that the game ships belong in `public/assets`; reference-only material (character sheets, style targets) and all prompts/source metadata belong under `art` or `audio` and never ship. Do not commit `dist`, `node_modules`, keys, runtime saves, or review scratch files.
+Visual changes require a registered harness scene, captured review frames at both 1280×720 and 2560×1440, and an **art-director review before merge**: spawn a fresh agent (never the author) with `docs/ART_DIRECTOR.md` as its brief per that file's protocol; fix CRITICAL/MAJOR findings before pushing and include the verdict in your report. Generated art (character part sheets, room paintings) gets its art-director review before slicing or shipping. Generated assets that the game ships belong in `public/assets`; reference-only material (character sheets, style targets) and all prompts/source metadata belong under `art` or `audio` and never ship. Do not commit `dist`, `node_modules`, keys, runtime saves, or review scratch files.
 
 When appending to the decision log, re-read the tail of `docs/DECISIONS.md` immediately before writing and take the next free number — concurrent sessions have collided on numbers before (see D34/D35).
 

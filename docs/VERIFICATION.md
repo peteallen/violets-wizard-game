@@ -9,7 +9,8 @@ The hard problem this doc solves: engineers on this project are largely AI agent
 1. **Headless sim tests** (Vitest) — logic: quest graphs, encounters, saves, geometry. Fast, exhaustive, no pixels.
 2. **Content lint** — the data contract police (see ARCHITECTURE.md §Testing).
 3. **Harness keyframe self-review** — agents capture deterministic frames of visual work and *look at them* against written illusion checklists (including the Storybook Standard section). **VERIFIED: the Read tool renders PNGs visually — agents genuinely see their work.**
-4. **Play it** — Pete and Violet, on the deployed game and the actual iPad. iPad Safari renders with a different rasterizer and DPR than the capture harness; nothing replaces the actual glass. Feedback arrives as conversation and lands in DECISIONS.md.
+4. **Art-director adversarial review** (D49, brief: [ART_DIRECTOR.md](ART_DIRECTOR.md)) — a **fresh agent that did not author the change** judges the captures at 1× and 2× against absolute standards (posture, silhouette, anatomy joins, expression congruence, grounding, identity, the picture-book test), prompted to assume something is wrong and find it. CRITICAL/MAJOR findings block the merge. Exists because self-review provably passes taste failures the checklists can't express: the author sees intent and grades "better than before"; the judge sees only the frame. Generated art (part sheets, rooms) is judged *before* it enters the pipeline.
+5. **Play it** — Pete and Violet, on the deployed game and the actual iPad. iPad Safari renders with a different rasterizer and DPR than the capture harness; nothing replaces the actual glass. Feedback arrives as conversation and lands in DECISIONS.md — but obvious defects (posture, dead eyes, floating parts) must die at layer 4, never reach Pete.
 
 ## Determinism requirements (engine-level, non-negotiable, built FIRST)
 

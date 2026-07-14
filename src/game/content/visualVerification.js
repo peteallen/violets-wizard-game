@@ -176,6 +176,7 @@ const REVIEW_SCENE_ILLUSION_CHECKS = Object.freeze({
     'Each painted figure reads as one connected child at gameplay scale: head, back hair, torso, both arms, and both legs join with no visible gaps, floating parts, or double edges at idle and mid-stride.',
     'The painted figures keep the photo-matched identity: dark-green rectangular glasses, warm light-brown hair with soft attached wisps, warm brown eyes with catchlights, and the three-tone purple jersey with white collar.',
     'Part edges show no pale keying halo and no fragments of neighboring sheet parts; the walking figure’s leg swing pivots at the hips without separating from the torso.',
+    'Posture reads confident and upright at 2×: weight balanced over the feet, visible shoulder line, chin level, arms resting beside the body with hands near the outer thighs — never curled inward, hunched, or creeping.',
   ],
 });
 
