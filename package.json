@@ -22,6 +22,7 @@
     "flipbook": "node scripts/flipbook.mjs",
     "diff:goldens": "node scripts/diff.mjs",
     "assets:character-image": "node scripts/generate-character-image.mjs",
+    "assets:character-edit": "node scripts/composite-character-edit.mjs",
     "assets:voice": "node scripts/generate_voice.mjs",
     "assets:sfx": "node scripts/generate_sfx.mjs",
     "assets:music": "node scripts/generate_music.mjs"

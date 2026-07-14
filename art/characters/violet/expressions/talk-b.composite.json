@@ -1,0 +1,115 @@
+{
+  "schema_version": 1,
+  "algorithm": {
+    "id": "linear-light-premultiplied-rgba-v1",
+    "color_space": "srgb",
+    "transfer": "IEC 61966-2-1 sRGB to linear light and back",
+    "representation": "premultiplied RGBA",
+    "mask_coverage": "grayscale multiplied by alpha",
+    "output_color_type": 6,
+    "output_bit_depth": 8
+  },
+  "edit_spec": {
+    "path": "art/characters/violet/expressions/talk-b-v1.composite.json",
+    "bytes": 719,
+    "sha256": "65fd26904aff8f423a174a828dddd460cc9bc010206a1924ea3dd0b5a1ad6cf4",
+    "schema_version": 1
+  },
+  "controls": {
+    "allow_alpha_change": false,
+    "zero_mask_pixels_copied_byte_exactly": true
+  },
+  "inputs": {
+    "base": {
+      "path": "art/characters/violet/canonical/casual-approved.png",
+      "bytes": 1139914,
+      "sha256": "68e9871ceecc32b9fbf50cbf36eecbae226eb184ad5337f67bbca2e53266e033",
+      "rgba_sha256": "c61835ae2054be51e1ca97a71e81958d2eadc9dc5292bb34597f06a7e08caa66",
+      "dimensions": {
+        "width": 896,
+        "height": 1200
+      },
+      "png": {
+        "color_type": 2,
+        "bit_depth": 8,
+        "has_color": true,
+        "has_alpha": false,
+        "interlaced": false
+      },
+      "expected_sha256": "68e9871ceecc32b9fbf50cbf36eecbae226eb184ad5337f67bbca2e53266e033"
+    },
+    "raw_candidate": {
+      "path": "art/characters/violet/expressions/talk-b-v1-raw.png",
+      "bytes": 1134314,
+      "sha256": "13d72bf334634d5a76dd156d980e1151c340dbe06d5cc359ec11c6d5de83d445",
+      "rgba_sha256": "bd11f1d3e4b307cf2e03d3df6bf86b4ec94c6a4d97eb039c9e15a9c388567fa6",
+      "dimensions": {
+        "width": 896,
+        "height": 1200
+      },
+      "png": {
+        "color_type": 2,
+        "bit_depth": 8,
+        "has_color": true,
+        "has_alpha": false,
+        "interlaced": false
+      },
+      "expected_sha256": "13d72bf334634d5a76dd156d980e1151c340dbe06d5cc359ec11c6d5de83d445"
+    },
+    "mask": {
+      "path": "art/characters/violet/expressions/masks/talk-a-v1.png",
+      "bytes": 26992,
+      "sha256": "d364a765af4ef9314c6b18154cbacdd46f9ef0127a074988833c420fc16d0617",
+      "rgba_sha256": "e274531aba763dcf2c12403a7539f8ed89dcba22492d243394e8917fd273cc40",
+      "dimensions": {
+        "width": 896,
+        "height": 1200
+      },
+      "png": {
+        "color_type": 6,
+        "bit_depth": 8,
+        "has_color": true,
+        "has_alpha": true,
+        "interlaced": false
+      },
+      "expected_sha256": "d364a765af4ef9314c6b18154cbacdd46f9ef0127a074988833c420fc16d0617"
+    }
+  },
+  "mask": {
+    "bounds": {
+      "x": 399,
+      "y": 301,
+      "width": 99,
+      "height": 66
+    },
+    "coverage_denominator": 65025,
+    "minimum_nonzero_coverage_units": 255,
+    "maximum_coverage_units": 65025,
+    "zero_pixels": 1069511,
+    "nonzero_pixels": 5689,
+    "full_pixels": 2771,
+    "soft_pixels": 2918
+  },
+  "changes": {
+    "total_pixels": 1075200,
+    "output_changed_pixels": 5031,
+    "rgb_changed_pixels": 5031,
+    "alpha_changed_pixels": 0,
+    "changed_channel_bytes": 14219,
+    "outside_zero_mask_changed_pixels": 0
+  },
+  "output": {
+    "image": {
+      "path": "art/characters/violet/expressions/talk-b.png",
+      "media_type": "image/png",
+      "bytes": 1197398,
+      "sha256": "2da242a791e5607f827e15a39941dc2b9f3721df1f438359674bc5061b8d33b9",
+      "rgba_sha256": "7010630d43874ab5b93b4cf99671c6e0cef1c8a30f13d3ad3fdddb3ac416ebca",
+      "dimensions": {
+        "width": 896,
+        "height": 1200
+      }
+    },
+    "provenance": "art/characters/violet/expressions/talk-b.composite.json"
+  }
+}

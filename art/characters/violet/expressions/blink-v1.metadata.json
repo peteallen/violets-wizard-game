@@ -1,0 +1,426 @@
+{
+  "schema_version": 1,
+  "kind": "openrouter-character-image-generation",
+  "policy": {
+    "model": "google/gemini-3.1-flash-image",
+    "canonical_model_slug": "google/gemini-3.1-flash-image-20260528",
+    "provider": "google-vertex/global",
+    "allow_fallbacks": false,
+    "automatic_retries": 0
+  },
+  "timestamps": {
+    "catalog_checked_at": "2026-07-14T19:08:58.776Z",
+    "generation_started_at": "2026-07-14T19:08:59.609Z",
+    "generation_completed_at": "2026-07-14T19:09:13.663Z",
+    "duration_ms": 14054,
+    "response_created_unix": 0
+  },
+  "repository": {
+    "commit": "e50837b219b5abb32500e6bc7db4510ca85c6460",
+    "dirty": true
+  },
+  "runtime": {
+    "node": "v22.17.0",
+    "platform": "darwin",
+    "architecture": "arm64"
+  },
+  "request_spec": {
+    "path": "art/characters/violet/expressions/blink-v1.request.json",
+    "bytes": 525,
+    "sha256": "0178caa1afdabef1862c7c072c56391eb4814e80df2105325aa987713aa8a8cf",
+    "schema_version": 1
+  },
+  "prompt": {
+    "path": "art/characters/violet/expressions/blink-v1.prompt.md",
+    "section": "Prompt",
+    "document_bytes": 2164,
+    "document_sha256": "0431d9c1ae9019670efa5639b52c46d85bad16e305e842f3865b77edf33dd173",
+    "text_bytes": 1650,
+    "text_sha256": "558be5d4c88a48a21f233424e0ac621ded045c148735e4a9daa8052eab87aaa7"
+  },
+  "references": [
+    {
+      "index": 1,
+      "role": "immutable canonical edit target",
+      "path": "art/characters/violet/canonical/casual-approved.png",
+      "media_type": "image/png",
+      "bytes": 1139914,
+      "sha256": "68e9871ceecc32b9fbf50cbf36eecbae226eb184ad5337f67bbca2e53266e033",
+      "dimensions": {
+        "width": 896,
+        "height": 1200
+      },
+      "png": {
+        "bit_depth": 8,
+        "color_type": 2,
+        "has_color": true,
+        "has_alpha": false,
+        "interlaced": false
+      }
+    }
+  ],
+  "catalog": {
+    "sha256": "f0d835dc01c41396ce626f2d589c9cc435a6c6b8497f919e7f6b74c95e9f830b",
+    "bytes": 2726,
+    "snapshot": {
+      "model": {
+        "id": "google/gemini-3.1-flash-image",
+        "canonical_slug": "google/gemini-3.1-flash-image-20260528",
+        "hugging_face_id": null,
+        "name": "Google: Nano Banana 2 (Gemini 3.1 Flash Image)",
+        "created": 1781754065,
+        "description": "Gemini 3.1 Flash Image, a.k.a. \"Nano Banana 2,\" is Google’s latest state of the art image generation and editing model, delivering Pro-level visual quality at Flash speed. It combines advanced...",
+        "context_length": 131072,
+        "architecture": {
+          "modality": "text+image->text+image",
+          "input_modalities": [
+            "image",
+            "text"
+          ],
+          "output_modalities": [
+            "image",
+            "text"
+          ],
+          "tokenizer": "Gemini",
+          "instruct_type": null
+        },
+        "pricing": {
+          "prompt": "0.0000005",
+          "completion": "0.000003",
+          "image_output": "0.00006",
+          "web_search": "0.014"
+        },
+        "top_provider": {
+          "context_length": 131072,
+          "max_completion_tokens": 32768,
+          "is_moderated": false
+        },
+        "per_request_limits": null,
+        "supported_parameters": [
+          "include_reasoning",
+          "max_tokens",
+          "reasoning",
+          "reasoning_effort",
+          "response_format",
+          "seed",
+          "structured_outputs",
+          "temperature",
+          "top_p"
+        ],
+        "default_parameters": {},
+        "supported_voices": null,
+        "knowledge_cutoff": null,
+        "expiration_date": null,
+        "links": {
+          "details": "/api/v1/models/google/gemini-3.1-flash-image-20260528/endpoints"
+        },
+        "reasoning": {
+          "mandatory": false,
+          "default_enabled": true,
+          "supported_efforts": [
+            "high",
+            "minimal"
+          ],
+          "default_effort": "minimal"
+        }
+      },
+      "image_model": {
+        "id": "google/gemini-3.1-flash-image",
+        "name": "Google: Nano Banana 2 (Gemini 3.1 Flash Image)",
+        "description": "Gemini 3.1 Flash Image, a.k.a. \"Nano Banana 2,\" is Google’s latest state of the art image generation and editing model, delivering Pro-level visual quality at Flash speed. It combines advanced...",
+        "created": 1781754065,
+        "architecture": {
+          "input_modalities": [
+            "image",
+            "text"
+          ],
+          "output_modalities": [
+            "image",
+            "text"
+          ]
+        },
+        "supported_parameters": {
+          "resolution": {
+            "type": "enum",
+            "values": [
+              "512",
+              "1K",
+              "2K",
+              "4K"
+            ]
+          },
+          "aspect_ratio": {
+            "type": "enum",
+            "values": [
+              "1:1",
+              "1:4",
+              "1:8",
+              "2:3",
+              "3:2",
+              "3:4",
+              "4:1",
+              "4:3",
+              "4:5",
+              "5:4",
+              "8:1",
+              "9:16",
+              "16:9",
+              "21:9"
+            ]
+          },
+          "n": {
+            "type": "range",
+            "min": 1,
+            "max": 1
+          },
+          "input_references": {
+            "type": "range",
+            "min": 0,
+            "max": 14
+          }
+        },
+        "supports_streaming": false,
+        "endpoints": "/api/v1/images/models/google/gemini-3.1-flash-image/endpoints"
+      },
+      "provider_endpoint": {
+        "provider_name": "Google Vertex",
+        "provider_slug": "google-vertex/global",
+        "provider_tag": "google-vertex/global",
+        "supported_parameters": {
+          "resolution": {
+            "type": "enum",
+            "values": [
+              "512",
+              "1K",
+              "2K",
+              "4K"
+            ]
+          },
+          "aspect_ratio": {
+            "type": "enum",
+            "values": [
+              "1:1",
+              "1:4",
+              "1:8",
+              "2:3",
+              "3:2",
+              "3:4",
+              "4:1",
+              "4:3",
+              "4:5",
+              "5:4",
+              "8:1",
+              "9:16",
+              "16:9",
+              "21:9"
+            ]
+          },
+          "n": {
+            "type": "range",
+            "min": 1,
+            "max": 1
+          },
+          "input_references": {
+            "type": "range",
+            "min": 0,
+            "max": 14
+          }
+        },
+        "allowed_passthrough_parameters": [
+          "cachedContent"
+        ],
+        "supports_streaming": false,
+        "pricing": [
+          {
+            "billable": "output_image",
+            "unit": "token",
+            "cost_usd": 0.00006
+          }
+        ]
+      }
+    },
+    "sources": {
+      "model": {
+        "url": "https://openrouter.ai/api/v1/model/google/gemini-3.1-flash-image",
+        "status": 200,
+        "body_bytes": 1293,
+        "body_sha256": "89be87934f7850b356b2f05cbc229e4d710348e38789983bf5603011ff4c5b83",
+        "response_headers": {
+          "access-control-allow-origin": "*",
+          "access-control-expose-headers": "X-Generation-Id,X-Provider-Name,cf-ray",
+          "age": "28",
+          "cache-control": "public, max-age=300, s-maxage=300, stale-while-revalidate=3600, stale-if-error=3600",
+          "cf-cache-status": "HIT",
+          "cf-ray": "a1b2d1b48b8251f1-DEN",
+          "connection": "keep-alive",
+          "content-encoding": "gzip",
+          "content-type": "application/json",
+          "date": "Tue, 14 Jul 2026 19:08:58 GMT",
+          "permissions-policy": "payment=(self \"https://checkout.stripe.com\" \"https://connect-js.stripe.com\" \"https://js.stripe.com\" \"https://*.js.stripe.com\" \"https://hooks.stripe.com\")",
+          "referrer-policy": "no-referrer, strict-origin-when-cross-origin",
+          "server": "cloudflare",
+          "transfer-encoding": "chunked",
+          "x-content-type-options": "nosniff"
+        }
+      },
+      "image_models": {
+        "url": "https://openrouter.ai/api/v1/images/models",
+        "status": 200,
+        "body_bytes": 27272,
+        "body_sha256": "dbedd85c93b2c6f9693d47298e1a9d4a6b520de472d87c558ef2364a1c26ceb6",
+        "response_headers": {
+          "access-control-allow-origin": "*",
+          "access-control-expose-headers": "X-Generation-Id,X-Provider-Name,cf-ray",
+          "cf-ray": "a1b2d1b46d4e557c-DEN",
+          "connection": "keep-alive",
+          "content-encoding": "gzip",
+          "content-type": "application/json",
+          "date": "Tue, 14 Jul 2026 19:08:58 GMT",
+          "permissions-policy": "payment=(self \"https://checkout.stripe.com\" \"https://connect-js.stripe.com\" \"https://js.stripe.com\" \"https://*.js.stripe.com\" \"https://hooks.stripe.com\")",
+          "referrer-policy": "no-referrer, strict-origin-when-cross-origin",
+          "server": "cloudflare",
+          "transfer-encoding": "chunked",
+          "x-content-type-options": "nosniff"
+        }
+      },
+      "image_endpoints": {
+        "url": "https://openrouter.ai/api/v1/images/models/google/gemini-3.1-flash-image/endpoints",
+        "status": 200,
+        "body_bytes": 1183,
+        "body_sha256": "be9d700ee208a564ac7aa4b36a014195320b191a6571e54a7bcdd3be1b26984e",
+        "response_headers": {
+          "access-control-allow-origin": "*",
+          "access-control-expose-headers": "X-Generation-Id,X-Provider-Name,cf-ray",
+          "cf-ray": "a1b2d1b48f7a638c-DEN",
+          "connection": "keep-alive",
+          "content-encoding": "gzip",
+          "content-type": "application/json",
+          "date": "Tue, 14 Jul 2026 19:08:59 GMT",
+          "permissions-policy": "payment=(self \"https://checkout.stripe.com\" \"https://connect-js.stripe.com\" \"https://js.stripe.com\" \"https://*.js.stripe.com\" \"https://hooks.stripe.com\")",
+          "referrer-policy": "no-referrer, strict-origin-when-cross-origin",
+          "server": "cloudflare",
+          "transfer-encoding": "chunked",
+          "x-content-type-options": "nosniff"
+        }
+      }
+    }
+  },
+  "request": {
+    "endpoint": "https://openrouter.ai/api/v1/images",
+    "method": "POST",
+    "body_bytes": 1521839,
+    "body_sha256": "e01126401eb9da761a0130710c42cb5916db7334049dc7cfee462a55bf619909",
+    "controls": {
+      "model": "google/gemini-3.1-flash-image",
+      "aspect_ratio": "3:4",
+      "resolution": "1K",
+      "n": 1,
+      "output_format": "png",
+      "reference_count": 1,
+      "provider": {
+        "only": [
+          "google-vertex/global"
+        ],
+        "allow_fallbacks": false
+      }
+    }
+  },
+  "response": {
+    "status": 200,
+    "status_text": "OK",
+    "headers": {
+      "access-control-allow-origin": "*",
+      "access-control-expose-headers": "X-Generation-Id,X-Provider-Name,cf-ray",
+      "cf-ray": "a1b2d1b93eea51f1-DEN",
+      "connection": "keep-alive",
+      "content-encoding": "gzip",
+      "content-type": "application/json",
+      "date": "Tue, 14 Jul 2026 19:09:13 GMT",
+      "permissions-policy": "payment=(self \"https://checkout.stripe.com\" \"https://connect-js.stripe.com\" \"https://js.stripe.com\" \"https://*.js.stripe.com\" \"https://hooks.stripe.com\")",
+      "referrer-policy": "no-referrer, strict-origin-when-cross-origin",
+      "server": "cloudflare",
+      "transfer-encoding": "chunked",
+      "x-content-type-options": "nosniff",
+      "x-generation-id": "gen-img-1784056139-VFhxyqZc5FqXi37pPiqx",
+      "x-provider-name": "Google"
+    },
+    "body_bytes": 1519937,
+    "body_sha256": "016baf611f6e5723ef46786a7c183357015e34bbf55f6290ac8378c9d152a9bb",
+    "request_id": null,
+    "generation_id": "gen-img-1784056139-VFhxyqZc5FqXi37pPiqx",
+    "body_without_image_bytes": {
+      "created": 0,
+      "data": [
+        {
+          "image_bytes": {
+            "bytes": 1139588,
+            "sha256": "95fcacff3d4e89a8f1dc3008956347cfdc5d902011131664fb0d158897714bcf"
+          },
+          "media_type": "image/png"
+        }
+      ],
+      "usage": {
+        "prompt_tokens": 1495,
+        "completion_tokens": 1120,
+        "total_tokens": 2615,
+        "cost": 0.0679475,
+        "is_byok": false,
+        "prompt_tokens_details": {
+          "cached_tokens": 0,
+          "cache_write_tokens": 0,
+          "audio_tokens": 0,
+          "video_tokens": 0
+        },
+        "cost_details": {
+          "upstream_inference_cost": 0.0679475,
+          "upstream_inference_prompt_cost": 0.0007475,
+          "upstream_inference_completions_cost": 0.0672
+        },
+        "completion_tokens_details": {
+          "reasoning_tokens": 0,
+          "image_tokens": 1120
+        }
+      }
+    }
+  },
+  "usage": {
+    "prompt_tokens": 1495,
+    "completion_tokens": 1120,
+    "total_tokens": 2615,
+    "cost": 0.0679475,
+    "is_byok": false,
+    "prompt_tokens_details": {
+      "cached_tokens": 0,
+      "cache_write_tokens": 0,
+      "audio_tokens": 0,
+      "video_tokens": 0
+    },
+    "cost_details": {
+      "upstream_inference_cost": 0.0679475,
+      "upstream_inference_prompt_cost": 0.0007475,
+      "upstream_inference_completions_cost": 0.0672
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 0,
+      "image_tokens": 1120
+    }
+  },
+  "output": {
+    "path": "art/characters/violet/expressions/blink-v1-raw.png",
+    "media_type": "image/png",
+    "reported_media_type": "image/png",
+    "bytes": 1139588,
+    "sha256": "95fcacff3d4e89a8f1dc3008956347cfdc5d902011131664fb0d158897714bcf",
+    "dimensions": {
+      "width": 896,
+      "height": 1200
+    },
+    "png": {
+      "bit_depth": 8,
+      "color_type": 2,
+      "has_color": true,
+      "has_alpha": false,
+      "interlaced": false
+    }
+  }
+}

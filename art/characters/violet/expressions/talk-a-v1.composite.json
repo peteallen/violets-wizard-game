@@ -1,0 +1,20 @@
+{
+  "schema_version": 1,
+  "base": {
+    "path": "art/characters/violet/canonical/casual-approved.png",
+    "sha256": "68e9871ceecc32b9fbf50cbf36eecbae226eb184ad5337f67bbca2e53266e033"
+  },
+  "raw_candidate": {
+    "path": "art/characters/violet/expressions/talk-a-v1-raw.png",
+    "sha256": "a8d8e5b2d92495202202c8d0138956d6bb93637c96affeb87dfc556c50a294cb"
+  },
+  "mask": {
+    "path": "art/characters/violet/expressions/masks/talk-a-v1.png",
+    "sha256": "d364a765af4ef9314c6b18154cbacdd46f9ef0127a074988833c420fc16d0617"
+  },
+  "output": {
+    "image": "art/characters/violet/expressions/talk-a.png",
+    "provenance": "art/characters/violet/expressions/talk-a.composite.json"
+  },
+  "allow_alpha_change": false
+}

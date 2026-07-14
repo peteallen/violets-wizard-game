@@ -7,11 +7,12 @@ import {
   lstat,
   open,
   readFile,
+  realpath,
   stat,
   unlink,
 } from 'node:fs/promises';
 import { constants as fsConstants } from 'node:fs';
-import { dirname, isAbsolute, relative, resolve, sep } from 'node:path';
+import { basename, dirname, isAbsolute, relative, resolve, sep } from 'node:path';
 import { performance } from 'node:perf_hooks';
 import { promisify } from 'node:util';
 import { fileURLToPath, pathToFileURL } from 'node:url';
@@ -35,7 +36,42 @@ const SAFE_APP_HEADERS = Object.freeze({
   'HTTP-Referer': 'https://github.com/peteallen/violets-wizard-game',
   'X-OpenRouter-Title': "Violet at Hogwarts character pipeline",
 });
-const SENSITIVE_HEADER_NAME = /authorization|cookie|api[-_]?key|token|secret|credential/i;
+const SAFE_RESPONSE_HEADER_NAMES = new Set([
+  'cf-ray',
+  'content-length',
+  'content-type',
+  'date',
+  'server',
+  'x-generation-id',
+  'x-openrouter-generation-id',
+  'x-openrouter-model',
+  'x-openrouter-provider',
+  'x-openrouter-request-id',
+  'x-request-id',
+]);
+const USAGE_FIELDS = Object.freeze({
+  prompt_tokens: 'number',
+  completion_tokens: 'number',
+  total_tokens: 'number',
+  cost: 'number',
+  is_byok: 'boolean',
+  prompt_tokens_details: Object.freeze({
+    cached_tokens: 'number',
+    cache_write_tokens: 'number',
+    audio_tokens: 'number',
+    video_tokens: 'number',
+  }),
+  cost_details: Object.freeze({
+    upstream_inference_cost: 'number',
+    upstream_inference_prompt_cost: 'number',
+    upstream_inference_completions_cost: 'number',
+  }),
+  completion_tokens_details: Object.freeze({
+    reasoning_tokens: 'number',
+    image_tokens: 'number',
+  }),
+});
+const INSTALL_IO = Object.freeze({ access, chmod, link, lstat, open, readFile, unlink });
 
 export function parseCharacterImageArgs(argv) {
   const options = { request: null, dryRun: false, help: false };
@@ -162,7 +198,8 @@ export function validateCharacterImageSpec(value) {
 }
 
 export async function prepareCharacterImageRequest({ requestPath, repoRoot = ROOT }) {
-  const normalizedRequest = resolveRepositoryPath(repoRoot, requestPath, 'request path');
+  const canonicalRoot = await resolveRepositoryRoot(repoRoot);
+  const normalizedRequest = await resolveExistingRepositoryFile(canonicalRoot, requestPath, 'request path');
   const requestSpecBytes = await readFile(normalizedRequest.absolute);
   let requestSpec;
   try {
@@ -172,7 +209,7 @@ export async function prepareCharacterImageRequest({ requestPath, repoRoot = ROO
   }
   validateCharacterImageSpec(requestSpec);
 
-  const promptPath = resolveRepositoryPath(repoRoot, requestSpec.prompt.path, 'prompt path');
+  const promptPath = await resolveExistingRepositoryFile(canonicalRoot, requestSpec.prompt.path, 'prompt path');
   const promptDocumentBytes = await readFile(promptPath.absolute);
   const promptDocument = promptDocumentBytes.toString('utf8');
   const prompt = extractMarkdownSection(promptDocument, requestSpec.prompt.section);
@@ -181,7 +218,11 @@ export async function prepareCharacterImageRequest({ requestPath, repoRoot = ROO
   const inputReferences = [];
   for (let index = 0; index < requestSpec.references.length; index += 1) {
     const specReference = requestSpec.references[index];
-    const referencePath = resolveRepositoryPath(repoRoot, specReference.path, `reference ${index + 1} path`);
+    const referencePath = await resolveExistingRepositoryFile(
+      canonicalRoot,
+      specReference.path,
+      `reference ${index + 1} path`,
+    );
     const bytes = await readFile(referencePath.absolute);
     const png = inspectPng(bytes, `Reference ${index + 1} (${referencePath.relative})`);
     references.push({
@@ -200,10 +241,17 @@ export async function prepareCharacterImageRequest({ requestPath, repoRoot = ROO
     });
   }
 
-  const outputImage = resolveRepositoryPath(repoRoot, requestSpec.output.image, 'output image path');
-  const outputProvenance = resolveRepositoryPath(repoRoot, requestSpec.output.provenance, 'output provenance path');
+  const outputImage = await resolveNewRepositoryFile(canonicalRoot, requestSpec.output.image, 'output image path');
+  const outputProvenance = await resolveNewRepositoryFile(
+    canonicalRoot,
+    requestSpec.output.provenance,
+    'output provenance path',
+  );
   if (outputImage.absolute === outputProvenance.absolute) {
     throw new Error('Output image and provenance paths resolve to the same file.');
+  }
+  if (dirname(outputImage.absolute) !== dirname(outputProvenance.absolute)) {
+    throw new Error('Output image and provenance must share one directory for recoverable installation.');
   }
 
   const body = {
@@ -221,7 +269,7 @@ export async function prepareCharacterImageRequest({ requestPath, repoRoot = ROO
   };
   const serializedBody = JSON.stringify(body);
   return Object.freeze({
-    repoRoot: resolve(repoRoot),
+    repoRoot: canonicalRoot,
     requestSpec,
     requestSpecRecord: Object.freeze({
       path: normalizedRequest.relative,
@@ -324,9 +372,9 @@ export async function discoverCharacterImageCatalog({
   }
 
   const snapshot = {
-    model,
-    image_model: imageModel,
-    provider_endpoint: providerEndpoint,
+    model: catalogModelSnapshot(model),
+    image_model: catalogImageModelSnapshot(imageModel),
+    provider_endpoint: catalogProviderSnapshot(providerEndpoint),
   };
   const serializedSnapshot = JSON.stringify(snapshot);
   return Object.freeze({
@@ -424,14 +472,13 @@ export async function runCharacterImageGeneration({
   const completedAt = isoTimestamp(now(), 'generation completion time');
   const durationMs = Math.max(0, Math.round(monotonicNow() - startedMonotonic));
   const responseHeaders = safeHeaders(response.headers, apiKey);
-  const sanitizedResponseBody = sanitizeResponseBody(responseBody, apiKey);
-  const safeUsage = sanitizeResponseBody(responseBody.usage, apiKey);
-  const requestId = firstPresent(
+  const safeUsage = allowlistedUsage(responseBody.usage);
+  const requestId = firstSafeIdentifier('req',
     responseHeaders['x-request-id'],
     responseHeaders['x-openrouter-request-id'],
     responseBody.request_id,
   );
-  const generationId = firstPresent(
+  const generationId = firstSafeIdentifier('gen',
     responseHeaders['x-openrouter-generation-id'],
     responseHeaders['x-generation-id'],
     responseBody.generation_id,
@@ -482,13 +529,21 @@ export async function runCharacterImageGeneration({
     },
     response: {
       status: response.status,
-      status_text: response.statusText,
+      status_text: safeHttpStatusText(response.statusText),
       headers: responseHeaders,
       body_bytes: responseBodyBytes,
       body_sha256: responseBodySha256,
       request_id: requestId,
       generation_id: generationId,
-      body_without_image_bytes: sanitizedResponseBody,
+      metadata: {
+        created: responseBody.created,
+        image_count: responseBody.data.length,
+        image: {
+          reported_media_type: validated.reportedMediaType,
+          bytes: validated.imageBytes.length,
+          sha256: sha256(validated.imageBytes),
+        },
+      },
     },
     usage: safeUsage,
     output: {
@@ -544,34 +599,132 @@ export function validateGenerationResponse(body) {
   return Object.freeze({ imageBytes, png, reportedMediaType });
 }
 
-export async function installOutputPair({ imagePath, imageBytes, provenancePath, provenanceBytes }) {
-  const imageTemporary = temporaryPath(imagePath);
-  const provenanceTemporary = temporaryPath(provenancePath);
-  let provenanceInstalled = false;
-  try {
-    await Promise.all([
-      writeDurableTemporary(imageTemporary, imageBytes),
-      writeDurableTemporary(provenanceTemporary, provenanceBytes),
-    ]);
-    await link(provenanceTemporary, provenancePath);
-    provenanceInstalled = true;
-    try {
-      await link(imageTemporary, imagePath);
-    } catch (error) {
-      await unlink(provenancePath).catch(() => {});
-      provenanceInstalled = false;
-      throw error;
-    }
-  } catch (error) {
-    if (error?.code === 'EEXIST') throw new Error('Refusing to overwrite an existing image or provenance record.');
-    throw error;
-  } finally {
-    await Promise.all([
-      unlink(imageTemporary).catch(() => {}),
-      unlink(provenanceTemporary).catch(() => {}),
-    ]);
-    if (provenanceInstalled) await access(provenancePath, fsConstants.R_OK);
+export function characterImageTransactionPath(provenancePath) {
+  return resolve(dirname(provenancePath), `.${basename(provenancePath)}.character-image-transaction.json`);
+}
+
+export async function installOutputPair(
+  { imagePath, imageBytes, provenancePath, provenanceBytes },
+  { io: ioOverrides = {}, recoverOnError = true } = {},
+) {
+  const io = installIo(ioOverrides);
+  const directory = assertSharedOutputDirectory(imagePath, provenancePath);
+  if (!Buffer.isBuffer(imageBytes) || !Buffer.isBuffer(provenanceBytes)) {
+    throw new TypeError('Image and provenance outputs must be Buffers.');
   }
+  await recoverCharacterImageInstall({ imagePath, provenancePath }, { io });
+  await Promise.all([
+    assertFileMissingWithIo(imagePath, 'output image', io),
+    assertFileMissingWithIo(provenancePath, 'output provenance', io),
+  ]);
+
+  const transactionPath = characterImageTransactionPath(provenancePath);
+  const transactionTemporary = `${transactionPath}.tmp`;
+  const imageTemporary = temporaryPath(imagePath, 'image');
+  const provenanceTemporary = temporaryPath(provenancePath, 'provenance');
+  const transaction = {
+    schema_version: 1,
+    kind: 'character-image-output-transaction',
+    image: {
+      final: basename(imagePath),
+      temporary: basename(imageTemporary),
+      bytes: imageBytes.length,
+      sha256: sha256(imageBytes),
+    },
+    provenance: {
+      final: basename(provenancePath),
+      temporary: basename(provenanceTemporary),
+      bytes: provenanceBytes.length,
+      sha256: sha256(provenanceBytes),
+    },
+  };
+  const transactionBytes = Buffer.from(`${JSON.stringify(transaction, null, 2)}\n`);
+
+  try {
+    await writeDurableTemporary(transactionTemporary, transactionBytes, io);
+    await io.link(transactionTemporary, transactionPath);
+    await unlinkIfExists(transactionTemporary, io);
+    await syncDirectory(directory, io);
+
+    await writeDurableTemporary(imageTemporary, imageBytes, io);
+    await writeDurableTemporary(provenanceTemporary, provenanceBytes, io);
+    await io.link(imageTemporary, imagePath);
+    await syncDirectory(directory, io);
+    await io.link(provenanceTemporary, provenancePath);
+    await syncDirectory(directory, io);
+
+    await verifyRegularFileHash(imagePath, transaction.image, io);
+    await verifyRegularFileHash(provenancePath, transaction.provenance, io);
+    await unlinkIfExists(imageTemporary, io);
+    await unlinkIfExists(provenanceTemporary, io);
+    await unlinkIfExists(transactionPath, io);
+    await syncDirectory(directory, io);
+  } catch (error) {
+    if (recoverOnError) {
+      try {
+        const recovery = await recoverCharacterImageInstall({ imagePath, provenancePath }, { io });
+        await unlinkIfExists(transactionTemporary, io);
+        await unlinkIfExists(imageTemporary, io);
+        await unlinkIfExists(provenanceTemporary, io);
+        await syncDirectory(directory, io);
+        if (recovery.status === 'committed') return;
+      } catch (recoveryError) {
+        throw new AggregateError(
+          [error, recoveryError],
+          'Character image install failed and automatic recovery could not complete.',
+        );
+      }
+    }
+    if (error?.code === 'EEXIST') {
+      throw new Error('Refusing to overwrite an existing image or provenance record.');
+    }
+    throw error;
+  }
+}
+
+export async function recoverCharacterImageInstall(
+  { imagePath, provenancePath },
+  { io: ioOverrides = {} } = {},
+) {
+  const io = installIo(ioOverrides);
+  const directory = assertSharedOutputDirectory(imagePath, provenancePath);
+  const transactionPath = characterImageTransactionPath(provenancePath);
+  const transactionTemporary = `${transactionPath}.tmp`;
+  const transactionState = await fileState(transactionPath, io);
+  if (!transactionState.exists) {
+    if (await unlinkIfExists(transactionTemporary, io)) await syncDirectory(directory, io);
+    return Object.freeze({ status: 'none' });
+  }
+  if (!transactionState.regular) {
+    throw new Error(`Install transaction ${basename(transactionPath)} must be a regular file, not a symbolic link.`);
+  }
+
+  let transaction;
+  try {
+    transaction = JSON.parse((await io.readFile(transactionPath)).toString('utf8'));
+  } catch (error) {
+    throw new Error(`Install transaction ${basename(transactionPath)} is unreadable: ${error.message}`);
+  }
+  validateInstallTransaction(transaction, { imagePath, provenancePath });
+  const imageState = await fileState(imagePath, io);
+  const provenanceState = await fileState(provenancePath, io);
+
+  if (provenanceState.exists) {
+    if (!imageState.exists) {
+      throw new Error('Committed character-image provenance exists without its image; manual recovery is required.');
+    }
+    await verifyRegularFileHash(imagePath, transaction.image, io);
+    await verifyRegularFileHash(provenancePath, transaction.provenance, io);
+    await cleanupInstallTransaction(transaction, transactionPath, transactionTemporary, directory, io);
+    return Object.freeze({ status: 'committed' });
+  }
+
+  if (imageState.exists) {
+    await verifyRegularFileHash(imagePath, transaction.image, io);
+    await io.unlink(imagePath);
+  }
+  await cleanupInstallTransaction(transaction, transactionPath, transactionTemporary, directory, io);
+  return Object.freeze({ status: 'rolled_back' });
 }
 
 export async function readRepositoryState(repoRoot) {
@@ -585,12 +738,112 @@ export async function readRepositoryState(repoRoot) {
 }
 
 async function assertOutputDestinationsAvailable(output) {
+  await recoverCharacterImageInstall({
+    imagePath: output.image.absolute,
+    provenancePath: output.provenance.absolute,
+  });
   await Promise.all([
     assertFileMissing(output.image.absolute, output.image.relative),
     assertFileMissing(output.provenance.absolute, output.provenance.relative),
     assertWritableDirectory(dirname(output.image.absolute), `parent directory for ${output.image.relative}`),
     assertWritableDirectory(dirname(output.provenance.absolute), `parent directory for ${output.provenance.relative}`),
   ]);
+}
+
+function installIo(overrides) {
+  return Object.freeze({ ...INSTALL_IO, ...overrides });
+}
+
+function assertSharedOutputDirectory(imagePath, provenancePath) {
+  const imageDirectory = dirname(imagePath);
+  if (imageDirectory !== dirname(provenancePath)) {
+    throw new Error('Output image and provenance must share one directory for recoverable installation.');
+  }
+  return imageDirectory;
+}
+
+async function assertFileMissingWithIo(path, label, io) {
+  const state = await fileState(path, io);
+  if (state.exists) throw new Error(`Refusing to overwrite existing ${label}.`);
+}
+
+async function fileState(path, io) {
+  try {
+    const information = await io.lstat(path);
+    return {
+      exists: true,
+      regular: information.isFile() && !information.isSymbolicLink(),
+      symbolicLink: information.isSymbolicLink(),
+    };
+  } catch (error) {
+    if (error?.code === 'ENOENT') return { exists: false, regular: false, symbolicLink: false };
+    throw error;
+  }
+}
+
+function validateInstallTransaction(transaction, { imagePath, provenancePath }) {
+  assertPlainObject(transaction, 'install transaction');
+  assertExactKeys(transaction, ['schema_version', 'kind', 'image', 'provenance'], 'install transaction');
+  if (transaction.schema_version !== 1 || transaction.kind !== 'character-image-output-transaction') {
+    throw new Error('Install transaction has an unsupported schema or kind.');
+  }
+  validateInstallFileRecord(transaction.image, basename(imagePath), 'image');
+  validateInstallFileRecord(transaction.provenance, basename(provenancePath), 'provenance');
+}
+
+function validateInstallFileRecord(record, expectedFinal, kind) {
+  assertPlainObject(record, `install transaction.${kind}`);
+  assertExactKeys(record, ['final', 'temporary', 'bytes', 'sha256'], `install transaction.${kind}`);
+  if (record.final !== expectedFinal) {
+    throw new Error(`Install transaction ${kind} does not match the requested output.`);
+  }
+  const temporaryPattern = new RegExp(`^\\.[0-9a-f-]+\\.character-image\\.${kind}\\.tmp$`, 'i');
+  if (typeof record.temporary !== 'string' || !temporaryPattern.test(record.temporary)) {
+    throw new Error(`Install transaction ${kind} temporary filename is unsafe.`);
+  }
+  if (!Number.isInteger(record.bytes) || record.bytes < 0 || !/^[0-9a-f]{64}$/.test(record.sha256)) {
+    throw new Error(`Install transaction ${kind} hash or byte count is invalid.`);
+  }
+}
+
+async function verifyRegularFileHash(path, expected, io) {
+  const state = await fileState(path, io);
+  if (!state.exists || !state.regular) {
+    throw new Error(`Transaction output ${basename(path)} must be a regular file, not a symbolic link.`);
+  }
+  const bytes = await io.readFile(path);
+  if (bytes.length !== expected.bytes || sha256(bytes) !== expected.sha256) {
+    throw new Error(`Transaction output ${basename(path)} does not match its recorded bytes and hash.`);
+  }
+}
+
+async function cleanupInstallTransaction(transaction, transactionPath, transactionTemporary, directory, io) {
+  await unlinkIfExists(resolve(directory, transaction.image.temporary), io);
+  await unlinkIfExists(resolve(directory, transaction.provenance.temporary), io);
+  await unlinkIfExists(transactionTemporary, io);
+  await unlinkIfExists(transactionPath, io);
+  await syncDirectory(directory, io);
+}
+
+async function unlinkIfExists(path, io) {
+  try {
+    const information = await io.lstat(path);
+    if (information.isDirectory()) throw new Error(`Refusing to unlink directory ${path}.`);
+    await io.unlink(path);
+    return true;
+  } catch (error) {
+    if (error?.code === 'ENOENT') return false;
+    throw error;
+  }
+}
+
+async function syncDirectory(directory, io) {
+  const handle = await io.open(directory, 'r');
+  try {
+    await handle.sync();
+  } finally {
+    await handle.close();
+  }
 }
 
 async function assertFileMissing(path, label) {
@@ -666,6 +919,105 @@ function assertModalities(architecture, source) {
   }
 }
 
+function catalogModelSnapshot(model) {
+  return {
+    id: CHARACTER_IMAGE_POLICY.model,
+    canonical_slug: CHARACTER_IMAGE_POLICY.canonicalModelSlug,
+    created: safeNonNegativeInteger(model.created),
+    context_length: safeNonNegativeInteger(model.context_length),
+    architecture: catalogArchitectureSnapshot(model.architecture),
+    pricing: catalogPricingSnapshot(model.pricing),
+    supported_parameters: catalogParameterNames(model.supported_parameters),
+  };
+}
+
+function catalogImageModelSnapshot(model) {
+  return {
+    id: CHARACTER_IMAGE_POLICY.model,
+    created: safeNonNegativeInteger(model.created),
+    architecture: catalogArchitectureSnapshot(model.architecture),
+    supported_parameters: catalogControlSnapshot(model.supported_parameters),
+    supports_streaming: false,
+    endpoints: `/api/v1/images/models/${CHARACTER_IMAGE_POLICY.model}/endpoints`,
+  };
+}
+
+function catalogProviderSnapshot(endpoint) {
+  const pricing = endpoint.pricing.flatMap((entry) => {
+    if (!isPlainObject(entry)
+      || !['output_image'].includes(entry.billable)
+      || !['image', 'token'].includes(entry.unit)
+      || typeof entry.cost_usd !== 'number'
+      || !Number.isFinite(entry.cost_usd)
+      || entry.cost_usd < 0) return [];
+    return [{ billable: entry.billable, unit: entry.unit, cost_usd: entry.cost_usd }];
+  });
+  if (pricing.length === 0) throw new Error('Locked provider returned no safe auditable pricing entry.');
+  return {
+    provider_slug: CHARACTER_IMAGE_POLICY.provider,
+    provider_tag: CHARACTER_IMAGE_POLICY.provider,
+    supported_parameters: catalogControlSnapshot(endpoint.supported_parameters),
+    allowed_passthrough_parameters: Array.isArray(endpoint.allowed_passthrough_parameters)
+      && endpoint.allowed_passthrough_parameters.includes('cachedContent')
+      ? ['cachedContent']
+      : [],
+    supports_streaming: false,
+    pricing,
+  };
+}
+
+function catalogArchitectureSnapshot(architecture) {
+  return {
+    input_modalities: ['image', 'text'].filter((value) => architecture.input_modalities.includes(value)),
+    output_modalities: ['image', 'text'].filter((value) => architecture.output_modalities.includes(value)),
+  };
+}
+
+function catalogPricingSnapshot(pricing) {
+  const safe = {};
+  for (const key of ['prompt', 'completion', 'image_output']) {
+    const value = pricing?.[key];
+    if (typeof value === 'string' && /^\d+(?:\.\d+)?$/.test(value)) safe[key] = value;
+  }
+  return safe;
+}
+
+function catalogParameterNames(parameters) {
+  const audited = new Set([
+    'include_reasoning',
+    'max_tokens',
+    'reasoning',
+    'reasoning_effort',
+    'response_format',
+    'seed',
+    'structured_outputs',
+    'temperature',
+    'top_p',
+  ]);
+  return Array.isArray(parameters) ? parameters.filter((value) => audited.has(value)) : [];
+}
+
+function catalogControlSnapshot(parameters) {
+  return {
+    resolution: enumControlSnapshot(parameters.resolution),
+    aspect_ratio: enumControlSnapshot(parameters.aspect_ratio),
+    n: rangeControlSnapshot(parameters.n),
+    input_references: rangeControlSnapshot(parameters.input_references),
+  };
+}
+
+function enumControlSnapshot(control) {
+  return { type: 'enum', values: control.values.filter((value) => typeof value === 'string' && value.length <= 16) };
+}
+
+function rangeControlSnapshot(control) {
+  return { type: 'range', min: control.min, max: control.max };
+}
+
+function safeNonNegativeInteger(value) {
+  return Number.isInteger(value) && value >= 0 ? value : null;
+}
+
 function inspectPng(bytes, label) {
   if (!Buffer.isBuffer(bytes) || bytes.length < PNG_SIGNATURE.length || !bytes.subarray(0, 8).equals(PNG_SIGNATURE)) {
     throw new Error(`${label} is not a PNG (signature mismatch).`);
@@ -700,35 +1052,56 @@ function decodeBase64Strict(value, label) {
   return bytes;
 }
 
-function sanitizeResponseBody(value, secret) {
-  if (Array.isArray(value)) return value.map((entry) => sanitizeResponseBody(entry, secret));
-  if (isPlainObject(value)) {
-    const sanitized = {};
-    for (const [key, entry] of Object.entries(value)) {
-      if (key === 'b64_json') {
-        const bytes = decodeBase64Strict(entry, 'OpenRouter response b64_json');
-        sanitized.image_bytes = { bytes: bytes.length, sha256: sha256(bytes) };
-      } else {
-        sanitized[key] = sanitizeResponseBody(entry, secret);
-      }
-    }
-    return sanitized;
-  }
-  if (typeof value === 'string' && secret && value.includes(secret)) {
-    return value.split(secret).join('[REDACTED]');
-  }
-  return value;
-}
-
 function safeHeaders(headers, secret) {
   const safe = {};
   for (const [rawName, rawValue] of headers.entries()) {
     const name = rawName.toLowerCase();
-    if (SENSITIVE_HEADER_NAME.test(name)) continue;
-    if (secret && rawValue.includes(secret)) continue;
+    if (!SAFE_RESPONSE_HEADER_NAMES.has(name)) continue;
+    if (typeof rawValue !== 'string'
+      || rawValue.length > 512
+      || /[\u0000-\u001f\u007f]/.test(rawValue)
+      || /(?:data:|https?:\/\/)/i.test(rawValue)
+      || (secret && rawValue.includes(secret))) continue;
     safe[name] = rawValue;
   }
   return safe;
+}
+
+function allowlistedUsage(usage) {
+  return copyAllowlistedFields(usage, USAGE_FIELDS, 'OpenRouter response.usage');
+}
+
+function copyAllowlistedFields(value, schema, label) {
+  assertPlainObject(value, label);
+  const safe = {};
+  for (const [key, expected] of Object.entries(schema)) {
+    if (!Object.hasOwn(value, key)) continue;
+    const field = value[key];
+    if (expected === 'number') {
+      if (typeof field !== 'number' || !Number.isFinite(field) || field < 0) {
+        throw new Error(`${label}.${key} must be a non-negative finite number.`);
+      }
+      safe[key] = field;
+    } else if (expected === 'boolean') {
+      if (typeof field !== 'boolean') throw new Error(`${label}.${key} must be a boolean.`);
+      safe[key] = field;
+    } else {
+      safe[key] = copyAllowlistedFields(field, expected, `${label}.${key}`);
+    }
+  }
+  return safe;
+}
+
+function firstSafeIdentifier(prefix, ...values) {
+  const expression = new RegExp(`^${prefix}[-_:][A-Za-z0-9][A-Za-z0-9._:-]{0,251}$`);
+  for (const value of values) {
+    if (typeof value === 'string' && expression.test(value)) return value;
+  }
+  return null;
+}
+
+function safeHttpStatusText(value) {
+  return typeof value === 'string' && /^[A-Za-z ]{0,64}$/.test(value) ? value : null;
 }
 
 function safeErrorBody(body, secret) {
@@ -737,18 +1110,76 @@ function safeErrorBody(body, secret) {
   return safe.slice(0, 4000);
 }
 
-function resolveRepositoryPath(repoRoot, value, label) {
+async function resolveRepositoryRoot(repoRoot) {
+  const root = await realpath(resolve(repoRoot));
+  const information = await lstat(root);
+  if (!information.isDirectory() || information.isSymbolicLink()) {
+    throw new Error('Repository root must resolve to a real directory.');
+  }
+  return root;
+}
+
+async function resolveExistingRepositoryFile(repoRoot, value, label) {
+  const candidate = resolveRepositoryPathLexically(repoRoot, value, label);
+  await assertNoSymbolicLinkComponents(repoRoot, candidate.absolute, label, true);
+  const information = await lstat(candidate.absolute);
+  if (!information.isFile() || information.isSymbolicLink()) {
+    throw new Error(`${label} must be a regular file and may not be a symbolic link.`);
+  }
+  const canonical = await realpath(candidate.absolute);
+  assertPathInsideRepository(repoRoot, canonical, label);
+  return repositoryPathRecord(repoRoot, canonical);
+}
+
+async function resolveNewRepositoryFile(repoRoot, value, label) {
+  const candidate = resolveRepositoryPathLexically(repoRoot, value, label);
+  const parent = dirname(candidate.absolute);
+  await assertNoSymbolicLinkComponents(repoRoot, parent, `${label} parent`, true);
+  const canonicalParent = await realpath(parent);
+  assertPathInsideRepository(repoRoot, canonicalParent, `${label} parent`, true);
+  const information = await lstat(canonicalParent);
+  if (!information.isDirectory() || information.isSymbolicLink()) {
+    throw new Error(`${label} parent must be a real directory.`);
+  }
+  return repositoryPathRecord(repoRoot, resolve(canonicalParent, basename(candidate.absolute)));
+}
+
+function resolveRepositoryPathLexically(repoRoot, value, label) {
   assertNonEmptyString(value, label);
   if (isAbsolute(value)) throw new Error(`${label} must be relative to the repository root.`);
-  const root = resolve(repoRoot);
-  const absolute = resolve(root, value);
-  const relativePath = relative(root, absolute);
-  if (!relativePath || relativePath === '..' || relativePath.startsWith(`..${sep}`) || isAbsolute(relativePath)) {
+  const absolute = resolve(repoRoot, value);
+  assertPathInsideRepository(repoRoot, absolute, label);
+  return repositoryPathRecord(repoRoot, absolute);
+}
+
+async function assertNoSymbolicLinkComponents(repoRoot, target, label, includeTarget) {
+  const relativePath = relative(repoRoot, target);
+  const components = relativePath ? relativePath.split(sep) : [];
+  const count = includeTarget ? components.length : Math.max(0, components.length - 1);
+  let cursor = repoRoot;
+  for (const component of components.slice(0, count)) {
+    cursor = resolve(cursor, component);
+    const information = await lstat(cursor);
+    if (information.isSymbolicLink()) {
+      throw new Error(`${label} may not traverse symbolic link ${repositoryPathRecord(repoRoot, cursor).relative}.`);
+    }
+  }
+}
+
+function assertPathInsideRepository(repoRoot, target, label, allowRoot = false) {
+  const relativePath = relative(repoRoot, target);
+  if ((!allowRoot && !relativePath)
+    || relativePath === '..'
+    || relativePath.startsWith(`..${sep}`)
+    || isAbsolute(relativePath)) {
     throw new Error(`${label} must identify a file inside the repository root.`);
   }
+}
+
+function repositoryPathRecord(repoRoot, absolute) {
   return Object.freeze({
     absolute,
-    relative: relativePath.split(sep).join('/'),
+    relative: relative(repoRoot, absolute).split(sep).join('/'),
   });
 }
 
@@ -781,23 +1212,19 @@ function isoTimestamp(value, label) {
   return value.toISOString();
 }
 
-function firstPresent(...values) {
-  return values.find((value) => typeof value === 'string' && value) ?? null;
+function temporaryPath(finalPath, kind) {
+  return resolve(dirname(finalPath), `.${randomUUID()}.character-image.${kind}.tmp`);
 }
 
-function temporaryPath(finalPath) {
-  return resolve(dirname(finalPath), `.${randomUUID()}.character-image.tmp`);
-}
-
-async function writeDurableTemporary(path, bytes) {
-  const handle = await open(path, 'wx', 0o600);
+async function writeDurableTemporary(path, bytes, io = INSTALL_IO) {
+  const handle = await io.open(path, 'wx', 0o600);
   try {
     await handle.writeFile(bytes);
     await handle.sync();
   } finally {
     await handle.close();
   }
-  await chmod(path, 0o644);
+  await io.chmod(path, 0o644);
 }
 
 async function main() {
