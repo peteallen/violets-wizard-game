@@ -1,8 +1,9 @@
 # Violet casual talk-a candidate v1
 
-Status: production expression candidate. The raw model output is never a
-shipping asset; only a locally masked composite over `casual-approved.png` may
-advance to review.
+Status: **ACCEPTED PRODUCTION EXPRESSION SOURCE.** `talk-a.png` is the masked
+composite over `casual-approved.png`; a fresh Art Director returned `PASS` on
+2026-07-14. The globally repainted raw model output remains provenance only and
+must never ship.
 
 Model: `google/gemini-3.1-flash-image`
 

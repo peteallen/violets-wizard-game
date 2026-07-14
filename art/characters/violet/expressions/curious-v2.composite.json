@@ -1,0 +1,115 @@
+{
+  "schema_version": 1,
+  "algorithm": {
+    "id": "linear-light-premultiplied-rgba-v1",
+    "color_space": "srgb",
+    "transfer": "IEC 61966-2-1 sRGB to linear light and back",
+    "representation": "premultiplied RGBA",
+    "mask_coverage": "grayscale multiplied by alpha",
+    "output_color_type": 6,
+    "output_bit_depth": 8
+  },
+  "edit_spec": {
+    "path": "art/characters/violet/expressions/curious-v2.edit.json",
+    "bytes": 728,
+    "sha256": "39c9afec5915e36ebb97290dd2af306e4c47601ec26fced9f052b7d9dee00fad",
+    "schema_version": 1
+  },
+  "controls": {
+    "allow_alpha_change": false,
+    "zero_mask_pixels_copied_byte_exactly": true
+  },
+  "inputs": {
+    "base": {
+      "path": "art/characters/violet/canonical/casual-approved.png",
+      "bytes": 1139914,
+      "sha256": "68e9871ceecc32b9fbf50cbf36eecbae226eb184ad5337f67bbca2e53266e033",
+      "rgba_sha256": "c61835ae2054be51e1ca97a71e81958d2eadc9dc5292bb34597f06a7e08caa66",
+      "dimensions": {
+        "width": 896,
+        "height": 1200
+      },
+      "png": {
+        "color_type": 2,
+        "bit_depth": 8,
+        "has_color": true,
+        "has_alpha": false,
+        "interlaced": false
+      },
+      "expected_sha256": "68e9871ceecc32b9fbf50cbf36eecbae226eb184ad5337f67bbca2e53266e033"
+    },
+    "raw_candidate": {
+      "path": "art/characters/violet/expressions/curious-v2-raw.png",
+      "bytes": 1239115,
+      "sha256": "d949f88d2d7fdcd21122bd9c210410cefafa68e11bdc9a2adfe68be14da3c2fb",
+      "rgba_sha256": "af6110f7a684157abdeeba2c3ca178f2e03b8addcb8c94adb1462c363787cc90",
+      "dimensions": {
+        "width": 896,
+        "height": 1200
+      },
+      "png": {
+        "color_type": 2,
+        "bit_depth": 8,
+        "has_color": true,
+        "has_alpha": false,
+        "interlaced": false
+      },
+      "expected_sha256": "d949f88d2d7fdcd21122bd9c210410cefafa68e11bdc9a2adfe68be14da3c2fb"
+    },
+    "mask": {
+      "path": "art/characters/violet/expressions/masks/wonder-v1.png",
+      "bytes": 31301,
+      "sha256": "f88a2581966803f8917aff96696d4831829e86891c835311a7b82e4d07e13eb9",
+      "rgba_sha256": "48a2f8a201316970d31f0f8da6fd02df192dfc77259f0ca25f3873e92c1a0cf2",
+      "dimensions": {
+        "width": 896,
+        "height": 1200
+      },
+      "png": {
+        "color_type": 6,
+        "bit_depth": 8,
+        "has_color": true,
+        "has_alpha": true,
+        "interlaced": false
+      },
+      "expected_sha256": "f88a2581966803f8917aff96696d4831829e86891c835311a7b82e4d07e13eb9"
+    }
+  },
+  "mask": {
+    "bounds": {
+      "x": 358,
+      "y": 202,
+      "width": 177,
+      "height": 165
+    },
+    "coverage_denominator": 65025,
+    "minimum_nonzero_coverage_units": 255,
+    "maximum_coverage_units": 65025,
+    "zero_pixels": 1059432,
+    "nonzero_pixels": 15768,
+    "full_pixels": 11994,
+    "soft_pixels": 3774
+  },
+  "changes": {
+    "total_pixels": 1075200,
+    "output_changed_pixels": 14886,
+    "rgb_changed_pixels": 14886,
+    "alpha_changed_pixels": 0,
+    "changed_channel_bytes": 42334,
+    "outside_zero_mask_changed_pixels": 0
+  },
+  "output": {
+    "image": {
+      "path": "art/characters/violet/expressions/curious-v2.png",
+      "media_type": "image/png",
+      "bytes": 1198527,
+      "sha256": "c75a5f311c5bb52a0417a9a980a15346da584cb91798b36477847b6ecf40abf4",
+      "rgba_sha256": "d821b604e0cffbb35407eb1f9072289abb6f500eefd2fae7461028d3769fe2c4",
+      "dimensions": {
+        "width": 896,
+        "height": 1200
+      }
+    },
+    "provenance": "art/characters/violet/expressions/curious-v2.composite.json"
+  }
+}

@@ -1,0 +1,21 @@
+{
+  "schema_version": 1,
+  "prompt": {
+    "path": "art/characters/violet/expressions/proud-v1.prompt.md",
+    "section": "Prompt"
+  },
+  "references": [
+    {
+      "path": "art/characters/violet/canonical/casual-approved.png",
+      "role": "immutable canonical edit target"
+    }
+  ],
+  "generation": {
+    "aspect_ratio": "3:4",
+    "resolution": "1K"
+  },
+  "output": {
+    "image": "art/characters/violet/expressions/proud-v1-raw.png",
+    "provenance": "art/characters/violet/expressions/proud-v1.metadata.json"
+  }
+}

@@ -1,0 +1,333 @@
+{
+  "schema_version": 1,
+  "kind": "openrouter-character-image-generation",
+  "policy": {
+    "model": "google/gemini-3.1-flash-image",
+    "canonical_model_slug": "google/gemini-3.1-flash-image-20260528",
+    "provider": "google-vertex/global",
+    "allow_fallbacks": false,
+    "automatic_retries": 0
+  },
+  "timestamps": {
+    "catalog_checked_at": "2026-07-14T19:56:18.785Z",
+    "generation_started_at": "2026-07-14T19:56:20.190Z",
+    "generation_completed_at": "2026-07-14T19:56:41.190Z",
+    "duration_ms": 21000,
+    "response_created_unix": 0
+  },
+  "repository": {
+    "commit": "25b0f3cdef0449439fa4ccdba181b31f8c3fabab",
+    "dirty": true
+  },
+  "runtime": {
+    "node": "v22.17.0",
+    "platform": "darwin",
+    "architecture": "arm64"
+  },
+  "request_spec": {
+    "path": "art/characters/violet/expressions/curious-v2.request.json",
+    "bytes": 531,
+    "sha256": "3fdbb5b37e4746e7dcc491188224166502e242910a941f9dbe4dae21bca0f076",
+    "schema_version": 1
+  },
+  "prompt": {
+    "path": "art/characters/violet/expressions/curious-v2.prompt.md",
+    "section": "Prompt",
+    "document_bytes": 2254,
+    "document_sha256": "6837711207fa00b1bea9249b7129c7d59f9b92e41e3465cff337c0f98e8af311",
+    "text_bytes": 1727,
+    "text_sha256": "347460d16a0bc59f13e479279761e68d78afa9379a7d12f3be7ad7c7bedbb13c"
+  },
+  "references": [
+    {
+      "index": 1,
+      "role": "immutable canonical edit target",
+      "path": "art/characters/violet/canonical/casual-approved.png",
+      "media_type": "image/png",
+      "bytes": 1139914,
+      "sha256": "68e9871ceecc32b9fbf50cbf36eecbae226eb184ad5337f67bbca2e53266e033",
+      "dimensions": {
+        "width": 896,
+        "height": 1200
+      },
+      "png": {
+        "bit_depth": 8,
+        "color_type": 2,
+        "has_color": true,
+        "has_alpha": false,
+        "interlaced": false
+      }
+    }
+  ],
+  "catalog": {
+    "sha256": "d4547839308c574eb8467a6f7407a89d31225d4c7f0ef37111cb1554846dd4f8",
+    "bytes": 1608,
+    "snapshot": {
+      "model": {
+        "id": "google/gemini-3.1-flash-image",
+        "canonical_slug": "google/gemini-3.1-flash-image-20260528",
+        "created": 1781754065,
+        "context_length": 131072,
+        "architecture": {
+          "input_modalities": [
+            "image",
+            "text"
+          ],
+          "output_modalities": [
+            "image",
+            "text"
+          ]
+        },
+        "pricing": {
+          "prompt": "0.0000005",
+          "completion": "0.000003",
+          "image_output": "0.00006"
+        },
+        "supported_parameters": [
+          "include_reasoning",
+          "max_tokens",
+          "reasoning",
+          "reasoning_effort",
+          "response_format",
+          "seed",
+          "structured_outputs",
+          "temperature",
+          "top_p"
+        ]
+      },
+      "image_model": {
+        "id": "google/gemini-3.1-flash-image",
+        "created": 1781754065,
+        "architecture": {
+          "input_modalities": [
+            "image",
+            "text"
+          ],
+          "output_modalities": [
+            "image",
+            "text"
+          ]
+        },
+        "supported_parameters": {
+          "resolution": {
+            "type": "enum",
+            "values": [
+              "512",
+              "1K",
+              "2K",
+              "4K"
+            ]
+          },
+          "aspect_ratio": {
+            "type": "enum",
+            "values": [
+              "1:1",
+              "1:4",
+              "1:8",
+              "2:3",
+              "3:2",
+              "3:4",
+              "4:1",
+              "4:3",
+              "4:5",
+              "5:4",
+              "8:1",
+              "9:16",
+              "16:9",
+              "21:9"
+            ]
+          },
+          "n": {
+            "type": "range",
+            "min": 1,
+            "max": 1
+          },
+          "input_references": {
+            "type": "range",
+            "min": 0,
+            "max": 14
+          }
+        },
+        "supports_streaming": false,
+        "endpoints": "/api/v1/images/models/google/gemini-3.1-flash-image/endpoints"
+      },
+      "provider_endpoint": {
+        "provider_slug": "google-vertex/global",
+        "provider_tag": "google-vertex/global",
+        "supported_parameters": {
+          "resolution": {
+            "type": "enum",
+            "values": [
+              "512",
+              "1K",
+              "2K",
+              "4K"
+            ]
+          },
+          "aspect_ratio": {
+            "type": "enum",
+            "values": [
+              "1:1",
+              "1:4",
+              "1:8",
+              "2:3",
+              "3:2",
+              "3:4",
+              "4:1",
+              "4:3",
+              "4:5",
+              "5:4",
+              "8:1",
+              "9:16",
+              "16:9",
+              "21:9"
+            ]
+          },
+          "n": {
+            "type": "range",
+            "min": 1,
+            "max": 1
+          },
+          "input_references": {
+            "type": "range",
+            "min": 0,
+            "max": 14
+          }
+        },
+        "allowed_passthrough_parameters": [
+          "cachedContent"
+        ],
+        "supports_streaming": false,
+        "pricing": [
+          {
+            "billable": "output_image",
+            "unit": "token",
+            "cost_usd": 0.00006
+          }
+        ]
+      }
+    },
+    "sources": {
+      "model": {
+        "url": "https://openrouter.ai/api/v1/model/google/gemini-3.1-flash-image",
+        "status": 200,
+        "body_bytes": 1293,
+        "body_sha256": "89be87934f7850b356b2f05cbc229e4d710348e38789983bf5603011ff4c5b83",
+        "response_headers": {
+          "cf-ray": "a1b3170b6e60987c-DEN",
+          "content-type": "application/json",
+          "date": "Tue, 14 Jul 2026 19:56:19 GMT",
+          "server": "cloudflare"
+        }
+      },
+      "image_models": {
+        "url": "https://openrouter.ai/api/v1/images/models",
+        "status": 200,
+        "body_bytes": 27272,
+        "body_sha256": "dbedd85c93b2c6f9693d47298e1a9d4a6b520de472d87c558ef2364a1c26ceb6",
+        "response_headers": {
+          "cf-ray": "a1b3170b6ceae665-DEN",
+          "content-type": "application/json",
+          "date": "Tue, 14 Jul 2026 19:56:20 GMT",
+          "server": "cloudflare"
+        }
+      },
+      "image_endpoints": {
+        "url": "https://openrouter.ai/api/v1/images/models/google/gemini-3.1-flash-image/endpoints",
+        "status": 200,
+        "body_bytes": 1183,
+        "body_sha256": "be9d700ee208a564ac7aa4b36a014195320b191a6571e54a7bcdd3be1b26984e",
+        "response_headers": {
+          "cf-ray": "a1b3170b6a73e65b-DEN",
+          "content-type": "application/json",
+          "date": "Tue, 14 Jul 2026 19:56:20 GMT",
+          "server": "cloudflare"
+        }
+      }
+    }
+  },
+  "request": {
+    "endpoint": "https://openrouter.ai/api/v1/images",
+    "method": "POST",
+    "body_bytes": 1521918,
+    "body_sha256": "0d7252587982c203bf036dc3a646e552db84aa729a11553cc97683af6f5f6456",
+    "controls": {
+      "model": "google/gemini-3.1-flash-image",
+      "aspect_ratio": "3:4",
+      "resolution": "1K",
+      "n": 1,
+      "output_format": "png",
+      "reference_count": 1,
+      "provider": {
+        "only": [
+          "google-vertex/global"
+        ],
+        "allow_fallbacks": false
+      }
+    }
+  },
+  "response": {
+    "status": 200,
+    "status_text": "OK",
+    "headers": {
+      "cf-ray": "a1b317126f78987c-DEN",
+      "content-type": "application/json",
+      "date": "Tue, 14 Jul 2026 19:56:40 GMT",
+      "server": "cloudflare",
+      "x-generation-id": "gen-img-1784058980-9bLI4dHo2UyQ80wzjmvN"
+    },
+    "body_bytes": 1652638,
+    "body_sha256": "5a14b103e50200fdf3bc7297ec4cdc4853289a0dc9e0f53dd81a20a107bb7ede",
+    "request_id": null,
+    "generation_id": "gen-img-1784058980-9bLI4dHo2UyQ80wzjmvN",
+    "metadata": {
+      "created": 0,
+      "image_count": 1,
+      "image": {
+        "reported_media_type": "image/png",
+        "bytes": 1239115,
+        "sha256": "d949f88d2d7fdcd21122bd9c210410cefafa68e11bdc9a2adfe68be14da3c2fb"
+      }
+    }
+  },
+  "usage": {
+    "prompt_tokens": 1504,
+    "completion_tokens": 1120,
+    "total_tokens": 2624,
+    "cost": 0.067952,
+    "is_byok": false,
+    "prompt_tokens_details": {
+      "cached_tokens": 0,
+      "cache_write_tokens": 0,
+      "audio_tokens": 0,
+      "video_tokens": 0
+    },
+    "cost_details": {
+      "upstream_inference_cost": 0.067952,
+      "upstream_inference_prompt_cost": 0.000752,
+      "upstream_inference_completions_cost": 0.0672
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 0,
+      "image_tokens": 1120
+    }
+  },
+  "output": {
+    "path": "art/characters/violet/expressions/curious-v2-raw.png",
+    "media_type": "image/png",
+    "reported_media_type": "image/png",
+    "bytes": 1239115,
+    "sha256": "d949f88d2d7fdcd21122bd9c210410cefafa68e11bdc9a2adfe68be14da3c2fb",
+    "dimensions": {
+      "width": 896,
+      "height": 1200
+    },
+    "png": {
+      "bit_depth": 8,
+      "color_type": 2,
+      "has_color": true,
+      "has_alpha": false,
+      "interlaced": false
+    }
+  }
+}

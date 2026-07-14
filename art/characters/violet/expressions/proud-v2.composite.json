@@ -1,0 +1,115 @@
+{
+  "schema_version": 1,
+  "algorithm": {
+    "id": "linear-light-premultiplied-rgba-v1",
+    "color_space": "srgb",
+    "transfer": "IEC 61966-2-1 sRGB to linear light and back",
+    "representation": "premultiplied RGBA",
+    "mask_coverage": "grayscale multiplied by alpha",
+    "output_color_type": 6,
+    "output_bit_depth": 8
+  },
+  "edit_spec": {
+    "path": "art/characters/violet/expressions/proud-v2.edit.json",
+    "bytes": 722,
+    "sha256": "ddf702f64e63b320d6b2eff73edd2b9eae285f42a73cf96a9e5f7e7f10246c37",
+    "schema_version": 1
+  },
+  "controls": {
+    "allow_alpha_change": false,
+    "zero_mask_pixels_copied_byte_exactly": true
+  },
+  "inputs": {
+    "base": {
+      "path": "art/characters/violet/canonical/casual-approved.png",
+      "bytes": 1139914,
+      "sha256": "68e9871ceecc32b9fbf50cbf36eecbae226eb184ad5337f67bbca2e53266e033",
+      "rgba_sha256": "c61835ae2054be51e1ca97a71e81958d2eadc9dc5292bb34597f06a7e08caa66",
+      "dimensions": {
+        "width": 896,
+        "height": 1200
+      },
+      "png": {
+        "color_type": 2,
+        "bit_depth": 8,
+        "has_color": true,
+        "has_alpha": false,
+        "interlaced": false
+      },
+      "expected_sha256": "68e9871ceecc32b9fbf50cbf36eecbae226eb184ad5337f67bbca2e53266e033"
+    },
+    "raw_candidate": {
+      "path": "art/characters/violet/expressions/proud-v2-raw.png",
+      "bytes": 1158126,
+      "sha256": "23e9df3101073b62dd010c5f8ae72781bc34c257e4d0648de6e425e8e65da535",
+      "rgba_sha256": "6a8b8ac376ace7e7ac3cacb4a3db75522d89c0a67d93e30cb493ea83c3a19eba",
+      "dimensions": {
+        "width": 896,
+        "height": 1200
+      },
+      "png": {
+        "color_type": 2,
+        "bit_depth": 8,
+        "has_color": true,
+        "has_alpha": false,
+        "interlaced": false
+      },
+      "expected_sha256": "23e9df3101073b62dd010c5f8ae72781bc34c257e4d0648de6e425e8e65da535"
+    },
+    "mask": {
+      "path": "art/characters/violet/expressions/masks/wonder-v1.png",
+      "bytes": 31301,
+      "sha256": "f88a2581966803f8917aff96696d4831829e86891c835311a7b82e4d07e13eb9",
+      "rgba_sha256": "48a2f8a201316970d31f0f8da6fd02df192dfc77259f0ca25f3873e92c1a0cf2",
+      "dimensions": {
+        "width": 896,
+        "height": 1200
+      },
+      "png": {
+        "color_type": 6,
+        "bit_depth": 8,
+        "has_color": true,
+        "has_alpha": true,
+        "interlaced": false
+      },
+      "expected_sha256": "f88a2581966803f8917aff96696d4831829e86891c835311a7b82e4d07e13eb9"
+    }
+  },
+  "mask": {
+    "bounds": {
+      "x": 358,
+      "y": 202,
+      "width": 177,
+      "height": 165
+    },
+    "coverage_denominator": 65025,
+    "minimum_nonzero_coverage_units": 255,
+    "maximum_coverage_units": 65025,
+    "zero_pixels": 1059432,
+    "nonzero_pixels": 15768,
+    "full_pixels": 11994,
+    "soft_pixels": 3774
+  },
+  "changes": {
+    "total_pixels": 1075200,
+    "output_changed_pixels": 15087,
+    "rgb_changed_pixels": 15087,
+    "alpha_changed_pixels": 0,
+    "changed_channel_bytes": 43121,
+    "outside_zero_mask_changed_pixels": 0
+  },
+  "output": {
+    "image": {
+      "path": "art/characters/violet/expressions/proud-v2.png",
+      "media_type": "image/png",
+      "bytes": 1198409,
+      "sha256": "09e3aae3513e8d14f5344fb7a1d2f8988d45558f4308c7a70a0e0e4d84fdbc0b",
+      "rgba_sha256": "246a8fbdaf61de05494183e1ba7de072bc7b818a9257be3eeb2ca4a2568da2d0",
+      "dimensions": {
+        "width": 896,
+        "height": 1200
+      }
+    },
+    "provenance": "art/characters/violet/expressions/proud-v2.composite.json"
+  }
+}

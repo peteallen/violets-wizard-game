@@ -1,0 +1,20 @@
+{
+  "schema_version": 1,
+  "base": {
+    "path": "art/characters/violet/canonical/casual-approved.png",
+    "sha256": "68e9871ceecc32b9fbf50cbf36eecbae226eb184ad5337f67bbca2e53266e033"
+  },
+  "raw_candidate": {
+    "path": "art/characters/violet/expressions/proud-v1-raw.png",
+    "sha256": "aad85a916746bda2681daa227989e46b025408397d15cc7e4524b95dacaf002b"
+  },
+  "mask": {
+    "path": "art/characters/violet/expressions/masks/proud-v1.png",
+    "sha256": "bc0e6ffcb22df4e21e858965b1dda6288cd05814795a95c30cb714b4abfd11e0"
+  },
+  "output": {
+    "image": "art/characters/violet/expressions/proud.png",
+    "provenance": "art/characters/violet/expressions/proud.composite.json"
+  },
+  "allow_alpha_change": false
+}

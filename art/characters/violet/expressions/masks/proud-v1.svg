@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="896" height="1200" viewBox="0 0 896 1200">
+  <defs>
+    <filter id="feather-small" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="1.5"/>
+    </filter>
+    <filter id="feather-mouth" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="2"/>
+    </filter>
+  </defs>
+  <rect width="896" height="1200" fill="#000000"/>
+  <g fill="#ffffff" filter="url(#feather-small)">
+    <path d="M360 214Q394 203 430 216L428 241Q394 229 363 242Z"/>
+    <path d="M467 213Q501 201 535 215L533 241Q501 228 469 242Z"/>
+  </g>
+  <path d="M403 307Q448 300 493 310L491 344Q481 358 448 360Q415 357 405 343Z" fill="#ffffff" filter="url(#feather-mouth)"/>
+</svg>
