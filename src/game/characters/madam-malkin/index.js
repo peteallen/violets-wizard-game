@@ -1,3 +1,10 @@
+import { defineCharacterModule } from '../CharacterModule.js';
+import { characterReviewRegistrations } from '../packageSupport.js';
+import {
+  madamMalkinCharacterDefinition,
+  madamMalkinCharacterReview,
+} from './definition.js';
+
 export {
   madamMalkinCharacterDefinition,
   madamMalkinCharacterReview,
@@ -8,3 +15,9 @@ export async function loadMadamMalkinCharacterRuntime() {
   const { madamMalkinCharacterRuntime } = await import('./runtime.js');
   return madamMalkinCharacterRuntime;
 }
+
+export const madamMalkinCharacterModule = defineCharacterModule({
+  definition: madamMalkinCharacterDefinition,
+  loadRuntime: loadMadamMalkinCharacterRuntime,
+  reviews: characterReviewRegistrations(madamMalkinCharacterReview),
+});

@@ -32,3 +32,13 @@ export function defineCharacterReview(sceneIds) {
     captureProfiles: CHARACTER_REVIEW_CAPTURE_PROFILES,
   });
 }
+
+export function characterReviewRegistrations(review) {
+  if (!review || !Array.isArray(review.sceneIds) || !Array.isArray(review.captureProfiles)) {
+    throw new TypeError('Character review registrations require sceneIds and captureProfiles arrays.');
+  }
+  return Object.freeze(review.sceneIds.map((sceneId) => Object.freeze({
+    sceneId,
+    captureProfiles: review.captureProfiles,
+  })));
+}

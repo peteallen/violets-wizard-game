@@ -2,6 +2,7 @@ import { describe, expect, it, vi } from 'vitest';
 import {
   CharacterRegistry,
   hagridCharacterDefinition,
+  hagridCharacterModule,
   hagridCharacterReview,
   hagridFullFrameCharacterDefinition,
   loadHagridCharacterRuntime,
@@ -9,12 +10,15 @@ import {
   loadVioletCharacterRuntime,
   loadWandmakerCharacterRuntime,
   madamMalkinCharacterDefinition,
+  madamMalkinCharacterModule,
   madamMalkinCharacterReview,
   madamMalkinFullFrameCharacterDefinition,
   violetCharacterDefinition,
+  violetCharacterModule,
   violetCharacterReview,
   violetFullFrameCharacterDefinition,
   wandmakerCharacterDefinition,
+  wandmakerCharacterModule,
   wandmakerCharacterReview,
   wandmakerFullFrameCharacterDefinition,
 } from '../src/game/characters/index.js';
@@ -23,6 +27,7 @@ import { resolveFullFrameCharacterAnimation } from '../src/game/render/FullFrame
 const PACKAGES = [
   {
     definition: violetCharacterDefinition,
+    module: violetCharacterModule,
     source: violetFullFrameCharacterDefinition,
     review: violetCharacterReview,
     loadRuntime: loadVioletCharacterRuntime,
@@ -32,6 +37,7 @@ const PACKAGES = [
   },
   {
     definition: hagridCharacterDefinition,
+    module: hagridCharacterModule,
     source: hagridFullFrameCharacterDefinition,
     review: hagridCharacterReview,
     loadRuntime: loadHagridCharacterRuntime,
@@ -41,6 +47,7 @@ const PACKAGES = [
   },
   {
     definition: wandmakerCharacterDefinition,
+    module: wandmakerCharacterModule,
     source: wandmakerFullFrameCharacterDefinition,
     review: wandmakerCharacterReview,
     loadRuntime: loadWandmakerCharacterRuntime,
@@ -50,6 +57,7 @@ const PACKAGES = [
   },
   {
     definition: madamMalkinCharacterDefinition,
+    module: madamMalkinCharacterModule,
     source: madamMalkinFullFrameCharacterDefinition,
     review: madamMalkinCharacterReview,
     loadRuntime: loadMadamMalkinCharacterRuntime,
@@ -86,7 +94,9 @@ describe('canonical full-frame character packages', () => {
       'character.madam-malkin',
     ]);
 
-    for (const { definition, source, review } of PACKAGES) {
+    for (const {
+      definition, module, source, review, loadRuntime,
+    } of PACKAGES) {
       const authored = authoredCapabilities(source);
       expect([...definition.capabilities.poses].sort()).toEqual(authored.poses);
       expect([...definition.capabilities.actions].sort()).toEqual(authored.actions);
@@ -95,6 +105,9 @@ describe('canonical full-frame character packages', () => {
       expect(Object.isFrozen(definition)).toBe(true);
       expect(Object.isFrozen(definition.assets)).toBe(true);
       expect(Object.isFrozen(review)).toBe(true);
+      expect(module.definition).toBe(definition);
+      expect(module.loadRuntime).toBe(loadRuntime);
+      expect(module.reviews.map(({ sceneId }) => sceneId)).toEqual(review.sceneIds);
       expect(review.captureProfiles).toEqual([
         { width: 1280, height: 720 },
         { width: 2560, height: 1440 },

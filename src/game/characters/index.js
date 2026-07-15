@@ -34,12 +34,14 @@ export {
 export {
   loadVioletCharacterRuntime,
   violetCharacterDefinition,
+  violetCharacterModule,
   violetCharacterReview,
   violetFullFrameCharacterDefinition,
 } from './violet/index.js';
 
 export {
   hagridCharacterDefinition,
+  hagridCharacterModule,
   hagridCharacterReview,
   hagridFullFrameCharacterDefinition,
   loadHagridCharacterRuntime,
@@ -48,6 +50,7 @@ export {
 export {
   loadWandmakerCharacterRuntime,
   wandmakerCharacterDefinition,
+  wandmakerCharacterModule,
   wandmakerCharacterReview,
   wandmakerFullFrameCharacterDefinition,
 } from './wandmaker/index.js';
@@ -55,6 +58,7 @@ export {
 export {
   loadMadamMalkinCharacterRuntime,
   madamMalkinCharacterDefinition,
+  madamMalkinCharacterModule,
   madamMalkinCharacterReview,
   madamMalkinFullFrameCharacterDefinition,
 } from './madam-malkin/index.js';
