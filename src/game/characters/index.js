@@ -62,3 +62,55 @@ export {
   madamMalkinCharacterReview,
   madamMalkinFullFrameCharacterDefinition,
 } from './madam-malkin/index.js';
+
+export {
+  loadMenagerieKeeperCharacterRuntime,
+  menagerieKeeperCharacterDefinition,
+  menagerieKeeperCharacterModule,
+  menagerieKeeperCharacterReview,
+  menagerieKeeperPresentation,
+} from './menagerie-keeper/index.js';
+
+export {
+  loadNarratorCharacterRuntime,
+  narratorCharacterDefinition,
+  narratorCharacterModule,
+  narratorCharacterReview,
+  narratorPresentation,
+} from './narrator/index.js';
+
+export {
+  loadPostOwlCharacterRuntime,
+  postOwlCharacterDefinition,
+  postOwlCharacterModule,
+  postOwlCharacterReview,
+} from './post-owl/index.js';
+
+export {
+  loadCatCharacterRuntime,
+  catCharacterDefinition,
+  catCharacterModule,
+  catCharacterReview,
+  catPresentation,
+} from './cat/index.js';
+
+export {
+  loadPetOwlCharacterRuntime,
+  petOwlCharacterDefinition,
+  petOwlCharacterModule,
+  petOwlCharacterReview,
+} from './pet-owl/index.js';
+
+export {
+  loadToadCharacterRuntime,
+  toadCharacterDefinition,
+  toadCharacterModule,
+  toadCharacterReview,
+  toadPresentation,
+} from './toad/index.js';
+
+export {
+  productionCharacterCatalog,
+  productionCharacterModules,
+  titleCharacterDependencies,
+} from './productionCatalog.js';
