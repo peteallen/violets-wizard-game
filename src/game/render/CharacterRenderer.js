@@ -1,4 +1,16 @@
 import { PALETTE } from '../config.js';
+import {
+  CAT_STYLE,
+  KEEPER_STYLE,
+  TOAD_STYLE,
+  VECTOR_PORTRAIT_BACKDROPS,
+  drawCompatibleVectorCompanion,
+  drawCompatibleVectorPortrait,
+  drawCompatibleVectorWorld,
+  resolveCompatibleVectorPortraitSpeaker,
+  sampleCompanionMotion,
+  sampleKeeperMotion,
+} from '../characters/vectorCompatibility.js';
 import { drawVectorOwl } from './OwlRenderer.js';
 import { STORYBOOK_INK, STORYBOOK_LINE_WEIGHT } from './storybookInk.js';
 import {
@@ -10,6 +22,14 @@ import './VioletFullFrameCharacterRig.js';
 import './HagridFullFrameCharacterRig.js';
 import './WandmakerFullFrameCharacterRig.js';
 import './MadamMalkinFullFrameCharacterRig.js';
+
+export {
+  CAT_STYLE,
+  KEEPER_STYLE,
+  TOAD_STYLE,
+  sampleCompanionMotion,
+  sampleKeeperMotion,
+};
 
 const OUTLINE = STORYBOOK_INK.primary;
 const DEEP_OUTLINE = STORYBOOK_INK.deep;
@@ -142,75 +162,6 @@ export const TAILOR_STYLE = Object.freeze({
   rim: 'rgba(255, 222, 156, 0.48)',
 });
 
-export const KEEPER_STYLE = Object.freeze({
-  coatBase: '#496653',
-  coatMid: '#607b65',
-  coatShadow: '#30483b',
-  coatLight: 'rgba(204, 220, 184, 0.2)',
-  apronBase: '#8c6344',
-  apronMid: '#aa7950',
-  apronShadow: '#5d412f',
-  apronLight: 'rgba(236, 199, 145, 0.24)',
-  pouchBase: '#765139',
-  pouchShadow: '#4d3529',
-  pouchLight: '#ae7d51',
-  gauntletBase: '#79583f',
-  gauntletShadow: '#513a2e',
-  gauntletLight: '#aa8158',
-  brushWood: '#6d4933',
-  brushLight: '#b78355',
-  bristle: '#d4bc91',
-  bristleShadow: '#9b805f',
-  featherBase: '#71858a',
-  featherLight: '#aac0b8',
-  hairBase: '#a9633a',
-  hairMid: '#c5804d',
-  hairShadow: '#6e402f',
-  hairLight: '#e1a36c',
-  skin: '#ca906d',
-  skinShadow: '#9d6254',
-  skinLight: 'rgba(255, 222, 177, 0.28)',
-  cheek: 'rgba(180, 77, 76, 0.24)',
-  iris: '#5b5638',
-  shoe: '#3d342f',
-  rim: 'rgba(255, 222, 154, 0.47)',
-});
-
-export const CAT_STYLE = Object.freeze({
-  furBase: '#9d7254',
-  furMid: '#b88963',
-  furShadow: '#65483b',
-  furDeep: '#49352f',
-  furLight: '#d2a67d',
-  chest: '#c69a72',
-  muzzle: '#dab38c',
-  ear: '#c98582',
-  eyeWhite: '#f6ead7',
-  iris: '#b78f32',
-  pupil: '#251b18',
-  catchlight: '#fff5cf',
-  nose: '#815254',
-  collar: '#62516d',
-  brass: '#d8b355',
-  rim: 'rgba(255, 224, 158, 0.5)',
-});
-
-export const TOAD_STYLE = Object.freeze({
-  skinBase: '#71865a',
-  skinMid: '#899d69',
-  skinShadow: '#3f5237',
-  skinDeep: '#2f402c',
-  skinLight: '#a9b77d',
-  belly: '#b2aa6a',
-  bellyLight: 'rgba(232, 218, 139, 0.42)',
-  eyeWhite: '#eee7c8',
-  iris: '#c3a23e',
-  pupil: '#252018',
-  catchlight: '#fff5c8',
-  mouth: '#39452f',
-  rim: 'rgba(255, 229, 164, 0.5)',
-});
-
 export const CHARACTER_REVIEW_SCENES = Object.freeze([
   'character-cast-review',
   'character-pets-review',
@@ -302,6 +253,7 @@ export class CharacterRenderer {
       // never disguised by silently drawing the legacy Bézier character.
       return fullFrameRig.draw(context, character, time);
     }
+    if (drawCompatibleVectorWorld(context, character, time)) return undefined;
     if (character.kind === 'violet') this.drawViolet(context, character, time);
     else this.drawNpc(context, character, time);
     return undefined;
@@ -448,6 +400,7 @@ export class CharacterRenderer {
       }, time);
       return;
     }
+    if (drawCompatibleVectorCompanion(context, pet, time)) return;
     const safeTime = Number.isFinite(time) ? time : 0;
     const motion = sampleCompanionMotion({
       type: pet.type,
@@ -497,16 +450,22 @@ export class CharacterRenderer {
     tracePortraitCameoSilhouette(context, 55);
     context.clip();
 
-    if (speaker === 'narrator') drawNarratorPortrait(context, time);
-    else if (['owl', 'cat', 'toad'].includes(speaker)) {
-      const petY = speaker === 'owl' ? 62 : speaker === 'cat' ? 78 : 48;
+    if (drawCompatibleVectorPortrait(context, speaker, {
+      pose,
+      facing,
+      lightSide: portrait.lightSide,
+      reducedMotion,
+    }, time)) {
+      // Temporary synchronous bridge while CharacterRenderer callers migrate
+      // to the canonical registry.
+    } else if (speaker === 'owl') {
       this.drawPet(context, {
         type: speaker,
-        variant: speaker === 'owl' ? 'pet' : undefined,
-        pose: speaker === 'owl' ? 'idle' : pose,
+        variant: 'pet',
+        pose: 'idle',
         x: 0,
-        y: petY,
-        scale: speaker === 'owl' ? 0.86 : speaker === 'cat' ? 0.96 : 1.05,
+        y: 62,
+        scale: 0.86,
         facing,
         lightSide: portrait.lightSide,
         lookX: facing === 'left' ? -0.35 : 0.35,
@@ -791,73 +750,15 @@ export function sampleTailorMotion({
   });
 }
 
-export function sampleKeeperMotion({
-  time = 0,
-  pose = 'idle',
-  reducedMotion = false,
-} = {}) {
-  const safeTime = Number.isFinite(time) ? time : 0;
-  const energy = reducedMotion ? 0.3 : 1;
-  const speaking = pose === 'speaking' || pose === 'talk';
-  const proud = pose === 'proud';
-  const breath = Math.sin(safeTime * 1.55 + 0.8);
-  const livelyBeat = speaking
-    ? Math.sin(safeTime * 4.7 + 0.45)
-    : proud ? 0.55 : Math.sin(safeTime * 1.2 + 0.25) * 0.22;
-  return Object.freeze({
-    breath: breath * energy,
-    gloveLift: (speaking ? 9 + livelyBeat * 3.8 : proud ? 7.5 : 2 + livelyBeat * 1.5) * energy,
-    brushTilt: (speaking ? livelyBeat * 0.16 : proud ? -0.08 : livelyBeat * 0.05) * energy,
-    brushBob: (speaking ? livelyBeat * 2.4 : breath * 0.5) * energy,
-    pouchSway: (livelyBeat * 1.4 + breath * 0.35) * energy,
-    curlSway: (livelyBeat * 0.65 + breath * 0.28) * energy,
-    headTilt: (speaking ? livelyBeat * 0.016 : proud ? -0.012 : breath * 0.005) * energy,
-    browLift: (speaking ? 1.25 + livelyBeat * 0.7 : proud ? 1.4 : 0.4 + breath * 0.18) * energy,
-    mouthOpen: speaking ? 2.7 + Math.abs(Math.sin(safeTime * 8 + 0.15)) * 3.2 : 0,
-  });
-}
-
-export function sampleCompanionMotion({ type = 'cat', pose = 'idle', time = 0, reducedMotion = false } = {}) {
-  const safeTime = Number.isFinite(time) ? time : 0;
-  const phase = type === 'toad' ? 1.7 : 0.4;
-  const energy = reducedMotion ? 0.32 : 1;
-  const stepWave = Math.sin(safeTime * (type === 'toad' ? 4.2 : 6.1) + phase);
-  const following = pose === 'follow' || pose === 'pet-follow';
-  const pawing = pose === 'paw';
-  const hopWave = following ? Math.max(0, stepWave) ** 2 : 0;
-  const breath = Math.sin(safeTime * (type === 'toad' ? 1.45 : 2.05) + phase);
-  const quickBeat = Math.sin(safeTime * (type === 'toad' ? 5.1 : 7.3) + phase * 0.7);
-  const attention = pawing ? 1 : following ? 0.58 : 0.18;
-  return Object.freeze({
-    bob: breath * (type === 'toad' ? 1.1 : 1.65) * energy,
-    hop: hopWave * (type === 'toad' ? 7 : 5.5) * energy,
-    tilt: following ? stepWave * (type === 'toad' ? 0.025 : 0.045) * energy : breath * 0.008 * energy,
-    step: following ? stepWave : 0,
-    breathScale: 1 + breath * (type === 'toad' ? 0.022 : 0.012) * energy,
-    tailSway: Math.sin(safeTime * 2.7 + phase) * (following ? 0.34 : 0.2) * energy,
-    throatPulse: type === 'toad' ? Math.max(0, Math.sin(safeTime * 1.33 + 0.8)) * energy : 0,
-    pawLift: pawing ? (0.58 + Math.sin(safeTime * 4.2) * 0.18) * energy : 0,
-    foreLift: following ? Math.max(0, stepWave) * (type === 'toad' ? 0.16 : 0.24) * energy : 0,
-    hindLift: following ? Math.max(0, -stepWave) * (type === 'toad' ? 0.1 : 0.18) * energy : 0,
-    headNod: (breath * 0.7 + quickBeat * attention * 0.45) * energy,
-    headTilt: (quickBeat * attention * (type === 'toad' ? 0.018 : 0.035)) * energy,
-    earTwitch: type === 'cat' ? quickBeat * (0.45 + attention * 0.55) * energy : 0,
-    eyeFocusX: (following ? 1.1 : 0.45) * Math.sin(safeTime * 0.53 + phase) * energy,
-    eyeFocusY: 0.35 * Math.sin(safeTime * 0.37 + phase * 1.4) * energy,
-    bodySquash: 1 - hopWave * (type === 'toad' ? 0.035 : 0.015) * energy,
-  });
-}
-
 function resolvePortraitSpeaker(value) {
   const speaker = String(value ?? 'narrator').trim().toLowerCase();
+  const vectorSpeaker = resolveCompatibleVectorPortraitSpeaker(speaker);
+  if (vectorSpeaker) return vectorSpeaker;
   if (speaker.includes('violet')) return 'violet';
   if (speaker.includes('hagrid') || speaker.includes('guide')) return 'guide';
   if (speaker.includes('ollivander') || speaker.includes('wandmaker') || speaker.includes('wand maker')) return 'wandmaker';
   if (speaker.includes('malkin') || speaker.includes('tailor')) return 'tailor';
-  if (speaker.includes('keeper') || speaker.includes('menagerie')) return 'keeper';
   if (speaker.includes('owl')) return 'owl';
-  if (speaker.includes('cat')) return 'cat';
-  if (speaker.includes('toad') || speaker.includes('frog')) return 'toad';
   return 'narrator';
 }
 
@@ -901,8 +802,8 @@ export function tracePortraitCameoSilhouette(context, radius = 60) {
 function drawPortraitBackdrop(context, speaker, time, reducedMotion) {
   const colors = {
     violet: ['#302642', '#8b63aa'], guide: ['#30271f', '#7f6347'], wandmaker: ['#292b40', '#77799a'],
-    tailor: ['#4e2943', '#ae688e'], keeper: ['#2f4939', '#66856d'], narrator: ['#33283f', '#8d6ca0'],
-    cat: ['#49352b', '#b18464'], owl: ['#38313f', '#8b7a96'], toad: ['#34412d', '#71875c'],
+    tailor: ['#4e2943', '#ae688e'], owl: ['#38313f', '#8b7a96'],
+    ...VECTOR_PORTRAIT_BACKDROPS,
   };
   const [dark, light] = colors[speaker] ?? colors.narrator;
   const safeTime = Number.isFinite(time) ? time : 0;

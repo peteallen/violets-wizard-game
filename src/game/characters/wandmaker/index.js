@@ -19,5 +19,5 @@ export async function loadWandmakerCharacterRuntime() {
 export const wandmakerCharacterModule = defineCharacterModule({
   definition: wandmakerCharacterDefinition,
   loadRuntime: loadWandmakerCharacterRuntime,
-  reviews: characterReviewRegistrations(wandmakerCharacterReview),
+  reviews: characterReviewRegistrations(wandmakerCharacterReview, ['wandmaker-sprite-review']),
 });

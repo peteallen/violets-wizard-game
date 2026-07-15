@@ -18,5 +18,5 @@ export async function loadPostOwlCharacterRuntime() {
 export const postOwlCharacterModule = defineCharacterModule({
   definition: postOwlCharacterDefinition,
   loadRuntime: loadPostOwlCharacterRuntime,
-  reviews: characterReviewRegistrations(postOwlCharacterReview),
+  reviews: characterReviewRegistrations(postOwlCharacterReview, ['owl-motion-review']),
 });

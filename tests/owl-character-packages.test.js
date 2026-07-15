@@ -158,11 +158,7 @@ describe('owl identity definitions', () => {
       definition: petOwlCharacterDefinition,
       loadRuntime: loadPetOwlCharacterRuntime,
     });
-    expect(petOwlCharacterModule.reviews.map(({ sceneId }) => sceneId)).toEqual([
-      'character-pets-review',
-      'character-portraits-review',
-      'owl-motion-review',
-    ]);
+    expect(petOwlCharacterModule.reviews).toEqual([]);
   });
 });
 

@@ -18,5 +18,8 @@ export async function loadPetOwlCharacterRuntime() {
 export const petOwlCharacterModule = defineCharacterModule({
   definition: petOwlCharacterDefinition,
   loadRuntime: loadPetOwlCharacterRuntime,
-  reviews: characterReviewRegistrations(petOwlCharacterReview),
+  // The current pet and portrait scenes are shared compositions. Their future
+  // unified harness descriptors declare this module as a dependency instead
+  // of duplicating ownership of those scene IDs here.
+  reviews: characterReviewRegistrations(petOwlCharacterReview, []),
 });

@@ -33,11 +33,23 @@ export function defineCharacterReview(sceneIds) {
   });
 }
 
-export function characterReviewRegistrations(review) {
+export function characterReviewRegistrations(review, ownedSceneIds = review?.sceneIds) {
   if (!review || !Array.isArray(review.sceneIds) || !Array.isArray(review.captureProfiles)) {
     throw new TypeError('Character review registrations require sceneIds and captureProfiles arrays.');
   }
-  return Object.freeze(review.sceneIds.map((sceneId) => Object.freeze({
+  if (!Array.isArray(ownedSceneIds)) {
+    throw new TypeError('Owned character review scene IDs must be an array.');
+  }
+  const participants = new Set(review.sceneIds);
+  const seen = new Set();
+  for (const sceneId of ownedSceneIds) {
+    if (!participants.has(sceneId)) {
+      throw new TypeError(`Owned character review scene ${sceneId} is not declared by the package.`);
+    }
+    if (seen.has(sceneId)) throw new TypeError(`Duplicate owned character review scene ${sceneId}.`);
+    seen.add(sceneId);
+  }
+  return Object.freeze(ownedSceneIds.map((sceneId) => Object.freeze({
     sceneId,
     captureProfiles: review.captureProfiles,
   })));

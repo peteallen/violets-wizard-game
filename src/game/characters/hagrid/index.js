@@ -19,5 +19,5 @@ export async function loadHagridCharacterRuntime() {
 export const hagridCharacterModule = defineCharacterModule({
   definition: hagridCharacterDefinition,
   loadRuntime: loadHagridCharacterRuntime,
-  reviews: characterReviewRegistrations(hagridCharacterReview),
+  reviews: characterReviewRegistrations(hagridCharacterReview, ['hagrid-sprite-review']),
 });

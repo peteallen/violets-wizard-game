@@ -19,5 +19,5 @@ export async function loadMadamMalkinCharacterRuntime() {
 export const madamMalkinCharacterModule = defineCharacterModule({
   definition: madamMalkinCharacterDefinition,
   loadRuntime: loadMadamMalkinCharacterRuntime,
-  reviews: characterReviewRegistrations(madamMalkinCharacterReview),
+  reviews: characterReviewRegistrations(madamMalkinCharacterReview, ['madam-malkin-sprite-review']),
 });

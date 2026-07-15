@@ -28,6 +28,7 @@ const PACKAGES = [
   {
     definition: violetCharacterDefinition,
     module: violetCharacterModule,
+    ownedReviewScenes: ['violet-expression-review'],
     source: violetFullFrameCharacterDefinition,
     review: violetCharacterReview,
     loadRuntime: loadVioletCharacterRuntime,
@@ -38,6 +39,7 @@ const PACKAGES = [
   {
     definition: hagridCharacterDefinition,
     module: hagridCharacterModule,
+    ownedReviewScenes: ['hagrid-sprite-review'],
     source: hagridFullFrameCharacterDefinition,
     review: hagridCharacterReview,
     loadRuntime: loadHagridCharacterRuntime,
@@ -48,6 +50,7 @@ const PACKAGES = [
   {
     definition: wandmakerCharacterDefinition,
     module: wandmakerCharacterModule,
+    ownedReviewScenes: ['wandmaker-sprite-review'],
     source: wandmakerFullFrameCharacterDefinition,
     review: wandmakerCharacterReview,
     loadRuntime: loadWandmakerCharacterRuntime,
@@ -58,6 +61,7 @@ const PACKAGES = [
   {
     definition: madamMalkinCharacterDefinition,
     module: madamMalkinCharacterModule,
+    ownedReviewScenes: ['madam-malkin-sprite-review'],
     source: madamMalkinFullFrameCharacterDefinition,
     review: madamMalkinCharacterReview,
     loadRuntime: loadMadamMalkinCharacterRuntime,
@@ -95,7 +99,7 @@ describe('canonical full-frame character packages', () => {
     ]);
 
     for (const {
-      definition, module, source, review, loadRuntime,
+      definition, module, source, review, loadRuntime, ownedReviewScenes,
     } of PACKAGES) {
       const authored = authoredCapabilities(source);
       expect([...definition.capabilities.poses].sort()).toEqual(authored.poses);
@@ -107,7 +111,7 @@ describe('canonical full-frame character packages', () => {
       expect(Object.isFrozen(review)).toBe(true);
       expect(module.definition).toBe(definition);
       expect(module.loadRuntime).toBe(loadRuntime);
-      expect(module.reviews.map(({ sceneId }) => sceneId)).toEqual(review.sceneIds);
+      expect(module.reviews.map(({ sceneId }) => sceneId)).toEqual(ownedReviewScenes);
       expect(review.captureProfiles).toEqual([
         { width: 1280, height: 720 },
         { width: 2560, height: 1440 },

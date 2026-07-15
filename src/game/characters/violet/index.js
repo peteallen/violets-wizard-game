@@ -19,5 +19,5 @@ export async function loadVioletCharacterRuntime() {
 export const violetCharacterModule = defineCharacterModule({
   definition: violetCharacterDefinition,
   loadRuntime: loadVioletCharacterRuntime,
-  reviews: characterReviewRegistrations(violetCharacterReview),
+  reviews: characterReviewRegistrations(violetCharacterReview, ['violet-expression-review']),
 });
