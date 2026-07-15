@@ -31,6 +31,8 @@ export {
   buildCharacterCatalog,
 } from './CharacterCatalog.js';
 
+export { CharacterScopeController } from './CharacterScopeController.js';
+
 export {
   loadVioletCharacterRuntime,
   violetCharacterDefinition,
