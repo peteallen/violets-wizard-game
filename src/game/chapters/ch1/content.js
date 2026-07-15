@@ -1,8 +1,6 @@
-import {
-  chapter1,
-  chapter1AssetKeys,
-} from '../../content/chapters/ch1.js';
+import { chapter1AssetKeys } from './content/assets.js';
 import { chapter1CharacterIds } from './content/characters.js';
+import { chapter1 } from './content/legacy.js';
 import { chapter1Map } from './content/map.js';
 import { chapter1ResumeRecaps } from './content/recaps.js';
 import {

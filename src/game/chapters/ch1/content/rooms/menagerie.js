@@ -1,0 +1,86 @@
+import { freezePureData } from '../../../../content/chapterAuthoring.js';
+import {
+  circle,
+  dialogueStart,
+  noCondition,
+  petLayoutBounds,
+  rect,
+  roomSize,
+  standardSpeakerLayoutBounds,
+  walkBand,
+  when,
+} from '../authoring.js';
+
+export const menagerieRoom = freezePureData({
+  id: 'ch1.menagerie',
+  size: roomSize,
+  background: { layers: ['rooms/ch1/menagerie/base'], fit: 'cover', focalPoint: { x: 0.5, y: 0.5 }, variants: {} },
+  walkBand,
+  spawns: {
+    'menagerie.entry': { x: 120, y: 610, facing: 'right' },
+    'menagerie.keeper': { x: 270, y: 610, facing: 'right' },
+  },
+  exits: [
+    {
+      id: 'menagerie.exit',
+      hitArea: rect(0, 130, 170, 450),
+      to: { room: 'ch1.diagonStreet', spawn: 'street.east' },
+      icon: 'door',
+      transition: 'ink',
+      when: noCondition,
+    },
+  ],
+  occupants: [
+    { npc: 'npc.violet', x: 120, y: 610, facing: 'right', pose: 'idle', when: noCondition },
+    { npc: 'npc.menagerieKeeper', x: 270, y: 610, facing: 'right', pose: 'idle', when: noCondition, render: { layoutBounds: standardSpeakerLayoutBounds } },
+    { npc: 'npc.pet.cat', x: 650, y: 585, facing: 'right', pose: 'idle', when: when({ noFlags: ['ch1.petNamed'] }), render: { layoutBounds: petLayoutBounds } },
+    {
+      npc: 'npc.pet.owl',
+      x: 900,
+      y: 520,
+      facing: 'right',
+      pose: 'idle',
+      when: when({ noFlags: ['ch1.petNamed'] }),
+      render: {
+        scale: 0.92,
+        timeOffset: 0.7,
+        lookX: -0.35,
+        layoutBounds: petLayoutBounds,
+      },
+    },
+    {
+      npc: 'npc.pet.toad',
+      x: 1110,
+      y: 595,
+      facing: 'right',
+      pose: 'idle',
+      when: when({ noFlags: ['ch1.petNamed'] }),
+      render: { timeOffset: 1.3, layoutBounds: petLayoutBounds },
+    },
+  ],
+  hotspots: [
+    {
+      id: 'menagerie.keeper',
+      kind: 'talk',
+      hitArea: circle(270, 455, 95),
+      approach: { x: 390, y: 610, facing: 'left' },
+      when: when({ noFlags: ['ch1.petNamed'] }),
+      presentation: { icon: 'talk', glow: 'objective' },
+      repeat: 'until-condition',
+      requiredSpell: null,
+      onInteract: [dialogueStart('ch1.keeper.petAndName')],
+    },
+    {
+      id: 'menagerie.cardDumbledore',
+      kind: 'collectible',
+      hitArea: circle(1130, 170, 60),
+      approach: { x: 1100, y: 610, facing: 'right' },
+      when: noCondition,
+      presentation: { icon: 'frog-card', glow: 'hidden' },
+      repeat: 'once',
+      requiredSpell: null,
+      onInteract: [{ type: 'collection.add', collection: 'cards', id: 'dumbledore' }],
+    },
+  ],
+  ambientSetPieces: ['am.inkTransitions'],
+}, 'Chapter One Menagerie room draft');
