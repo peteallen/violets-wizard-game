@@ -3,7 +3,6 @@ import { chapter1Map } from '../content/chapters/ch1.js';
 import { childFacingUiText } from '../content/playerVisibleCopy.js';
 import { buildMapState } from '../core/MapState.js';
 import { ROBE_TRIMS, normalizeRobeTrim, robeTrimColor } from '../core/RobeTrims.js';
-import { CharacterRenderer } from './CharacterRenderer.js';
 import {
   drawParchmentAction,
   drawReplayRibbon,
@@ -122,34 +121,22 @@ const ROBE_PREVIEW_VIOLET_LOCAL_BOUNDS = Object.freeze({
   width: 136,
   height: 245,
 });
+const DEFAULT_ACTOR_LAYOUT_BOUNDS = Object.freeze({
+  x: -74,
+  y: -236,
+  width: 148,
+  height: 268,
+});
 export function dialogueSceneContext(state, dialogue = state?.dialogue) {
   const night = state?.roomVariant === 'dusk' || state?.roomVariant === 'night';
   const lightSide = state?.keyLight === 'right' ? 'right' : 'left';
-  const violetOutfit = state?.player?.outfit ?? 'robes';
-  const violetRobeTrim = state?.player?.robeTrim ?? PALETTE.violet;
-  const speaker = dialogue?.speaker;
   const cameraX = state?.cameraX ?? 0;
   const characterBounds = visibleCharacterBounds(state, cameraX);
   const sceneryBounds = visibleObjectiveSceneryBounds(state, cameraX);
   const avoidance = Object.freeze([...characterBounds, ...sceneryBounds]);
-  if (!speaker || speaker === 'npc.narrator') {
-    return {
-      night,
-      lightSide,
-      speakerPosition: null,
-      speakerBounds: null,
-      characterBounds,
-      sceneryBounds,
-      avoidBounds: avoidance,
-      violetOutfit,
-      violetRobeTrim,
-    };
-  }
-
-  let actor = null;
-  if (speaker === 'npc.violet' && state?.player) actor = state.player;
-  else if (speaker.startsWith('npc.pet.') && state?.pet) actor = state.pet;
-  else actor = state?.occupants?.find((occupant) => occupant.npc === speaker) ?? null;
+  const actor = (state?.actors ?? []).find(({ actorId }) => actorId === dialogue?.speaker) ?? null;
+  const portraitActor = actor?.characterId === dialogue?.portraitCharacterId ? actor : null;
+  const portraitRenderState = portraitAppearanceState(portraitActor?.renderState);
   if (!actor) {
     return {
       night,
@@ -159,26 +146,20 @@ export function dialogueSceneContext(state, dialogue = state?.dialogue) {
       characterBounds,
       sceneryBounds,
       avoidBounds: avoidance,
-      violetOutfit,
-      violetRobeTrim,
+      portraitRenderState,
     };
   }
 
-  const position = { x: actor.x - cameraX, y: actor.y };
-  const dimensions = speakerDimensions(speaker);
+  const position = {
+    x: actor.renderState.x - cameraX,
+    y: actor.renderState.y,
+  };
   return {
     night,
     lightSide,
-    violetOutfit,
-    violetRobeTrim,
+    portraitRenderState,
     speakerPosition: position,
-    speakerBounds: {
-      id: speaker,
-      left: position.x - dimensions.width / 2,
-      right: position.x + dimensions.width / 2,
-      top: position.y - dimensions.height,
-      bottom: position.y + dimensions.ground,
-    },
+    speakerBounds: characterLayoutBounds(actor, cameraX),
     characterBounds,
     sceneryBounds,
     avoidBounds: avoidance,
@@ -275,44 +256,57 @@ export function letterReadingLayout() {
 }
 
 function visibleCharacterBounds(state, cameraX) {
-  const bounds = [];
-  if (state?.player) bounds.push(characterLayoutBounds('npc.violet', state.player, cameraX));
-  for (const occupant of state?.occupants ?? []) {
-    if (occupant.npc === 'npc.violet' || occupant.npc.startsWith('npc.pet.')) continue;
-    const yOffset = occupant.npc === 'npc.owlPost' ? 80 : 0;
-    bounds.push(characterLayoutBounds(occupant.npc, occupant, cameraX, yOffset));
-  }
-  if (state?.pet?.type) {
-    bounds.push(characterLayoutBounds(`npc.pet.${state.pet.type}`, state.pet, cameraX));
-  }
-
-  // These three shop animals are drawn directly by Game while the pet-shopping
-  // scene is active, so mirror those existing positions without requiring new
-  // snapshot fields merely to keep the dialogue card off them.
-  if (state?.roomId === 'ch1.menagerie' && state?.sceneId === 'ch1.petShopping') {
-    bounds.push(
-      characterLayoutBounds('preview.pet.cat', { x: 650, y: 585 }, cameraX),
-      characterLayoutBounds('preview.pet.owl', { x: 900, y: 520 }, cameraX),
-      characterLayoutBounds('preview.pet.toad', { x: 1110, y: 595 }, cameraX),
-    );
-  }
-  return Object.freeze(bounds);
+  return Object.freeze((state?.actors ?? []).map((actor) => characterLayoutBounds(actor, cameraX)));
 }
 
-function characterLayoutBounds(id, actor, cameraX, yOffset = 0) {
-  const dimensionId = id.startsWith('preview.pet.')
-    ? `npc.pet.${id.split('.').at(-1)}`
-    : id;
-  const dimensions = speakerDimensions(dimensionId);
-  const x = actor.x - cameraX;
-  const y = actor.y + yOffset;
+function characterLayoutBounds(actor, cameraX) {
+  const renderState = actor?.renderState ?? {};
+  const authoredLocal = normalizeLocalLayoutBounds(renderState.layoutBounds);
+  const local = authoredLocal ?? DEFAULT_ACTOR_LAYOUT_BOUNDS;
+  const scale = authoredLocal
+    ? 1
+    : Number.isFinite(renderState.scale) ? Math.abs(renderState.scale) : 1;
+  const x = renderState.x - cameraX;
+  const y = renderState.y;
   return Object.freeze({
-    id,
-    left: x - dimensions.width / 2,
-    right: x + dimensions.width / 2,
-    top: y - dimensions.height,
-    bottom: y + dimensions.ground,
+    id: actor.actorId,
+    left: x + local.x * scale,
+    right: x + (local.x + local.width) * scale,
+    top: y + local.y * scale,
+    bottom: y + (local.y + local.height) * scale,
   });
+}
+
+function normalizeLocalLayoutBounds(bounds) {
+  if (!bounds || !Number.isFinite(bounds.width) || bounds.width <= 0) return null;
+  if ([bounds.x, bounds.y, bounds.height].every(Number.isFinite) && bounds.height > 0) {
+    return bounds;
+  }
+  if (Number.isFinite(bounds.height) && bounds.height > 0 && Number.isFinite(bounds.ground)) {
+    return {
+      x: -bounds.width / 2,
+      y: -bounds.height,
+      width: bounds.width,
+      height: bounds.height + bounds.ground,
+    };
+  }
+  return null;
+}
+
+function portraitAppearanceState(renderState) {
+  if (!renderState) return Object.freeze({});
+  const {
+    x: _x,
+    y: _y,
+    scale: _scale,
+    facing: _facing,
+    pose: _pose,
+    action: _action,
+    actorAnimation: _actorAnimation,
+    layoutBounds: _layoutBounds,
+    ...appearanceState
+  } = renderState;
+  return Object.freeze({ ...appearanceState });
 }
 
 function visibleObjectiveSceneryBounds(state, cameraX) {
@@ -547,28 +541,38 @@ export function yearbookLayout(count, index = 0) {
   });
 }
 
-function speakerDimensions(speaker) {
-  if (speaker === 'npc.guide') return { width: 244, height: 340, ground: 35 };
-  if (speaker === 'npc.violet') return { width: 148, height: 228, ground: 32 };
-  if (speaker === 'npc.owlPost' || speaker.includes('.owl')) return { width: 154, height: 188, ground: 25 };
-  if (speaker.startsWith('npc.pet.')) return { width: 132, height: 142, ground: 28 };
-  return { width: 148, height: 236, ground: 32 };
+function requireCharacterRenderer(characterRenderer) {
+  if (!characterRenderer || typeof characterRenderer.draw !== 'function') {
+    throw new TypeError('UIRenderer requires an injected character renderer with draw().');
+  }
+  return characterRenderer;
+}
+
+function requirePortraitCharacterId(characterId) {
+  if (typeof characterId !== 'string' || !characterId.startsWith('character.')) {
+    throw new TypeError('Dialogue lines require an exact portraitCharacterId.');
+  }
+  return characterId;
+}
+
+function normalizePortraitPose(pose) {
+  if (pose === undefined || pose === 'talk') return 'speaking';
+  return pose;
 }
 
 export class UIRenderer {
   constructor({
     resolveAsset = () => null,
-    characterRenderer = new CharacterRenderer(),
+    characterRenderer,
     mapRenderer = new IllustratedMapRenderer(),
     titleRenderer = null,
   } = {}) {
     this.resolveAsset = resolveAsset;
-    this.characterRenderer = characterRenderer;
-    this.dialoguePortraitRenderer = typeof characterRenderer?.drawPortrait === 'function'
-      ? characterRenderer
-      : new CharacterRenderer();
+    this.characterRenderer = requireCharacterRenderer(characterRenderer);
     this.mapRenderer = mapRenderer;
-    this.titleRenderer = titleRenderer ?? new StorybookTitleRenderer({ characterRenderer });
+    this.titleRenderer = titleRenderer ?? new StorybookTitleRenderer({
+      characterRenderer: this.characterRenderer,
+    });
     this.images = new Map();
     this.failedImages = new Set();
     this.yearbookImages = new Map();
@@ -584,60 +588,88 @@ export class UIRenderer {
       this.drawLetterReading(context);
     } else if (scene === 'ui-dialogue-review') {
       const dialogue = {
-        type: 'line', speaker: 'npc.guide', speakerLabel: 'Hagrid', portraitPose: 'talk',
+        type: 'line', speaker: 'npc.guide', speakerLabel: 'Hagrid',
+        portraitCharacterId: 'character.hagrid', portraitPose: 'talk',
         caption: 'This way!', text: 'Come along, Violet. Diagon Alley is waiting for you.',
       };
-      const guide = { npc: 'npc.guide', kind: 'guide', x: 220, y: 665, facing: 'right', pose: 'speaking' };
-      this.characterRenderer.draw(context, guide, time);
+      const guide = {
+        actorId: 'npc.guide',
+        characterId: 'character.hagrid',
+        depth: 665,
+        renderState: { x: 220, y: 665, facing: 'right', pose: 'speaking' },
+      };
+      this.characterRenderer.draw(context, {
+        characterId: guide.characterId,
+        surface: 'world',
+        ...guide.renderState,
+      }, time);
       this.drawDialogue(
         context,
         dialogue,
         time,
         false,
         reducedMotion,
-        dialogueSceneContext({ dialogue, occupants: [guide], cameraX: 0, roomVariant: 'base' }),
+        dialogueSceneContext({ dialogue, actors: [guide], cameraX: 0, roomVariant: 'base' }),
       );
     } else if (scene === 'ui-dialogue-night-review') {
       const dialogue = {
-        type: 'line', speaker: 'npc.wandmaker', speakerLabel: 'Wandmaker', portraitPose: 'speaking',
+        type: 'line', speaker: 'npc.wandmaker', speakerLabel: 'Wandmaker',
+        portraitCharacterId: 'character.wandmaker', portraitPose: 'speaking',
         caption: 'Your wand!', text: 'Curious… this wand has been waiting for you.',
       };
       const wandmaker = {
-        npc: 'npc.wandmaker', kind: 'wandmaker', x: 1040, y: 665, facing: 'left', pose: 'speaking',
+        actorId: 'npc.wandmaker',
+        characterId: 'character.wandmaker',
+        depth: 665,
+        renderState: { x: 1040, y: 665, facing: 'left', pose: 'speaking' },
       };
-      this.characterRenderer.draw(context, wandmaker, time);
+      this.characterRenderer.draw(context, {
+        characterId: wandmaker.characterId,
+        surface: 'world',
+        ...wandmaker.renderState,
+      }, time);
       this.drawDialogue(
         context,
         dialogue,
         time,
         false,
         reducedMotion,
-        dialogueSceneContext({ dialogue, occupants: [wandmaker], cameraX: 0, roomVariant: 'dusk' }),
+        dialogueSceneContext({ dialogue, actors: [wandmaker], cameraX: 0, roomVariant: 'dusk' }),
       );
     } else if (scene === 'ui-dialogue-center-review') {
       const dialogue = {
-        type: 'line', speaker: 'npc.narrator', speakerLabel: 'Narrator', portraitPose: 'neutral',
+        type: 'line', speaker: 'npc.narrator', speakerLabel: 'Narrator',
+        portraitCharacterId: 'character.narrator', portraitPose: 'speaking',
         caption: 'Spells come later!', text: 'Violet will learn spells when the time is right.',
       };
       const player = {
-        kind: 'violet', x: 640, y: 665, facing: 'right', pose: 'curious', outfit: 'casual', wand: true,
+        actorId: 'npc.violet',
+        characterId: 'character.violet',
+        depth: 665,
+        renderState: {
+          x: 640, y: 665, facing: 'right', pose: 'curious', appearance: 'casual', wand: true,
+        },
       };
-      this.characterRenderer.draw(context, player, time);
+      this.characterRenderer.draw(context, {
+        characterId: player.characterId,
+        surface: 'world',
+        ...player.renderState,
+      }, time);
       this.drawDialogue(
         context,
         dialogue,
         time,
         false,
         reducedMotion,
-        dialogueSceneContext({ dialogue, player, cameraX: 0, roomVariant: 'base' }),
+        dialogueSceneContext({ dialogue, actors: [player], cameraX: 0, roomVariant: 'base' }),
       );
     } else if (scene === 'ui-choices-review') {
       this.drawDialogue(context, {
         type: 'choice',
         choices: [
-          { id: 'owl', icon: 'pet-owl', caption: 'Owl' },
-          { id: 'cat', icon: 'pet-cat', caption: 'Cat' },
-          { id: 'toad', icon: 'pet-toad', caption: 'Toad' },
+          { id: 'owl', icon: 'pet-owl', caption: 'Owl', characterId: 'character.pet-owl', characterScale: 0.72 },
+          { id: 'cat', icon: 'pet-cat', caption: 'Cat', characterId: 'character.cat', characterScale: 0.82 },
+          { id: 'toad', icon: 'pet-toad', caption: 'Toad', characterId: 'character.toad', characterScale: 1.18 },
         ],
       }, time, false, reducedMotion);
     } else if (scene === 'ui-robe-picker-review') {
@@ -716,6 +748,7 @@ export class UIRenderer {
       this.drawChoices(context, dialogue.choices, time, reducedMotion);
       return null;
     }
+    const portraitCharacterId = requirePortraitCharacterId(dialogue.portraitCharacterId);
     const layout = dialogueScrollLayout(scene);
     const { frame, portrait, captionRect, replayRect, advanceRect } = layout;
     const animationTime = reducedMotion ? 0 : time;
@@ -725,15 +758,16 @@ export class UIRenderer {
       portraitSide: layout.portraitSide,
     });
 
-    this.dialoguePortraitRenderer.drawPortrait(context, {
-      speaker: dialogue.speaker,
-      pose: dialogue.portraitPose ?? 'talk',
+    this.characterRenderer.draw(context, {
+      ...scene.portraitRenderState,
+      characterId: portraitCharacterId,
+      surface: 'portrait',
+      pose: normalizePortraitPose(dialogue.portraitPose),
       x: portrait.x,
       y: portrait.y,
       scale: portrait.scale,
-      outfit: dialogue.speaker === 'npc.violet' ? scene.violetOutfit : undefined,
-      robeTrim: dialogue.speaker === 'npc.violet' ? scene.violetRobeTrim : undefined,
       lightSide: scene.lightSide,
+      reducedMotion,
     }, animationTime);
 
     drawDialogueCaption(
@@ -782,11 +816,12 @@ export class UIRenderer {
     });
     drawDressingMirror(context, layout.preview, animationTime, reducedMotion);
     this.characterRenderer.draw(context, {
-      kind: 'violet',
+      characterId: 'character.violet',
+      surface: 'world',
       ...layout.previewCharacter,
       facing: 'right',
       pose: 'wonder',
-      outfit: 'robes',
+      appearance: 'robes',
       walking: false,
       wand: false,
       robeTrim: robeTrimColor(layout.selectedTrim),
@@ -810,6 +845,7 @@ export class UIRenderer {
 
   drawResumeRecap(context, recap, time, muted = false, reducedMotion = false, scene = {}) {
     return this.drawDialogue(context, {
+      portraitCharacterId: 'character.narrator',
       speakerLabel: 'Story so far',
       caption: recap.caption,
       text: recap.text,
@@ -823,14 +859,15 @@ export class UIRenderer {
       const rect = layout[index];
       choice.__rect = rect;
       drawIllustratedChoiceTag(context, rect, index, choice.icon);
-      const petType = choicePetType(choice.icon);
-      if (petType && typeof this.characterRenderer?.drawPet === 'function') {
-        this.characterRenderer.drawPet(context, {
-          type: petType,
+      if (typeof choice.characterId === 'string' && choice.characterId.length > 0) {
+        this.characterRenderer.draw(context, {
+          characterId: choice.characterId,
+          surface: 'world',
           x: rect.x + rect.width / 2,
           y: rect.y + 178,
-          scale: petType === 'toad' ? 1.18 : petType === 'owl' ? 0.72 : 0.82,
-          pose: 'idle',
+          scale: Number.isFinite(choice.characterScale) ? choice.characterScale : 0.82,
+          ...(choice.characterAppearance ? { appearance: choice.characterAppearance } : {}),
+          pose: choice.characterPose ?? 'idle',
           facing: 'right',
           reducedMotion,
         }, animationTime);
@@ -2515,19 +2552,7 @@ function drawChoiceEmblem(context, rect, icon, accent) {
   });
 }
 
-function choicePetType(icon) {
-  const value = String(icon ?? '').toLowerCase();
-  if (value.includes('cat')) return 'cat';
-  if (value.includes('owl')) return 'owl';
-  if (value.includes('toad')) return 'toad';
-  return null;
-}
-
-function choiceAccent(icon, index) {
-  const petType = choicePetType(icon);
-  if (petType === 'cat') return '#8f684e';
-  if (petType === 'owl') return '#596882';
-  if (petType === 'toad') return '#667a53';
+function choiceAccent(_icon, index) {
   return ['#6e4b68', '#4f6c75', '#89663f', '#5d6750'][index % 4];
 }
 

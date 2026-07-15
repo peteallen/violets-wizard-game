@@ -11,6 +11,10 @@ import {
   normalizeVectorRenderRequest,
 } from '../vectorRuntime.js';
 import {
+  createCharacterPortraitRenderer,
+  defineCharacterPortraitPresentation,
+} from '../portraitRuntime.js';
+import {
   menagerieKeeperPresentation,
   menagerieKeeperStyle,
 } from './definition.js';
@@ -101,6 +105,10 @@ function renderKeeper(surface, request) {
     pose: portrait ? 'speaking' : 'idle',
   });
   return drawMenagerieKeeper(normalized.context, normalized.state, normalized.time);
+}
+
+export function drawMenagerieKeeperPortraitFigure(request) {
+  return renderKeeper('portrait', request);
 }
 
 function drawKeeperLegs(context, pose, time) {
@@ -937,7 +945,30 @@ function drawKeeperWarmRim(context, facingDirection) {
   context.restore();
 }
 
+export const menagerieKeeperPortraitPresentation = defineCharacterPortraitPresentation({
+  backdrop: {
+    dark: menagerieKeeperPresentation.portrait.backdrop[0],
+    light: menagerieKeeperPresentation.portrait.backdrop[1],
+  },
+  figure: {
+    x: 0,
+    y: menagerieKeeperPresentation.portrait.y,
+    scale: menagerieKeeperPresentation.portrait.scale,
+  },
+});
+
+const drawMenagerieKeeperPortrait = createCharacterPortraitRenderer({
+  presentation: menagerieKeeperPortraitPresentation,
+  drawFigure: drawMenagerieKeeperPortraitFigure,
+  prepareFigureState: (state) => ({
+    facing: state.facing,
+    lightSide: state.lightSide,
+    pose: (state.pose ?? 'speaking') === 'talk' ? 'speaking' : (state.pose ?? 'speaking'),
+    reducedMotion: state.reducedMotion,
+  }),
+});
+
 export const menagerieKeeperCharacterRuntime = createVectorCharacterRuntime({
   drawWorld: (request) => renderKeeper('world', request),
-  drawPortrait: (request) => renderKeeper('portrait', request),
+  drawPortrait: drawMenagerieKeeperPortrait,
 });

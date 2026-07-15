@@ -12,6 +12,10 @@ import {
   normalizeVectorRenderRequest,
 } from '../vectorRuntime.js';
 import {
+  createCharacterPortraitRenderer,
+  defineCharacterPortraitPresentation,
+} from '../portraitRuntime.js';
+import {
   catPresentation,
   catStyle,
 } from './definition.js';
@@ -98,6 +102,10 @@ function renderCat(surface, request) {
     pose: 'idle',
   });
   return drawCatCharacter(normalized.context, normalized.state, normalized.time);
+}
+
+export function drawCatPortraitFigure(request) {
+  return renderCat('portrait', request);
 }
 
 function drawCat(context, time, motion, lightDirection = -1) {
@@ -507,7 +515,30 @@ function drawCatPaws(context, motion) {
 }
 
 
+export const catPortraitPresentation = defineCharacterPortraitPresentation({
+  backdrop: {
+    dark: catPresentation.portrait.backdrop[0],
+    light: catPresentation.portrait.backdrop[1],
+  },
+  figure: {
+    x: 0,
+    y: catPresentation.portrait.y,
+    scale: catPresentation.portrait.scale,
+  },
+});
+
+const drawCatPortrait = createCharacterPortraitRenderer({
+  presentation: catPortraitPresentation,
+  drawFigure: drawCatPortraitFigure,
+  prepareFigureState: (state) => ({
+    facing: state.facing,
+    lightSide: state.lightSide,
+    pose: (state.pose ?? 'speaking') === 'talk' ? 'speaking' : (state.pose ?? 'speaking'),
+    reducedMotion: state.reducedMotion,
+  }),
+});
+
 export const catCharacterRuntime = createVectorCharacterRuntime({
   drawWorld: (request) => renderCat('world', request),
-  drawPortrait: (request) => renderCat('portrait', request),
+  drawPortrait: drawCatPortrait,
 });

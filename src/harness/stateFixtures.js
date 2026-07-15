@@ -1,4 +1,5 @@
 import { createSaveV1, validateSaveV1 } from '../game/systems/Save.js';
+import { assertCharacterId } from '../game/characters/CharacterDefinition.js';
 import { ImmutableRegistry, assertExactKeys } from './registry.js';
 
 const CONTENT_ID_PATTERN = /^[a-z][A-Za-z0-9]*(?:[.-][A-Za-z0-9]+)*$/;
@@ -18,7 +19,11 @@ function assertContentId(value, path) {
 }
 
 export function validateStateFixture(fixture, path = 'state fixture') {
-  assertExactKeys(fixture, ['fixtureVersion', 'description', 'entry', 'save'], path);
+  assertExactKeys(
+    fixture,
+    ['fixtureVersion', 'description', 'entry', 'characterDependencies', 'save'],
+    path,
+  );
   if (fixture.fixtureVersion !== 1) throw new TypeError(`${path}.fixtureVersion must be 1.`);
   if (typeof fixture.description !== 'string' || fixture.description.trim() === '') {
     throw new TypeError(`${path}.description must be a non-empty string.`);
@@ -26,6 +31,17 @@ export function validateStateFixture(fixture, path = 'state fixture') {
   assertExactKeys(fixture.entry, ['chapter', 'scene'], `${path}.entry`);
   assertIntegerInRange(fixture.entry.chapter, 0, 8, `${path}.entry.chapter`);
   assertContentId(fixture.entry.scene, `${path}.entry.scene`);
+  if (!Array.isArray(fixture.characterDependencies)) {
+    throw new TypeError(`${path}.characterDependencies must be an array.`);
+  }
+  const dependencies = new Set();
+  fixture.characterDependencies.forEach((characterId, index) => {
+    assertCharacterId(characterId, `${path}.characterDependencies[${index}]`);
+    if (dependencies.has(characterId)) {
+      throw new TypeError(`${path}.characterDependencies[${index}] duplicates ${characterId}.`);
+    }
+    dependencies.add(characterId);
+  });
   validateSaveV1(fixture.save, `${path}.save`);
   return fixture;
 }
@@ -66,9 +82,34 @@ function createSave({
   return save;
 }
 
-function createFixture(description, entry, save) {
-  return { fixtureVersion: 1, description, entry, save };
+function createFixture(description, entry, save, characterDependencies = []) {
+  return {
+    fixtureVersion: 1,
+    description,
+    entry,
+    characterDependencies: [...characterDependencies],
+    save,
+  };
 }
+
+const TITLE_CHARACTERS = Object.freeze(['character.violet', 'character.post-owl']);
+const CAST_CHARACTERS = Object.freeze([
+  'character.violet',
+  'character.hagrid',
+  'character.wandmaker',
+  'character.madam-malkin',
+  'character.menagerie-keeper',
+]);
+const PET_CHARACTERS = Object.freeze([
+  'character.cat',
+  'character.pet-owl',
+  'character.toad',
+]);
+const PORTRAIT_CHARACTERS = Object.freeze([
+  ...CAST_CHARACTERS,
+  'character.narrator',
+  ...PET_CHARACTERS,
+]);
 
 const throughWandFlags = Object.freeze({
   'ch1.owlTapped': true,
@@ -139,8 +180,13 @@ function completedSurfaceFixture(id, description) {
   );
 }
 
-function characterReviewFixture(id, description) {
-  return createFixture(description, { chapter: 0, scene: id }, createSave());
+function characterReviewFixture(id, description, characterDependencies = []) {
+  return createFixture(
+    description,
+    { chapter: 0, scene: id },
+    createSave(),
+    characterDependencies,
+  );
 }
 
 registry
@@ -148,11 +194,13 @@ registry
     'The integrated code-only storybook title before Violet begins, with the castle and lake illustration, Violet and her owl, and the new-player envelope.',
     { chapter: 0, scene: 'foundation' },
     createSave(),
+    TITLE_CHARACTERS,
   ))
   .register('foundation-saved-review', createFixture(
     'The integrated code-only storybook title with meaningful progress, showing the returning-player envelope over the castle and lake illustration.',
     { chapter: 0, scene: 'foundation-saved-review' },
     createSave({ questFlags: { 'ch1.owlTapped': true } }),
+    TITLE_CHARACTERS,
   ))
   .register('ch1-start', createFixture(
     'Chapter 1 at the bedroom letter scene before Violet has acted.',
@@ -418,26 +466,32 @@ registry
   .register('character-cast-review', characterReviewFixture(
     'character-cast-review',
     'The full Chapter One cast together at their real in-world rendering scale.',
+    CAST_CHARACTERS,
   ))
   .register('character-pets-review', characterReviewFixture(
     'character-pets-review',
     'All three companion choices enlarged enough to review follow motion and material detail.',
+    PET_CHARACTERS,
   ))
   .register('character-portraits-review', characterReviewFixture(
     'character-portraits-review',
     'Every dialogue cameo produced from the same illustrated puppet family.',
+    PORTRAIT_CHARACTERS,
   ))
   .register('owl-motion-review', characterReviewFixture(
     'owl-motion-review',
     'The hero owl shown across every shipped pose at gameplay scale.',
+    ['character.post-owl', 'character.pet-owl'],
   ))
   .register('hagrid-sprite-review', characterReviewFixture(
     'hagrid-sprite-review',
     'Hagrid’s production full-frame neutral, blink, speaking, and two walking directions.',
+    ['character.hagrid'],
   ))
   .register('wandmaker-sprite-review', characterReviewFixture(
     'wandmaker-sprite-review',
     'The Wandmaker’s production full-frame neutral, blink, and two speaking mouth shapes.',
+    ['character.wandmaker'],
   ))
   .register('wandmaker-live-review', createFixture(
     'The generated Wandmaker welcoming Violet in normal Ollivanders gameplay.',
@@ -463,6 +517,7 @@ registry
   .register('madam-malkin-sprite-review', characterReviewFixture(
     'madam-malkin-sprite-review',
     'Madam Malkin’s production full-frame neutral, blink, and two speaking mouth shapes.',
+    ['character.madam-malkin'],
   ))
   .register('madam-malkin-live-review', createFixture(
     'The generated Madam Malkin welcoming Violet in normal robe-shop gameplay.',
@@ -489,18 +544,22 @@ registry
   .register('violet-expression-review', characterReviewFixture(
     'violet-expression-review',
     'The owner-approved aligned Violet shown in every accepted neutral and facial-expression state, as both portraits and grounded full figures.',
+    ['character.violet'],
   ))
   .register('ui-dialogue-review', characterReviewFixture(
     'ui-dialogue-review',
     'The illustrated dialogue parchment, animated Hagrid cameo, short caption, and replay control.',
+    ['character.hagrid'],
   ))
   .register('ui-dialogue-night-review', characterReviewFixture(
     'ui-dialogue-night-review',
     'The warm-dark dialogue scroll opposite its active speaker in a night-painted room.',
+    ['character.wandmaker'],
   ))
   .register('ui-dialogue-center-review', characterReviewFixture(
     'ui-dialogue-center-review',
     'The narrowed narrated scroll beside a centered, silent Violet with the longest shipped caption.',
+    ['character.violet', 'character.narrator'],
   ))
   .register('ui-dialogue-live-review', createFixture(
     'The adaptive dialogue scroll opposite Hagrid in Violet’s painted bedroom.',
@@ -552,10 +611,12 @@ registry
       questFlags: throughWandFlags,
       wandId: 'violet-first-wand',
     }),
+    ['character.violet'],
   ))
   .register('ui-choices-review', characterReviewFixture(
     'ui-choices-review',
     'Three authored companion choice cards without font-glyph stand-ins.',
+    PET_CHARACTERS,
   ))
   .register('ui-satchel-map-review', characterReviewFixture(
     'ui-satchel-map-review',

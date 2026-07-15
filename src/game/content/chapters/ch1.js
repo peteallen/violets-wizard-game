@@ -15,6 +15,10 @@ export const chapter1CharacterIds = Object.freeze([
 ]);
 
 const noCondition = Object.freeze({});
+const standardSpeakerLayoutBounds = Object.freeze({ width: 148, height: 236, ground: 32 });
+const hagridLayoutBounds = Object.freeze({ width: 244, height: 340, ground: 35 });
+const owlLayoutBounds = Object.freeze({ width: 154, height: 188, ground: 25 });
+const petLayoutBounds = Object.freeze({ width: 132, height: 142, ground: 28 });
 
 function when({ allFlags = [], noFlags = [], profileEquals } = {}) {
   return {
@@ -325,6 +329,8 @@ const dialogueGraphs = [
             id: 'petCat',
             icon: 'pet-cat',
             caption: 'Cat',
+            characterId: 'character.cat',
+            characterScale: 0.82,
             actions: [{ type: 'character.set', field: 'pet.type', value: 'cat' }, audioSfx('sfx/ch1/petCat')],
             next: 'confirm',
           },
@@ -332,6 +338,8 @@ const dialogueGraphs = [
             id: 'petOwl',
             icon: 'pet-owl',
             caption: 'Owl',
+            characterId: 'character.pet-owl',
+            characterScale: 0.72,
             actions: [{ type: 'character.set', field: 'pet.type', value: 'owl' }, audioSfx('sfx/ch1/petOwl')],
             next: 'confirm',
           },
@@ -339,6 +347,8 @@ const dialogueGraphs = [
             id: 'petToad',
             icon: 'pet-toad',
             caption: 'Toad',
+            characterId: 'character.toad',
+            characterScale: 1.18,
             actions: [{ type: 'character.set', field: 'pet.type', value: 'toad' }, audioSfx('sfx/ch1/petToad')],
             next: 'confirm',
           },
@@ -712,8 +722,26 @@ export const chapter1 = {
       exits: [],
       occupants: [
         { npc: 'npc.violet', x: 500, y: 610, facing: 'right', pose: 'idle', when: noCondition },
-        { npc: 'npc.owlPost', x: 1060, y: 210, facing: 'left', pose: 'perch', when: when({ noFlags: ['ch1.owlTapped'] }) },
-        { npc: 'npc.guide', x: 250, y: 610, facing: 'right', pose: 'idle', when: when({ allFlags: ['ch1.letterRead'] }) },
+        {
+          npc: 'npc.owlPost',
+          x: 1060,
+          y: 210,
+          facing: 'left',
+          pose: 'perch',
+          when: when({ noFlags: ['ch1.owlTapped'] }),
+          render: {
+            offsetY: 80,
+            scale: 1.08,
+            layoutBounds: owlLayoutBounds,
+            lookAt: {
+              target: 'npc.violet',
+              rangeX: 360,
+              rangeY: 300,
+              offsetY: -170,
+            },
+          },
+        },
+        { npc: 'npc.guide', x: 250, y: 610, facing: 'right', pose: 'idle', when: when({ allFlags: ['ch1.letterRead'] }), render: { layoutBounds: hagridLayoutBounds } },
       ],
       hotspots: [
         {
@@ -784,7 +812,7 @@ export const chapter1 = {
       ],
       occupants: [
         { npc: 'npc.violet', x: 160, y: 610, facing: 'right', pose: 'idle', when: noCondition },
-        { npc: 'npc.guide', x: 760, y: 610, facing: 'right', pose: 'idle', when: noCondition },
+        { npc: 'npc.guide', x: 760, y: 610, facing: 'right', pose: 'idle', when: noCondition, render: { layoutBounds: hagridLayoutBounds } },
       ],
       hotspots: [],
       ambientSetPieces: ['am.inkTransitions'],
@@ -801,7 +829,7 @@ export const chapter1 = {
       exits: [],
       occupants: [
         { npc: 'npc.violet', x: 145, y: 610, facing: 'right', pose: 'idle', when: noCondition },
-        { npc: 'npc.guide', x: 330, y: 610, facing: 'right', pose: 'idle', when: noCondition },
+        { npc: 'npc.guide', x: 330, y: 610, facing: 'right', pose: 'idle', when: noCondition, render: { layoutBounds: hagridLayoutBounds } },
       ],
       hotspots: [
         {
@@ -861,9 +889,9 @@ export const chapter1 = {
       ],
       occupants: [
         { npc: 'npc.violet', x: 180, y: 610, facing: 'right', pose: 'idle', when: noCondition },
-        { npc: 'npc.guide', x: 260, y: 610, facing: 'right', pose: 'idle', when: when({ noFlags: ['ch1.satchelReceived'] }) },
-        { npc: 'npc.guide', x: 470, y: 610, facing: 'right', pose: 'idle', when: when({ allFlags: ['ch1.satchelReceived'], noFlags: ['ch1.petNamed'] }) },
-        { npc: 'npc.guide', x: 260, y: 610, facing: 'right', pose: 'idle', when: when({ allFlags: ['ch1.petNamed'] }) },
+        { npc: 'npc.guide', x: 260, y: 610, facing: 'right', pose: 'idle', when: when({ noFlags: ['ch1.satchelReceived'] }), render: { layoutBounds: hagridLayoutBounds } },
+        { npc: 'npc.guide', x: 470, y: 610, facing: 'right', pose: 'idle', when: when({ allFlags: ['ch1.satchelReceived'], noFlags: ['ch1.petNamed'] }), render: { layoutBounds: hagridLayoutBounds } },
+        { npc: 'npc.guide', x: 260, y: 610, facing: 'right', pose: 'idle', when: when({ allFlags: ['ch1.petNamed'] }), render: { layoutBounds: hagridLayoutBounds } },
       ],
       hotspots: [
         {
@@ -912,7 +940,7 @@ export const chapter1 = {
       ],
       occupants: [
         { npc: 'npc.violet', x: 120, y: 610, facing: 'right', pose: 'idle', when: noCondition },
-        { npc: 'npc.wandmaker', x: 285, y: 610, facing: 'right', pose: 'idle', when: noCondition },
+        { npc: 'npc.wandmaker', x: 285, y: 610, facing: 'right', pose: 'idle', when: noCondition, render: { layoutBounds: standardSpeakerLayoutBounds } },
       ],
       hotspots: [
         {
@@ -992,7 +1020,7 @@ export const chapter1 = {
       ],
       occupants: [
         { npc: 'npc.violet', x: 120, y: 610, facing: 'right', pose: 'idle', when: noCondition },
-        { npc: 'npc.tailor', x: 310, y: 610, facing: 'right', pose: 'idle', when: noCondition },
+        { npc: 'npc.tailor', x: 310, y: 610, facing: 'right', pose: 'idle', when: noCondition, render: { layoutBounds: standardSpeakerLayoutBounds } },
       ],
       hotspots: [
         {
@@ -1030,10 +1058,31 @@ export const chapter1 = {
       ],
       occupants: [
         { npc: 'npc.violet', x: 120, y: 610, facing: 'right', pose: 'idle', when: noCondition },
-        { npc: 'npc.menagerieKeeper', x: 270, y: 610, facing: 'right', pose: 'idle', when: noCondition },
-        { npc: 'npc.pet.cat', x: 650, y: 585, facing: 'right', pose: 'idle', when: when({ noFlags: ['ch1.petNamed'] }) },
-        { npc: 'npc.pet.owl', x: 900, y: 520, facing: 'right', pose: 'idle', when: when({ noFlags: ['ch1.petNamed'] }) },
-        { npc: 'npc.pet.toad', x: 1110, y: 595, facing: 'right', pose: 'idle', when: when({ noFlags: ['ch1.petNamed'] }) },
+        { npc: 'npc.menagerieKeeper', x: 270, y: 610, facing: 'right', pose: 'idle', when: noCondition, render: { layoutBounds: standardSpeakerLayoutBounds } },
+        { npc: 'npc.pet.cat', x: 650, y: 585, facing: 'right', pose: 'idle', when: when({ noFlags: ['ch1.petNamed'] }), render: { layoutBounds: petLayoutBounds } },
+        {
+          npc: 'npc.pet.owl',
+          x: 900,
+          y: 520,
+          facing: 'right',
+          pose: 'idle',
+          when: when({ noFlags: ['ch1.petNamed'] }),
+          render: {
+            scale: 0.92,
+            timeOffset: 0.7,
+            lookX: -0.35,
+            layoutBounds: petLayoutBounds,
+          },
+        },
+        {
+          npc: 'npc.pet.toad',
+          x: 1110,
+          y: 595,
+          facing: 'right',
+          pose: 'idle',
+          when: when({ noFlags: ['ch1.petNamed'] }),
+          render: { timeOffset: 1.3, layoutBounds: petLayoutBounds },
+        },
       ],
       hotspots: [
         {
@@ -1081,9 +1130,31 @@ export const chapter1 = {
     { id: 'npc.tailor', characterId: 'character.madam-malkin', displayName: 'Madam Malkin', puppet: 'puppet.tailor', portrait: 'portrait.tailor', voiceRole: 'tailor', scale: 1, hitRadius: 88, defaultPose: 'idle', controller: { kind: 'static' }, defaultTalk: null },
     { id: 'npc.menagerieKeeper', characterId: 'character.menagerie-keeper', displayName: 'Keeper', puppet: 'puppet.menagerieKeeper', portrait: 'portrait.menagerieKeeper', voiceRole: 'keeper', scale: 1, hitRadius: 88, defaultPose: 'idle', controller: { kind: 'static' }, defaultTalk: null },
     { id: 'npc.owlPost', characterId: 'character.post-owl', displayName: 'Owl', puppet: 'puppet.owlPost', portrait: 'portrait.none', voiceRole: 'creature', scale: 0.75, hitRadius: 88, defaultPose: 'perch', controller: { kind: 'scripted' }, defaultTalk: null },
-    { id: 'npc.pet.cat', characterId: 'character.cat', displayName: 'Cat', puppet: 'puppet.pet.cat', portrait: 'portrait.pet.cat', voiceRole: 'creature', scale: 0.55, hitRadius: 88, defaultPose: 'idle', controller: { kind: 'follow', target: 'npc.violet', minimumDistance: 70, maxDistance: 190 }, defaultTalk: null },
-    { id: 'npc.pet.owl', characterId: 'character.pet-owl', displayName: 'Owl', puppet: 'puppet.pet.owl', portrait: 'portrait.pet.owl', voiceRole: 'creature', scale: 0.55, hitRadius: 88, defaultPose: 'idle', controller: { kind: 'follow', target: 'npc.violet', minimumDistance: 90, maxDistance: 220 }, defaultTalk: null },
-    { id: 'npc.pet.toad', characterId: 'character.toad', displayName: 'Toad', puppet: 'puppet.pet.toad', portrait: 'portrait.pet.toad', voiceRole: 'creature', scale: 0.42, hitRadius: 88, defaultPose: 'idle', controller: { kind: 'follow', target: 'npc.violet', minimumDistance: 55, maxDistance: 150 }, defaultTalk: null },
+    {
+      id: 'npc.pet.cat', characterId: 'character.cat', displayName: 'Cat', puppet: 'puppet.pet.cat', portrait: 'portrait.pet.cat', voiceRole: 'creature', scale: 0.55, hitRadius: 88, defaultPose: 'idle',
+      controller: {
+        kind: 'follow', target: 'npc.violet', minimumDistance: 70, maxDistance: 190,
+        poseMap: { moving: 'pet-follow', hintLook: 'idle', hintAttention: 'paw' },
+      },
+      defaultTalk: null,
+    },
+    {
+      id: 'npc.pet.owl', characterId: 'character.pet-owl', displayName: 'Owl', puppet: 'puppet.pet.owl', portrait: 'portrait.pet.owl', voiceRole: 'creature', scale: 0.55, hitRadius: 88, defaultPose: 'idle',
+      controller: {
+        kind: 'follow', target: 'npc.violet', minimumDistance: 90, maxDistance: 220,
+        poseMap: { moving: 'pet-follow', hintLook: 'idle', hintAttention: 'perch' },
+        facingLookMagnitude: 0.45,
+      },
+      defaultTalk: null,
+    },
+    {
+      id: 'npc.pet.toad', characterId: 'character.toad', displayName: 'Toad', puppet: 'puppet.pet.toad', portrait: 'portrait.pet.toad', voiceRole: 'creature', scale: 0.42, hitRadius: 88, defaultPose: 'idle',
+      controller: {
+        kind: 'follow', target: 'npc.violet', minimumDistance: 55, maxDistance: 150,
+        poseMap: { moving: 'pet-follow', hintLook: 'idle', hintAttention: 'idle' },
+      },
+      defaultTalk: null,
+    },
   ]),
   dialogues: idMap(dialogueGraphs),
   quests: { [questGraph.id]: questGraph },

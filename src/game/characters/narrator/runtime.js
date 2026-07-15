@@ -4,7 +4,11 @@ import {
   createVectorCharacterRuntime,
   normalizeVectorRenderRequest,
 } from '../vectorRuntime.js';
-import { narratorStyle } from './definition.js';
+import {
+  createCharacterPortraitRenderer,
+  defineCharacterPortraitPresentation,
+} from '../portraitRuntime.js';
+import { narratorPresentation, narratorStyle } from './definition.js';
 
 const OUTLINE = STORYBOOK_INK.primary;
 
@@ -52,7 +56,7 @@ export function drawNarratorPortrait(context, state, time) {
   context.restore();
 }
 
-function renderNarrator(request) {
+export function drawNarratorPortraitFigure(request) {
   const normalized = normalizeVectorRenderRequest(request, {
     surface: 'portrait',
     x: 0,
@@ -63,6 +67,25 @@ function renderNarrator(request) {
   return drawNarratorPortrait(normalized.context, normalized.state, normalized.time);
 }
 
+export const narratorPortraitPresentation = defineCharacterPortraitPresentation({
+  backdrop: {
+    dark: narratorPresentation.portrait.backdrop[0],
+    light: narratorPresentation.portrait.backdrop[1],
+  },
+  figure: { x: 0, y: 0, scale: 1 },
+});
+
+const drawNarratorCameo = createCharacterPortraitRenderer({
+  presentation: narratorPortraitPresentation,
+  drawFigure: drawNarratorPortraitFigure,
+  prepareFigureState: (state) => ({
+    facing: state.facing,
+    lightSide: state.lightSide,
+    pose: (state.pose ?? 'speaking') === 'talk' ? 'speaking' : (state.pose ?? 'speaking'),
+    reducedMotion: state.reducedMotion,
+  }),
+});
+
 export const narratorCharacterRuntime = createVectorCharacterRuntime({
-  drawPortrait: renderNarrator,
+  drawPortrait: drawNarratorCameo,
 });

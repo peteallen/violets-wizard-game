@@ -30,6 +30,10 @@ import {
   parseHarnessRequest,
   resolveHarnessScenario,
 } from '../src/harness/boot.js';
+import {
+  productionCharacterCatalog,
+  titleCharacterDependencies,
+} from '../src/game/characters/productionCatalog.js';
 import { validateSaveV1 } from '../src/game/systems/Save.js';
 
 describe('ImmutableRegistry', () => {
@@ -133,6 +137,29 @@ describe('state fixtures', () => {
     expect(getStateFixture('ch1-wand-chosen').save.progress.questFlags['ch1.wandChosen']).toBe(true);
   });
 
+  it('declares exact, resolvable character dependencies for shared harness scenes', () => {
+    expect(getStateFixture('foundation').characterDependencies).toEqual(
+      titleCharacterDependencies,
+    );
+    expect(getStateFixture('ui-choices-review').characterDependencies).toEqual([
+      'character.cat',
+      'character.pet-owl',
+      'character.toad',
+    ]);
+    expect(getStateFixture('ui-dialogue-center-review').characterDependencies).toEqual([
+      'character.violet',
+      'character.narrator',
+    ]);
+
+    for (const id of STATE_FIXTURE_IDS) {
+      const fixture = getStateFixture(id);
+      expect(Object.isFrozen(fixture.characterDependencies), id).toBe(true);
+      for (const characterId of fixture.characterDependencies) {
+        expect(productionCharacterCatalog.registry.has(characterId), `${id}: ${characterId}`).toBe(true);
+      }
+    }
+  });
+
   it('rejects invalid settings and malformed progression flags', () => {
     const badLearning = cloneStateFixture('ch1-start');
     badLearning.save.settings.learning = 'hard';
@@ -141,6 +168,10 @@ describe('state fixtures', () => {
     const badFlag = cloneStateFixture('ch1-start');
     badFlag.save.progress.questFlags.notNamespaced = true;
     expect(() => validateStateFixture(badFlag)).toThrow(/chapter-namespaced flag/);
+
+    const duplicateCharacter = cloneStateFixture('ui-choices-review');
+    duplicateCharacter.characterDependencies.push('character.cat');
+    expect(() => validateStateFixture(duplicateCharacter)).toThrow(/duplicates character\.cat/);
   });
 });
 
@@ -289,6 +320,21 @@ describe('registered harness scenarios', () => {
     });
     expect(getStateFixture('ch1-wand-chosen').save.worldSeed).toBe(42);
     expect(getStateFixture('ch1-wand-chosen').save.settings.reducedMotion).toBe(false);
+  });
+
+  it('resolves dependencies from the requested scene independently of state and action URLs', () => {
+    const request = parseHarnessRequest(
+      '?scene=ui-choices-review&state=foundation&actions=foundation',
+    );
+    const scenario = resolveHarnessScenario(request);
+
+    expect(scenario.stateFixture.entry.scene).toBe('foundation');
+    expect(scenario.characterDependencies).toEqual([
+      'character.cat',
+      'character.pet-owl',
+      'character.toad',
+    ]);
+    expect(Object.isFrozen(scenario.characterDependencies)).toBe(true);
   });
 
   it('selects semantic actions deterministically through an exact frame', () => {

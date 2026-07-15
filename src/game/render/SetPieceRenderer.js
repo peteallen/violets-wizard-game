@@ -9,7 +9,6 @@ import {
   drawLetterEnvelopeFront,
   envelopeWorldBounds,
 } from './LetterRenderer.js';
-import { drawOwlBookplate, drawVectorOwl, sampleOwlDelivery } from './OwlRenderer.js';
 
 export const BRICK_GRID = Object.freeze({
   x: 278,
@@ -36,15 +35,106 @@ const VASE_SHARDS = Object.freeze([
   { points: [[-31, 47], [-8, 32], [10, 48], [24, 57], [-25, 58]], offset: [-2, 47], vx: -28, vy: -48, spin: -3.9, color: '#746b9e' },
 ]);
 
+// The owl follows this scene-owned flight path; the character package owns
+// only how the canonical post-owl identity looks at each requested pose.
+function sampleLetterDelivery(time, { reducedMotion = false } = {}) {
+  const t = Math.max(0, time);
+  if (reducedMotion) {
+    const settle = easeOutCubic(clamp01(t / 1.15));
+    return Object.freeze({
+      owl: Object.freeze({
+        x: lerp(1060, 980, settle),
+        y: lerp(290, 275, settle),
+        rotation: -0.025 * settle,
+        scale: 1.04,
+        opacity: 1 - clamp01((t - 1.3) / 0.5),
+        pose: t < 0.35 ? 'takeoff' : 'settle',
+      }),
+      letter: Object.freeze({
+        x: lerp(925, LETTER_ENVELOPE_POSE.x, easeInOutCubic(clamp01((t - 0.35) / 1.45))),
+        y: lerp(310, LETTER_ENVELOPE_POSE.y, easeOutCubic(clamp01((t - 0.35) / 1.45))),
+        rotation: lerp(-0.04, LETTER_ENVELOPE_POSE.rotation, clamp01(t / 1.8)),
+        scale: lerp(0.34, LETTER_ENVELOPE_POSE.scale, easeOutCubic(clamp01((t - 0.35) / 1.45))),
+      }),
+    });
+  }
+
+  const launchStart = 0.16;
+  const releaseAt = 1.16;
+  let owlX = 1060;
+  let owlY = 290;
+  let owlRotation = 0;
+  let owlPose = 'takeoff';
+  let owlOpacity = 1;
+  if (t >= launchStart && t < releaseAt) {
+    const progress = easeInOutCubic((t - launchStart) / (releaseAt - launchStart));
+    owlX = cubicBezier(1060, 1015, 860, 780, progress);
+    owlY = cubicBezier(290, 180, 205, 275, progress);
+    owlRotation = lerp(-0.12, 0.08, progress);
+    owlPose = 'delivery';
+  } else if (t >= releaseAt) {
+    const progress = clamp01((t - releaseAt) / 0.95);
+    owlX = cubicBezier(780, 900, 1110, 1225, progress);
+    owlY = cubicBezier(275, 185, 125, 70, progress);
+    owlRotation = lerp(0.08, -0.16, progress);
+    owlPose = 'flight';
+    owlOpacity = 1 - clamp01((progress - 0.72) / 0.28);
+  }
+
+  let letterX;
+  let letterY;
+  let letterRotation;
+  let letterScale;
+  if (t < releaseAt) {
+    letterX = owlX - 4;
+    letterY = owlY + 45;
+    letterRotation = owlRotation * 0.35;
+    letterScale = 0.3;
+  } else {
+    const progress = easeOutCubic(clamp01((t - releaseAt) / 1.05));
+    letterX = lerp(776, LETTER_ENVELOPE_POSE.x, progress)
+      + Math.sin(progress * Math.PI * 2) * (1 - progress) * 18;
+    letterY = cubicBezier(320, 300, 270, LETTER_ENVELOPE_POSE.y, progress);
+    letterRotation = LETTER_ENVELOPE_POSE.rotation
+      + Math.sin(progress * Math.PI * 2.4) * (1 - progress) * 0.12;
+    letterScale = lerp(0.3, LETTER_ENVELOPE_POSE.scale, progress);
+  }
+
+  return Object.freeze({
+    owl: Object.freeze({
+      x: owlX,
+      y: owlY,
+      rotation: owlRotation,
+      scale: 1.04,
+      opacity: owlOpacity,
+      pose: owlPose,
+    }),
+    letter: Object.freeze({
+      x: letterX,
+      y: letterY,
+      rotation: letterRotation,
+      scale: letterScale,
+    }),
+  });
+}
+
+function cubicBezier(a, b, c, d, time) {
+  const inverse = 1 - time;
+  return inverse ** 3 * a
+    + 3 * inverse ** 2 * time * b
+    + 3 * inverse * time ** 2 * c
+    + time ** 3 * d;
+}
+
 export class SetPieceRenderer {
   constructor({
     resolveAsset = () => null,
     imageFactory = defaultImageFactory,
-    owlRenderer = drawVectorOwl,
+    characterRenderer,
   } = {}) {
     this.resolveAsset = resolveAsset;
     this.imageFactory = imageFactory;
-    this.owlRenderer = owlRenderer;
+    this.characterRenderer = requireCharacterRenderer(characterRenderer);
     this.imageRecords = new Map();
     this.brickWallWasActive = false;
   }
@@ -137,14 +227,16 @@ export class SetPieceRenderer {
 
   drawLetterDelivery(context, active, { reducedMotion = false, lightSide = 'left' } = {}) {
     const t = active.time;
-    const delivery = sampleOwlDelivery(t, { reducedMotion });
+    const delivery = sampleLetterDelivery(t, { reducedMotion });
     context.fillStyle = 'rgba(20,17,38,0.16)';
     context.fillRect(0, 0, WORLD.width, WORLD.height);
 
     if (delivery.owl.opacity > 0) {
-      this.owlRenderer(context, {
+      this.characterRenderer.draw(context, {
         ...delivery.owl,
-        variant: 'post',
+        characterId: 'character.post-owl',
+        surface: 'world',
+        appearance: 'post',
         facing: 'left',
         lightSide: lightSide === 'right' ? 'right' : 'left',
         reducedMotion,
@@ -821,7 +913,7 @@ function drawInvitationOwlCrest(context, x, y) {
   context.fillStyle = 'rgba(84,34,55,0.22)';
   traceOrganicOval(context, 2, 5, 31, 34, 0.46);
   context.fill();
-  drawOwlBookplate(context, 0, 0, 1.12, {
+  drawInvitationOwlBookplate(context, 0, 0, 1.12, {
     color: '#7a2940',
     accent: '#f4d58d',
   });
@@ -832,6 +924,96 @@ function drawInvitationOwlCrest(context, x, y) {
   context.bezierCurveTo(-13, -27, -7, -30, -1, -30);
   context.stroke();
   context.restore();
+}
+
+function drawInvitationOwlBookplate(
+  context,
+  x,
+  y,
+  scale = 1,
+  { color = '#5e4634', accent = '#e8b44f' } = {},
+) {
+  context.save();
+  context.translate(x, y);
+  context.scale(scale, scale);
+  context.fillStyle = color;
+  context.strokeStyle = accent;
+  context.lineWidth = 2.5;
+  context.beginPath();
+  context.moveTo(-22, -12);
+  context.bezierCurveTo(-20, -20, -17, -29, -12, -27);
+  context.quadraticCurveTo(0, -34, 14, -26);
+  context.bezierCurveTo(18, -28, 21, -18, 22, -11);
+  context.quadraticCurveTo(25, 8, 1, 25);
+  context.quadraticCurveTo(-24, 9, -22, -12);
+  context.closePath();
+  context.fill();
+  context.stroke();
+  context.fillStyle = '#fff8e8';
+  traceInvitationOwlOval(context, -8, -9, 7.5, 9, 0.34);
+  context.fill();
+  traceInvitationOwlOval(context, 8, -9, 7.5, 9, -0.28);
+  context.fill();
+  context.fillStyle = '#241b18';
+  traceInvitationOwlOval(context, -7, -8, 3, 3.2, -0.25);
+  context.fill();
+  traceInvitationOwlOval(context, 7, -8, 3, 3.2, 0.31);
+  context.fill();
+  context.fillStyle = accent;
+  context.beginPath();
+  context.moveTo(-3, 0);
+  context.quadraticCurveTo(-1, 4, 0, 6);
+  context.quadraticCurveTo(2, 3, 3, 0);
+  context.quadraticCurveTo(0, 1, -3, 0);
+  context.closePath();
+  context.fill();
+  context.restore();
+}
+
+function traceInvitationOwlOval(
+  context,
+  centerX,
+  centerY,
+  radiusX,
+  radiusY,
+  asymmetry = 0,
+) {
+  const wobble = Math.max(-1, Math.min(1, asymmetry));
+  context.beginPath();
+  context.moveTo(centerX - radiusX * (1 + wobble * 0.025), centerY + radiusY * 0.04);
+  context.bezierCurveTo(
+    centerX - radiusX * 1.02,
+    centerY - radiusY * (0.52 + wobble * 0.04),
+    centerX - radiusX * (0.55 - wobble * 0.05),
+    centerY - radiusY * (1.01 + wobble * 0.025),
+    centerX + radiusX * (0.03 + wobble * 0.035),
+    centerY - radiusY * (0.98 - wobble * 0.02),
+  );
+  context.bezierCurveTo(
+    centerX + radiusX * (0.59 + wobble * 0.035),
+    centerY - radiusY * (0.96 - wobble * 0.04),
+    centerX + radiusX * (1 - wobble * 0.018),
+    centerY - radiusY * 0.46,
+    centerX + radiusX * (0.98 - wobble * 0.02),
+    centerY + radiusY * (0.06 - wobble * 0.025),
+  );
+  context.bezierCurveTo(
+    centerX + radiusX * 0.96,
+    centerY + radiusY * (0.57 + wobble * 0.04),
+    centerX + radiusX * (0.48 - wobble * 0.04),
+    centerY + radiusY * (1 + wobble * 0.018),
+    centerX - radiusX * (0.05 - wobble * 0.03),
+    centerY + radiusY * (0.97 + wobble * 0.025),
+  );
+  context.bezierCurveTo(
+    centerX - radiusX * (0.57 + wobble * 0.025),
+    centerY + radiusY * (0.94 - wobble * 0.035),
+    centerX - radiusX * 0.99,
+    centerY + radiusY * 0.5,
+    centerX - radiusX * (1 + wobble * 0.025),
+    centerY + radiusY * 0.04,
+  );
+  context.closePath();
 }
 
 function appendBrickPortal(context, progress) {
@@ -1711,6 +1893,13 @@ function coverSourceRect(image, destinationAspect) {
 
 function defaultImageFactory() {
   return typeof globalThis.Image === 'function' ? new globalThis.Image() : null;
+}
+
+function requireCharacterRenderer(characterRenderer) {
+  if (!characterRenderer || typeof characterRenderer.draw !== 'function') {
+    throw new TypeError('SetPieceRenderer requires an injected character renderer with draw().');
+  }
+  return characterRenderer;
 }
 
 function roundRect(context, x, y, width, height, radius) {

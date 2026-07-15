@@ -7,7 +7,6 @@ import { SaveTransferDialog } from './core/SaveTransferDialog.js';
 import { SoundEngine } from './core/SoundEngine.js';
 import { clamp, distance, easeInOutCubic, lerp } from './core/math.js';
 import { SeededRandom } from './core/rng.js';
-import { CharacterRenderer } from './render/CharacterRenderer.js';
 import {
   CHAPTER_PREVIEW_ACTIONS,
   ChapterPreviewRenderer,
@@ -81,6 +80,7 @@ export class Game {
     this.resumeRecap = null;
     this.letterNarrationRequest = null;
     this.sessionGeneration = 0;
+    this.sessionTransitioning = false;
 
     const storage = options.storage ?? safeStorage();
     this.saveManager = options.saveManager ?? new Save({ storage, clock: this.clock });
@@ -103,14 +103,34 @@ export class Game {
     });
     this.roomRenderer = new RoomRenderer({ resolveAsset });
     this.worldPropRenderer = new WorldPropRenderer();
-    this.characterRenderer = new CharacterRenderer();
+    if (!options.characterRenderer || typeof options.characterRenderer.draw !== 'function') {
+      throw new TypeError('Game requires an injected character renderer with draw().');
+    }
+    this.characterRenderer = options.characterRenderer;
+    this.characterReviewRenderer = options.characterReviewRenderer ?? null;
+    const characterScopeMethods = [
+      'activateTitle',
+      'activateChapter',
+      'releaseTitle',
+      'releaseChapter',
+    ];
+    if (!options.characterScopes || characterScopeMethods.some((method) => typeof options.characterScopes[method] !== 'function')) {
+      throw new TypeError('Game requires an injected character scope controller.');
+    }
+    this.characterScopes = options.characterScopes;
+    this.titleCharacterDependencies = Object.freeze([
+      ...(options.titleCharacterDependencies ?? this.characterScopes.titleCharacterIds ?? []),
+    ]);
     this.chapterPreviewRenderer = options.chapterPreviewRenderer ?? new ChapterPreviewRenderer();
     this.guideFootprintRenderer = new GuideFootprintRenderer();
     this.uiRenderer = new UIRenderer({
       resolveAsset,
       characterRenderer: this.characterRenderer,
     });
-    this.setPieceRenderer = new SetPieceRenderer({ resolveAsset });
+    this.setPieceRenderer = new SetPieceRenderer({
+      resolveAsset,
+      characterRenderer: this.characterRenderer,
+    });
     this.worldAffordanceRenderer = new WorldAffordanceRenderer();
     this.particles = new Particles(new SeededRandom(this.saveData.worldSeed).fork('particles'), { reducedMotion: this.reducedMotion });
     this.world = null;
@@ -187,18 +207,64 @@ export class Game {
     if (this.world.roomId === 'ch1.courtyard') void this.setPieceRenderer.preloadBrickWall();
   }
 
-  async startAdventure() {
-    const generation = this.sessionGeneration;
-    await this.sound.unlock();
-    if (this.destroyed || generation !== this.sessionGeneration) return;
-    const recap = this.hasStoredSave ? selectChapter1ResumeRecap(this.saveData) : null;
-    this.createWorld(this.saveData);
-    if (recap) {
-      this.beginResumeRecap(recap);
-      return;
+  beginSessionTransition() {
+    if (this.destroyed || this.sessionTransitioning) return null;
+    this.sessionTransitioning = true;
+    this.sessionGeneration += 1;
+    return this.sessionGeneration;
+  }
+
+  isCurrentSessionTransition(generation) {
+    return !this.destroyed && generation === this.sessionGeneration;
+  }
+
+  finishSessionTransition(generation) {
+    if (generation === this.sessionGeneration) this.sessionTransitioning = false;
+  }
+
+  async activateSessionCharacterScope({ chapterId, toTitle = false, source }) {
+    if (toTitle) {
+      if (this.titleCharacterDependencies.length === 0) {
+        throw new Error('The title character dependency scope is not configured.');
+      }
+      return this.characterScopes.activateTitle(this.titleCharacterDependencies, { source });
     }
-    this.particles.emit('sparkle', WORLD.width / 2, WORLD.height / 2, 28);
-    this.updateStatus('Violet’s letter is waiting by the window.');
+    return this.characterScopes.activateChapter(chapterId, { source });
+  }
+
+  async startAdventure() {
+    const generation = this.beginSessionTransition();
+    if (generation === null) return;
+    try {
+      await this.sound.unlock();
+      if (!this.isCurrentSessionTransition(generation)) return;
+      await this.characterScopes.activateChapter(this.saveData.resume.chapter, {
+        source: 'start-adventure',
+      });
+      if (!this.isCurrentSessionTransition(generation)) return;
+      const recap = this.hasStoredSave ? selectChapter1ResumeRecap(this.saveData) : null;
+      this.createWorld(this.saveData);
+      try {
+        await this.characterScopes.releaseTitle();
+      } catch (error) {
+        this.roomRenderer?.logger?.warn?.('The title character scope could not be released.', error);
+      }
+      if (!this.isCurrentSessionTransition(generation)) return;
+      if (recap) {
+        this.beginResumeRecap(recap);
+        return;
+      }
+      this.particles.emit('sparkle', WORLD.width / 2, WORLD.height / 2, 28);
+      this.updateStatus('Violet’s letter is waiting by the window.');
+    } catch (error) {
+      if (this.isCurrentSessionTransition(generation)) {
+        this.roomRenderer?.logger?.warn?.('The adventure character scope could not be activated.', error);
+        this.updateStatus('Violet’s adventure could not open. Please try again.');
+        this.render();
+      }
+    } finally {
+      this.finishSessionTransition(generation);
+    }
   }
 
   frame(timestamp) {
@@ -228,7 +294,7 @@ export class Game {
     }
     const transitionWasActive = Boolean(this.roomTransition);
     this.updateRoomTransition(dt);
-    if (!transitionWasActive && this.screen === 'playing' && this.world && !this.resumeRecap) {
+    if (!transitionWasActive && !this.sessionTransitioning && this.screen === 'playing' && this.world && !this.resumeRecap) {
       this.world.update(dt);
       this.processWorldEvents();
     }
@@ -273,7 +339,7 @@ export class Game {
   }
 
   onPointerDown(event) {
-    if (this.pointer !== null || this.roomTransition) return;
+    if (this.pointer !== null || this.roomTransition || this.sessionTransitioning) return;
     this.canvas.setPointerCapture?.(event.pointerId);
     const point = this.toWorld(event);
     const holdsParentKeyhole = this.isParentKeyholeAvailable()
@@ -1027,32 +1093,32 @@ export class Game {
     transition.ready = false;
     transition.elapsed = 0;
     transition.preparedScale = this.dpr * this.scale;
-    if (!this.world || typeof this.roomRenderer?.preloadRoom !== 'function') {
-      transition.ready = true;
-      transition.readiness = Promise.resolve(null);
-      return transition.readiness;
-    }
-
-    let preparation;
-    try {
-      preparation = this.roomRenderer.preloadRoom(
-        this.world.room,
-        this.world.snapshot(),
-        { scale: this.dpr * this.scale },
-      );
-    } catch (error) {
-      this.roomRenderer?.logger?.warn?.('Destination room preparation failed; revealing the safe fallback.', error);
-      transition.ready = true;
-      transition.readiness = Promise.resolve(null);
-      return transition.readiness;
-    }
-
-    const prepared = Promise.resolve(preparation)
+    const characterPreparation = Promise.resolve()
+      .then(() => this.world
+        ? this.characterScopes.activateChapter(this.world.chapter.id, {
+          source: 'room-transition',
+          roomId: this.world.roomId,
+        })
+        : [])
+      .catch((error) => {
+        this.roomRenderer?.logger?.warn?.('Destination character preparation failed; revealing the safe fallback.', error);
+        return [];
+      });
+    const roomPreparation = Promise.resolve()
+      .then(() => {
+        if (!this.world || typeof this.roomRenderer?.preloadRoom !== 'function') return null;
+        return this.roomRenderer.preloadRoom(
+          this.world.room,
+          this.world.snapshot(),
+          { scale: this.dpr * this.scale },
+        );
+      })
       .catch((error) => {
         this.roomRenderer?.logger?.warn?.('Destination room preparation failed; revealing the safe fallback.', error);
         return null;
-      })
-      .then((result) => ({ result, timedOut: false, cancelled: false }));
+      });
+    const prepared = Promise.all([roomPreparation, characterPreparation])
+      .then(([result]) => ({ result, timedOut: false, cancelled: false }));
     let readinessTimer = null;
     const deadline = new Promise((resolve) => {
       readinessTimer = setTimeout(() => {
@@ -1067,20 +1133,19 @@ export class Game {
       transition.cancelReadiness = cancelReadiness;
     });
 
-    transition.readiness = Promise.race([prepared, deadline, cancellation])
-      .then((outcome) => {
-        if (readinessTimer !== null) clearTimeout(readinessTimer);
-        if (transition.readinessTimer === readinessTimer) transition.readinessTimer = null;
-        if (transition.cancelReadiness === cancelReadiness) transition.cancelReadiness = null;
-        if (outcome.cancelled) return null;
-        if (this.roomTransition === transition && transition.readinessAttempt === attempt) {
-          if (outcome.timedOut) {
-            this.roomRenderer?.logger?.warn?.('Destination room preparation timed out; revealing the procedural fallback.');
-          }
-          transition.ready = true;
+    transition.readiness = Promise.race([prepared, deadline, cancellation]).then((outcome) => {
+      if (readinessTimer !== null) clearTimeout(readinessTimer);
+      if (transition.readinessTimer === readinessTimer) transition.readinessTimer = null;
+      if (transition.cancelReadiness === cancelReadiness) transition.cancelReadiness = null;
+      if (outcome.cancelled) return null;
+      if (this.roomTransition === transition && transition.readinessAttempt === attempt) {
+        if (outcome.timedOut) {
+          this.roomRenderer?.logger?.warn?.('Destination room or character preparation timed out; revealing the procedural fallback.');
         }
-        return outcome.result;
-      });
+        transition.ready = true;
+      }
+      return outcome.result;
+    });
     return transition.readiness;
   }
 
@@ -1243,10 +1308,15 @@ export class Game {
     return this.saveManager.export(durableSave);
   }
 
-  importSaveData(raw) {
+  async importSaveData(raw) {
+    const previousSave = structuredClone(this.replayMode && this.canonicalSave ? this.canonicalSave : this.saveData);
     const result = this.saveManager.import(raw);
     if (!result.ok) return result;
-    this.adoptSave(result.save, { status: 'Imported Violet’s save.', preserveSave: true });
+    const adopted = await this.adoptSave(result.save, { status: 'Imported Violet’s save.', preserveSave: true });
+    if (!adopted) {
+      this.saveManager.write(previousSave);
+      return { ok: false, status: 'character-scope-error', save: null };
+    }
     return result;
   }
 
@@ -1279,7 +1349,8 @@ export class Game {
     else if (result?.operation === 'import' && !result.ok) this.updateStatus('That save could not replace Violet’s adventure.');
   }
 
-  restoreBackupSave() {
+  async restoreBackupSave() {
+    const previousSave = structuredClone(this.replayMode && this.canonicalSave ? this.canonicalSave : this.saveData);
     const result = this.saveManager.restoreBackup();
     if (!result.ok) {
       const message = result.status === 'missing-backup'
@@ -1288,11 +1359,15 @@ export class Game {
       this.openParentPanel('save', { text: message, kind: 'error' });
       return result;
     }
-    this.adoptSave(result.save, { status: 'Violet’s safety copy has been restored.', preserveSave: true });
+    const adopted = await this.adoptSave(result.save, { status: 'Violet’s safety copy has been restored.', preserveSave: true });
+    if (!adopted) {
+      this.saveManager.write(previousSave);
+      return { ok: false, status: 'character-scope-error', save: null };
+    }
     return result;
   }
 
-  startOverPreservingSettings() {
+  async startOverPreservingSettings() {
     const durableSave = this.replayMode && this.canonicalSave ? this.canonicalSave : this.saveData;
     const settings = structuredClone(durableSave.settings);
     const cleared = this.saveManager.clear();
@@ -1309,49 +1384,81 @@ export class Game {
     });
     fresh.settings = settings;
     const saved = this.saveManager.write(fresh);
-    this.adoptSave(saved.ok ? saved.save : fresh, {
+    const adopted = await this.adoptSave(saved.ok ? saved.save : fresh, {
       status: 'Violet is back at the beginning. Her device settings stayed the same.',
       toTitle: true,
       hasStoredSave: false,
     });
+    if (!adopted) {
+      this.saveManager.write(durableSave);
+      return { ok: false, status: 'character-scope-error', save: null };
+    }
     return saved.ok
       ? { ...saved, status: 'started-over' }
       : saved;
   }
 
-  adoptSave(save, { status, toTitle = false, hasStoredSave = hasMeaningfulProgress(save), preserveSave = false } = {}) {
-    this.sessionGeneration += 1;
-    this.petNameDialog?.close?.(null, 'game-changed');
-    this.cancelPointerInteraction();
-    this.resumeRecap = null;
-    this.sound.stopAll();
-    this.replayMode = false;
-    this.canonicalSave = null;
-    this.world = null;
-    this.saveData = structuredClone(save);
-    this.hasStoredSave = Boolean(hasStoredSave);
-    this.particles = new Particles(
-      new SeededRandom(this.saveData.worldSeed).fork('particles'),
-      { reducedMotion: this.motionQuery.matches || Boolean(this.saveData.settings.reducedMotion) },
-    );
-    this.applyDeviceSettings(this.saveData.settings);
-    this.accumulator = 0;
-    this.simTime = 0;
-    this.lastFrame = null;
-    this.transitionAlpha = 0;
-    this.releaseRoomTransition();
-    this.nextTransitionEffect = null;
-    this.lastRenderState = null;
-    if (toTitle) this.screen = 'title';
-    else this.createWorld(this.saveData, { preserveSave });
-    if (status) this.updateStatus(status);
-    this.render();
-    return this.saveData;
+  async adoptSave(save, { status, toTitle = false, hasStoredSave = hasMeaningfulProgress(save), preserveSave = false } = {}) {
+    const generation = this.beginSessionTransition();
+    if (generation === null) return null;
+    const nextSave = structuredClone(save);
+    try {
+      await this.activateSessionCharacterScope({
+        chapterId: nextSave.resume.chapter,
+        toTitle,
+        source: toTitle ? 'return-to-title' : 'adopt-save',
+      });
+      if (!this.isCurrentSessionTransition(generation)) return null;
+
+      this.petNameDialog?.close?.(null, 'game-changed');
+      this.cancelPointerInteraction();
+      this.resumeRecap = null;
+      this.sound.stopAll();
+      this.replayMode = false;
+      this.canonicalSave = null;
+      this.world = null;
+      this.saveData = nextSave;
+      this.hasStoredSave = Boolean(hasStoredSave);
+      this.particles = new Particles(
+        new SeededRandom(this.saveData.worldSeed).fork('particles'),
+        { reducedMotion: this.motionQuery.matches || Boolean(this.saveData.settings.reducedMotion) },
+      );
+      this.applyDeviceSettings(this.saveData.settings);
+      this.accumulator = 0;
+      this.simTime = 0;
+      this.lastFrame = null;
+      this.transitionAlpha = 0;
+      this.releaseRoomTransition();
+      this.nextTransitionEffect = null;
+      this.lastRenderState = null;
+      if (toTitle) this.screen = 'title';
+      else this.createWorld(this.saveData, { preserveSave });
+      if (status) this.updateStatus(status);
+      this.render();
+
+      try {
+        if (toTitle) await this.characterScopes.releaseChapter();
+        else await this.characterScopes.releaseTitle();
+      } catch (error) {
+        this.roomRenderer?.logger?.warn?.('The outgoing character scope could not be released.', error);
+      }
+      return this.saveData;
+    } catch (error) {
+      if (this.isCurrentSessionTransition(generation)) {
+        this.roomRenderer?.logger?.warn?.('The requested character scope could not be activated.', error);
+        this.updateStatus('That part of Violet’s adventure could not open. Her current place is unchanged.');
+        this.render();
+      }
+      return null;
+    } finally {
+      this.finishSessionTransition(generation);
+    }
   }
 
-  resetGame() {
+  async resetGame() {
     if (!this.debug) return { ok: false, status: 'debug-disabled', save: null };
 
+    const previousSave = structuredClone(this.replayMode && this.canonicalSave ? this.canonicalSave : this.saveData);
     const result = this.saveManager.clear();
     if (!result.ok) {
       this.updateStatus('The development reset could not clear this browser’s saved game.');
@@ -1364,7 +1471,11 @@ export class Game {
       worldSeed: 12072026,
     });
     this.loadStatus = { ok: true, status: 'reset', save: null };
-    this.adoptSave(fresh, { toTitle: true, hasStoredSave: false });
+    const adopted = await this.adoptSave(fresh, { toTitle: true, hasStoredSave: false });
+    if (!adopted) {
+      this.saveManager.write(previousSave);
+      return { ok: false, status: 'character-scope-error', save: null };
+    }
     this.simTime = 0;
     this.updateStatus('Development reset complete. Violet is back at the beginning.');
     this.render();
@@ -1414,40 +1525,74 @@ export class Game {
     this.persistSave(this.saveData, true);
   }
 
-  beginReplay(chapterId = 'ch1') {
+  async beginReplay(chapterId = 'ch1') {
     if (this.replayMode) return { ok: false, status: 'already-replaying' };
     if (chapterId !== 'ch1' || !this.saveData.progress.completedChapters.includes(chapterId)) {
       return { ok: false, status: 'chapter-locked' };
     }
+    const generation = this.beginSessionTransition();
+    if (generation === null) return { ok: false, status: 'session-transitioning' };
     const saved = this.saveManager.write(this.saveData);
-    this.canonicalSave = structuredClone(saved.ok ? saved.save : this.saveData);
+    const canonicalSave = structuredClone(saved.ok ? saved.save : this.saveData);
     const replay = createSaveV1({
       now: this.clock(),
-      appVersion: this.canonicalSave.appVersion,
-      worldSeed: this.canonicalSave.worldSeed,
-      name: this.canonicalSave.character.name,
+      appVersion: canonicalSave.appVersion,
+      worldSeed: canonicalSave.worldSeed,
+      name: canonicalSave.character.name,
     });
-    replay.settings = structuredClone(this.canonicalSave.settings);
-    this.replayMode = true;
-    this.createWorld(replay);
-    this.updateStatus('Chapter One replay. Violet’s saved adventure is safe.');
-    this.render();
-    return { ok: true, status: 'replay-started', save: replay };
+    replay.settings = structuredClone(canonicalSave.settings);
+    try {
+      await this.activateSessionCharacterScope({ chapterId, source: 'chapter-replay' });
+      if (!this.isCurrentSessionTransition(generation)) return { ok: false, status: 'superseded' };
+      this.canonicalSave = canonicalSave;
+      this.replayMode = true;
+      this.createWorld(replay);
+      this.updateStatus('Chapter One replay. Violet’s saved adventure is safe.');
+      this.render();
+      return { ok: true, status: 'replay-started', save: replay };
+    } catch (error) {
+      if (this.isCurrentSessionTransition(generation)) {
+        this.roomRenderer?.logger?.warn?.('The replay character scope could not be activated.', error);
+        this.updateStatus('Chapter One replay could not open. Violet’s saved adventure is still safe.');
+        this.render();
+      }
+      return { ok: false, status: 'character-scope-error', error };
+    } finally {
+      this.finishSessionTransition(generation);
+    }
   }
 
-  exitReplay() {
+  async exitReplay() {
     if (!this.replayMode || !this.canonicalSave) return { ok: false, status: 'not-replaying' };
+    const generation = this.beginSessionTransition();
+    if (generation === null) return { ok: false, status: 'session-transitioning' };
     const canonical = structuredClone(this.canonicalSave);
-    this.replayMode = false;
-    this.canonicalSave = null;
-    this.sound.stopVoice();
-    this.saveData = canonical;
-    this.applyDeviceSettings(canonical.settings);
-    this.createWorld(canonical, { preserveSave: true });
-    this.hasStoredSave = hasMeaningfulProgress(canonical);
-    this.updateStatus('Back to Violet’s saved adventure.');
-    this.render();
-    return { ok: true, status: 'replay-exited', save: canonical };
+    try {
+      await this.activateSessionCharacterScope({
+        chapterId: canonical.resume.chapter,
+        source: 'exit-replay',
+      });
+      if (!this.isCurrentSessionTransition(generation)) return { ok: false, status: 'superseded' };
+      this.replayMode = false;
+      this.canonicalSave = null;
+      this.sound.stopVoice();
+      this.saveData = canonical;
+      this.applyDeviceSettings(canonical.settings);
+      this.createWorld(canonical, { preserveSave: true });
+      this.hasStoredSave = hasMeaningfulProgress(canonical);
+      this.updateStatus('Back to Violet’s saved adventure.');
+      this.render();
+      return { ok: true, status: 'replay-exited', save: canonical };
+    } catch (error) {
+      if (this.isCurrentSessionTransition(generation)) {
+        this.roomRenderer?.logger?.warn?.('The saved-adventure character scope could not be activated.', error);
+        this.updateStatus('Violet’s saved adventure could not reopen. Her replay is unchanged.');
+        this.render();
+      }
+      return { ok: false, status: 'character-scope-error', error };
+    } finally {
+      this.finishSessionTransition(generation);
+    }
   }
 
   render() {
@@ -1457,7 +1602,7 @@ export class Game {
     context.fillStyle = PALETTE.ink;
     context.fillRect(0, 0, this.canvas.width, this.canvas.height);
     this.withWorldTransform((ctx) => {
-      if (this.harness && this.characterRenderer.drawReviewScene(
+      if (this.harness && this.characterReviewRenderer?.drawReviewScene(
         ctx,
         this.harnessScene,
         this.simTime,
@@ -1477,6 +1622,10 @@ export class Game {
   }
 
   renderWorld(context) {
+    if (this.roomTransition && !this.roomTransition.ready) {
+      this.drawRoomTransition(context);
+      return;
+    }
     const state = this.world.snapshot();
     this.lastRenderState = state;
     const room = this.world.room;
@@ -1595,84 +1744,21 @@ export class Game {
   }
 
   drawCharacters(context, state) {
-    const actors = [];
-    for (const occupant of state.occupants) {
-      if (occupant.npc === 'npc.violet' || occupant.npc.startsWith('npc.pet.')) continue;
-      actors.push({ type: 'npc', occupant, y: occupant.y });
-    }
-    actors.push({ type: 'violet', y: state.player.y });
-    if (state.pet) actors.push({ type: 'pet', y: state.pet.y + 1 });
-    actors.sort((a, b) => a.y - b.y);
-
+    if (!Array.isArray(state?.actors)) throw new TypeError('World snapshot requires an actors array.');
+    const actors = [...state.actors].sort((left, right) => left.depth - right.depth);
     for (const actor of actors) {
-      if (actor.type === 'violet') {
-        this.characterRenderer.draw(context, {
-          ...state.player,
-          x: state.player.x - state.cameraX,
-          lightSide: state.keyLight,
-          // Keep the authored action semantic until a reviewed production rig
-          // explicitly supports it; never disguise it as an old puppet pose.
-          actorAnimation: state.actorAnimations?.['npc.violet'] ?? null,
-        }, this.simTime);
-      } else if (actor.type === 'pet') {
-        this.characterRenderer.drawPet(context, {
-          ...state.pet,
-          x: state.pet.x - state.cameraX,
-          facing: state.pet.facing ?? state.player.facing,
-          variant: state.pet.type === 'owl' ? 'pet' : undefined,
-          pose: state.pet.pose ?? (state.player.walking ? 'pet-follow' : 'idle'),
-          reducedMotion: this.reducedMotion,
-          lightSide: state.keyLight,
-          lookX: (state.pet.facing ?? state.player.facing) === 'right' ? 0.45 : -0.45,
-        }, this.simTime);
-      } else {
-        const { occupant } = actor;
-        if (occupant.npc === 'npc.owlPost') {
-          this.characterRenderer.drawPet(context, {
-            type: 'owl',
-            variant: 'post',
-            pose: occupant.pose ?? 'perch',
-            x: occupant.x - state.cameraX,
-            y: occupant.y + 80,
-            scale: 1.08,
-            facing: occupant.facing,
-            reducedMotion: this.reducedMotion,
-            lightSide: state.keyLight,
-            lookX: clamp((state.player.x - occupant.x) / 360, -1, 1),
-            lookY: clamp((state.player.y - occupant.y - 170) / 300, -1, 1),
-          }, this.simTime);
-          continue;
-        }
-        const kind = occupant.npc === 'npc.guide'
-          ? 'guide'
-          : occupant.npc === 'npc.wandmaker'
-            ? 'wandmaker'
-            : occupant.npc === 'npc.tailor'
-              ? 'tailor'
-              : 'keeper';
-        this.characterRenderer.draw(context, {
-          ...occupant,
-          kind,
-          x: occupant.x - state.cameraX,
-          reducedMotion: this.reducedMotion,
-          lightSide: state.keyLight,
-          actorAnimation: state.actorAnimations?.[occupant.npc] ?? null,
-        }, this.simTime);
+      const renderState = actor?.renderState;
+      if (!renderState || !Number.isFinite(renderState.x)) {
+        throw new TypeError(`Actor ${actor?.actorId ?? '(unknown)'} requires a finite renderState.x.`);
       }
-    }
-
-    if (state.roomId === 'ch1.menagerie' && !this.world.flags['ch1.petNamed']) {
-      this.characterRenderer.drawPet(context, {
-        type: 'cat', x: 650 - state.cameraX, y: 585, lightSide: state.keyLight,
-      }, this.simTime);
-      this.characterRenderer.drawPet(context, {
-        type: 'owl', variant: 'pet', pose: 'idle', x: 900 - state.cameraX, y: 520,
-        scale: 0.92, reducedMotion: this.reducedMotion, lookX: -0.35,
+      this.characterRenderer.draw(context, {
+        ...renderState,
+        characterId: actor.characterId,
+        surface: 'world',
+        x: renderState.x - state.cameraX,
+        reducedMotion: this.reducedMotion,
         lightSide: state.keyLight,
-      }, this.simTime + 0.7);
-      this.characterRenderer.drawPet(context, {
-        type: 'toad', x: 1110 - state.cameraX, y: 595, lightSide: state.keyLight,
-      }, this.simTime + 1.3);
+      }, this.simTime + (renderState.timeOffset ?? 0));
     }
   }
 
@@ -1893,6 +1979,7 @@ export class Game {
     this.releaseRoomTransition();
     this.saveTransferDialog?.destroy?.();
     this.petNameDialog?.destroy?.();
+    const characterRelease = this.characterScopes.destroy?.() ?? Promise.resolve();
     window.removeEventListener('resize', this.boundResize);
     document.removeEventListener('visibilitychange', this.boundVisibility);
     this.motionQuery.removeEventListener?.('change', this.boundMotionChanged);
@@ -1901,6 +1988,7 @@ export class Game {
     this.canvas.removeEventListener('pointerup', this.boundPointerUp);
     this.canvas.removeEventListener('pointercancel', this.boundPointerCancel);
     if (this.debug) window.removeEventListener('keydown', this.boundKeyDown);
+    return characterRelease;
   }
 }
 

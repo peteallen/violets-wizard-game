@@ -11,7 +11,6 @@ import {
   titleForegroundLayout,
   UIRenderer,
 } from '../src/game/render/UIRenderer.js';
-import { CharacterRenderer } from '../src/game/render/CharacterRenderer.js';
 
 function recordingContext() {
   const calls = [];
@@ -99,14 +98,24 @@ describe('code-only storybook title illustration', () => {
     expect(Object.isFrozen(first.hero.violet)).toBe(true);
     expect(Object.isFrozen(first.hero.owl)).toBe(true);
     expect(first.hero.violet).toMatchObject({
-      kind: 'violet',
+      characterId: 'character.violet',
+      surface: 'world',
+      appearance: 'casual',
       facing: 'left',
       pose: 'wonder',
-      outfit: 'casual',
       wand: false,
     });
+    expect(first.hero.violet).not.toHaveProperty('kind');
+    expect(first.hero.violet).not.toHaveProperty('outfit');
     expect(first.hero.violet).not.toHaveProperty('robeTrim');
-    expect(first.hero.owl).toMatchObject({ variant: 'post', pose: 'perch', facing: 'left' });
+    expect(first.hero.owl).toMatchObject({
+      characterId: 'character.post-owl',
+      surface: 'world',
+      appearance: 'post',
+      pose: 'perch',
+      facing: 'left',
+    });
+    expect(first.hero.owl).not.toHaveProperty('variant');
     expect(overlaps(first.hero.bounds, first.safeAreas.masthead)).toBe(false);
     expect(overlaps(first.hero.bounds, first.safeAreas.envelope)).toBe(false);
     const action = titleForegroundLayout(first).action;
@@ -162,9 +171,13 @@ describe('code-only storybook title illustration', () => {
     const actorCalls = [];
     const collaborators = {
       characterRenderer: {
-        draw: (_context, character, time) => actorCalls.push(['violet', character, time]),
+        draw: (_context, character, time) => actorCalls.push([
+          character.characterId,
+          character.surface,
+          character,
+          time,
+        ]),
       },
-      owlRenderer: (_context, owl, time) => actorCalls.push(['owl', owl, time]),
     };
     const first = recordingContext();
     const replayed = recordingContext();
@@ -175,9 +188,16 @@ describe('code-only storybook title illustration', () => {
 
     expect(first.calls).toEqual(replayed.calls);
     expect(first.assignments).toEqual(replayed.assignments);
-    expect(actorCalls.map(([kind]) => kind)).toEqual(['violet', 'owl', 'violet', 'owl']);
-    expect(actorCalls[0][1]).toBe(presentation.hero.violet);
-    expect(actorCalls[1][1]).toBe(presentation.hero.owl);
+    expect(actorCalls.map(([characterId, surface]) => [characterId, surface])).toEqual([
+      ['character.violet', 'world'],
+      ['character.post-owl', 'world'],
+      ['character.violet', 'world'],
+      ['character.post-owl', 'world'],
+    ]);
+    expect(actorCalls[0][2]).toBe(presentation.hero.violet);
+    expect(actorCalls[1][2]).toBe(presentation.hero.owl);
+    expect(actorCalls[0][3]).toBe(presentation.sceneTime);
+    expect(actorCalls[1][3]).toBe(presentation.sceneTime);
 
     expect(first.calls.filter(([name]) => name === 'fill').length).toBeGreaterThan(115);
     expect(first.calls.filter(([name]) => name === 'stroke').length).toBeGreaterThan(25);
@@ -199,24 +219,12 @@ describe('code-only storybook title illustration', () => {
       .some(([, value]) => pureExtremes.has(String(value).toLowerCase()))).toBe(false);
   });
 
-  it('composes the existing detailed Violet and owl renderers without leaking canvas state or text', () => {
-    const context = recordingContext();
-    const renderer = new StorybookTitleRenderer({
-      characterRenderer: new CharacterRenderer({ fullFrameRigs: new Map() }),
-    });
-    renderer.draw(context, 4.25);
-
-    expect(context.calls.some(([name]) => [
-      'arc', 'ellipse', 'fillRect', 'lineTo', 'rect', 'roundRect', 'strokeRect',
-    ].includes(name))).toBe(false);
-    const assignedStyles = context.assignments
-      .filter(([property]) => property === 'fillStyle' || property === 'strokeStyle')
-      .map(([, value]) => value);
-    expect(assignedStyles).toContain('#203d34');
-    expect(assignedStyles).toContain('#f0dfb9');
-    expect(context.calls.some(([name]) => name === 'fillText' || name === 'strokeText')).toBe(false);
-    expect(numericArgumentsAreFinite(context.calls)).toBe(true);
-    expect(context.depth).toBe(0);
+  it('requires the generic character boundary instead of silently constructing a concrete renderer', () => {
+    expect(() => new StorybookTitleRenderer()).toThrow(/injected character renderer/);
+    expect(() => drawStorybookTitlePresentation(
+      recordingContext(),
+      createStorybookTitlePresentation(4.25),
+    )).toThrow(/injected character renderer/);
   });
 
   it('rejects a non-title presentation before touching the canvas', () => {

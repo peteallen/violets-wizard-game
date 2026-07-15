@@ -437,7 +437,10 @@ describe('D31 secret pet hints', () => {
       }
     }
     expect(snapshot.affordances.petHint).toMatchObject({ stage: 'look', approach: 0 });
-    expect(snapshot.pet.pose).toBe('curious');
+    // The old renderer treated its undeclared "curious" token as the idle
+    // drawing. Emit the supported identity pose directly so registry-backed
+    // rendering preserves that same stationary look without a fallback.
+    expect(snapshot.pet.pose).toBe('idle');
     expect(snapshot.pet.x).toBe(world.player.x + 85);
     expect(snapshot.pet.y).toBe(world.player.y);
   });

@@ -177,13 +177,29 @@ describe('chapter content contracts', () => {
 
   it('lets pet selection be reconsidered before recording a permanent name', () => {
     const actions = [];
+    expect(chapter1.dialogues['ch1.keeper.petAndName'].nodes.pet.choices.map((choice) => ({
+      id: choice.id,
+      characterId: choice.characterId,
+      characterScale: choice.characterScale,
+    }))).toEqual([
+      { id: 'petCat', characterId: 'character.cat', characterScale: 0.82 },
+      { id: 'petOwl', characterId: 'character.pet-owl', characterScale: 0.72 },
+      { id: 'petToad', characterId: 'character.toad', characterScale: 1.18 },
+    ]);
     const dialogue = new Dialogue({
       scripts: chapter1.dialogues,
       save: { progress: { questFlags: {} }, character: { pet: {}, appearance: {} }, spellbook: { known: [] } },
       runActions: (nextActions) => actions.push(...nextActions),
     });
     expect(dialogue.open('ch1.keeper.petAndName').caption).toBe('Choose a pet!');
-    expect(dialogue.advance().type).toBe('choice');
+    expect(dialogue.advance()).toMatchObject({
+      type: 'choice',
+      choices: [
+        { id: 'petCat', characterId: 'character.cat', characterScale: 0.82 },
+        { id: 'petOwl', characterId: 'character.pet-owl', characterScale: 0.72 },
+        { id: 'petToad', characterId: 'character.toad', characterScale: 1.18 },
+      ],
+    });
     expect(dialogue.advance('petCat').caption).toBe('This one?');
     expect(dialogue.advance().type).toBe('choice');
     expect(dialogue.advance('petLookAgain').type).toBe('choice');

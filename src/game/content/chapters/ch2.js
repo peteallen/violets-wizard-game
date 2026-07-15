@@ -131,7 +131,10 @@ export const chapter2 = {
       scale: 0.55,
       hitRadius: 88,
       defaultPose: 'idle',
-      controller: { kind: 'follow', target: 'npc.violet', minimumDistance: 70, maxDistance: 190 },
+      controller: {
+        kind: 'follow', target: 'npc.violet', minimumDistance: 70, maxDistance: 190,
+        poseMap: { moving: 'pet-follow', hintLook: 'idle', hintAttention: 'paw' },
+      },
       defaultTalk: null,
     },
     'npc.pet.owl': {
@@ -144,7 +147,11 @@ export const chapter2 = {
       scale: 0.55,
       hitRadius: 88,
       defaultPose: 'idle',
-      controller: { kind: 'follow', target: 'npc.violet', minimumDistance: 90, maxDistance: 220 },
+      controller: {
+        kind: 'follow', target: 'npc.violet', minimumDistance: 90, maxDistance: 220,
+        poseMap: { moving: 'pet-follow', hintLook: 'idle', hintAttention: 'perch' },
+        facingLookMagnitude: 0.45,
+      },
       defaultTalk: null,
     },
     'npc.pet.toad': {
@@ -157,7 +164,10 @@ export const chapter2 = {
       scale: 0.42,
       hitRadius: 88,
       defaultPose: 'idle',
-      controller: { kind: 'follow', target: 'npc.violet', minimumDistance: 55, maxDistance: 150 },
+      controller: {
+        kind: 'follow', target: 'npc.violet', minimumDistance: 55, maxDistance: 150,
+        poseMap: { moving: 'pet-follow', hintLook: 'idle', hintAttention: 'idle' },
+      },
       defaultTalk: null,
     },
   },

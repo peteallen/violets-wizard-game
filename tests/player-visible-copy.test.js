@@ -104,7 +104,7 @@ describe('player-visible copy', () => {
 
   it('keeps each child-facing Canvas surface to captions, actions, names, and story text', () => {
     const renderer = new UIRenderer({
-      characterRenderer: { draw: () => {}, drawPortrait: () => {} },
+      characterRenderer: { draw: () => {} },
     });
     const surfaces = [
       {
@@ -139,6 +139,7 @@ describe('player-visible copy', () => {
         draw: (context) => renderer.drawDialogue(context, {
           type: 'line',
           speaker: 'npc.guide',
+          portraitCharacterId: 'character.hagrid',
           caption: 'This way!',
         }, 0, false, true),
         expected: ['This way!', 'Again'],
@@ -161,9 +162,9 @@ describe('player-visible copy', () => {
       {
         name: 'choices',
         draw: (context) => renderer.drawChoices(context, [
-          { icon: 'owl', caption: 'Owl' },
-          { icon: 'cat', caption: 'Cat' },
-          { icon: 'toad', caption: 'Toad' },
+          { icon: 'owl', caption: 'Owl', characterId: 'character.pet-owl' },
+          { icon: 'cat', caption: 'Cat', characterId: 'character.cat' },
+          { icon: 'toad', caption: 'Toad', characterId: 'character.toad' },
         ]),
         expected: ['Owl', 'Cat', 'Toad'],
       },
@@ -267,7 +268,7 @@ describe('player-visible copy', () => {
 
   it('drops overlong or unfamiliar dynamic helper copy at every child-facing renderer boundary', () => {
     const renderer = new UIRenderer({
-      characterRenderer: { draw: () => {}, drawPortrait: () => {} },
+      characterRenderer: { draw: () => {} },
     });
     const choiceTexts = visibleTexts((context) => renderer.drawChoices(context, [{
       icon: 'owl',
@@ -280,6 +281,7 @@ describe('player-visible copy', () => {
     const dialogueTexts = visibleTexts((context) => renderer.drawDialogue(context, {
       type: 'line',
       speaker: 'npc.guide',
+      portraitCharacterId: 'character.hagrid',
       caption: 'Shimmering destination marker',
     }, 0, false, true));
     const previewTexts = visibleTexts((context) => new ChapterPreviewRenderer().draw(context, {
@@ -301,7 +303,7 @@ describe('player-visible copy', () => {
   });
 
   it('keeps unearned inventory props out of the bedroom HUD while retaining the quest compass', () => {
-    const renderer = new UIRenderer({ characterRenderer: {} });
+    const renderer = new UIRenderer({ characterRenderer: { draw: () => {} } });
     const baseState = {
       screen: 'playing',
       overlay: null,

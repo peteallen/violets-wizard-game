@@ -2,7 +2,6 @@ import { describe, expect, it, vi } from 'vitest';
 import { Game } from '../src/game/Game.js';
 import { WORLD } from '../src/game/config.js';
 import { contentRegistry } from '../src/game/content/index.js';
-import { CharacterRenderer } from '../src/game/render/CharacterRenderer.js';
 import {
   UIRenderer,
   dialogueSceneContext,
@@ -40,17 +39,41 @@ function dialogueState({
   roomVariant = 'base',
   keyLight = 'left',
 } = {}) {
+  const player = actor('npc.violet', 'character.violet', {
+    x: playerX,
+    y: 620,
+    facing: 'left',
+    appearance: 'robes',
+    robeTrim: '#7a4fc9',
+    layoutBounds: { x: -74, y: -228, width: 148, height: 260 },
+  });
+  const guide = actor('npc.guide', 'character.hagrid', {
+    x: 230,
+    y: 620,
+    facing: 'right',
+    layoutBounds: { x: -122, y: -340, width: 244, height: 375 },
+  });
+  const portraitCharacterId = speaker === 'npc.violet'
+    ? 'character.violet'
+    : speaker === 'npc.narrator'
+      ? 'character.narrator'
+      : 'character.hagrid';
   return {
     cameraX: 0,
     keyLight,
     roomVariant,
-    player: { kind: 'violet', x: playerX, y: 620, facing: 'left' },
+    player: { x: playerX, y: 620, facing: 'left' },
     occupants: [{ npc: 'npc.guide', x: 230, y: 620, facing: 'right' }],
+    actors: [player, guide],
     targets: [],
     setPiece: null,
     overlay: null,
-    dialogue: { type: 'line', speaker, caption: 'This way!' },
+    dialogue: { type: 'line', speaker, portraitCharacterId, caption: 'This way!' },
   };
+}
+
+function actor(actorId, characterId, renderState) {
+  return { actorId, characterId, depth: renderState.y, renderState };
 }
 
 function recordingDialogueContext() {
@@ -83,45 +106,52 @@ function recordingDialogueContext() {
 }
 
 describe('adaptive dialogue card', () => {
-  it('uses the canonical character cameo when an injected renderer lacks portrait support', () => {
-    const drawPortrait = vi.spyOn(CharacterRenderer.prototype, 'drawPortrait').mockImplementation(() => {});
-    try {
-      const renderer = new UIRenderer({ characterRenderer: { draw: vi.fn() } });
-      const context = recordingDialogueContext();
-      renderer.drawDialogue(context, {
-        type: 'line', speaker: 'npc.guide', portraitPose: 'talk', caption: 'This way!',
-      }, 1.25, true, false);
+  it('requires one injected renderer and an exact canonical portrait identity', () => {
+    expect(() => new UIRenderer()).toThrow('requires an injected character renderer with draw()');
+    const draw = vi.fn();
+    const renderer = new UIRenderer({ characterRenderer: { draw } });
+    const context = recordingDialogueContext();
+    expect(() => renderer.drawDialogue(context, {
+      type: 'line', speaker: 'npc.guide', portraitPose: 'talk', caption: 'This way!',
+    }, 1.25, true, false)).toThrow('require an exact portraitCharacterId');
 
-      expect(drawPortrait).toHaveBeenCalledWith(
-        context,
-        expect.objectContaining({ speaker: 'npc.guide', pose: 'talk' }),
-        1.25,
-      );
-      expect(context.calls.some(([name]) => name === 'ellipse')).toBe(false);
-    } finally {
-      drawPortrait.mockRestore();
-    }
+    renderer.drawDialogue(context, {
+      type: 'line', speaker: 'npc.guide', portraitCharacterId: 'character.hagrid',
+      portraitPose: 'talk', caption: 'This way!',
+    }, 1.25, true, false);
+
+    expect(draw).toHaveBeenCalledWith(
+      context,
+      expect.objectContaining({
+        characterId: 'character.hagrid', surface: 'portrait', pose: 'speaking',
+      }),
+      1.25,
+    );
+    expect(context.calls.some(([name]) => name === 'ellipse')).toBe(false);
   });
 
   it('keeps the silent pre-Malkin Violet beside a narrator-owned review caption', () => {
-    const characterRenderer = { draw: vi.fn(), drawPortrait: vi.fn() };
+    const characterRenderer = { draw: vi.fn() };
     const renderer = new UIRenderer({ characterRenderer });
 
     for (const scene of ['ui-dialogue-center-review']) {
       const context = recordingDialogueContext();
       context.createLinearGradient = () => ({ addColorStop: () => {} });
       characterRenderer.draw.mockClear();
-      characterRenderer.drawPortrait.mockClear();
 
       expect(renderer.drawReviewScene(context, scene, 0, { reducedMotion: true })).toBe(true);
       expect(characterRenderer.draw).toHaveBeenCalledWith(
         context,
-        expect.objectContaining({ kind: 'violet', outfit: 'casual' }),
+        expect.objectContaining({
+          characterId: 'character.violet', surface: 'world', appearance: 'casual',
+        }),
         0,
       );
-      expect(characterRenderer.drawPortrait).toHaveBeenCalledWith(
+      expect(characterRenderer.draw).toHaveBeenCalledWith(
         context,
-        expect.objectContaining({ speaker: 'npc.narrator' }),
+        expect.objectContaining({
+          characterId: 'character.narrator', surface: 'portrait', pose: 'speaking',
+        }),
         0,
       );
     }
@@ -137,14 +167,18 @@ describe('adaptive dialogue card', () => {
     expect(guide.lightSide).toBe('left');
 
     const violetState = dialogueState({ speaker: 'npc.violet', playerX: 1030, roomVariant: 'dusk' });
-    violetState.player.outfit = 'casual';
-    violetState.player.robeTrim = '#a779c8';
+    Object.assign(violetState.actors[0].renderState, {
+      appearance: 'casual',
+      robeTrim: '#a779c8',
+    });
     const violet = dialogueSceneContext(violetState);
     expect(violet.speakerPosition).toEqual({ x: 1030, y: 620 });
     expect(violet.speakerBounds).toMatchObject({ left: 956, right: 1104 });
     expect(violet.night).toBe(true);
-    expect(violet.violetOutfit).toBe('casual');
-    expect(violet.violetRobeTrim).toBe('#a779c8');
+    expect(violet.portraitRenderState).toMatchObject({
+      appearance: 'casual',
+      robeTrim: '#a779c8',
+    });
     expect(violet.lightSide).toBe('left');
 
     expect(dialogueSceneContext(dialogueState({ speaker: 'npc.narrator' })).speakerBounds).toBeNull();
@@ -237,13 +271,26 @@ describe('adaptive dialogue card', () => {
       roomVariant: 'base',
       player: { kind: 'violet', x: 360, y: 610, facing: 'left' },
       occupants: [{ npc: 'npc.guide', x: 250, y: 610, facing: 'right' }],
+      actors: [
+        actor('npc.violet', 'character.violet', {
+          x: 360, y: 610, facing: 'left',
+          layoutBounds: { x: -74, y: -228, width: 148, height: 260 },
+        }),
+        actor('npc.guide', 'character.hagrid', {
+          x: 250, y: 610, facing: 'right',
+          layoutBounds: { x: -122, y: -340, width: 244, height: 375 },
+        }),
+      ],
       pet: null,
       targets: [{
         id: 'bedroom.guide',
         hitArea: { shape: 'circle', x: 250, y: 455, radius: 95 },
         salience: { tier: 'thread' },
       }],
-      dialogue: { type: 'line', speaker: 'npc.guide', caption: 'Come with me!' },
+      dialogue: {
+        type: 'line', speaker: 'npc.guide', portraitCharacterId: 'character.hagrid',
+        caption: 'Come with me!',
+      },
     };
     const scene = dialogueSceneContext(state);
     const layout = dialogueScrollLayout(scene);
@@ -266,9 +313,21 @@ describe('adaptive dialogue card', () => {
       roomVariant: 'base',
       player: { kind: 'violet', x: 390, y: 610, facing: 'left' },
       occupants: [{ npc: 'npc.menagerieKeeper', x: 270, y: 610, facing: 'right' }],
+      actors: [
+        actor('npc.violet', 'character.violet', { x: 390, y: 610, facing: 'left' }),
+        actor('npc.menagerieKeeper', 'character.menagerie-keeper', {
+          x: 270, y: 610, facing: 'right',
+        }),
+        actor('npc.pet.cat', 'character.cat', { x: 650, y: 585, facing: 'right' }),
+        actor('npc.pet.owl', 'character.pet-owl', { x: 900, y: 520, facing: 'right' }),
+        actor('npc.pet.toad', 'character.toad', { x: 1110, y: 595, facing: 'right' }),
+      ],
       pet: null,
       targets: [],
-      dialogue: { type: 'line', speaker: 'npc.menagerieKeeper', caption: 'Choose a pet!' },
+      dialogue: {
+        type: 'line', speaker: 'npc.menagerieKeeper',
+        portraitCharacterId: 'character.menagerie-keeper', caption: 'Choose a pet!',
+      },
     };
     const scene = dialogueSceneContext(state);
     const layout = dialogueScrollLayout(scene);
@@ -277,9 +336,9 @@ describe('adaptive dialogue card', () => {
     expect(scene.characterBounds.map(({ id }) => id)).toEqual([
       'npc.violet',
       'npc.menagerieKeeper',
-      'preview.pet.cat',
-      'preview.pet.owl',
-      'preview.pet.toad',
+      'npc.pet.cat',
+      'npc.pet.owl',
+      'npc.pet.toad',
     ]);
     expect(layout.side).toBe('center');
     expect(layout.frame.y).toBe(32);
@@ -338,9 +397,10 @@ describe('adaptive dialogue card', () => {
   });
 
   it('renders only the short caption and controls, with a static reduced-motion arrow', () => {
-    const renderer = new UIRenderer({ characterRenderer: { drawPortrait: vi.fn() } });
+    const renderer = new UIRenderer({ characterRenderer: { draw: vi.fn() } });
     const dialogue = {
-      type: 'line', speaker: 'npc.guide', speakerLabel: 'Hagrid', caption: 'This way!',
+      type: 'line', speaker: 'npc.guide', portraitCharacterId: 'character.hagrid',
+      speakerLabel: 'Hagrid', caption: 'This way!',
       text: 'Come along, Violet. Diagon Alley is waiting for you.',
     };
     const first = recordingDialogueContext();
@@ -361,9 +421,10 @@ describe('adaptive dialogue card', () => {
   });
 
   it('keeps day and night materials distinct while full motion only animates the advance medallion', () => {
-    const renderer = new UIRenderer({ characterRenderer: { drawPortrait: vi.fn() } });
+    const renderer = new UIRenderer({ characterRenderer: { draw: vi.fn() } });
     const dialogue = {
-      type: 'line', speaker: 'npc.guide', caption: 'This way!', text: 'Come along.',
+      type: 'line', speaker: 'npc.guide', portraitCharacterId: 'character.hagrid',
+      caption: 'This way!', text: 'Come along.',
     };
     const day = recordingDialogueContext();
     const night = recordingDialogueContext();
@@ -380,11 +441,13 @@ describe('adaptive dialogue card', () => {
   });
 
   it('keeps Violet’s current outfit in her dialogue portrait', () => {
-    const drawPortrait = vi.fn();
-    const renderer = new UIRenderer({ characterRenderer: { drawPortrait } });
+    const draw = vi.fn();
+    const renderer = new UIRenderer({ characterRenderer: { draw } });
     const state = dialogueState({ speaker: 'npc.violet', keyLight: 'right' });
-    state.player.outfit = 'casual';
-    state.player.robeTrim = '#7a4fc9';
+    Object.assign(state.actors[0].renderState, {
+      appearance: 'casual',
+      robeTrim: '#7a4fc9',
+    });
 
     renderer.drawDialogue(
       recordingDialogueContext(),
@@ -395,11 +458,12 @@ describe('adaptive dialogue card', () => {
       dialogueSceneContext(state),
     );
 
-    expect(drawPortrait).toHaveBeenCalledWith(
+    expect(draw).toHaveBeenCalledWith(
       expect.anything(),
       expect.objectContaining({
-        speaker: 'npc.violet',
-        outfit: 'casual',
+        characterId: 'character.violet',
+        surface: 'portrait',
+        appearance: 'casual',
         robeTrim: '#7a4fc9',
         lightSide: 'right',
       }),
@@ -408,8 +472,8 @@ describe('adaptive dialogue card', () => {
   });
 
   it('keeps the bedroom key light on Hagrid’s adjacent dialogue portrait', () => {
-    const drawPortrait = vi.fn();
-    const renderer = new UIRenderer({ characterRenderer: { drawPortrait } });
+    const draw = vi.fn();
+    const renderer = new UIRenderer({ characterRenderer: { draw } });
     const state = dialogueState({ speaker: 'npc.guide', keyLight: 'right' });
 
     const scene = dialogueSceneContext(state);
@@ -423,9 +487,11 @@ describe('adaptive dialogue card', () => {
       scene,
     );
 
-    expect(drawPortrait).toHaveBeenCalledWith(
+    expect(draw).toHaveBeenCalledWith(
       expect.anything(),
-      expect.objectContaining({ speaker: 'npc.guide', lightSide: 'right' }),
+      expect.objectContaining({
+        characterId: 'character.hagrid', surface: 'portrait', lightSide: 'right',
+      }),
       0,
     );
   });

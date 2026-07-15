@@ -17,104 +17,97 @@ function createWorldAt({ scene, room, spawn, flags = {} }) {
 
 describe('room-authored character lighting', () => {
   it.each(['left', 'right'])('forwards a %s key light to Violet and ordinary NPCs', (keyLight) => {
-    const characterRenderer = {
-      draw: vi.fn(),
-      drawPet: vi.fn(),
-    };
+    const characterRenderer = { draw: vi.fn() };
     const game = Object.create(Game.prototype);
     Object.assign(game, {
       characterRenderer,
       reducedMotion: false,
       simTime: 1.25,
-      world: { flags: {} },
     });
 
     game.drawCharacters({}, {
-      roomId: 'ch1.bedroom',
       cameraX: 80,
       keyLight,
-      player: {
-        kind: 'violet',
-        x: 500,
-        y: 610,
-        facing: 'right',
-        walking: false,
-      },
-      pet: null,
-      occupants: [{
-        npc: 'npc.keeper',
-        x: 760,
-        y: 520,
-        facing: 'left',
-        pose: 'idle',
-      }],
+      actors: [
+        {
+          actorId: 'npc.menagerieKeeper',
+          characterId: 'character.menagerie-keeper',
+          depth: 520,
+          renderState: { x: 760, y: 520, facing: 'left', pose: 'idle' },
+        },
+        {
+          actorId: 'npc.violet',
+          characterId: 'character.violet',
+          depth: 610,
+          renderState: { x: 500, y: 610, facing: 'right', pose: 'idle' },
+        },
+      ],
     });
 
     expect(characterRenderer.draw).toHaveBeenCalledTimes(2);
     expect(characterRenderer.draw).toHaveBeenCalledWith(
       {},
-      expect.objectContaining({ kind: 'violet', x: 420, lightSide: keyLight }),
+      expect.objectContaining({
+        characterId: 'character.violet', surface: 'world', x: 420, lightSide: keyLight,
+      }),
       1.25,
     );
     expect(characterRenderer.draw).toHaveBeenCalledWith(
       {},
-      expect.objectContaining({ kind: 'keeper', x: 680, lightSide: keyLight }),
+      expect.objectContaining({
+        characterId: 'character.menagerie-keeper', surface: 'world', x: 680, lightSide: keyLight,
+      }),
       1.25,
     );
   });
 
-  it.each(['left', 'right'])('forwards a %s key light to companions, the post owl, and shop pets', (keyLight) => {
-    const characterRenderer = {
-      draw: vi.fn(),
-      drawPet: vi.fn(),
-    };
+  it.each(['left', 'right'])('uses the same %s-lit dispatch for companions and the post owl', (keyLight) => {
+    const characterRenderer = { draw: vi.fn() };
     const game = Object.create(Game.prototype);
     Object.assign(game, {
       characterRenderer,
       reducedMotion: false,
       simTime: 1.25,
-      world: { flags: {} },
     });
-    const player = {
-      kind: 'violet', x: 500, y: 610, facing: 'right', walking: false,
-    };
 
     game.drawCharacters({}, {
-      roomId: 'ch1.bedroom',
       cameraX: 80,
       keyLight,
-      player,
-      pet: { type: 'cat', x: 560, y: 610, facing: 'right', pose: 'idle' },
-      occupants: [{
-        npc: 'npc.owlPost', x: 1060, y: 210, facing: 'left', pose: 'perch',
-      }],
+      actors: [
+        {
+          actorId: 'npc.owlPost',
+          characterId: 'character.post-owl',
+          depth: 290,
+          renderState: {
+            x: 1060, y: 290, facing: 'left', pose: 'perch', appearance: 'post',
+          },
+        },
+        {
+          actorId: 'npc.pet.cat',
+          characterId: 'character.cat',
+          depth: 611,
+          renderState: {
+            x: 560, y: 610, facing: 'right', pose: 'idle', appearance: 'pet', timeOffset: 0.7,
+          },
+        },
+      ],
     });
 
-    expect(characterRenderer.drawPet).toHaveBeenCalledTimes(2);
-    expect(characterRenderer.drawPet).toHaveBeenCalledWith(
+    expect(characterRenderer.draw).toHaveBeenCalledTimes(2);
+    expect(characterRenderer.draw).toHaveBeenCalledWith(
       {},
-      expect.objectContaining({ type: 'cat', lightSide: keyLight }),
+      expect.objectContaining({
+        characterId: 'character.cat', surface: 'world', lightSide: keyLight,
+      }),
+      1.95,
+    );
+    expect(characterRenderer.draw).toHaveBeenCalledWith(
+      {},
+      expect.objectContaining({
+        characterId: 'character.post-owl', surface: 'world', lightSide: keyLight,
+      }),
       1.25,
     );
-    expect(characterRenderer.drawPet).toHaveBeenCalledWith(
-      {},
-      expect.objectContaining({ type: 'owl', variant: 'post', lightSide: keyLight }),
-      1.25,
-    );
-
-    characterRenderer.drawPet.mockClear();
-    game.drawCharacters({}, {
-      roomId: 'ch1.menagerie',
-      cameraX: 80,
-      keyLight,
-      player,
-      pet: null,
-      occupants: [],
-    });
-    expect(characterRenderer.drawPet).toHaveBeenCalledTimes(3);
-    expect(characterRenderer.drawPet.mock.calls.every(([, pet]) => (
-      pet.lightSide === keyLight
-    ))).toBe(true);
   });
 
   it('uses the bedroom light from the right and defaults an unannotated room to the left', () => {

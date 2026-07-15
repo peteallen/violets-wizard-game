@@ -27,7 +27,7 @@ function gameStub() {
   };
   game.sound = { playSfx: vi.fn(), speak: vi.fn() };
   game.updateStatus = vi.fn();
-  game.uiRenderer = new UIRenderer({ characterRenderer: {} });
+  game.uiRenderer = new UIRenderer({ characterRenderer: { draw: () => {} } });
   game.simTime = 0;
   game.reducedMotion = false;
   return game;

@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { chapter1, chapter1CharacterIds } from '../src/game/content/chapters/ch1.js';
 import { chapter2, chapter2CharacterIds } from '../src/game/content/chapters/ch2.js';
+import { productionCharacterCatalog } from '../src/game/characters/productionCatalog.js';
 import { contentRegistry } from '../src/game/content/index.js';
 import { createSaveV1 } from '../src/game/systems/Save.js';
 import { World } from '../src/game/world/World.js';
@@ -37,8 +38,7 @@ function saveAt({
   return save;
 }
 
-function menagerieWorld({ selectedPet = null } = {}) {
-  const named = Boolean(selectedPet);
+function menagerieWorld({ selectedPet = null, petNamed = Boolean(selectedPet) } = {}) {
   const save = saveAt({
     flags: {
       'ch1.letterRead': true,
@@ -50,13 +50,22 @@ function menagerieWorld({ selectedPet = null } = {}) {
       'ch1.mapUsed': true,
       'ch1.wandChosen': true,
       'ch1.trimChosen': true,
-      ...(named ? { 'ch1.petChosen': true, 'ch1.petNamed': true } : {}),
+      ...(petNamed ? { 'ch1.petChosen': true, 'ch1.petNamed': true } : {}),
     },
     pet: selectedPet,
   });
   save.character.wandId = 'violet-first-wand';
   save.character.appearance.robeTrim = 'purple';
   return new World({ chapters: contentRegistry, save, seed: 42 });
+}
+
+function expectSupportedActorStates(snapshot) {
+  for (const actor of snapshot.actors) {
+    expect(() => productionCharacterCatalog.registry.resolveRenderState(
+      actor.characterId,
+      actor.renderState,
+    )).not.toThrow();
+  }
 }
 
 describe('canonical character identity in content and world snapshots', () => {
@@ -109,14 +118,68 @@ describe('canonical character identity in content and world snapshots', () => {
       renderState: {
         x: 270,
         y: 610,
-        scale: 1,
         pose: 'idle',
+        layoutBounds: { width: 148, height: 236, ground: 32 },
       },
     });
-    expect(snapshot.actors.find(({ actorId }) => actorId === 'npc.pet.owl')).toMatchObject({
+    expect(snapshot.actors.find(({ actorId }) => actorId === 'npc.pet.owl')).toEqual({
+      actorId: 'npc.pet.owl',
       characterId: 'character.pet-owl',
-      renderState: { x: 900, y: 520, scale: 1, pose: 'idle' },
+      depth: 520,
+      renderState: {
+        x: 900,
+        y: 520,
+        facing: 'right',
+        pose: 'idle',
+        scale: 0.92,
+        timeOffset: 0.7,
+        lookX: -0.35,
+        layoutBounds: { width: 132, height: 142, ground: 28 },
+        action: null,
+        actorAnimation: null,
+      },
     });
+    expect(snapshot.actors.find(({ actorId }) => actorId === 'npc.pet.toad').renderState)
+      .toEqual({
+        x: 1110,
+        y: 595,
+        facing: 'right',
+        pose: 'idle',
+        timeOffset: 1.3,
+        layoutBounds: { width: 132, height: 142, ground: 28 },
+        action: null,
+        actorAnimation: null,
+      });
+    expectSupportedActorStates(snapshot);
+  });
+
+  it('publishes the post owl at its rendered anchor with authored scale and player-relative gaze', () => {
+    const save = saveAt({
+      scene: 'ch1.letter',
+      room: 'ch1.bedroom',
+      spawn: 'bedroom.start',
+    });
+    const snapshot = new World({ chapters: contentRegistry, save, seed: 42 }).snapshot();
+    const postOwl = snapshot.actors.find(({ actorId }) => actorId === 'npc.owlPost');
+
+    expect(postOwl).toEqual({
+      actorId: 'npc.owlPost',
+      characterId: 'character.post-owl',
+      depth: 210,
+      renderState: {
+        x: 1060,
+        y: 290,
+        facing: 'left',
+        pose: 'perch',
+        scale: 1.08,
+        layoutBounds: { width: 154, height: 188, ground: 25 },
+        lookX: -1,
+        lookY: (610 - 210 - 170) / 300,
+        action: null,
+        actorAnimation: null,
+      },
+    });
+    expectSupportedActorStates(snapshot);
   });
 
   it('does not reinterpret unused legacy NPC scale metadata as a render transform', () => {
@@ -135,10 +198,9 @@ describe('canonical character identity in content and world snapshots', () => {
     const hagrid = snapshot.actors.find(({ actorId }) => actorId === 'npc.guide');
 
     expect(chapter1.npcs['npc.guide'].scale).toBe(2);
-    expect(hagrid).toMatchObject({
-      characterId: 'character.hagrid',
-      renderState: { scale: 1 },
-    });
+    expect(hagrid.characterId).toBe('character.hagrid');
+    expect(hagrid.renderState).not.toHaveProperty('scale');
+    expectSupportedActorStates(snapshot);
   });
 
   it('replaces the display animals with the exact selected-pet actor after naming', () => {
@@ -151,16 +213,31 @@ describe('canonical character identity in content and world snapshots', () => {
       characterId: 'character.cat',
       depth: snapshot.pet.y + 1,
       renderState: {
-        type: 'cat',
-        name: 'Biscuit',
         x: snapshot.pet.x,
         y: snapshot.pet.y,
         facing: snapshot.pet.facing,
-        scale: 1,
         pose: snapshot.pet.pose,
         action: null,
       },
     });
+    expect(animalActors[0].renderState).not.toHaveProperty('type');
+    expect(animalActors[0].renderState).not.toHaveProperty('name');
+    expect(animalActors[0].renderState).not.toHaveProperty('scale');
+    expectSupportedActorStates(snapshot);
+  });
+
+  it('never duplicates a selected companion while the Menagerie displays are still eligible', () => {
+    const snapshot = menagerieWorld({
+      selectedPet: { type: 'owl', name: 'Moonbeam' },
+      petNamed: false,
+    }).snapshot();
+    const animalActors = snapshot.actors.filter(({ actorId }) => actorId.startsWith('npc.pet.'));
+    const actorIds = animalActors.map(({ actorId }) => actorId);
+
+    expect(actorIds).toHaveLength(3);
+    expect(new Set(actorIds).size).toBe(actorIds.length);
+    expect(actorIds.filter((actorId) => actorId === 'npc.pet.owl')).toHaveLength(1);
+    expectSupportedActorStates(snapshot);
   });
 
   it('carries canonical portrait identity through Chapter One and Chapter Two dialogue', () => {
@@ -184,13 +261,25 @@ describe('canonical character identity in content and world snapshots', () => {
     const chapterTwoWorld = new World({ chapters: contentRegistry, save: chapterTwoSave, seed: 42 });
     chapterTwoWorld.dialogue.open('ch2.preview');
 
-    expect(chapterTwoWorld.snapshot().actors.map(({ actorId, characterId }) => ({
+    const chapterTwoSnapshot = chapterTwoWorld.snapshot();
+    expect(chapterTwoSnapshot.actors.map(({ actorId, characterId }) => ({
       actorId,
       characterId,
     }))).toEqual([
       { actorId: 'npc.violet', characterId: 'character.violet' },
       { actorId: 'npc.pet.owl', characterId: 'character.pet-owl' },
     ]);
+    expect(chapterTwoSnapshot.actors.find(({ actorId }) => actorId === 'npc.pet.owl').renderState)
+      .toEqual({
+        x: 575,
+        y: 620,
+        facing: 'right',
+        pose: 'idle',
+        lookX: 0.45,
+        action: null,
+        actorAnimation: null,
+      });
+    expectSupportedActorStates(chapterTwoSnapshot);
     expect(chapterTwoWorld.dialoguePresentation).toMatchObject({
       speaker: 'npc.narrator',
       speakerLabel: 'Narrator',

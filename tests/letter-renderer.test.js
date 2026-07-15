@@ -68,7 +68,7 @@ describe('canonical illustrated letter prop', () => {
     drawDeliveredEnvelope(delivered, LETTER_ENVELOPE_POSE, 0);
 
     const opening = recordingContext();
-    const renderer = new SetPieceRenderer();
+    const renderer = new SetPieceRenderer({ characterRenderer: { draw: () => {} } });
     renderer.drawLetterOpen(opening, {
       time: 0,
       descriptor: { duration: 4.6 },

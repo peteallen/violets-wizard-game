@@ -277,8 +277,9 @@ describe('touch-first robe picker', () => {
     expect(characterRenderer.draw).toHaveBeenCalledWith(
       context,
       expect.objectContaining({
-        kind: 'violet',
-        outfit: 'robes',
+        characterId: 'character.violet',
+        surface: 'world',
+        appearance: 'robes',
         ...layout.previewCharacter,
         robeTrim: '#4e83b7',
       }),
@@ -334,8 +335,9 @@ describe('touch-first robe picker', () => {
     expect(characterRenderer.draw).toHaveBeenCalledWith(
       context,
       expect.objectContaining({
-        kind: 'violet',
-        outfit: 'robes',
+        characterId: 'character.violet',
+        surface: 'world',
+        appearance: 'robes',
         pose: 'wonder',
         ...robePickerLayout('gold').previewCharacter,
         robeTrim: '#d4a944',

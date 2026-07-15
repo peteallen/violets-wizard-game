@@ -1,5 +1,6 @@
 import { HINTS, OBJECTIVE, WORLD } from '../config.js';
 import { conditionMatches, writePath } from '../core/conditions.js';
+import { clamp } from '../core/math.js';
 import { normalizeRobeTrim, robeTrimColor, robeTrimOption } from '../core/RobeTrims.js';
 import { SeededRandom } from '../core/rng.js';
 import { Dialogue } from '../systems/Dialogue.js';
@@ -895,9 +896,16 @@ export class World {
       .filter((occupant) => conditionMatches(occupant.when, this.save));
     const occupants = applyGuideWalkCueToOccupants(baseOccupants, tapToWalkCue);
     const baseTargets = this.targets();
-    const basePet = this.save.character.pet?.type ? {
+    const petActorId = this.save.character.pet?.type
+      ? `${PET_ACTOR_PREFIX}${this.save.character.pet.type}`
+      : null;
+    const petDefinition = petActorId ? requireNpcDefinition(this.chapter, petActorId) : null;
+    const petController = petDefinition ? requireFollowController(petDefinition, petActorId) : null;
+    const basePet = petDefinition ? {
       ...this.save.character.pet,
       ...petHomePosition(this.player, this.room),
+      facing: this.player.facing,
+      pose: this.player.walking ? petController.poseMap.moving : petDefinition.defaultPose,
     } : null;
     const activationState = this.glintActivations.snapshot(this.time);
     const affordances = createAffordanceSnapshot({
@@ -915,7 +923,13 @@ export class World {
       scheduledGlint: activationState.active,
       glintActivationHistory: activationState.history,
     });
-    const pet = applyPetHint(basePet, affordances.petHint, this.room, this.player.facing);
+    const hintedPet = applyPetHint(
+      basePet,
+      affordances.petHint,
+      this.room,
+      petController?.poseMap,
+    );
+    const pet = applyFacingLook(hintedPet, petController?.facingLookMagnitude);
     const actorAnimations = this.actorAnimationSnapshot();
     const actors = createActorSnapshots({
       chapter: this.chapter,
@@ -983,6 +997,13 @@ function requireNpcDefinition(chapter, actorId) {
   return definition;
 }
 
+function requireFollowController(definition, actorId) {
+  if (definition.controller?.kind !== 'follow' || !definition.controller.poseMap) {
+    throw new Error(`Companion actor ${actorId} requires a follow controller with an explicit pose map.`);
+  }
+  return definition.controller;
+}
+
 function createActorSnapshot(chapter, actorId, renderState, depth = renderState.y) {
   const definition = requireNpcDefinition(chapter, actorId);
   return {
@@ -991,9 +1012,49 @@ function createActorSnapshot(chapter, actorId, renderState, depth = renderState.
     depth,
     renderState: {
       ...renderState,
-      scale: renderState.scale ?? 1,
       pose: renderState.pose ?? definition.defaultPose,
     },
+  };
+}
+
+function actorPositionMap(player, occupants, pet) {
+  const positions = new Map(occupants.map((occupant) => [occupant.npc, occupant]));
+  positions.set(PLAYER_ACTOR_ID, player);
+  if (pet?.type) positions.set(`${PET_ACTOR_PREFIX}${pet.type}`, pet);
+  return positions;
+}
+
+function resolveActorLookAt(occupant, lookAt, positions) {
+  if (!lookAt) return {};
+  const target = positions.get(lookAt.target);
+  if (!target) return {};
+  return {
+    lookX: clamp(
+      (target.x - occupant.x + (lookAt.offsetX ?? 0)) / lookAt.rangeX,
+      -1,
+      1,
+    ),
+    lookY: clamp(
+      (target.y - occupant.y + (lookAt.offsetY ?? 0)) / lookAt.rangeY,
+      -1,
+      1,
+    ),
+  };
+}
+
+function occupantRenderState(occupant, positions) {
+  const render = occupant.render ?? {};
+  return {
+    x: occupant.x + (render.offsetX ?? 0),
+    y: occupant.y + (render.offsetY ?? 0),
+    facing: occupant.facing,
+    pose: occupant.pose,
+    ...(render.scale !== undefined ? { scale: render.scale } : {}),
+    ...(render.timeOffset !== undefined ? { timeOffset: render.timeOffset } : {}),
+    ...(render.lookX !== undefined ? { lookX: render.lookX } : {}),
+    ...(render.lookY !== undefined ? { lookY: render.lookY } : {}),
+    ...(render.layoutBounds ? { layoutBounds: { ...render.layoutBounds } } : {}),
+    ...resolveActorLookAt(occupant, render.lookAt, positions),
   };
 }
 
@@ -1004,20 +1065,27 @@ function createActorSnapshots({
   pet,
   actorAnimations,
 }) {
+  const petActorId = pet?.type ? `${PET_ACTOR_PREFIX}${pet.type}` : null;
+  const positions = actorPositionMap(player, occupants, pet);
   const playerAnimation = actorAnimations[PLAYER_ACTOR_ID] ?? null;
   const actors = occupants
-    .filter((occupant) => occupant.npc !== PLAYER_ACTOR_ID)
+    .filter((occupant) => occupant.npc !== PLAYER_ACTOR_ID && occupant.npc !== petActorId)
     .map((occupant) => {
       const animation = actorAnimations[occupant.npc] ?? null;
       return createActorSnapshot(chapter, occupant.npc, {
-        ...occupant,
+        ...occupantRenderState(occupant, positions),
         action: animation?.action ?? null,
         actorAnimation: animation,
-      });
+      }, occupant.y);
     });
 
   actors.push(createActorSnapshot(chapter, PLAYER_ACTOR_ID, {
-    ...player,
+    x: player.x,
+    y: player.y,
+    scale: player.scale,
+    facing: player.facing,
+    wand: player.wand,
+    robeTrim: player.robeTrim,
     appearance: player.outfit,
     pose: player.walking ? 'walking' : 'idle',
     action: playerAnimation?.action ?? null,
@@ -1025,11 +1093,13 @@ function createActorSnapshots({
   }));
 
   if (pet) {
-    const petActorId = `${PET_ACTOR_PREFIX}${pet.type}`;
     actors.push(createActorSnapshot(chapter, petActorId, {
-      ...pet,
-      facing: pet.facing ?? player.facing,
-      pose: pet.pose ?? (player.walking ? 'pet-follow' : 'idle'),
+      x: pet.x,
+      y: pet.y,
+      facing: pet.facing,
+      pose: pet.pose,
+      ...(pet.lookX !== undefined ? { lookX: pet.lookX } : {}),
+      ...(pet.lookY !== undefined ? { lookY: pet.lookY } : {}),
       action: null,
       actorAnimation: null,
     }, pet.y + 1));
@@ -1080,26 +1150,33 @@ function doorwayApproach(exit, room, player) {
   };
 }
 
-function applyPetHint(pet, hint, room, fallbackFacing) {
+function applyPetHint(pet, hint, room, poseMap) {
   if (!pet || !hint) return pet;
   const roomWidth = room?.size?.width ?? WORLD.width;
   const destinationX = Math.max(55, Math.min(roomWidth - 55, hint.x));
   const path = petHintPath(pet, destinationX, hint.approach, room);
-  const outwardFacing = destinationX < pet.x ? 'left' : destinationX > pet.x ? 'right' : fallbackFacing;
+  const outwardFacing = destinationX < pet.x ? 'left' : destinationX > pet.x ? 'right' : pet.facing;
   const facing = hint.stage === 'return'
     ? outwardFacing === 'left' ? 'right' : 'left'
     : outwardFacing;
-  const attentivePose = pet.type === 'cat' ? 'paw' : pet.type === 'owl' ? 'perch' : 'curious';
   return {
     ...pet,
     ...path,
     facing,
     pose: hint.stage === 'wander' || hint.stage === 'return'
-      ? 'pet-follow'
+      ? poseMap.moving
       : hint.stage === 'paw'
-        ? attentivePose
-        : 'curious',
+        ? poseMap.hintAttention
+        : poseMap.hintLook,
     secretHint: { ...hint },
+  };
+}
+
+function applyFacingLook(pet, magnitude) {
+  if (!pet || magnitude === undefined) return pet;
+  return {
+    ...pet,
+    lookX: pet.facing === 'right' ? magnitude : -magnitude,
   };
 }
 

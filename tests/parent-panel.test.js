@@ -10,6 +10,14 @@ function center(rect) {
   return { x: rect.x + rect.width / 2, y: rect.y + rect.height / 2 };
 }
 
+function deferred() {
+  let resolve;
+  const promise = new Promise((onResolve) => {
+    resolve = onResolve;
+  });
+  return { promise, resolve };
+}
+
 function saveFixture({ complete = false } = {}) {
   const save = createSaveV1({ now: NOW, appVersion: 'parent-test', worldSeed: 42, name: 'Violet' });
   if (complete) {
@@ -42,6 +50,10 @@ function parentGame(save = saveFixture()) {
   const game = Object.create(Game.prototype);
   game.clock = () => NOW;
   game.saveData = save;
+  game.destroyed = false;
+  game.sessionGeneration = 0;
+  game.sessionTransitioning = false;
+  game.titleCharacterDependencies = Object.freeze(['character.violet', 'character.post-owl']);
   game.world = {
     save,
     overlay: { surface: 'parent', page: 'play', notice: null },
@@ -55,6 +67,13 @@ function parentGame(save = saveFixture()) {
   game.parentGateProgress = 0;
   game.render = vi.fn();
   game.updateStatus = vi.fn();
+  game.roomRenderer = { logger: { warn: vi.fn() } };
+  game.characterScopes = {
+    activateTitle: vi.fn().mockResolvedValue(['character.violet', 'character.post-owl']),
+    activateChapter: vi.fn().mockResolvedValue(['character.violet']),
+    releaseTitle: vi.fn().mockResolvedValue([]),
+    releaseChapter: vi.fn().mockResolvedValue([]),
+  };
   game.saveManager = {
     write: vi.fn((value) => ({ ok: true, status: 'saved', save: structuredClone(value) })),
     export: vi.fn((value) => JSON.stringify(value)),
@@ -150,7 +169,7 @@ describe('parent settings', () => {
 });
 
 describe('chapter replay isolation', () => {
-  it('starts fresh with only Violet’s name and parent settings, then restores the exact canonical save', () => {
+  it('starts fresh with only Violet’s name and parent settings, then restores the exact canonical save', async () => {
     const canonical = saveFixture({ complete: true });
     canonical.settings.volumes.music = 0.4;
     const expected = structuredClone(canonical);
@@ -160,7 +179,7 @@ describe('chapter replay isolation', () => {
       this.lastCreateWorldOptions = options;
     });
 
-    const started = game.beginReplay('ch1');
+    const started = await game.beginReplay('ch1');
     expect(started).toMatchObject({ ok: true, status: 'replay-started' });
     expect(game.replayMode).toBe(true);
     expect(game.canonicalSave).toEqual(expected);
@@ -171,19 +190,25 @@ describe('chapter replay isolation', () => {
 
     game.saveData.progress.questFlags['ch1.letterRead'] = true;
     game.saveData.character.wandId = 'replay-only-wand';
-    const exited = game.exitReplay();
+    const exited = await game.exitReplay();
 
     expect(exited).toMatchObject({ ok: true, status: 'replay-exited' });
     expect(game.replayMode).toBe(false);
     expect(game.canonicalSave).toBeNull();
     expect(game.saveData).toEqual(expected);
     expect(game.lastCreateWorldOptions).toEqual({ preserveSave: true });
+    expect(game.characterScopes.activateChapter).toHaveBeenNthCalledWith(1, 'ch1', {
+      source: 'chapter-replay',
+    });
+    expect(game.characterScopes.activateChapter).toHaveBeenNthCalledWith(2, 'ch2', {
+      source: 'exit-replay',
+    });
   });
 
-  it('rejects replay until Chapter One is complete and never captures replay yearbook frames', () => {
+  it('rejects replay until Chapter One is complete and never captures replay yearbook frames', async () => {
     const game = parentGame();
     game.createWorld = vi.fn();
-    expect(game.beginReplay('ch1')).toEqual({ ok: false, status: 'chapter-locked' });
+    await expect(game.beginReplay('ch1')).resolves.toEqual({ ok: false, status: 'chapter-locked' });
 
     game.replayMode = true;
     game.captureYearbook('ch1.wandChosen');
@@ -203,19 +228,108 @@ describe('chapter replay isolation', () => {
   });
 });
 
+describe('session character scope transitions', () => {
+  it('activates an imported chapter before constructing or rendering its world', async () => {
+    const game = parentGame();
+    const previousWorld = game.world;
+    const incoming = saveFixture({ complete: true });
+    const activation = deferred();
+    game.characterScopes.activateChapter = vi.fn(() => activation.promise);
+    game.createWorld = vi.fn(function createWorld(save, options) {
+      this.saveData = save;
+      this.world = { save };
+      this.screen = 'playing';
+      this.lastCreateWorldOptions = options;
+    });
+
+    const adoption = game.adoptSave(incoming, { preserveSave: true });
+
+    expect(game.characterScopes.activateChapter).toHaveBeenCalledWith('ch2', {
+      source: 'adopt-save',
+    });
+    expect(game.world).toBe(previousWorld);
+    expect(game.createWorld).not.toHaveBeenCalled();
+    expect(game.render).not.toHaveBeenCalled();
+
+    activation.resolve(['character.violet', 'character.narrator']);
+    await adoption;
+
+    expect(game.createWorld).toHaveBeenCalledWith(expect.objectContaining({
+      resume: expect.objectContaining({ chapter: 'ch2' }),
+    }), { preserveSave: true });
+    expect(game.render).toHaveBeenCalledOnce();
+    expect(game.characterScopes.releaseTitle).toHaveBeenCalledOnce();
+    expect(game.sessionTransitioning).toBe(false);
+  });
+
+  it('restores the title cast before rendering the title and then releases the chapter cast', async () => {
+    const game = parentGame(saveFixture({ complete: true }));
+    const previousWorld = game.world;
+    game.screen = 'playing';
+    const activation = deferred();
+    game.characterScopes.activateTitle = vi.fn(() => activation.promise);
+
+    const adoption = game.adoptSave(saveFixture(), {
+      toTitle: true,
+      hasStoredSave: false,
+    });
+
+    expect(game.characterScopes.activateTitle).toHaveBeenCalledWith(
+      ['character.violet', 'character.post-owl'],
+      { source: 'return-to-title' },
+    );
+    expect(game.screen).toBe('playing');
+    expect(game.world).toBe(previousWorld);
+    expect(game.render).not.toHaveBeenCalled();
+
+    activation.resolve(['character.violet', 'character.post-owl']);
+    await adoption;
+
+    expect(game.screen).toBe('title');
+    expect(game.world).toBeNull();
+    expect(game.render).toHaveBeenCalledOnce();
+    expect(game.characterScopes.releaseChapter).toHaveBeenCalledOnce();
+    expect(game.render.mock.invocationCallOrder[0]).toBeLessThan(
+      game.characterScopes.releaseChapter.mock.invocationCallOrder[0],
+    );
+    expect(game.sessionTransitioning).toBe(false);
+  });
+
+  it('keeps the current world intact when incoming character activation fails', async () => {
+    const game = parentGame();
+    const previousSave = game.saveData;
+    const previousWorld = game.world;
+    const error = new Error('runtime import failed');
+    game.characterScopes.activateChapter = vi.fn().mockRejectedValue(error);
+    game.createWorld = vi.fn();
+
+    await expect(game.adoptSave(saveFixture({ complete: true }))).resolves.toBeNull();
+
+    expect(game.saveData).toBe(previousSave);
+    expect(game.world).toBe(previousWorld);
+    expect(game.createWorld).not.toHaveBeenCalled();
+    expect(game.characterScopes.releaseTitle).not.toHaveBeenCalled();
+    expect(game.roomRenderer.logger.warn).toHaveBeenCalledWith(
+      'The requested character scope could not be activated.',
+      error,
+    );
+    expect(game.sessionTransitioning).toBe(false);
+  });
+});
+
 describe('guarded recovery and Start Over', () => {
-  it('rehydrates an imported save only after the save layer accepts it', () => {
+  it('rehydrates an imported save only after the save layer accepts it', async () => {
     const imported = saveFixture({ complete: true });
     const game = parentGame();
     game.saveManager.import = vi.fn(() => ({ ok: true, status: 'imported', save: imported }));
-    game.adoptSave = vi.fn();
+    game.adoptSave = vi.fn().mockResolvedValue(imported);
 
-    expect(game.importSaveData('{valid}')).toMatchObject({ ok: true, status: 'imported' });
+    await expect(game.importSaveData('{valid}')).resolves.toMatchObject({ ok: true, status: 'imported' });
     expect(game.adoptSave).toHaveBeenCalledWith(imported, expect.objectContaining({ preserveSave: true }));
 
     game.saveManager.import.mockReturnValue({ ok: false, status: 'invalid-import', save: null });
     game.adoptSave.mockClear();
-    expect(game.importSaveData('{broken')).toMatchObject({ ok: false, status: 'invalid-import' });
+    await expect(game.importSaveData('{broken')).resolves.toMatchObject({ ok: false, status: 'invalid-import' });
     expect(game.adoptSave).not.toHaveBeenCalled();
   });
 
@@ -232,7 +346,7 @@ describe('guarded recovery and Start Over', () => {
     expect(game.startOverPreservingSettings).toHaveBeenCalledTimes(1);
   });
 
-  it('clears story and yearbook while preserving name and device settings', () => {
+  it('clears story and yearbook while preserving name and device settings', async () => {
     const save = saveFixture({ complete: true });
     save.settings = {
       muted: true,
@@ -243,9 +357,9 @@ describe('guarded recovery and Start Over', () => {
     const game = parentGame(save);
     game.clock = () => NOW;
     game.saveManager.clear = vi.fn(() => ({ ok: true, status: 'cleared', save: null }));
-    game.adoptSave = vi.fn();
+    game.adoptSave = vi.fn(async (nextSave) => nextSave);
 
-    const result = game.startOverPreservingSettings();
+    const result = await game.startOverPreservingSettings();
     const fresh = game.saveManager.write.mock.calls.at(-1)[0];
 
     expect(result).toMatchObject({ ok: true, status: 'started-over' });
@@ -261,13 +375,13 @@ describe('guarded recovery and Start Over', () => {
     }));
   });
 
-  it('rehydrates a successfully restored backup', () => {
+  it('rehydrates a successfully restored backup', async () => {
     const restored = saveFixture({ complete: true });
     const game = parentGame();
     game.saveManager.restoreBackup = vi.fn(() => ({ ok: true, status: 'restored-backup', save: restored }));
-    game.adoptSave = vi.fn();
+    game.adoptSave = vi.fn().mockResolvedValue(restored);
 
-    expect(game.restoreBackupSave()).toMatchObject({ ok: true, status: 'restored-backup' });
+    await expect(game.restoreBackupSave()).resolves.toMatchObject({ ok: true, status: 'restored-backup' });
     expect(game.adoptSave).toHaveBeenCalledWith(restored, expect.objectContaining({ preserveSave: true }));
   });
 });

@@ -73,9 +73,16 @@ function expectOrganicSetPiece(context, label, { fullScreenFills = 0 } = {}) {
   expect(context.depth, label).toBe(0);
 }
 
+function setPieceRenderer(options = {}) {
+  return new SetPieceRenderer({
+    characterRenderer: { draw: vi.fn() },
+    ...options,
+  });
+}
+
 describe('SetPieceRenderer dispatch', () => {
   it('draws the Chapter Two preview ticket regardless of ID casing', () => {
-    const renderer = new SetPieceRenderer();
+    const renderer = setPieceRenderer();
     renderer.drawTicket = vi.fn();
     const active = {
       id: 'SP.CH2.PreviewTicket',
@@ -96,9 +103,13 @@ describe('SetPieceRenderer dispatch', () => {
   });
 
   it('threads the bedroom key light into the delivering owl puppet', () => {
-    const owlRenderer = vi.fn();
-    const renderer = new SetPieceRenderer({ owlRenderer });
     const context = recordingTicketContext();
+    const characterRenderer = {
+      draw: vi.fn((_context, request, time) => {
+        context.calls.push(['character.draw', request, time]);
+      }),
+    };
+    const renderer = setPieceRenderer({ characterRenderer });
     const active = {
       id: 'sp.letter',
       requestedId: 'sp.letter',
@@ -108,16 +119,38 @@ describe('SetPieceRenderer dispatch', () => {
 
     renderer.draw(context, active, { keyLight: 'right' }, { reducedMotion: true });
 
-    expect(owlRenderer).toHaveBeenCalledWith(
+    expect(characterRenderer.draw).toHaveBeenCalledWith(
       context,
-      expect.objectContaining({
-        variant: 'post',
+      {
+        x: expect.any(Number),
+        y: expect.any(Number),
+        rotation: expect.any(Number),
+        scale: 1.04,
+        opacity: 1,
+        pose: 'takeoff',
+        characterId: 'character.post-owl',
+        surface: 'world',
+        appearance: 'post',
         facing: 'left',
         lightSide: 'right',
         reducedMotion: true,
-      }),
+        lookX: -0.25,
+        lookY: 0.2,
+      },
       0.1,
     );
+    const request = characterRenderer.draw.mock.calls[0][1];
+    expect(request).not.toHaveProperty('variant');
+    expect(request.x).toBeCloseTo(1040.8925782855265);
+    expect(request.y).toBeCloseTo(286.4173584285362);
+    expect(request.rotation).toBeCloseTo(-0.005971069285772995);
+    const names = context.calls.map(([name]) => name);
+    expect(names.indexOf('fillRect')).toBeLessThan(names.indexOf('character.draw'));
+    expect(names.indexOf('character.draw')).toBeLessThan(names.indexOf('save'));
+    const envelopeTranslate = context.calls.find(
+      ([name], index) => name === 'translate' && index > names.indexOf('character.draw'),
+    );
+    expect(envelopeTranslate).toEqual(['translate', 925, 310]);
   });
 
   it('stages the seal crack before three non-intersecting letter folds and a readable push-in', () => {
@@ -211,7 +244,7 @@ describe('SetPieceRenderer dispatch', () => {
 
   it('draws the street as the stage beneath all eighty wall tiles without allocating sprite canvases', () => {
     const canvasFactory = vi.fn(() => { throw new Error('The wall must not allocate a tile canvas.'); });
-    const renderer = new SetPieceRenderer({ canvasFactory });
+    const renderer = setPieceRenderer({ canvasFactory });
     const courtyard = { complete: true, naturalWidth: 1672, naturalHeight: 941 };
     const reveal = { complete: true, naturalWidth: 1672, naturalHeight: 941 };
     renderer.imageRecords.set('rooms/ch1/courtyard/base', { ready: true, image: courtyard });
@@ -274,7 +307,7 @@ describe('SetPieceRenderer dispatch', () => {
   });
 
   it('renders swirling papers, the intact vase, and every fragment as layered organic forms', () => {
-    const renderer = new SetPieceRenderer();
+    const renderer = setPieceRenderer();
     const paper = recordingTicketContext();
     const paperReplay = recordingTicketContext();
     const paperActive = { time: 1, descriptor: { duration: 2 } };
@@ -331,7 +364,7 @@ describe('SetPieceRenderer dispatch', () => {
   });
 
   it('builds the chosen-wand rays, rings, sparks, shaft, and handle without rigid geometry', () => {
-    const renderer = new SetPieceRenderer();
+    const renderer = setPieceRenderer();
     const first = recordingTicketContext();
     const replayed = recordingTicketContext();
     const active = { time: 1.65, descriptor: { duration: 3 } };
@@ -363,7 +396,7 @@ describe('SetPieceRenderer dispatch', () => {
   });
 
   it('renders the preview ticket as layered railway ephemera without a generic owl or dashed geometry', () => {
-    const renderer = new SetPieceRenderer();
+    const renderer = setPieceRenderer();
     const first = recordingTicketContext();
     const replayed = recordingTicketContext();
     const active = { time: 2, descriptor: { duration: 4 } };

@@ -25,6 +25,10 @@ function adventureStub(save, hasStoredSave = true) {
     playSfx: vi.fn(),
   };
   game.particles = { emit: vi.fn() };
+  game.characterScopes = {
+    activateChapter: vi.fn().mockResolvedValue([]),
+    releaseTitle: vi.fn().mockResolvedValue([]),
+  };
   game.createWorld = vi.fn();
   game.updateStatus = vi.fn();
   return game;

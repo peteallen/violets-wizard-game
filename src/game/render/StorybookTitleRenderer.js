@@ -1,6 +1,4 @@
 import { WORLD } from '../config.js';
-import { CharacterRenderer } from './CharacterRenderer.js';
-import { drawVectorOwl } from './OwlRenderer.js';
 
 const ARTBOARD = Object.freeze({ x: 0, y: 0, width: WORLD.width, height: WORLD.height });
 const TAU = Math.PI * 2;
@@ -49,22 +47,15 @@ const HALLS = Object.freeze([
   Object.freeze({ x: 956, y: 366, width: 132, height: 91, peakX: 0.61, phase: 4.7, columns: 3 }),
 ]);
 
-const DEFAULT_CHARACTER_RENDERER = new CharacterRenderer();
-
 export class StorybookTitleRenderer {
-  constructor({
-    characterRenderer = DEFAULT_CHARACTER_RENDERER,
-    owlRenderer = drawVectorOwl,
-  } = {}) {
-    this.characterRenderer = characterRenderer;
-    this.owlRenderer = owlRenderer;
+  constructor({ characterRenderer } = {}) {
+    this.characterRenderer = requireCharacterRenderer(characterRenderer);
   }
 
   draw(context, time = 0, options = {}) {
     const presentation = createStorybookTitlePresentation(time, options);
     drawStorybookTitlePresentation(context, presentation, {
       characterRenderer: this.characterRenderer,
-      owlRenderer: this.owlRenderer,
     });
     return presentation;
   }
@@ -98,7 +89,8 @@ export function createStorybookTitlePresentation(
   });
   const hero = Object.freeze({
     violet: Object.freeze({
-      kind: 'violet',
+      characterId: 'character.violet',
+      surface: 'world',
       x: 1081,
       y: 704,
       scale: 0.78,
@@ -106,10 +98,12 @@ export function createStorybookTitlePresentation(
       pose: 'wonder',
       walking: false,
       wand: false,
-      outfit: 'casual',
+      appearance: 'casual',
     }),
     owl: Object.freeze({
-      variant: 'post',
+      characterId: 'character.post-owl',
+      surface: 'world',
+      appearance: 'post',
       pose: 'perch',
       x: 1181,
       y: 625,
@@ -145,14 +139,12 @@ export function createStorybookTitlePresentation(
 export function drawStorybookTitlePresentation(
   context,
   presentation,
-  {
-    characterRenderer = DEFAULT_CHARACTER_RENDERER,
-    owlRenderer = drawVectorOwl,
-  } = {},
+  { characterRenderer } = {},
 ) {
   if (!presentation || presentation.kind !== STORYBOOK_TITLE_RENDERER_STATUS) {
     throw new TypeError('drawStorybookTitlePresentation requires a storybook title presentation.');
   }
+  const renderer = requireCharacterRenderer(characterRenderer);
 
   const scaleX = presentation.frame.width / WORLD.width;
   const scaleY = presentation.frame.height / WORLD.height;
@@ -171,9 +163,16 @@ export function drawStorybookTitlePresentation(
   drawForegroundShore(context);
   drawHeroPerch(context);
 
-  characterRenderer.draw(context, presentation.hero.violet, presentation.sceneTime);
-  owlRenderer(context, presentation.hero.owl, presentation.sceneTime);
+  renderer.draw(context, presentation.hero.violet, presentation.sceneTime);
+  renderer.draw(context, presentation.hero.owl, presentation.sceneTime);
   context.restore();
+}
+
+function requireCharacterRenderer(characterRenderer) {
+  if (!characterRenderer || typeof characterRenderer.draw !== 'function') {
+    throw new TypeError('StorybookTitleRenderer requires an injected character renderer with draw().');
+  }
+  return characterRenderer;
 }
 
 function drawLayeredSky(context) {

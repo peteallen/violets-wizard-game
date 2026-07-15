@@ -417,10 +417,19 @@ function validateController(value, path) {
   if (value.kind === 'static' || value.kind === 'scripted') {
     exactObject(value, path, ['kind']);
   } else if (value.kind === 'follow') {
-    exactObject(value, path, ['kind', 'target', 'minimumDistance', 'maxDistance']);
+    exactObject(value, path, [
+      'kind', 'target', 'minimumDistance', 'maxDistance', 'poseMap',
+    ], ['facingLookMagnitude']);
     ref(value.target, `${path}.target`);
     number(value.minimumDistance, `${path}.minimumDistance`, { min: 0 });
     number(value.maxDistance, `${path}.maxDistance`, { min: value.minimumDistance });
+    exactObject(value.poseMap, `${path}.poseMap`, ['moving', 'hintLook', 'hintAttention']);
+    ref(value.poseMap.moving, `${path}.poseMap.moving`);
+    ref(value.poseMap.hintLook, `${path}.poseMap.hintLook`);
+    ref(value.poseMap.hintAttention, `${path}.poseMap.hintAttention`);
+    if (value.facingLookMagnitude !== undefined) {
+      number(value.facingLookMagnitude, `${path}.facingLookMagnitude`, { min: 0, max: 1 });
+    }
   } else if (value.kind === 'patrol') {
     exactObject(value, path, ['kind', 'points', 'speed']);
     array(value.points, `${path}.points`, validatePoint, { min: 2 });
@@ -473,14 +482,44 @@ function validateExit(value, path) {
   validateCondition(value.when, `${path}.when`);
 }
 
+function validateOccupantRenderState(value, path) {
+  exactObject(value, path, [], [
+    'offsetX', 'offsetY', 'scale', 'timeOffset', 'lookX', 'lookY', 'lookAt',
+    'layoutBounds',
+  ]);
+  if (value.offsetX !== undefined) number(value.offsetX, `${path}.offsetX`);
+  if (value.offsetY !== undefined) number(value.offsetY, `${path}.offsetY`);
+  if (value.scale !== undefined) number(value.scale, `${path}.scale`, { min: 0.1, max: 10 });
+  if (value.timeOffset !== undefined) number(value.timeOffset, `${path}.timeOffset`);
+  if (value.lookX !== undefined) number(value.lookX, `${path}.lookX`, { min: -1, max: 1 });
+  if (value.lookY !== undefined) number(value.lookY, `${path}.lookY`, { min: -1, max: 1 });
+  if (value.lookAt !== undefined) {
+    exactObject(value.lookAt, `${path}.lookAt`, ['target', 'rangeX', 'rangeY'], [
+      'offsetX', 'offsetY',
+    ]);
+    id(value.lookAt.target, `${path}.lookAt.target`);
+    number(value.lookAt.rangeX, `${path}.lookAt.rangeX`, { min: Number.EPSILON });
+    number(value.lookAt.rangeY, `${path}.lookAt.rangeY`, { min: Number.EPSILON });
+    if (value.lookAt.offsetX !== undefined) number(value.lookAt.offsetX, `${path}.lookAt.offsetX`);
+    if (value.lookAt.offsetY !== undefined) number(value.lookAt.offsetY, `${path}.lookAt.offsetY`);
+  }
+  if (value.layoutBounds !== undefined) {
+    exactObject(value.layoutBounds, `${path}.layoutBounds`, ['width', 'height', 'ground']);
+    number(value.layoutBounds.width, `${path}.layoutBounds.width`, { min: Number.EPSILON });
+    number(value.layoutBounds.height, `${path}.layoutBounds.height`, { min: Number.EPSILON });
+    number(value.layoutBounds.ground, `${path}.layoutBounds.ground`, { min: 0 });
+  }
+}
+
 function validateOccupant(value, path) {
-  exactObject(value, path, ['npc', 'x', 'y', 'facing', 'pose', 'when']);
+  exactObject(value, path, ['npc', 'x', 'y', 'facing', 'pose', 'when'], ['render']);
   id(value.npc, `${path}.npc`);
   number(value.x, `${path}.x`);
   number(value.y, `${path}.y`);
   validateFacing(value.facing, `${path}.facing`);
   ref(value.pose, `${path}.pose`);
   validateCondition(value.when, `${path}.when`);
+  if (value.render !== undefined) validateOccupantRenderState(value.render, `${path}.render`);
 }
 
 export function validateRoom(value, path = 'room') {
@@ -511,12 +550,18 @@ export function validateRoom(value, path = 'room') {
 }
 
 function validateDialogueChoice(value, path) {
-  exactObject(value, path, ['id', 'icon', 'caption', 'actions', 'next']);
+  exactObject(value, path, ['id', 'icon', 'caption', 'actions', 'next'], [
+    'characterId', 'characterScale',
+  ]);
   localId(value.id, `${path}.id`);
   ref(value.icon, `${path}.icon`);
   caption(value.caption, `${path}.caption`, 2);
   validateActions(value.actions, `${path}.actions`);
   localId(value.next, `${path}.next`);
+  if (value.characterId !== undefined) characterId(value.characterId, `${path}.characterId`);
+  if (value.characterScale !== undefined) {
+    number(value.characterScale, `${path}.characterScale`, { min: Number.EPSILON, max: 10 });
+  }
 }
 
 function validateDialogueNode(value, path) {

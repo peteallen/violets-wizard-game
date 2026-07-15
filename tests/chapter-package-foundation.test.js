@@ -359,4 +359,30 @@ describe('aggregate chapter content linking', () => {
     expect(Object.isFrozen(result)).toBe(true);
     expect(Object.isFrozen(result.issues)).toBe(true);
   });
+
+  it('links character previews embedded in authored dialogue choices', () => {
+    const chapter = structuredClone(defineChapter(chapterTwelveDefinition()));
+    chapter.dialogues['ch12.dialogue.welcome'].nodes.welcome = {
+      type: 'choice',
+      choices: [{
+        id: 'chooseCompanion',
+        characterId: 'character.unregistered-companion',
+        next: 'finish',
+      }],
+    };
+
+    const result = linkChapterPackage(chapter, linkRegistries(chapter));
+    expect(result.issues).toEqual(expect.arrayContaining([
+      expect.objectContaining({
+        code: 'undeclared-character-dependency',
+        path: 'chapter.dialogues.ch12.dialogue.welcome.nodes.welcome.choices[0].characterId',
+        reference: 'character.unregistered-companion',
+      }),
+      expect.objectContaining({
+        code: 'unresolved-character',
+        path: 'chapter.dialogues.ch12.dialogue.welcome.nodes.welcome.choices[0].characterId',
+        reference: 'character.unregistered-companion',
+      }),
+    ]));
+  });
 });

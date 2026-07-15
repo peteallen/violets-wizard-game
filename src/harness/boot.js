@@ -1,8 +1,18 @@
 import '../style.css';
 import { Game } from '../game/Game.js';
+import { CharacterScopeController } from '../game/characters/CharacterScopeController.js';
+import {
+  productionCharacterCatalog,
+  titleCharacterDependencies,
+} from '../game/characters/productionCatalog.js';
+import { loadChapterPackage } from '../game/content/index.js';
 import { loadGameFonts } from '../game/core/loadFonts.js';
 import { validateSaveV1 } from '../game/systems/Save.js';
-import { preloadCharacterReviewScene } from '../game/render/CharacterRenderer.js';
+import {
+  CharacterRenderer,
+  preloadCharacterReviewScene,
+} from '../game/render/CharacterRenderer.js';
+import { RegisteredCharacterRenderer } from '../game/render/RegisteredCharacterRenderer.js';
 import {
   ACTION_FIXTURE_IDS,
   cloneActionFixture,
@@ -11,6 +21,7 @@ import { assertRegistryId } from './registry.js';
 import {
   STATE_FIXTURE_IDS,
   cloneStateFixture,
+  getStateFixture,
   validateStateFixture,
 } from './stateFixtures.js';
 
@@ -87,12 +98,19 @@ export function parseHarnessRequest(search = '') {
 export function resolveHarnessScenario(request) {
   const stateFixture = cloneStateFixture(request.state);
   const actionFixture = cloneActionFixture(request.actions);
+  const sceneFixture = STATE_FIXTURE_IDS.includes(request.scene)
+    ? getStateFixture(request.scene)
+    : stateFixture;
   stateFixture.save.worldSeed = request.seed;
   stateFixture.save.settings.reducedMotion = request.motion === 'reduced';
   stateFixture.save.settings.learning = request.learning;
   validateStateFixture(stateFixture);
   validateSaveV1(stateFixture.save);
-  return { stateFixture, actionFixture };
+  return {
+    stateFixture,
+    actionFixture,
+    characterDependencies: Object.freeze([...sceneFixture.characterDependencies]),
+  };
 }
 
 export function actionsThroughFrame(actionFixture, frame) {
@@ -227,9 +245,33 @@ export async function bootHarness({
 
   const runAt = async (frame) => {
     integer(frame, 'frame');
-    current?.game.destroy();
-    const { stateFixture, actionFixture } = resolveHarnessScenario(request);
+    await current?.game.destroy();
+    const {
+      stateFixture,
+      actionFixture,
+      characterDependencies,
+    } = resolveHarnessScenario(request);
     const eventLog = [];
+    const characterScopes = new CharacterScopeController({
+      catalog: productionCharacterCatalog,
+      loadChapterPackage,
+    });
+    // Game construction synchronously paints during resize: ordinary scenes
+    // show the title, while shared review scenes can render immediately. Keep
+    // both declared casts alive until the final scope can replace them.
+    const constructionDependencies = Object.freeze([...new Set([
+      ...titleCharacterDependencies,
+      ...characterDependencies,
+    ])]);
+    await characterScopes.activateTitle(constructionDependencies, {
+      harness: true,
+      review: true,
+      sceneId: request.scene,
+      source: 'harness-construction',
+    });
+    const characterRenderer = new RegisteredCharacterRenderer({
+      registry: productionCharacterCatalog.registry,
+    });
     let game;
     game = new Game(canvas, {
       harness: true,
@@ -240,6 +282,9 @@ export async function bootHarness({
       reducedMotion: request.motion === 'reduced',
       saveData: stateFixture.save,
       storage: memoryStorage(),
+      characterRenderer,
+      characterReviewRenderer: new CharacterRenderer(),
+      characterScopes,
       enableSaveTransfer: request.scene === 'save-transfer',
       enablePetNameDialog: request.scene === 'pet-name-dialog',
     });
@@ -251,10 +296,23 @@ export async function bootHarness({
       handleWorldEvent(event);
     };
     if (stateFixture.entry.chapter > 0) {
+      await characterScopes.activateChapter(stateFixture.save.resume.chapter, {
+        harness: true,
+        review: true,
+        sceneId: request.scene,
+      });
       game.createWorld(stateFixture.save);
+      await characterScopes.releaseTitle();
       await prepareSetPieceReview(game, request.scene);
       prepareWorldAffordanceReview(game, request.scene);
       prepareGuideWalkReview(game, request.scene);
+    } else {
+      await characterScopes.activateTitle(characterDependencies, {
+        harness: true,
+        review: true,
+        sceneId: request.scene,
+        source: 'harness-scene',
+      });
     }
     game.start();
     if (request.scene === 'pet-name-dialog') void game.petNameDialog?.open('Moonbeam');

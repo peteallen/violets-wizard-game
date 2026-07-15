@@ -498,6 +498,10 @@ describe('room transition choreography', () => {
       parentGateProgress: 0,
       particles: { update: vi.fn() },
       sound: { speak: vi.fn(), playSfx: vi.fn() },
+      characterScopes: {
+        activateChapter: vi.fn().mockResolvedValue([]),
+        destroy: vi.fn().mockResolvedValue(undefined),
+      },
       processWorldEvents: vi.fn(),
     });
     game.updateParentGate = vi.fn();
@@ -589,7 +593,12 @@ describe('room transition choreography', () => {
     const { game } = transitionGame();
     game.dpr = 1;
     game.scale = 1;
-    game.world = { room: { id: 'ch1.courtyard' }, snapshot: vi.fn(() => ({ roomId: 'ch1.courtyard' })) };
+    game.world = {
+      chapter: { id: 'ch1' },
+      roomId: 'ch1.courtyard',
+      room: { id: 'ch1.courtyard' },
+      snapshot: vi.fn(() => ({ roomId: 'ch1.courtyard' })),
+    };
     game.roomRenderer = {
       preloadRoom: vi.fn(() => new Promise(() => {})),
       logger: { warn: vi.fn() },
@@ -601,16 +610,121 @@ describe('room transition choreography', () => {
 
     expect(game.roomTransition.ready).toBe(true);
     expect(game.roomRenderer.logger.warn).toHaveBeenCalledWith(
-      'Destination room preparation timed out; revealing the procedural fallback.',
+      'Destination room or character preparation timed out; revealing the procedural fallback.',
     );
     expect(vi.getTimerCount()).toBe(0);
+    expect(game.characterScopes.activateChapter).toHaveBeenCalledWith('ch1', {
+      source: 'room-transition',
+      roomId: 'ch1.courtyard',
+    });
+  });
+
+  it('activates the destination chapter before transition readiness is released', async () => {
+    const { game } = transitionGame();
+    game.dpr = 1;
+    game.scale = 1;
+    game.world = {
+      chapter: { id: 'ch2' },
+      roomId: 'ch2.previewRoom',
+      room: { id: 'ch2.previewRoom' },
+      snapshot: vi.fn(() => ({ roomId: 'ch2.previewRoom' })),
+    };
+    let resolveCharacters;
+    const characterActivation = new Promise((resolve) => {
+      resolveCharacters = resolve;
+    });
+    let resolveRoom;
+    const roomPreparation = new Promise((resolve) => {
+      resolveRoom = resolve;
+    });
+    game.characterScopes.activateChapter = vi.fn(() => characterActivation);
+    game.roomRenderer = {
+      preloadRoom: vi.fn(() => roomPreparation),
+      logger: { warn: vi.fn() },
+    };
+
+    const readiness = game.prepareRoomTransitionDestination();
+    resolveRoom('decoded-room');
+    await Promise.resolve();
+    await Promise.resolve();
+
+    expect(game.roomTransition.ready).toBe(false);
+    expect(game.characterScopes.activateChapter).toHaveBeenCalledWith('ch2', {
+      source: 'room-transition',
+      roomId: 'ch2.previewRoom',
+    });
+
+    resolveCharacters(['character.violet', 'character.narrator']);
+    await readiness;
+
+    expect(game.roomTransition.ready).toBe(true);
+    expect(game.roomTransition.readinessTimer).toBeNull();
+  });
+
+  it('uses the bounded fallback when destination character loading never settles', async () => {
+    vi.useFakeTimers();
+    const { game } = transitionGame();
+    game.dpr = 1;
+    game.scale = 1;
+    game.world = {
+      chapter: { id: 'ch2' },
+      roomId: 'ch2.previewRoom',
+      room: { id: 'ch2.previewRoom' },
+      snapshot: vi.fn(() => ({ roomId: 'ch2.previewRoom' })),
+    };
+    game.characterScopes.activateChapter = vi.fn(() => new Promise(() => {}));
+    game.roomRenderer = {
+      preloadRoom: vi.fn().mockResolvedValue('decoded-room'),
+      logger: { warn: vi.fn() },
+    };
+
+    const readiness = game.prepareRoomTransitionDestination();
+    await vi.advanceTimersByTimeAsync(2500);
+    await readiness;
+
+    expect(game.roomTransition.ready).toBe(true);
+    expect(game.roomRenderer.logger.warn).toHaveBeenCalledWith(
+      'Destination room or character preparation timed out; revealing the procedural fallback.',
+    );
+    expect(vi.getTimerCount()).toBe(0);
+  });
+
+  it('surfaces rejected destination character loading and releases transition readiness', async () => {
+    const { game } = transitionGame();
+    game.dpr = 1;
+    game.scale = 1;
+    game.world = {
+      chapter: { id: 'ch2' },
+      roomId: 'ch2.previewRoom',
+      room: { id: 'ch2.previewRoom' },
+      snapshot: vi.fn(() => ({ roomId: 'ch2.previewRoom' })),
+    };
+    const error = new Error('character runtime failed');
+    game.characterScopes.activateChapter = vi.fn().mockRejectedValue(error);
+    game.roomRenderer = {
+      preloadRoom: vi.fn().mockResolvedValue('decoded-room'),
+      logger: { warn: vi.fn() },
+    };
+
+    await game.prepareRoomTransitionDestination();
+
+    expect(game.roomTransition.ready).toBe(true);
+    expect(game.roomRenderer.logger.warn).toHaveBeenCalledWith(
+      'Destination character preparation failed; revealing the safe fallback.',
+      error,
+    );
   });
 
   it('lets only the current scale preparation mark a transition ready', async () => {
     const { game } = transitionGame();
     game.dpr = 1;
     game.scale = 1;
-    game.world = { room: { id: 'ch1.courtyard' }, snapshot: vi.fn(() => ({ roomId: 'ch1.courtyard' })) };
+    game.world = {
+      chapter: { id: 'ch1' },
+      roomId: 'ch1.courtyard',
+      room: { id: 'ch1.courtyard' },
+      snapshot: vi.fn(() => ({ roomId: 'ch1.courtyard' })),
+    };
     const completions = [];
     game.roomRenderer = {
       preloadRoom: vi.fn(() => new Promise((resolve) => completions.push(resolve))),
@@ -620,6 +734,7 @@ describe('room transition choreography', () => {
     const first = game.prepareRoomTransitionDestination();
     game.scale = 0.8;
     const second = game.prepareRoomTransitionDestination();
+    await Promise.resolve();
     completions[0]('stale-cache');
     await first;
     expect(game.roomTransition.ready).toBe(false);
@@ -729,7 +844,7 @@ describe('room transition choreography', () => {
     );
   });
 
-  it('keeps the safe-fade fallback input-blocking after both scratch attempts fail', () => {
+  it('keeps the safe-fade fallback input-blocking after both scratch attempts fail', async () => {
     const failedCanvases = [0, 1].map(() => ({
       width: 0,
       height: 0,
@@ -741,7 +856,13 @@ describe('room transition choreography', () => {
         .mockReturnValueOnce(failedCanvases[1]),
     });
     const state = { setPiece: null, dialogue: null, overlay: null };
-    const world = { snapshot: vi.fn(() => state), tap: vi.fn() };
+    const world = {
+      chapter: { id: 'ch1' },
+      roomId: 'ch1.courtyard',
+      room: { id: 'ch1.courtyard' },
+      snapshot: vi.fn(() => state),
+      tap: vi.fn(),
+    };
     const game = Object.create(Game.prototype);
     Object.assign(game, {
       canvas: { width: 1280, height: 720 },
@@ -766,12 +887,15 @@ describe('room transition choreography', () => {
       world,
       lastRenderState: state,
       sound: { unlock: vi.fn(() => Promise.resolve()), playSfx: vi.fn() },
+      characterScopes: { activateChapter: vi.fn().mockResolvedValue([]) },
     });
     game.shouldShowDebugReset = () => false;
 
     expect(game.beginRoomTransition('ink')).toBe(false);
     expect(game.roomTransition).toMatchObject({ fallback: true, source: null });
     expect(game.transitionAlpha).toBe(0);
+    expect(game.roomTransition.ready).toBe(false);
+    await game.waitForRoomTransitionReady();
     expect(game.roomTransition.ready).toBe(true);
     for (const canvas of failedCanvases) {
       expect([canvas.width, canvas.height]).toEqual([1, 1]);
@@ -839,7 +963,7 @@ describe('Game development reset', () => {
 });
 
 describe('Game lifecycle', () => {
-  it('releases the room renderer when the game is destroyed', () => {
+  it('releases the room renderer and character scopes when the game is destroyed', async () => {
     const game = Object.create(Game.prototype);
     Object.assign(game, {
       running: true,
@@ -851,6 +975,7 @@ describe('Game lifecycle', () => {
       setPieceRenderer: { destroy: vi.fn() },
       saveTransferDialog: { destroy: vi.fn() },
       petNameDialog: { destroy: vi.fn() },
+      characterScopes: { destroy: vi.fn().mockResolvedValue(undefined) },
       motionQuery: { removeEventListener: vi.fn() },
       canvas: { removeEventListener: vi.fn() },
       debug: false,
@@ -866,11 +991,12 @@ describe('Game lifecycle', () => {
     vi.stubGlobal('window', { removeEventListener: vi.fn() });
     vi.stubGlobal('document', { removeEventListener: vi.fn() });
 
-    game.destroy();
+    await game.destroy();
 
     expect(game.roomRenderer.destroy).toHaveBeenCalledOnce();
     expect(game.setPieceRenderer.destroy).toHaveBeenCalledOnce();
     expect(game.petNameDialog.destroy).toHaveBeenCalledOnce();
+    expect(game.characterScopes.destroy).toHaveBeenCalledOnce();
     expect(game.destroyed).toBe(true);
     expect(game.running).toBe(false);
   });

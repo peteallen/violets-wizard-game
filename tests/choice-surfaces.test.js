@@ -66,21 +66,48 @@ function expectGenerousDisjointRects(rects) {
 
 describe('illustrated choice and selection surfaces', () => {
   it('previews the real companion puppets on three organic shop tags', () => {
-    const characterRenderer = { draw: vi.fn(), drawPet: vi.fn() };
+    const characterRenderer = { draw: vi.fn() };
     const renderer = new UIRenderer({ characterRenderer });
     const context = recordingContext();
     const choices = [
-      { id: 'petCat', icon: 'pet-cat', caption: 'Cat' },
-      { id: 'petOwl', icon: 'pet-owl', caption: 'Owl' },
-      { id: 'petToad', icon: 'pet-toad', caption: 'Toad' },
+      {
+        id: 'petCat', icon: 'pet-cat', caption: 'Cat',
+        characterId: 'character.cat', characterScale: 0.82,
+      },
+      {
+        id: 'petOwl', icon: 'pet-owl', caption: 'Owl',
+        characterId: 'character.pet-owl', characterScale: 0.72,
+      },
+      {
+        id: 'petToad', icon: 'pet-toad', caption: 'Toad',
+        characterId: 'character.toad', characterScale: 1.18,
+      },
     ];
 
     expect(renderer.drawChoices(context, choices, 12, true)).toEqual(dialogueChoiceLayout(3));
     expect(choices.map(({ __rect }) => __rect)).toEqual(dialogueChoiceLayout(3));
     expectGenerousDisjointRects(choices.map(({ __rect }) => __rect));
-    expect(characterRenderer.drawPet.mock.calls.map(([, pet, time]) => [pet.type, time]))
-      .toEqual([['cat', 0], ['owl', 0], ['toad', 0]]);
-    expect(characterRenderer.drawPet.mock.calls.every(([, pet]) => pet.reducedMotion)).toBe(true);
+    expect(characterRenderer.draw.mock.calls.map(([, request, time]) => ({
+      characterId: request.characterId,
+      surface: request.surface,
+      scale: request.scale,
+      pose: request.pose,
+      reducedMotion: request.reducedMotion,
+      time,
+    }))).toEqual([
+      {
+        characterId: 'character.cat', surface: 'world', scale: 0.82,
+        pose: 'idle', reducedMotion: true, time: 0,
+      },
+      {
+        characterId: 'character.pet-owl', surface: 'world', scale: 0.72,
+        pose: 'idle', reducedMotion: true, time: 0,
+      },
+      {
+        characterId: 'character.toad', surface: 'world', scale: 1.18,
+        pose: 'idle', reducedMotion: true, time: 0,
+      },
+    ]);
     expect(new Set(context.texts)).toEqual(new Set(['Cat', 'Owl', 'Toad']));
     expect(context.calls.some(([name]) => [
       'arc', 'arcTo', 'ellipse', 'rect', 'roundRect', 'setLineDash', 'strokeRect',

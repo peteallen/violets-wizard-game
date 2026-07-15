@@ -49,10 +49,21 @@ describe('optional invitation narration', () => {
     const layout = letterReadingLayout();
     const violet = dialogueSceneContext({
       cameraX: 0,
-      player: { x: 760, y: 610 },
-      occupants: [],
+      actors: [{
+        actorId: 'npc.violet',
+        characterId: 'character.violet',
+        depth: 610,
+        renderState: {
+          x: 760,
+          y: 610,
+          layoutBounds: { width: 148, height: 228, ground: 32 },
+        },
+      }],
       targets: [],
-    }, { speaker: 'npc.violet' }).speakerBounds;
+    }, {
+      speaker: 'npc.violet',
+      portraitCharacterId: 'character.violet',
+    }).speakerBounds;
     const invitation = {
       x: layout.invitationBounds.left,
       y: layout.invitationBounds.top,

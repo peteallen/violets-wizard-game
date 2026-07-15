@@ -4,6 +4,7 @@ import {
 } from './cat/definition.js';
 import {
   catCharacterRuntime,
+  drawCatPortraitFigure,
   sampleCatMotion,
 } from './cat/runtime.js';
 import {
@@ -11,6 +12,7 @@ import {
   menagerieKeeperStyle,
 } from './menagerie-keeper/definition.js';
 import {
+  drawMenagerieKeeperPortraitFigure,
   menagerieKeeperCharacterRuntime,
   sampleKeeperMotion,
 } from './menagerie-keeper/runtime.js';
@@ -18,13 +20,14 @@ import {
   narratorPresentation,
 } from './narrator/definition.js';
 import {
-  narratorCharacterRuntime,
+  drawNarratorPortraitFigure,
 } from './narrator/runtime.js';
 import {
   toadPresentation,
   toadStyle,
 } from './toad/definition.js';
 import {
+  drawToadPortraitFigure,
   sampleToadMotion,
   toadCharacterRuntime,
 } from './toad/runtime.js';
@@ -51,10 +54,10 @@ const COMPANION_RENDERERS = new Map([
 ]);
 
 const PORTRAIT_RENDERERS = new Map([
-  [menagerieKeeperPresentation.legacyKind, menagerieKeeperCharacterRuntime.renderers.portrait],
-  [narratorPresentation.reviews.portrait.speaker, narratorCharacterRuntime.renderers.portrait],
-  [catPresentation.legacyType, catCharacterRuntime.renderers.portrait],
-  [toadPresentation.legacyType, toadCharacterRuntime.renderers.portrait],
+  [menagerieKeeperPresentation.legacyKind, drawMenagerieKeeperPortraitFigure],
+  [narratorPresentation.reviews.portrait.speaker, drawNarratorPortraitFigure],
+  [catPresentation.legacyType, drawCatPortraitFigure],
+  [toadPresentation.legacyType, drawToadPortraitFigure],
 ]);
 
 export function drawCompatibleVectorWorld(context, character, time = 0) {

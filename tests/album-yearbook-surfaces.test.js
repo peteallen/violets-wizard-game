@@ -146,7 +146,7 @@ describe('storybook satchel card album', () => {
 
   it('renders earned and closed-pocket states as deterministic, visibly different materials', () => {
     vi.stubGlobal('Image', class TestImage {});
-    const renderer = new UIRenderer({ characterRenderer: {} });
+    const renderer = new UIRenderer({ characterRenderer: { draw: () => {} } });
     const [earnedEntry, lockedEntry] = buildCardAlbumEntries(cards, ['morgana']);
     const portrait = loadedImage({ width: 800, height: 1000 });
     renderer.images.set(earnedEntry.portraitAsset, portrait);
@@ -181,7 +181,7 @@ describe('storybook satchel card album', () => {
   });
 
   it('uses an abstract developing wash while an earned portrait image is unavailable', () => {
-    const renderer = new UIRenderer({ characterRenderer: {} });
+    const renderer = new UIRenderer({ characterRenderer: { draw: () => {} } });
     const [entry] = buildCardAlbumEntries(cards, ['morgana']);
     const context = recordingContext();
 
@@ -217,7 +217,7 @@ describe('storybook yearbook', () => {
 
   it('draws a deterministic mounted memory, leaf position marks, and labelled page turns', () => {
     vi.stubGlobal('Image', class TestImage {});
-    const renderer = new UIRenderer({ characterRenderer: {} });
+    const renderer = new UIRenderer({ characterRenderer: { draw: () => {} } });
     const image = loadedImage({ src: entries[0].dataUrl });
     renderer.yearbookImages.set(entries[0].id, image);
     const first = recordingContext();
@@ -244,7 +244,7 @@ describe('storybook yearbook', () => {
   });
 
   it('clamps the requested page index without changing entry order or captions', () => {
-    const renderer = new UIRenderer({ characterRenderer: {} });
+    const renderer = new UIRenderer({ characterRenderer: { draw: () => {} } });
     const beforeFirst = recordingContext();
     const afterLast = recordingContext();
 
@@ -262,7 +262,7 @@ describe('storybook yearbook', () => {
   });
 
   it('renders the empty yearbook as a lit paper folio with no filler mascot or helper copy', () => {
-    const renderer = new UIRenderer({ characterRenderer: {} });
+    const renderer = new UIRenderer({ characterRenderer: { draw: () => {} } });
     const first = recordingContext();
     const replayed = recordingContext();
 

@@ -156,27 +156,35 @@ describe('transient actor-animation channel', () => {
       reducedMotion: false,
       characterRenderer: {
         draw: vi.fn((_context, character) => draws.push(character)),
-        drawPet: vi.fn(),
       },
-      world: { flags: {} },
     });
     const state = {
-      roomId: 'ch1.ollivanders',
       cameraX: 100,
       keyLight: 'left',
-      player: { kind: 'violet', x: 500, y: 610, facing: 'right', pose: 'idle' },
-      occupants: [],
-      pet: null,
-      actorAnimations: { 'npc.violet': animation },
+      actors: [{
+        actorId: 'npc.violet',
+        characterId: 'character.violet',
+        depth: 610,
+        renderState: {
+          x: 500,
+          y: 610,
+          facing: 'right',
+          pose: 'idle',
+          action: animation.action,
+          actorAnimation: animation,
+        },
+      }],
     };
 
     game.drawCharacters({}, state);
 
     expect(draws).toHaveLength(1);
     expect(draws[0]).toMatchObject({
-      kind: 'violet',
+      characterId: 'character.violet',
+      surface: 'world',
       x: 400,
       pose: 'idle',
+      action: 'wrong-wand-one',
       actorAnimation: animation,
     });
   });

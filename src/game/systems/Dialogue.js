@@ -120,7 +120,19 @@ export class Dialogue {
         scriptId: this.scriptId,
         nodeId: this.nodeId,
         type: 'choice',
-        choices: node.choices.map(({ id, icon, caption }) => ({ id, icon, caption })),
+        choices: node.choices.map(({
+          id,
+          icon,
+          caption,
+          characterId,
+          characterScale,
+        }) => ({
+          id,
+          icon,
+          caption,
+          ...(characterId !== undefined ? { characterId } : {}),
+          ...(characterScale !== undefined ? { characterScale } : {}),
+        })),
       };
     }
     return null;

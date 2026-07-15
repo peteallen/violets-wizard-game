@@ -30,7 +30,7 @@ function recordingContext() {
   const lineWidths = [];
   let depth = 0;
   const methods = new Set([
-    'beginPath', 'bezierCurveTo', 'closePath', 'fill', 'moveTo',
+    'beginPath', 'bezierCurveTo', 'clip', 'closePath', 'fill', 'lineTo', 'moveTo',
     'quadraticCurveTo', 'restore', 'rotate', 'save', 'scale', 'stroke', 'translate',
   ]);
   const target = {
@@ -245,7 +245,7 @@ describe('owl character runtimes', () => {
     });
   });
 
-  it('renders both identities with exactly the legacy drawing output in full and reduced motion', async () => {
+  it('renders both identities with exactly the legacy world output in full and reduced motion', async () => {
     const postRuntime = await loadPostOwlCharacterRuntime();
     const petRuntime = await loadPetOwlCharacterRuntime();
     const cases = [
@@ -274,15 +274,6 @@ describe('owl character runtimes', () => {
         state: {
           appearance: 'pet', pose: 'pet-follow', x: 420, y: 510, scale: 0.92,
           facing: 'left', lightSide: 'right', lookX: 0.55, lookY: -0.15,
-        },
-      },
-      {
-        variant: 'pet',
-        surface: 'portrait',
-        runtime: petRuntime,
-        state: {
-          appearance: 'pet', pose: 'idle', x: 0, y: 62, scale: 0.86,
-          facing: 'right', lightSide: 'left', reducedMotion: true, lookX: 0.35,
         },
       },
     ];

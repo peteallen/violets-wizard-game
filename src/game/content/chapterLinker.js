@@ -101,6 +101,17 @@ export function linkChapterPackage(chapter, registries = {}) {
     addIssue('unresolved-character', path, characterId, `Character ${String(characterId)} is not registered.`);
     return false;
   };
+  const declaredCharacterExists = (characterId, path) => {
+    if (!dependencies.has(characterId)) {
+      addIssue(
+        'undeclared-character-dependency',
+        path,
+        characterId,
+        `Character ${characterId} must be declared in characterDependencies.`,
+      );
+    }
+    return characterExists(characterId, path);
+  };
 
   const hotspotsByRoom = new Map();
   const addHotspots = (roomId, hotspots) => {
@@ -203,15 +214,7 @@ export function linkChapterPackage(chapter, registries = {}) {
     if (npc.defaultTalk) dialogueExists(npc.defaultTalk, `${path}.defaultTalk`);
     const characterId = npc.character ?? npc.characterId;
     if (characterId) {
-      if (!dependencies.has(characterId)) {
-        addIssue(
-          'undeclared-character-dependency',
-          `${path}.character`,
-          characterId,
-          `Character ${characterId} must be declared in characterDependencies.`,
-        );
-      }
-      characterExists(characterId, `${path}.character`);
+      declaredCharacterExists(characterId, `${path}.character`);
     }
   }
 
@@ -221,6 +224,15 @@ export function linkChapterPackage(chapter, registries = {}) {
       if (node?.type === 'line') {
         npcExists(node.speaker, `${nodePath}.speaker`);
         assetExists(node.voice, `${nodePath}.voice`);
+      } else if (node?.type === 'choice') {
+        array(node.choices).forEach((choice, choiceIndex) => {
+          if (choice?.characterId) {
+            declaredCharacterExists(
+              choice.characterId,
+              `${nodePath}.choices[${choiceIndex}].characterId`,
+            );
+          }
+        });
       }
     }
   }
@@ -290,7 +302,11 @@ function linkRoomElements(value, path, roomId, {
   setPieceExists,
 }) {
   array(value?.occupants).forEach((occupant, index) => {
-    npcExists(occupant?.npc, `${path}.occupants[${index}].npc`);
+    const occupantPath = `${path}.occupants[${index}]`;
+    npcExists(occupant?.npc, `${occupantPath}.npc`);
+    if (occupant?.render?.lookAt?.target) {
+      npcExists(occupant.render.lookAt.target, `${occupantPath}.render.lookAt.target`);
+    }
   });
   array(value?.exits).forEach((exit, index) => {
     if (exit?.to) spawnExists(exit.to.room, exit.to.spawn, `${path}.exits[${index}].to.spawn`);

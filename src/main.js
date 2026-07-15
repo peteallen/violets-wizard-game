@@ -1,20 +1,26 @@
 import './style.css';
 import { Game } from './game/Game.js';
+import { CharacterScopeController } from './game/characters/CharacterScopeController.js';
+import {
+  productionCharacterCatalog,
+  titleCharacterDependencies,
+} from './game/characters/productionCatalog.js';
+import { loadChapterPackage } from './game/content/index.js';
 import { loadGameFonts } from './game/core/loadFonts.js';
 import { VersionWatcher, shouldRevealVersionOffer } from './game/core/VersionWatcher.js';
+import { RegisteredCharacterRenderer } from './game/render/RegisteredCharacterRenderer.js';
 import { Save } from './game/systems/Save.js';
 
 const url = new URL(window.location.href);
 const params = url.searchParams;
+const clock = () => new Date().toISOString();
+const storage = browserStorage();
+const saveManager = new Save({ storage, clock });
 let bootstrapReset = null;
 
 if (params.get('reset') === '1') {
   try {
-    const saves = new Save({
-      storage: window.localStorage,
-      clock: () => new Date().toISOString(),
-    });
-    bootstrapReset = saves.clear();
+    bootstrapReset = saveManager.clear();
   } catch (error) {
     bootstrapReset = { ok: false, status: 'storage-error', save: null, error };
   }
@@ -25,7 +31,20 @@ if (params.get('reset') === '1') {
 
 const canvas = document.querySelector('#game');
 await loadGameFonts();
-const game = new Game(canvas, { debug: params.get('debug') === '1' });
+const characterScopes = new CharacterScopeController({
+  catalog: productionCharacterCatalog,
+  loadChapterPackage,
+});
+await characterScopes.activateTitle(titleCharacterDependencies, { boot: true });
+const characterRenderer = new RegisteredCharacterRenderer({
+  registry: productionCharacterCatalog.registry,
+});
+const game = new Game(canvas, {
+  debug: params.get('debug') === '1',
+  saveManager,
+  characterRenderer,
+  characterScopes,
+});
 game.start();
 
 const reloadOffer = document.querySelector('#version-reload');
@@ -80,4 +99,18 @@ if (import.meta.hot) {
     reloadLater?.removeEventListener('click', dismissUpdate);
     game.destroy();
   });
+}
+
+function browserStorage() {
+  try {
+    if (window.localStorage) return window.localStorage;
+  } catch {
+    // Continue with a session-only adapter when browser storage is blocked.
+  }
+  const values = new Map();
+  return {
+    getItem: (key) => values.get(key) ?? null,
+    setItem: (key, value) => values.set(key, String(value)),
+    removeItem: (key) => values.delete(key),
+  };
 }

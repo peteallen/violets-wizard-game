@@ -89,6 +89,23 @@ function assetPaths(definition) {
   return Object.values(definition.assets).map(({ path }) => path).sort();
 }
 
+function portraitContext() {
+  const methods = new Set([
+    'beginPath', 'bezierCurveTo', 'clip', 'closePath', 'fill', 'lineTo', 'moveTo',
+    'quadraticCurveTo', 'restore', 'save', 'scale', 'stroke', 'translate',
+  ]);
+  return new Proxy({ globalAlpha: 1 }, {
+    get(object, property) {
+      if (methods.has(property)) return () => undefined;
+      return object[property];
+    },
+    set(object, property, value) {
+      object[property] = value;
+      return true;
+    },
+  });
+}
+
 describe('canonical full-frame character packages', () => {
   it('publishes immutable identity metadata and only actually authored capabilities', () => {
     expect(PACKAGES.map(({ definition }) => definition.id)).toEqual([
@@ -188,7 +205,7 @@ describe('canonical full-frame character packages', () => {
     const runtime = runtimeModule.violetCharacterRuntime;
     const draw = vi.spyOn(runtimeModule.violetFullFrameCharacterRig, 'draw')
       .mockReturnValue({ status: 'drawn' });
-    const context = {};
+    const context = portraitContext();
 
     expect(runtime.renderers.portrait({
       context,
@@ -204,6 +221,12 @@ describe('canonical full-frame character packages', () => {
     expect(draw).toHaveBeenCalledWith(context, {
       appearance: 'robes',
       pose: 'idle',
+      reducedMotion: false,
+      robeTrim: '#7a4fc9',
+      wand: false,
+      x: 0,
+      y: 118,
+      scale: 0.82,
       actorAnimation: {
         action: 'chosen-wand',
         localTime: 1.5,

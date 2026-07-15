@@ -12,6 +12,10 @@ import {
   normalizeVectorRenderRequest,
 } from '../vectorRuntime.js';
 import {
+  createCharacterPortraitRenderer,
+  defineCharacterPortraitPresentation,
+} from '../portraitRuntime.js';
+import {
   toadPresentation,
   toadStyle,
 } from './definition.js';
@@ -97,6 +101,10 @@ function renderToad(surface, request) {
     pose: 'idle',
   });
   return drawToadCharacter(normalized.context, normalized.state, normalized.time);
+}
+
+export function drawToadPortraitFigure(request) {
+  return renderToad('portrait', request);
 }
 
 function drawToad(context, time, motion, lightDirection = -1) {
@@ -305,7 +313,30 @@ function drawToadSkinDetail(context, motion) {
 }
 
 
+export const toadPortraitPresentation = defineCharacterPortraitPresentation({
+  backdrop: {
+    dark: toadPresentation.portrait.backdrop[0],
+    light: toadPresentation.portrait.backdrop[1],
+  },
+  figure: {
+    x: 0,
+    y: toadPresentation.portrait.y,
+    scale: toadPresentation.portrait.scale,
+  },
+});
+
+const drawToadPortrait = createCharacterPortraitRenderer({
+  presentation: toadPortraitPresentation,
+  drawFigure: drawToadPortraitFigure,
+  prepareFigureState: (state) => ({
+    facing: state.facing,
+    lightSide: state.lightSide,
+    pose: (state.pose ?? 'speaking') === 'talk' ? 'speaking' : (state.pose ?? 'speaking'),
+    reducedMotion: state.reducedMotion,
+  }),
+});
+
 export const toadCharacterRuntime = createVectorCharacterRuntime({
   drawWorld: (request) => renderToad('world', request),
-  drawPortrait: (request) => renderToad('portrait', request),
+  drawPortrait: drawToadPortrait,
 });
