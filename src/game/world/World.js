@@ -24,6 +24,9 @@ const PET_EDGE_CLEARANCE = 110;
 const PET_HINT_CORRIDOR_CLEARANCE = 70;
 const PET_HINT_CORRIDOR_MARGIN = 35;
 const PET_HINT_CORRIDOR_END = 0.16;
+const INTERACTION_ACTIVATION_DISTANCE = 45;
+const EXIT_ACTIVATION_DISTANCE = 2;
+const DOORWAY_SCALE = 0.82;
 
 export class World {
   constructor({ chapters, save, seed, clock = () => '2000-01-01T00:00:00.000Z', onDirty = () => {} }) {
@@ -66,6 +69,9 @@ export class World {
       x: spawn.x,
       y: spawn.y,
       targetX: spawn.x,
+      targetY: spawn.y,
+      scale: 1,
+      targetScale: 1,
       facing: spawn.facing ?? 'right',
       walking: false,
       wand: Boolean(save.character?.wandId),
@@ -151,20 +157,27 @@ export class World {
       pendingTarget = null;
     }
 
-    const delta = this.player.targetX - this.player.x;
-    if (Math.abs(delta) > 2) {
-      const step = Math.sign(delta) * Math.min(Math.abs(delta), this.walkSpeed * dt);
-      this.player.x += step;
-      this.player.facing = step < 0 ? 'left' : 'right';
+    const deltaX = this.player.targetX - this.player.x;
+    const deltaY = this.player.targetY - this.player.y;
+    const remainingDistance = Math.hypot(deltaX, deltaY);
+    if (remainingDistance > 2) {
+      const step = Math.min(remainingDistance, this.walkSpeed * dt);
+      const progress = step / remainingDistance;
+      this.player.x += deltaX * progress;
+      this.player.y += deltaY * progress;
+      this.player.scale += (this.player.targetScale - this.player.scale) * progress;
+      if (Math.abs(deltaX) > 0.01) this.player.facing = deltaX < 0 ? 'left' : 'right';
       this.player.walking = true;
     } else {
       this.player.x = this.player.targetX;
+      this.player.y = this.player.targetY;
+      this.player.scale = this.player.targetScale;
       this.player.walking = false;
     }
 
     if (
       pendingTarget
-      && Math.abs(this.player.x - pendingTarget.approach.x) <= 45
+      && distanceToApproach(this.player, pendingTarget) <= activationDistance(pendingTarget)
     ) {
       this.activatePendingInteraction(pendingTarget);
     }
@@ -190,6 +203,7 @@ export class World {
     const band = this.room.walkBand ?? { top: 560, bottom: 640 };
     this.player.targetX = Math.max(55, Math.min((this.room.size?.width ?? WORLD.width) - 55, worldPoint.x));
     this.player.y = Math.max(band.top, Math.min(band.bottom, worldPoint.y));
+    this.player.targetY = this.player.y;
     this.cancelPendingInteraction({ stopWalking: false });
     this.idleTime = 0;
     this.emit('feedback.command', { kind: 'emptyTap', x: point.x, y: point.y });
@@ -210,8 +224,12 @@ export class World {
   interactTarget(target) {
     this.noteMeaningfulInput();
     const approach = target.approach;
-    if (approach && Math.abs(this.player.x - approach.x) > 45) {
+    if (approach && distanceToApproach(this.player, target) > activationDistance(target)) {
       this.player.targetX = approach.x;
+      if (target.kind === 'exit') {
+        this.player.targetY = approach.y;
+        this.player.targetScale = DOORWAY_SCALE;
+      }
       this.pendingInteraction = {
         chapterId: this.chapter.id,
         roomId: this.roomId,
@@ -249,6 +267,9 @@ export class World {
     this.player.x = approach.x;
     this.player.targetX = approach.x;
     this.player.y = approach.y;
+    this.player.targetY = approach.y;
+    this.player.scale = target.kind === 'exit' ? DOORWAY_SCALE : 1;
+    this.player.targetScale = this.player.scale;
     this.player.facing = approach.facing;
     this.player.walking = false;
     this.runTargetActions(target);
@@ -258,6 +279,9 @@ export class World {
   cancelPendingInteraction({ stopWalking = true } = {}) {
     if (!this.pendingInteraction) return false;
     this.pendingInteraction = null;
+    this.player.scale = 1;
+    this.player.targetScale = 1;
+    this.player.targetY = this.player.y;
     if (stopWalking) {
       this.player.targetX = this.player.x;
       this.player.walking = false;
@@ -290,7 +314,7 @@ export class World {
         source: 'exit',
         repeat: 'always',
         hitArea: exit.hitArea,
-        approach: exit.approach,
+        approach: doorwayApproach(exit, this.room, this.player),
         presentation: { icon: exit.icon ?? 'arrow', glow: 'interactionGold' },
         actions: [{ type: 'travel.request', room: exit.to.room, spawn: exit.to.spawn, transition: exit.transition }],
       });
@@ -526,6 +550,9 @@ export class World {
     this.player.x = spawn?.x ?? 160;
     this.player.y = spawn?.y ?? 610;
     this.player.targetX = this.player.x;
+    this.player.targetY = this.player.y;
+    this.player.scale = 1;
+    this.player.targetScale = 1;
     this.player.facing = spawn?.facing ?? 'right';
     this.cameraX = 0;
     this.save.resume = { chapter: this.chapter.id, scene: room.scene ?? roomId, room: roomId, spawn: spawnId };
@@ -553,6 +580,9 @@ export class World {
     this.player.x = spawn?.x ?? 160;
     this.player.y = spawn?.y ?? 610;
     this.player.targetX = this.player.x;
+    this.player.targetY = this.player.y;
+    this.player.scale = 1;
+    this.player.targetScale = 1;
     this.player.facing = spawn?.facing ?? 'right';
     this.cameraX = 0;
     this.currentSceneId = chapter.start.scene;
@@ -938,6 +968,30 @@ function hitAreaCenter(hitArea) {
     return { x: hitArea.x + hitArea.width / 2, y: hitArea.y + hitArea.height / 2 };
   }
   return { x: hitArea.x, y: hitArea.y };
+}
+
+function activationDistance(target) {
+  return target?.kind === 'exit' ? EXIT_ACTIVATION_DISTANCE : INTERACTION_ACTIVATION_DISTANCE;
+}
+
+function distanceToApproach(player, target) {
+  const deltaX = player.x - target.approach.x;
+  if (target?.kind !== 'exit') return Math.abs(deltaX);
+  return Math.hypot(deltaX, player.y - target.approach.y);
+}
+
+function doorwayApproach(exit, room, player) {
+  const center = hitAreaCenter(exit.hitArea);
+  const band = room?.walkBand ?? { top: 560, bottom: 640 };
+  const thresholdY = exit.hitArea.shape === 'rect'
+    ? exit.hitArea.y + exit.hitArea.height
+    : center.y + exit.hitArea.radius;
+  const y = Math.max(band.top, Math.min(band.bottom, thresholdY));
+  return {
+    x: center.x,
+    y,
+    facing: center.x < player.x ? 'left' : 'right',
+  };
 }
 
 function applyPetHint(pet, hint, room, fallbackFacing) {
