@@ -86,8 +86,8 @@ registry
     'Hold the letter-open choreography on its deterministic timeline.',
   ))
   .register('transition-ink-review', createFixture(
-    'Tap the courtyard door once so the destination is revealed through the authored ink bloom.',
-    [{ frame: 30, type: 'tap', target: 'leaky.courtyardDoor' }],
+    'Tap Ollivanders’ open doorway once so Violet walks into it before the destination is revealed through the authored ink bloom.',
+    [{ frame: 30, type: 'tap', target: 'ollivanders.exit' }],
   ))
   .register('transition-sparkle-review', createFixture(
     'Open the satchel and travel to Ollivanders so map sparkles ride the reveal edge.',
@@ -97,7 +97,7 @@ registry
     ],
   ))
   .register('sp-brick-wall-review', createFixture(
-    'Hold the ten-by-eight wall reveal on its deterministic timeline.',
+    'Hold the ten-by-eight individual-brick reveal and stable full-scale street aperture on their deterministic timeline.',
   ))
   .register('sp-wand-vase-review', createFixture(
     'Hold the second wrong-wand vase mishap on its deterministic timeline.',
@@ -202,7 +202,7 @@ registry
     'Hold the warm-dark dialogue scroll opposite its active speaker.',
   ))
   .register('ui-dialogue-center-review', createFixture(
-    'Hold the narrowed scroll beside centered Violet and its two-line caption.',
+    'Hold the narrated scroll beside centered, silent Violet and its two-line caption.',
   ))
   .register('ui-dialogue-live-review', createFixture(
     'Walk to Hagrid and hold his first bedroom line against the painted room.',
@@ -211,9 +211,6 @@ registry
   .register('ui-dialogue-night-live-review', createFixture(
     'Walk to Hagrid and hold his ticket line against the painted dusk street.',
     [{ frame: 30, type: 'tap', target: 'street.guideTicket' }],
-  ))
-  .register('ui-broom-caption-review', createFixture(
-    'Hold Violet’s broom reaction and caption for deterministic visual review.',
   ))
   .register('ui-letter-reading-review', createFixture(
     'Hold the readable invitation and its explicit hear-the-letter action.',

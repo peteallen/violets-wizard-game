@@ -57,13 +57,14 @@ const REVIEW_SCENE_ILLUSION_CHECKS = Object.freeze({
     'The sealed envelope, opening frame zero, unfolding paper, and settled invitation retain identical material proportions with zero blank or doubled-paper frame.',
   ],
   'transition-ink-review': [
-    'The organic ink reveal covers the outgoing room before exposing the courtyard, with zero blank canvas, hard geometric wipe edge, or exposed painting boundary.',
+    'After one doorway tap, Violet visibly walks to and through the authored exit before the room transition begins; she never teleports from her starting position.',
+    'The organic ink reveal covers the outgoing room before exposing the destination street, with zero blank canvas, hard geometric wipe edge, or exposed painting boundary.',
   ],
   'transition-sparkle-review': [
     'Map-travel sparkles remain attached to the organic reveal edge while the destination replaces the street with zero blank canvas or competing objective symbol.',
   ],
   'sp-brick-wall-review': [
-    'The intact courtyard wall opens center-out as one readable ten-by-eight brick event, with the street horizon aligned and zero exposed painting edge.',
+    'The intact courtyard wall opens center-out as one readable ten-by-eight mortar grid whose moving cells become individual opaque bricks, with full-canvas Diagon Alley continuously visible from frame zero at one stable world scale, the aperture naturally occluding the outgoing cast, zero courtyard border, zero rectangular painting edge, and zero second room-transition wipe.',
   ],
   'sp-wand-vase-review': [
     'The wrong-wand vase wobble, break, bounce, and settle remain a single readable mishap, with every shard inside the room and clear of Violet and the controls.',
@@ -104,7 +105,7 @@ const REVIEW_SCENE_ILLUSION_CHECKS = Object.freeze({
     'All dialogue words and icons remain legible against the night-room treatment.',
   ],
   'ui-dialogue-center-review': [
-    'The centered Violet puppet remains fully readable beside one dialogue parchment and two non-overlapping 88×88 controls.',
+    'The centered, silent Violet puppet remains fully readable beside one narrated dialogue parchment and two non-overlapping 88×88 controls.',
   ],
   'ui-dialogue-live-review': [
     'The live bedroom dialogue keeps Hagrid, Violet, Hagrid’s portrait, the current objective scenery, one parchment caption, and two 88×88 controls mutually separate against the painted room.',
@@ -115,9 +116,6 @@ const REVIEW_SCENE_ILLUSION_CHECKS = Object.freeze({
   ],
   'ui-dialogue-night-live-review': [
     'The live dusk-street dialogue keeps Hagrid, his portrait, one warm-dark parchment caption, and two 88×88 controls mutually separate and legible.',
-  ],
-  'ui-broom-caption-review': [
-    'The two-word “Flying broom!” caption remains readable, and neither 88×88 dialogue control covers Violet or the caption.',
   ],
   'ui-letter-reading-review': [
     'The complete invitation remains visible beside Violet and above two distinct, non-overlapping 88px-or-larger reading actions; paper and actions cover no part of her puppet.',

@@ -504,18 +504,26 @@ describe('room transition choreography', () => {
     return { game, source };
   }
 
-  it('grows an eight-point organic reveal far enough to uncover every corner', () => {
+  it('fully inks over the outgoing room before a separate authored brush-sweep destination reveal', () => {
     const origin = { x: 1120, y: 470 };
     const start = roomTransitionState(0, { origin, effect: 'ink' });
-    const middle = roomTransitionState(0.3, { origin, effect: 'ink' });
-    const finish = roomTransitionState(0.6, { origin, effect: 'ink' });
+    const covered = roomTransitionState(0.399, { origin, effect: 'ink' });
+    const revealing = roomTransitionState(0.6, { origin, effect: 'ink' });
+    const finish = roomTransitionState(0.8, { origin, effect: 'ink' });
 
-    expect(start.points).toHaveLength(8);
-    expect(start.coverageRadius).toBe(0);
-    expect(middle.coverageRadius).toBeGreaterThan(0);
+    expect(start.points).toEqual([]);
+    expect(start.phase).toBe('cover');
+    expect(start.phaseProgress).toBe(0);
+    expect(start.brushDirection).toBe(-1);
+    expect(covered.phase).toBe('cover');
+    expect(covered.phaseProgress).toBeGreaterThan(0.99);
+    expect(revealing.phase).toBe('reveal');
+    expect(revealing.phaseProgress).toBeGreaterThan(0);
+    expect(revealing.phaseProgress).toBeLessThan(1);
     expect(finish.linearProgress).toBe(1);
-    expect(finish.coverageRadius).toBeGreaterThan(Math.hypot(origin.x, origin.y));
-    expect(new Set(middle.points.map((point) => Math.round(Math.hypot(point.x - origin.x, point.y - origin.y)))).size).toBeGreaterThan(3);
+    expect(finish.phase).toBe('reveal');
+    expect(finish.phaseProgress).toBe(1);
+    expect(roomTransitionState(0, { origin: { x: 120, y: 470 }, effect: 'ink' }).brushDirection).toBe(1);
   });
 
   it('uses a short calm crossfade when reduced motion is enabled', () => {
@@ -523,6 +531,17 @@ describe('room transition choreography', () => {
     expect(reduced.kind).toBe('crossfade');
     expect(reduced.duration).toBe(0.25);
     expect(reduced.progress).toBeCloseTo(0.5);
+  });
+
+  it('skips a second room transition when a set piece already revealed the destination', () => {
+    const game = Object.create(Game.prototype);
+    game.roomTransition = null;
+    game.deferredTransitionAudio = [];
+    game.captureRoomTransitionSource = vi.fn();
+
+    expect(game.beginRoomTransition('none')).toBe(false);
+    expect(game.roomTransition).toBeNull();
+    expect(game.captureRoomTransitionSource).not.toHaveBeenCalled();
   });
 
   it('freezes world and set-piece time until the transition has fully completed', () => {
@@ -533,8 +552,8 @@ describe('room transition choreography', () => {
       update: vi.fn((dt) => { setPiece.time += dt; }),
     };
 
-    game.update(0.3);
-    game.update(0.31);
+    game.update(0.4);
+    game.update(0.41);
 
     expect(game.world.update).not.toHaveBeenCalled();
     expect(setPiece.time).toBe(1.25);
@@ -633,7 +652,7 @@ describe('room transition choreography', () => {
       text: 'Three taps on the bricks, Violet.',
     }]);
 
-    game.updateRoomTransition(0.61);
+    game.updateRoomTransition(0.81);
 
     expect(game.roomTransition).toBeNull();
     expect(game.deferredTransitionAudio).toEqual([]);

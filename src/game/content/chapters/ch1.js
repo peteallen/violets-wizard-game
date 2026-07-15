@@ -61,8 +61,13 @@ function musicCue(at, key) {
   return { type: 'cue', at, event: 'audio.command', payload: { command: 'music', key, mode: 'crossfade', fadeSeconds: 0.8 } };
 }
 
-function travel(room, spawn) {
-  return { type: 'travel.request', room, spawn: spawn.split('.').at(-1) };
+function travel(room, spawn, transition) {
+  return {
+    type: 'travel.request',
+    room,
+    spawn: spawn.split('.').at(-1),
+    ...(transition ? { transition } : {}),
+  };
 }
 
 function mapLocation({ beforeTravel = [], to, ...location }) {
@@ -182,7 +187,7 @@ const dialogueGraphs = [
       }),
       open: {
         type: 'action',
-        actions: [flagSet('ch1.satchelReceived'), { type: 'ui.open', surface: 'satchel', tab: 'map' }],
+        actions: [flagSet('ch1.satchelReceived')],
         next: 'finish',
       },
       finish: { type: 'end', actions: [] },
@@ -247,15 +252,7 @@ const dialogueGraphs = [
         voice: 'voice/ch1/wandmaker/chosen',
         text: 'Curious…',
         caption: 'Your wand!',
-        next: 'wow',
-      }),
-      wow: voiceLine({
-        speaker: 'npc.violet',
-        voice: 'voice/ch1/violet/wow',
-        text: 'Wow!',
-        caption: 'WOW!',
         next: 'finish',
-        portraitPose: 'wonder',
       }),
       finish: { type: 'end', actions: [] },
     },
@@ -291,23 +288,6 @@ const dialogueGraphs = [
         text: 'That suits you beautifully.',
         caption: 'Lovely!',
         next: 'finish',
-      }),
-      finish: { type: 'end', actions: [] },
-    },
-  },
-  {
-    id: 'ch1.tailor.mirror',
-    start: 'look',
-    resumePolicy: 'restart-script',
-    replayable: true,
-    nodes: {
-      look: voiceLine({
-        speaker: 'npc.violet',
-        voice: 'voice/ch1/violet/mirror',
-        text: 'I look magical!',
-        caption: 'A witch!',
-        next: 'finish',
-        portraitPose: 'proud',
       }),
       finish: { type: 'end', actions: [] },
     },
@@ -476,39 +456,6 @@ const dialogueGraphs = [
       },
     },
   },
-  {
-    id: 'ch1.violet.broom',
-    start: 'fast',
-    resumePolicy: 'restart-script',
-    replayable: true,
-    nodes: {
-      fast: voiceLine({
-        speaker: 'npc.violet',
-        voice: 'voice/ch1/violet/broom',
-        text: 'That broom looks fast!',
-        caption: 'Flying broom!',
-        next: 'finish',
-        portraitPose: 'wonder',
-      }),
-      finish: { type: 'end', actions: [] },
-    },
-  },
-  {
-    id: 'ch1.violet.noSpells',
-    start: 'later',
-    resumePolicy: 'restart-script',
-    replayable: true,
-    nodes: {
-      later: voiceLine({
-        speaker: 'npc.violet',
-        voice: 'voice/ch1/violet/noSpells',
-        text: 'I need a spell!',
-        caption: 'Spells come later!',
-        next: 'finish',
-      }),
-      finish: { type: 'end', actions: [] },
-    },
-  },
 ];
 
 const questGraph = {
@@ -561,13 +508,18 @@ const questGraph = {
       id: 'ch1.useMap',
       objective: {
         speaker: 'npc.narrator',
-        voice: 'voice/ch1/objective/useMap',
-        text: 'Open your satchel and tap the golden star.',
-        caption: 'Open your map!',
+        voice: 'voice/ch1/recap/useMap',
+        text: 'The magical street is open. Your wand is waiting.',
+        caption: 'Find your wand!',
         mapStar: { room: 'ch1.diagonStreet', hotspot: 'street.ollivandersDoor' },
       },
       doneWhen: when({ allFlags: ['ch1.mapUsed'] }),
-      hints: { lookTarget: 'hud.satchel', repeatVoice: 'voice/ch1/objective/useMap', trailTarget: 'hud.satchel', assistActions: [{ type: 'ui.open', surface: 'satchel', tab: 'map' }] },
+      hints: {
+        lookTarget: 'street.ollivandersDoor',
+        repeatVoice: 'voice/ch1/recap/useMap',
+        trailTarget: 'street.ollivandersDoor',
+        assistActions: [{ type: 'ui.open', surface: 'satchel', tab: 'map' }],
+      },
       onEnter: [],
       onComplete: [],
       next: 'ch1.chooseWand',
@@ -712,7 +664,16 @@ export const chapter1 = {
     { id: 'ch1.wallOpening', room: 'ch1.courtyard', spawn: 'courtyard.entry', quest: 'ch1.followGuide', when: when({ allFlags: ['ch1.leakyReached'], noFlags: ['ch1.wallOpened'] }), onEnter: [flagSet('ch1.courtyardReached'), dialogueStart('ch1.guide.wall')] },
     { id: 'ch1.diagonMapIntro', room: 'ch1.diagonStreet', spawn: 'street.west', quest: 'ch1.useMap', when: when({ allFlags: ['ch1.wallOpened'], noFlags: ['ch1.satchelReceived'] }), backgroundVariant: 'day', onEnter: [flagSet('ch1.diagonReached'), dialogueStart('ch1.guide.map')] },
     { id: 'ch1.diagonArrival', room: 'ch1.diagonStreet', spawn: 'street.west', quest: 'ch1.useMap', when: when({ allFlags: ['ch1.wallOpened', 'ch1.satchelReceived'], noFlags: ['ch1.shoppingComplete'] }), backgroundVariant: 'day', onEnter: [flagSet('ch1.diagonReached')] },
-    { id: 'ch1.wandShopping', room: 'ch1.ollivanders', spawn: 'ollivanders.entry', quest: 'ch1.chooseWand', when: when({ allFlags: ['ch1.mapUsed'], noFlags: ['ch1.wandChosen'] }), onEnter: [dialogueStart('ch1.wandmaker.welcome')] },
+    {
+      id: 'ch1.wandShopping',
+      room: 'ch1.ollivanders',
+      spawn: 'ollivanders.entry',
+      quest: 'ch1.chooseWand',
+      when: when({ allFlags: ['ch1.satchelReceived'], noFlags: ['ch1.wandChosen'] }),
+      // Keep the legacy receipt save-compatible: reaching Ollivanders by its
+      // street door now satisfies the same route step as taking the map.
+      onEnter: [flagSet('ch1.mapUsed'), dialogueStart('ch1.wandmaker.welcome')],
+    },
     { id: 'ch1.robeShopping', room: 'ch1.malkins', spawn: 'malkins.entry', quest: 'ch1.chooseRobes', when: when({ allFlags: ['ch1.wandChosen'], noFlags: ['ch1.trimChosen'] }), onEnter: [] },
     { id: 'ch1.petShopping', room: 'ch1.menagerie', spawn: 'menagerie.entry', quest: 'ch1.choosePet', when: when({ allFlags: ['ch1.trimChosen'], noFlags: ['ch1.petNamed'] }), onEnter: [] },
     { id: 'ch1.ticket', room: 'ch1.diagonStreet', spawn: 'street.east', quest: 'ch1.returnToGuide', when: when({ allFlags: ['ch1.petNamed'], noFlags: ['ch1.ticketReceived'] }), backgroundVariant: 'dusk', onEnter: [] },
@@ -862,15 +823,15 @@ export const chapter1 = {
       exits: [
         {
           id: 'street.ollivandersDoor',
-          hitArea: circle(390, 405, 100),
+          hitArea: circle(295, 455, 100),
           to: { room: 'ch1.ollivanders', spawn: 'ollivanders.entry' },
           icon: 'door',
           transition: 'ink',
-          when: when({ allFlags: ['ch1.mapUsed'] }),
+          when: when({ allFlags: ['ch1.satchelReceived'] }),
         },
         {
           id: 'street.malkinsDoor',
-          hitArea: circle(690, 405, 100),
+          hitArea: circle(710, 455, 100),
           to: { room: 'ch1.malkins', spawn: 'malkins.entry' },
           icon: 'door',
           transition: 'ink',
@@ -878,7 +839,7 @@ export const chapter1 = {
         },
         {
           id: 'street.menagerieDoor',
-          hitArea: circle(1010, 405, 100),
+          hitArea: circle(1140, 455, 100),
           to: { room: 'ch1.menagerie', spawn: 'menagerie.entry' },
           icon: 'door',
           transition: 'ink',
@@ -887,7 +848,9 @@ export const chapter1 = {
       ],
       occupants: [
         { npc: 'npc.violet', x: 180, y: 610, facing: 'right', pose: 'idle', when: noCondition },
-        { npc: 'npc.guide', x: 260, y: 610, facing: 'right', pose: 'idle', when: noCondition },
+        { npc: 'npc.guide', x: 260, y: 610, facing: 'right', pose: 'idle', when: when({ noFlags: ['ch1.satchelReceived'] }) },
+        { npc: 'npc.guide', x: 470, y: 610, facing: 'right', pose: 'idle', when: when({ allFlags: ['ch1.satchelReceived'], noFlags: ['ch1.petNamed'] }) },
+        { npc: 'npc.guide', x: 260, y: 610, facing: 'right', pose: 'idle', when: when({ allFlags: ['ch1.petNamed'] }) },
       ],
       hotspots: [
         {
@@ -895,7 +858,7 @@ export const chapter1 = {
           kind: 'talk',
           hitArea: circle(260, 465, 95),
           approach: { x: 370, y: 610, facing: 'left' },
-          when: when({ allFlags: ['ch1.wallOpened'], noFlags: ['ch1.mapUsed'] }),
+          when: when({ allFlags: ['ch1.wallOpened'], noFlags: ['ch1.satchelReceived'] }),
           presentation: { icon: 'talk', glow: 'objective' },
           repeat: 'until-condition',
           requiredSpell: null,
@@ -912,17 +875,6 @@ export const chapter1 = {
           requiredSpell: null,
           onInteract: [dialogueStart('ch1.guide.ticket')],
         },
-        {
-          id: 'street.broomDisplay',
-          kind: 'inspect',
-          hitArea: circle(900, 300, 75),
-          approach: { x: 900, y: 610, facing: 'right' },
-          when: noCondition,
-          presentation: { icon: 'look', glow: 'soft' },
-          repeat: 'always',
-          requiredSpell: null,
-          onInteract: [dialogueStart('ch1.violet.broom')],
-        },
       ],
       ambientSetPieces: ['am.inkTransitions'],
     },
@@ -938,7 +890,7 @@ export const chapter1 = {
       exits: [
         {
           id: 'ollivanders.exit',
-          hitArea: rect(10, 370, 130, 210),
+          hitArea: rect(0, 150, 150, 430),
           to: { room: 'ch1.diagonStreet', spawn: 'street.west' },
           icon: 'door',
           transition: 'ink',
@@ -953,7 +905,10 @@ export const chapter1 = {
         {
           id: 'ollivanders.wand1',
           kind: 'action',
-          hitArea: circle(690, 345, 75),
+          // The generous touch target is centered on the painted blue wand
+          // case. The approach remains farther right so Violet has clear
+          // floor space for the authored wrong-wand performance.
+          hitArea: circle(535, 382, 90),
           approach: { x: 690, y: 610, facing: 'right' },
           when: when({ noFlags: ['ch1.wandTry1'] }),
           presentation: { icon: 'wand', glow: 'objective' },
@@ -964,7 +919,7 @@ export const chapter1 = {
         {
           id: 'ollivanders.wand2',
           kind: 'action',
-          hitArea: circle(910, 330, 75),
+          hitArea: circle(782, 382, 90),
           approach: { x: 910, y: 610, facing: 'right' },
           when: when({ allFlags: ['ch1.wandTry1'], noFlags: ['ch1.wandTry2'] }),
           presentation: { icon: 'wand', glow: 'objective' },
@@ -975,7 +930,7 @@ export const chapter1 = {
         {
           id: 'ollivanders.wand3',
           kind: 'action',
-          hitArea: circle(1110, 305, 75),
+          hitArea: circle(1054, 382, 100),
           approach: { x: 1080, y: 610, facing: 'right' },
           when: when({ allFlags: ['ch1.wandTry2'], noFlags: ['ch1.wandChosen'] }),
           presentation: { icon: 'wand', glow: 'objective' },
@@ -1015,7 +970,7 @@ export const chapter1 = {
       exits: [
         {
           id: 'malkins.exit',
-          hitArea: rect(10, 370, 130, 210),
+          hitArea: rect(220, 160, 180, 420),
           to: { room: 'ch1.diagonStreet', spawn: 'street.west' },
           icon: 'door',
           transition: 'ink',
@@ -1038,17 +993,6 @@ export const chapter1 = {
           requiredSpell: null,
           onInteract: [dialogueStart('ch1.tailor.fitting')],
         },
-        {
-          id: 'malkins.mirror',
-          kind: 'inspect',
-          hitArea: circle(1030, 350, 90),
-          approach: { x: 1000, y: 610, facing: 'right' },
-          when: when({ allFlags: ['ch1.trimChosen'] }),
-          presentation: { icon: 'look', glow: 'soft' },
-          repeat: 'always',
-          requiredSpell: null,
-          onInteract: [dialogueStart('ch1.tailor.mirror')],
-        },
       ],
       ambientSetPieces: ['am.inkTransitions'],
     },
@@ -1064,7 +1008,7 @@ export const chapter1 = {
       exits: [
         {
           id: 'menagerie.exit',
-          hitArea: rect(10, 370, 130, 210),
+          hitArea: rect(0, 130, 170, 450),
           to: { room: 'ch1.diagonStreet', spawn: 'street.east' },
           icon: 'door',
           transition: 'ink',
@@ -1114,7 +1058,7 @@ export const chapter1 = {
     },
   ]),
   npcs: idMap([
-    { id: 'npc.violet', displayName: 'Violet', puppet: 'puppet.violet', portrait: 'portrait.violet', voiceRole: 'violet', scale: 1, hitRadius: 88, defaultPose: 'idle', controller: { kind: 'static' }, defaultTalk: 'ch1.violet.noSpells' },
+    { id: 'npc.violet', displayName: 'Violet', puppet: 'puppet.violet', portrait: 'portrait.violet', voiceRole: 'silent', scale: 1, hitRadius: 88, defaultPose: 'idle', controller: { kind: 'static' }, defaultTalk: null },
     { id: 'npc.narrator', displayName: 'Narrator', puppet: 'puppet.none', portrait: 'portrait.none', voiceRole: 'narrator', scale: 1, hitRadius: 88, defaultPose: 'idle', controller: { kind: 'static' }, defaultTalk: null },
     { id: 'npc.guide', displayName: 'Hagrid', puppet: 'puppet.guide', portrait: 'portrait.guide', voiceRole: 'guide', scale: 2, hitRadius: 88, defaultPose: 'idle', controller: { kind: 'scripted' }, defaultTalk: null },
     { id: 'npc.wandmaker', displayName: 'Wandmaker', puppet: 'puppet.wandmaker', portrait: 'portrait.wandmaker', voiceRole: 'wandmaker', scale: 1, hitRadius: 88, defaultPose: 'idle', controller: { kind: 'static' }, defaultTalk: null },
@@ -1195,7 +1139,7 @@ export const chapter1 = {
     'sp.brickWall': {
       id: 'sp.brickWall',
       tier: 'T3',
-      duration: 3.6,
+      duration: 2.6,
       clock: 'world',
       blocksInput: true,
       particleBudget: 'standard',
@@ -1204,8 +1148,8 @@ export const chapter1 = {
       reducedMotion: 'reduced.wallCrossfade',
       params: { specification: 'SP-02', columns: 10, rows: 8 },
       timeline: { tracks: [sfxCue(0, 'sfx/ch1/wallRumble'), sfxCue(0.45, 'sfx/ch1/brickClack')] },
-      verification: { keyframes: [0, 0.6, 1, 1.4, 1.8, 2.2, 2.6, 3.2], checklist: storybookChecklist('The intact wall has no visible seams.', 'The opening reads from the center outward.', 'The street horizon remains aligned.') },
-      onComplete: [flagSet('ch1.wallOpened'), travel('ch1.diagonStreet', 'street.west')],
+      verification: { keyframes: [0, 0.6, 1, 1.4, 1.65, 1.8, 2.05, 2.2, 2.6], checklist: storybookChecklist('The intact wall has no visible seams.', 'Each moving cell reads as one opaque brick opening from the center outward.', 'Diagon Alley remains at one full-canvas world scale while the brick aperture occludes the outgoing courtyard and cast during the burst, never afterward.') },
+      onComplete: [flagSet('ch1.wallOpened'), travel('ch1.diagonStreet', 'street.west', 'none')],
     },
     'sp.wandChaos1': {
       id: 'sp.wandChaos1',
@@ -1438,7 +1382,7 @@ export const chapter1AssetKeys = [
     ...Object.values(questGraph.steps).map((step) => step.objective.voice),
     'voice/ch1/recap/openLetter',
     'voice/ch1/recap/followGuide',
-    'voice/ch1/recap/useMap',
+    // recap/useMap is shared by the live useMap objective above.
     'voice/ch1/recap/chooseRobes',
     'voice/ch1/recap/choosePet',
     'voice/ch1/recap/returnToGuide',

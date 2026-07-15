@@ -294,9 +294,12 @@ export function validateAction(value, path = 'action') {
       id(value.id, `${path}.id`);
       break;
     case 'travel.request':
-      exactObject(value, path, ['type', 'room', 'spawn']);
+      exactObject(value, path, ['type', 'room', 'spawn'], ['transition']);
       id(value.room, `${path}.room`);
       localId(value.spawn, `${path}.spawn`);
+      if (value.transition !== undefined) {
+        oneOf(value.transition, ['ink', 'sparkle', 'crossfade', 'none'], `${path}.transition`);
+      }
       break;
     case 'spell.learn':
       exactObject(value, path, ['type', 'spell']);

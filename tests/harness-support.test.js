@@ -105,7 +105,6 @@ describe('state fixtures', () => {
       'ui-dialogue-center-review',
       'ui-dialogue-live-review',
       'ui-dialogue-night-live-review',
-      'ui-broom-caption-review',
       'ui-letter-reading-review',
       'ui-robe-picker-review',
       'ui-choices-review',
@@ -200,7 +199,6 @@ describe('registered harness scenarios', () => {
   it('registers speaker-left, speaker-right, and night dialogue review coverage', () => {
     for (const id of [
       'ui-dialogue-review',
-      'ui-broom-caption-review',
       'ui-dialogue-night-review',
       'ui-dialogue-center-review',
       'ui-dialogue-live-review',

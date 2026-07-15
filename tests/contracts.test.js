@@ -229,6 +229,15 @@ describe('content contracts', () => {
     });
   });
 
+  it('accepts a travel action that deliberately suppresses a redundant room transition', () => {
+    const chapter = chapterFixture();
+    chapter.setPieces['ch1.letter'].onComplete = [
+      { type: 'travel.request', room: 'ch1.bedroom', spawn: 'start', transition: 'none' },
+    ];
+
+    expect(validateChapter(chapter)).toBe(chapter);
+  });
+
   it.each([
     ['unknown keys', (chapter) => { chapter.unreviewed = true; }],
     ['unknown room-light directions', (chapter) => { chapter.rooms['ch1.bedroom'].background.keyLight = 'top'; }],
@@ -236,6 +245,11 @@ describe('content contracts', () => {
     ['unresolved dialogue edges', (chapter) => { chapter.dialogues['ch1.guide.hello'].nodes.hello.next = 'missing'; }],
     ['learning beats without a completion flag action', (chapter) => { chapter.learningBeats['ch1.nameTap'].onComplete = []; }],
     ['set-piece tracks beyond duration', (chapter) => { chapter.setPieces['ch1.letter'].timeline.tracks[0].end = 2; }],
+    ['unknown travel transitions', (chapter) => {
+      chapter.setPieces['ch1.letter'].onComplete = [
+        { type: 'travel.request', room: 'ch1.bedroom', spawn: 'start', transition: 'explode' },
+      ];
+    }],
   ])('rejects %s', (_label, mutate) => {
     const chapter = chapterFixture();
     mutate(chapter);

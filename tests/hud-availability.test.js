@@ -72,7 +72,6 @@ describe('earned HUD availability', () => {
       hasWand: true,
     };
     const game = gameStub(state);
-    game.world.chapter.dialogues['ch1.violet.noSpells'] = { id: 'ch1.violet.noSpells' };
 
     const targetIds = game.semanticTargets().map(({ id }) => id);
     expect(targetIds).toEqual(expect.arrayContaining([
@@ -85,6 +84,7 @@ describe('earned HUD availability', () => {
 
     game.world.overlay = null;
     game.handleTap(center(UI_RECTS.wand));
-    expect(game.world.dialogue.open).toHaveBeenCalledWith('ch1.violet.noSpells');
+    expect(game.sound.playSfx).toHaveBeenLastCalledWith('sfx/ui/locked', 'fizzle');
+    expect(game.world.dialogue.open).not.toHaveBeenCalled();
   });
 });

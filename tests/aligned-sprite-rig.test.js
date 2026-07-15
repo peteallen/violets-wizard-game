@@ -207,10 +207,24 @@ describe('aligned sprite rig contract', () => {
       created.push(image);
       return image;
     };
-    const rig = new AlignedSpriteRig(manifest(), { imageFactory });
+    const source = manifest();
+    const rig = new AlignedSpriteRig(source, { imageFactory });
     const loading = rig.preload();
     expect(() => rig.draw(recordingContext(), { appearance: 'casual' })).toThrow('must be preloaded');
-    created.forEach((image) => image.onload());
+    const expectedUrlCount = new Set(
+      Object.values(source.assets).flatMap(({ left, right }) => [left, right]),
+    ).size;
+    const completed = new Set();
+    expect(created).toHaveLength(2);
+    while (completed.size < expectedUrlCount) {
+      expect(created.length - completed.size).toBeLessThanOrEqual(2);
+      for (const image of created) {
+        if (completed.has(image)) continue;
+        completed.add(image);
+        image.onload();
+      }
+      await Promise.resolve();
+    }
     await loading;
 
     const context = recordingContext();
@@ -247,7 +261,7 @@ describe('aligned sprite rig contract', () => {
       created.push(image);
       return image;
     };
-    const rig = new AlignedSpriteRig(manifest(), { imageFactory });
+    const rig = new AlignedSpriteRig(manifest(), { imageFactory, maxConcurrentLoads: 20 });
     const loading = rig.preload();
     created.forEach((image) => image.onload());
 

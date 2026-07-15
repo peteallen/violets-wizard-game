@@ -127,12 +127,6 @@
       "bytes": 30973,
       "sha256": "a8b070f470fbcf5576609adf8dbf0f72ec50c96352ebd799538c6cf410d4390b"
     },
-    "voice/ch1/objective/useMap": {
-      "transcript": "ch1/objective/useMap.json",
-      "audio": "voice/ch1/objective/useMap.mp3",
-      "bytes": 47273,
-      "sha256": "15934729fc63203b7d527be26c67b90fad48cf30ca8ecd92e80ffe1b236c0410"
-    },
     "voice/ch1/recap/choosePet": {
       "transcript": "ch1/recap/choosePet.json",
       "audio": "voice/ch1/recap/choosePet.mp3",
@@ -180,30 +174,6 @@
       "audio": "voice/ch1/tailor/welcome.mp3",
       "bytes": 64409,
       "sha256": "7032bb69447d8b327c7e15d753e4158f702a78b32a46eca439c1288017f93d84"
-    },
-    "voice/ch1/violet/broom": {
-      "transcript": "ch1/violet/broom.json",
-      "audio": "voice/ch1/violet/broom.mp3",
-      "bytes": 22613,
-      "sha256": "9c351c640bd752a87914fc8ff9c23cd5d2384db1ee59491803e377f3b2d52c51"
-    },
-    "voice/ch1/violet/mirror": {
-      "transcript": "ch1/violet/mirror.json",
-      "audio": "voice/ch1/violet/mirror.mp3",
-      "bytes": 20524,
-      "sha256": "313a061b23d66941d75742063006ab1efd3ffef45e48697cc47ea48ade4c36eb"
-    },
-    "voice/ch1/violet/noSpells": {
-      "transcript": "ch1/violet/noSpells.json",
-      "audio": "voice/ch1/violet/noSpells.mp3",
-      "bytes": 20942,
-      "sha256": "6bde7706b73c868d24e643782c5548885c6c812bd7a88e4c0f8faa8253259caa"
-    },
-    "voice/ch1/violet/wow": {
-      "transcript": "ch1/violet/wow.json",
-      "audio": "voice/ch1/violet/wow.mp3",
-      "bytes": 13000,
-      "sha256": "026b89cc98497a46ad2343f58b40f7d65587225d64b484263f1b03fee9fae25f"
     },
     "voice/ch1/wandmaker/chosen": {
       "transcript": "wandChosen.json",

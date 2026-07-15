@@ -5,7 +5,7 @@ import { resolveAsset } from './core/assetManifest.js';
 import { cleanPetName, PetNameDialog } from './core/PetNameDialog.js';
 import { SaveTransferDialog } from './core/SaveTransferDialog.js';
 import { SoundEngine } from './core/SoundEngine.js';
-import { clamp, distance, easeInOutCubic } from './core/math.js';
+import { clamp, distance, easeInOutCubic, lerp } from './core/math.js';
 import { SeededRandom } from './core/rng.js';
 import { CharacterRenderer } from './render/CharacterRenderer.js';
 import {
@@ -461,9 +461,7 @@ export class Game {
       return;
     }
     if (state.hasWand && pointInUiRect(point, UI_RECTS.wand)) {
-      const script = this.world.chapter.dialogues['ch1.violet.noSpells'];
-      if (script) this.world.dialogue.open('ch1.violet.noSpells');
-      this.processWorldEvents();
+      this.sound.playSfx('sfx/ui/locked', 'fizzle');
       return;
     }
 
@@ -1171,6 +1169,18 @@ export class Game {
       return;
     }
 
+    if (state.kind === 'ink') {
+      // The cover half always starts from the captured outgoing room. The
+      // reveal half deliberately omits that capture, leaving only the already
+      // prepared destination beneath the authored brush sweep.
+      if (state.phase === 'cover') {
+        context.drawImage(transition.source, 0, 0, WORLD.width, WORLD.height);
+      }
+      drawInkBrushSweep(context, state);
+      context.restore();
+      return;
+    }
+
     context.beginPath();
     context.rect(0, 0, WORLD.width, WORLD.height);
     appendOrganicBlob(context, state.points);
@@ -1502,6 +1512,13 @@ export class Game {
       if (!state.setPiece) this.drawWorldTargets(context, state);
       this.drawCharacters(context, state);
       this.particles.draw(context);
+      if (brickWallActive) {
+        this.setPieceRenderer.drawBrickWallCover(
+          context,
+          state.setPiece,
+          { reducedMotion: this.reducedMotion },
+        );
+      }
     }
 
     if (!behindCastSetPieceActive) {
@@ -1892,20 +1909,52 @@ export function roomTransitionState(elapsed, {
   origin = { x: WORLD.width / 2, y: WORLD.height / 2 },
   reducedMotion = false,
 } = {}) {
-  const duration = reducedMotion ? 0.25 : effect === 'sparkle' ? 0.55 : 0.6;
+  const duration = reducedMotion ? 0.25 : effect === 'sparkle' ? 0.55 : 0.8;
   const linearProgress = clamp(elapsed / duration, 0, 1);
   const progress = easeInOutCubic(linearProgress);
   if (reducedMotion || effect === 'crossfade') {
     return Object.freeze({ kind: 'crossfade', duration, linearProgress, progress, origin: { ...origin }, points: [] });
   }
+  if (effect === 'ink') {
+    const phase = linearProgress >= 0.5 ? 'reveal' : 'cover';
+    const phaseLinearProgress = phase === 'cover'
+      ? clamp(linearProgress / 0.5, 0, 1)
+      : clamp((linearProgress - 0.5) / 0.5, 0, 1);
+    const phaseProgress = phase === 'cover'
+      ? phaseLinearProgress ** 2.35
+      : 1 - (1 - phaseLinearProgress) ** 2.2;
+    return Object.freeze({
+      kind: 'ink',
+      duration,
+      linearProgress,
+      progress,
+      phase,
+      phaseLinearProgress,
+      phaseProgress,
+      brushDirection: origin.x > WORLD.width * 0.52 ? -1 : 1,
+      origin: { ...origin },
+      points: Object.freeze([]),
+    });
+  }
   const corners = [[0, 0], [WORLD.width, 0], [WORLD.width, WORLD.height], [0, WORLD.height]];
   const farthest = Math.max(...corners.map(([x, y]) => Math.hypot(x - origin.x, y - origin.y)));
-  const coverageRadius = (farthest + 180) * progress;
+  const phaseLinearProgress = linearProgress;
+  const phaseProgress = easeInOutCubic(phaseLinearProgress);
+  const coverageRadius = (farthest + 850) * phaseProgress;
+  const pointCount = 64;
   const points = [];
-  for (let index = 0; index < 8; index += 1) {
-    const angle = (index / 8) * Math.PI * 2;
-    const irregularity = 0.04 + (1 - progress) * 0.09;
-    const radius = coverageRadius * (1 + Math.sin(index * 2.37 + progress * 3.1) * irregularity);
+  for (let index = 0; index < pointCount; index += 1) {
+    // Sparkle travel retains a soft organic bloom so its particles can ride
+    // one coherent edge. Doorway ink uses the authored brush sweep above.
+    const radiusNoiseRaw = Math.sin((index + 1) * 91.345 + 17.13) * 47453.5453;
+    const angleNoiseRaw = Math.sin((index + 1) * 37.719 + 4.87) * 19341.713;
+    const radiusNoise = radiusNoiseRaw - Math.floor(radiusNoiseRaw);
+    const angleNoise = angleNoiseRaw - Math.floor(angleNoiseRaw);
+    const angle = (index / pointCount) * Math.PI * 2
+      + (angleNoise - 0.5) * 0.038;
+    const broadLobe = Math.sin(index * 0.43 + 0.43) * 0.075;
+    const dryBite = index % 9 === 0 ? -0.09 : index % 13 === 0 ? 0.1 : 0;
+    const radius = coverageRadius * (0.84 + radiusNoise * 0.25 + broadLobe + dryBite);
     points.push({
       x: origin.x + Math.cos(angle) * radius,
       y: origin.y + Math.sin(angle) * radius,
@@ -1934,6 +1983,189 @@ function appendOrganicBlob(context, points) {
     context.quadraticCurveTo(point.x, point.y, middle.x, middle.y);
   }
   context.closePath();
+}
+
+const INK_BRUSH_BANDS = Object.freeze([
+  Object.freeze({ top: -70, bottom: 110, delay: 0.02, seed: 1 }),
+  Object.freeze({ top: 35, bottom: 205, delay: 0.07, seed: 4 }),
+  Object.freeze({ top: 130, bottom: 300, delay: 0.035, seed: 7 }),
+  Object.freeze({ top: 225, bottom: 395, delay: 0.085, seed: 2 }),
+  Object.freeze({ top: 320, bottom: 490, delay: 0, seed: 8 }),
+  Object.freeze({ top: 415, bottom: 585, delay: 0.055, seed: 5 }),
+  Object.freeze({ top: 510, bottom: 680, delay: 0.025, seed: 9 }),
+  Object.freeze({ top: 605, bottom: 775, delay: 0.075, seed: 3 }),
+  Object.freeze({ top: 700, bottom: 865, delay: 0.045, seed: 6 }),
+]);
+const INK_BRUSH_COLORS = Object.freeze(['#151225', '#171327', '#141122', '#181428']);
+const INK_FRONT_PROFILE = Object.freeze([-7, 4, -3, 8, -5, 3, -9, 5, -2]);
+
+function drawInkBrushSweep(context, state) {
+  const direction = state.brushDirection;
+  const cover = state.phase === 'cover';
+  context.save();
+  context.lineCap = 'butt';
+  context.lineJoin = 'round';
+
+  for (let index = 0; index < INK_BRUSH_BANDS.length; index += 1) {
+    const band = INK_BRUSH_BANDS[index];
+    const centerY = (band.top + band.bottom) / 2;
+    const distanceDelay = Math.abs(centerY - state.origin.y) / WORLD.height * 0.055;
+    const delay = Math.min(0.14, band.delay + distanceDelay);
+    const localProgress = clamp((state.phaseProgress - delay) / (1 - delay), 0, 1);
+    const travel = lerp(-145, WORLD.width + 145, localProgress);
+    const frontX = direction > 0 ? travel : WORLD.width - travel;
+    const front = inkBrushFront(band, index, frontX, direction);
+
+    context.fillStyle = INK_BRUSH_COLORS[(index + band.seed) % INK_BRUSH_COLORS.length];
+    context.globalAlpha = 1;
+    traceInkBrushBand(context, band, front, direction, cover);
+    context.fill();
+    drawInkBrushBandTexture(context, band, front, direction, cover, index);
+
+    if (localProgress > 0.008 && localProgress < 0.992) {
+      drawInkBrushFront(context, front, direction, cover, index);
+    }
+  }
+  const fullInkHandoff = cover
+    ? state.phaseProgress > 0.995
+    : state.phaseProgress < 0.012;
+  if (fullInkHandoff) drawFullFrameInkGrain(context);
+  context.restore();
+}
+
+function drawFullFrameInkGrain(context) {
+  context.save();
+  context.lineCap = 'butt';
+  context.lineJoin = 'round';
+  const washColors = ['#392942', '#090a16', '#4a3248', '#21182f'];
+  for (let stroke = 0; stroke < 12; stroke += 1) {
+    const startY = 35 + stroke * 61 + Math.sin(stroke * 2.31) * 29;
+    context.globalAlpha = 0.13 + (stroke % 4) * 0.025;
+    context.strokeStyle = washColors[stroke % washColors.length];
+    context.lineWidth = 20 + (stroke % 5) * 9;
+    context.beginPath();
+    context.moveTo(-90, startY + 18);
+    context.bezierCurveTo(
+      260 + (stroke % 3) * 45,
+      startY - 58,
+      830 - (stroke % 4) * 37,
+      startY + 47,
+      WORLD.width + 90,
+      startY - 12,
+    );
+    context.stroke();
+  }
+
+  context.strokeStyle = '#9a7261';
+  for (let fiber = 0; fiber < 54; fiber += 1) {
+    const rawX = Math.sin((fiber + 5) * 71.337) * 28613.741;
+    const rawY = Math.sin((fiber + 11) * 39.719) * 17321.319;
+    const unitX = rawX - Math.floor(rawX);
+    const unitY = rawY - Math.floor(rawY);
+    const x = unitX * WORLD.width;
+    const y = unitY * WORLD.height;
+    const length = 20 + (fiber % 9) * 8;
+    context.globalAlpha = 0.09 + (fiber % 4) * 0.025;
+    context.lineWidth = 0.8 + (fiber % 3) * 0.45;
+    context.beginPath();
+    context.moveTo(x, y);
+    context.lineTo(x + length, y - 4 - (fiber % 5) * 2);
+    context.stroke();
+  }
+  context.restore();
+}
+
+function inkBrushFront(band, bandIndex, frontX, direction) {
+  return Object.freeze(INK_FRONT_PROFILE.map((offset, pointIndex) => {
+    const progress = pointIndex / (INK_FRONT_PROFILE.length - 1);
+    const y = lerp(band.top - 8, band.bottom + 8, progress)
+      + Math.sin((pointIndex + 1) * (band.seed + 1.7)) * 3.5;
+    const authoredWobble = Math.sin((bandIndex + 2) * (pointIndex + 1) * 1.31) * 3.2;
+    return Object.freeze({
+      x: frontX + direction * (offset + authoredWobble),
+      y,
+    });
+  }));
+}
+
+function traceInkBrushBand(context, band, front, direction, cover) {
+  const startEdge = direction > 0 ? -170 : WORLD.width + 170;
+  const farEdge = direction > 0 ? WORLD.width + 170 : -170;
+  const inkEdge = cover ? startEdge : farEdge;
+  context.beginPath();
+  context.moveTo(inkEdge, band.top - 18);
+  context.lineTo(front[0].x, front[0].y);
+  for (let index = 1; index < front.length - 1; index += 1) {
+    const point = front[index];
+    const next = front[index + 1];
+    context.quadraticCurveTo(
+      point.x,
+      point.y,
+      (point.x + next.x) / 2,
+      (point.y + next.y) / 2,
+    );
+  }
+  context.lineTo(front.at(-1).x, front.at(-1).y);
+  context.lineTo(inkEdge, band.bottom + 18);
+  context.closePath();
+}
+
+function drawInkBrushBandTexture(context, band, front, direction, cover, bandIndex) {
+  context.save();
+  traceInkBrushBand(context, band, front, direction, cover);
+  context.clip();
+
+  const inkDirection = cover ? -direction : direction;
+  for (let stripe = 0; stripe < 3; stripe += 1) {
+    const y = lerp(band.top + 24, band.bottom - 22, (stripe + 0.5) / 3)
+      + Math.sin((bandIndex + 1) * (stripe + 2)) * 8;
+    context.globalAlpha = 0.065 + stripe * 0.018;
+    context.strokeStyle = stripe === 1 ? '#493348' : '#090b17';
+    context.lineWidth = 17 + ((bandIndex + stripe) % 4) * 7;
+    context.beginPath();
+    context.moveTo(-190, y + 5);
+    context.bezierCurveTo(280, y - 16, 870, y + 19, WORLD.width + 190, y - 7);
+    context.stroke();
+  }
+
+  context.strokeStyle = '#8a6758';
+  for (let fiber = 0; fiber < 6; fiber += 1) {
+    const point = front[(fiber + bandIndex) % front.length];
+    const length = 19 + ((fiber * 11 + bandIndex * 7) % 38);
+    context.globalAlpha = 0.08 + (fiber % 3) * 0.035;
+    context.lineWidth = 0.7 + (fiber % 3) * 0.45;
+    context.beginPath();
+    context.moveTo(point.x + inkDirection * 4, point.y + (fiber % 2 ? 3 : -4));
+    context.lineTo(point.x + inkDirection * length, point.y + (fiber % 3 - 1) * 6);
+    context.stroke();
+  }
+  context.restore();
+}
+
+function drawInkBrushFront(context, front, direction, cover, bandIndex) {
+  context.strokeStyle = '#493448';
+  context.globalAlpha = 0.28;
+  for (let index = 0; index < front.length - 1; index += 1) {
+    if ((index + bandIndex) % 3 !== 0) continue;
+    context.lineWidth = 1.8 + ((index + bandIndex) % 4) * 0.7;
+    context.beginPath();
+    context.moveTo(front[index].x, front[index].y);
+    context.lineTo(front[index + 1].x, front[index + 1].y);
+    context.stroke();
+  }
+
+  const bristleDirection = cover ? direction : -direction;
+  context.strokeStyle = '#171220';
+  for (let index = 1; index < front.length - 1; index += 1) {
+    const point = front[index];
+    const length = 9 + ((index * 5 + bandIndex * 3) % 24);
+    context.globalAlpha = 0.22 + (index % 3) * 0.07;
+    context.lineWidth = 0.7 + ((index + bandIndex) % 3) * 0.45;
+    context.beginPath();
+    context.moveTo(point.x - bristleDirection * 2, point.y);
+    context.lineTo(point.x + bristleDirection * length, point.y + ((index + bandIndex) % 3 - 1) * 4);
+    context.stroke();
+  }
 }
 
 function drawTransitionSparkles(context, state) {

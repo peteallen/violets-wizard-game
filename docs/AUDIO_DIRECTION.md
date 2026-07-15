@@ -2,7 +2,7 @@
 
 Audio is half this game. Dialogue is voice-first (she reads 1–3 words; the game *talks*), the score carries the wonder, and every interaction answers with sound. All audio is generated offline with ElevenLabs (voices, SFX, music), keys from env, nothing generated at runtime, no credentials near the browser (house rules). Per the family standard, the game must remain fully playable with zero audio files present — synth fallback beeps and captions carry meaning — but voice is the intended experience.
 
-## Voice cast (all British, per the client)
+## Voice cast (all speaking roles British, per the client)
 
 Original characters-shaped-like-the-books, voiced with distinct, instantly tellable-apart voices. Names below are role labels, not shipped text.
 
@@ -21,7 +21,7 @@ Original characters-shaped-like-the-books, voiced with distinct, instantly tella
 | **Draco-shaped rival** | Posh, huffy, harmless | Ch. 7 |
 | **Quirrell** | Nervous stammer, comic | Ch. 8 phase 1 |
 | **Voldemort** | Dry rasping whisper — *wants* to be terrifying, lands at beatable-menacing; hammy relish over horror | Ch. 8 |
-| **Violet** | Bright 6–7yo girl; short exclamations only ("Wow!", "Lumos!", "Found you!") — the player narrates her own adventure in her head; her voice never says anything Violet-the-player wouldn't | Throughout |
+| **Violet** | Silent player avatar. She has no generated voice, spoken dialogue, or replayable speech; her reactions belong to animation, music, and sound effects so the player can supply her own inner voice | Throughout |
 
 **Casting rule:** villain fear calibration is checked with dad before shipping Ch. 8 lines — one dramatic beat, zero nightmares.
 

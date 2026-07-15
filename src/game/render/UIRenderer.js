@@ -44,7 +44,6 @@ export const UI_REVIEW_SCENES = Object.freeze([
   'ui-dialogue-review',
   'ui-dialogue-night-review',
   'ui-dialogue-center-review',
-  'ui-broom-caption-review',
   'ui-letter-reading-review',
   'ui-robe-picker-review',
   'ui-choices-review',
@@ -583,23 +582,6 @@ export class UIRenderer {
     context.fillRect(0, 0, WORLD.width, WORLD.height);
     if (scene === 'ui-letter-reading-review') {
       this.drawLetterReading(context);
-    } else if (scene === 'ui-broom-caption-review') {
-      const dialogue = {
-        type: 'line', speaker: 'npc.violet', speakerLabel: 'Violet', portraitPose: 'wonder',
-        caption: 'Flying broom!', text: 'That broom looks fast!',
-      };
-      const player = {
-        kind: 'violet', x: 1060, y: 665, facing: 'left', pose: 'wonder', outfit: 'casual', wand: true,
-      };
-      this.characterRenderer.draw(context, player, time);
-      this.drawDialogue(
-        context,
-        dialogue,
-        time,
-        false,
-        reducedMotion,
-        dialogueSceneContext({ dialogue, player, cameraX: 0, roomVariant: 'base' }),
-      );
     } else if (scene === 'ui-dialogue-review') {
       const dialogue = {
         type: 'line', speaker: 'npc.guide', speakerLabel: 'Hagrid', portraitPose: 'talk',
@@ -617,11 +599,11 @@ export class UIRenderer {
       );
     } else if (scene === 'ui-dialogue-night-review') {
       const dialogue = {
-        type: 'line', speaker: 'npc.wandmaker', speakerLabel: 'Wandmaker', portraitPose: 'curious',
+        type: 'line', speaker: 'npc.wandmaker', speakerLabel: 'Wandmaker', portraitPose: 'speaking',
         caption: 'Your wand!', text: 'Curious… this wand has been waiting for you.',
       };
       const wandmaker = {
-        npc: 'npc.wandmaker', kind: 'wandmaker', x: 1040, y: 665, facing: 'left', pose: 'curious',
+        npc: 'npc.wandmaker', kind: 'wandmaker', x: 1040, y: 665, facing: 'left', pose: 'speaking',
       };
       this.characterRenderer.draw(context, wandmaker, time);
       this.drawDialogue(
@@ -634,11 +616,11 @@ export class UIRenderer {
       );
     } else if (scene === 'ui-dialogue-center-review') {
       const dialogue = {
-        type: 'line', speaker: 'npc.violet', speakerLabel: 'Violet', portraitPose: 'talk',
-        caption: 'Spells come later!', text: 'I need a spell!',
+        type: 'line', speaker: 'npc.narrator', speakerLabel: 'Narrator', portraitPose: 'neutral',
+        caption: 'Spells come later!', text: 'Violet will learn spells when the time is right.',
       };
       const player = {
-        kind: 'violet', x: 640, y: 665, facing: 'right', pose: 'speaking', outfit: 'casual', wand: true,
+        kind: 'violet', x: 640, y: 665, facing: 'right', pose: 'curious', outfit: 'casual', wand: true,
       };
       this.characterRenderer.draw(context, player, time);
       this.drawDialogue(

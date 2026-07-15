@@ -207,51 +207,41 @@ export class SetPieceRenderer {
       return;
     }
 
-    const states = [];
-    for (let row = 0; row < BRICK_GRID.rows; row += 1) {
-      for (let column = 0; column < BRICK_GRID.columns; column += 1) {
-        states.push(brickTileState(row, column, t));
-      }
-    }
-
-    const opening = states.filter((state) => state.progress > 0.001);
-    if (opening.length) {
-      context.save();
-      context.beginPath();
-      for (const state of opening) {
-        context.rect(state.x - 1, state.y - 1, state.width + 2, state.height + 2);
-      }
-      context.clip();
-      drawStreetReveal(context, reveal, 0);
-      context.restore();
-    }
+    const states = brickTileStates(t);
+    drawStreetReveal(context, reveal, 0);
 
     const shivering = t >= 0.4 && t < 0.8;
     if (shivering) {
       for (const state of states) this.drawBrickTile(context, state, t, courtyard, { shiver: true });
     } else {
       for (const state of states) {
-        if (state.progress <= 0 || state.progress >= 1) continue;
+        if (state.progress >= 1) continue;
         this.drawBrickTile(context, state, t, courtyard);
-        drawBrickDust(context, state);
+        if (state.progress > 0 && state.index % 3 === 0) drawBrickDust(context, state);
       }
     }
+  }
 
-    const push = easeInOutCubic(clamp01((t - 2.35) / 1.25));
-    if (push > 0) {
-      const x = lerp(BRICK_GRID.x, 0, push);
-      const y = lerp(BRICK_GRID.y, 0, push);
-      const width = lerp(BRICK_GRID.width, WORLD.width, push);
-      const height = lerp(BRICK_GRID.height, WORLD.height, push);
-      context.save();
-      context.beginPath();
-      context.rect(x, y, width, height);
-      context.clip();
-      drawStreetReveal(context, reveal, (1 - push) * 0.06);
-      context.restore();
-      context.fillStyle = `rgba(255,221,142,${Math.sin(push * Math.PI) * 0.13})`;
-      context.fillRect(0, 0, WORLD.width, WORLD.height);
+  drawBrickWallCover(context, active, { reducedMotion = false } = {}) {
+    if (!active || reducedMotion) return;
+    const id = String(active.requestedId ?? active.id ?? '').toLowerCase();
+    if (!id.includes('brick')) return;
+    const progress = easeInOutCubic(clamp01((active.time - 1.45) / 0.7));
+    if (progress <= 0) return;
+    const reveal = this.readyImage('rooms/ch1/diagon/day');
+    context.save();
+    context.beginPath();
+    appendBrickPortal(context, progress);
+    context.clip();
+    drawStreetReveal(context, reveal, 0);
+    context.restore();
+    const courtyard = this.readyImage('rooms/ch1/courtyard/base');
+    for (const state of brickTileStates(active.time)) {
+      if (state.progress <= 0 || state.progress >= 1) continue;
+      this.drawBrickTile(context, state, active.time, courtyard);
     }
+    context.fillStyle = `rgba(255,221,142,${Math.sin(progress * Math.PI) * 0.13})`;
+    context.fillRect(0, 0, WORLD.width, WORLD.height);
   }
 
   drawBrickTile(context, state, t, courtyardImage, { shiver = false } = {}) {
@@ -260,21 +250,46 @@ export class SetPieceRenderer {
     context.save();
     context.translate(state.centerX + state.offsetX + jitterX, state.centerY + state.offsetY + jitterY);
     context.rotate(state.rotation);
-    context.scale(1.012, 1.012);
+    context.scale(1.025, 1.025);
     context.globalAlpha = state.alpha;
     if (courtyardImage) {
-      const source = brickTileSourceRect(courtyardImage, state);
-      context.drawImage(
-        courtyardImage,
-        source.x,
-        source.y,
-        source.width,
-        source.height,
-        -state.width / 2 - 3,
-        -state.height / 2 - 3,
-        state.width + 6,
-        state.height + 6,
-      );
+      if (!shiver && state.progress > 0) {
+        const face = brickTileFaceBounds(state);
+        roundRect(
+          context,
+          face.x,
+          face.y,
+          face.width,
+          face.height,
+          8,
+        );
+        context.clip();
+        const source = brickFaceSourceRect(courtyardImage, state);
+        context.drawImage(
+          courtyardImage,
+          source.x,
+          source.y,
+          source.width,
+          source.height,
+          face.x,
+          face.y,
+          face.width,
+          face.height,
+        );
+      } else {
+        const source = brickTileSourceRect(courtyardImage, state);
+        context.drawImage(
+          courtyardImage,
+          source.x,
+          source.y,
+          source.width,
+          source.height,
+          -state.width / 2 - 3,
+          -state.height / 2 - 3,
+          state.width + 6,
+          state.height + 6,
+        );
+      }
     } else {
       context.fillStyle = state.fallbackColor;
       roundRect(context, -state.width / 2 - 1, -state.height / 2 - 1, state.width + 2, state.height + 2, 7);
@@ -505,7 +520,7 @@ export function brickTileState(row, column, time) {
   const distance = Math.max(0.001, Math.hypot(centerX - 700, centerY - 330));
   const directionX = (centerX - 700) / distance;
   const directionY = (centerY - 330) / distance;
-  const travel = 125 + gridDistance * 17;
+  const travel = 80 + gridDistance * 5;
   return Object.freeze({
     index: row * BRICK_GRID.columns + column,
     row,
@@ -519,11 +534,22 @@ export function brickTileState(row, column, time) {
     delay,
     progress,
     offsetX: directionX * progress * travel,
-    offsetY: directionY * progress * travel * 0.58 - Math.sin(progress * Math.PI) * 24,
-    rotation: directionX * progress * (0.42 + (row % 3) * 0.08),
-    alpha: linearProgress >= 0.999999 ? 0 : 1 - clamp01((linearProgress - 0.8) / 0.2),
+    offsetY: directionY * progress * travel * 0.58 - Math.sin(progress * Math.PI) * 18,
+    rotation: directionX * progress * (0.25 + (row % 3) * 0.04),
+    alpha: linearProgress >= 0.97 ? 0 : 1,
     fallbackColor: ['#8d5144', '#9b5b4a', '#74463f'][(row + column) % 3],
   });
+}
+
+export function brickTileStates(time) {
+  const states = [];
+  for (let row = 0; row < BRICK_GRID.rows; row += 1) {
+    for (let column = 0; column < BRICK_GRID.columns; column += 1) {
+      const state = brickTileState(row, column, time);
+      if (state) states.push(state);
+    }
+  }
+  return Object.freeze(states);
 }
 
 export function brickTileSourceRect(image, state) {
@@ -535,6 +561,42 @@ export function brickTileSourceRect(image, state) {
     y: source.y + (state.y / WORLD.height) * source.height - gutterY,
     width: (state.width / WORLD.width) * source.width + gutterX * 2,
     height: (state.height / WORLD.height) * source.height + gutterY * 2,
+  });
+}
+
+const BRICK_FACE_SAMPLES = Object.freeze([
+  { x: 375, y: 99, width: 52, height: 23 },
+  { x: 432, y: 99, width: 54, height: 23 },
+  { x: 491, y: 99, width: 52, height: 23 },
+  { x: 549, y: 99, width: 52, height: 23 },
+  { x: 606, y: 99, width: 51, height: 23 },
+  { x: 662, y: 99, width: 53, height: 23 },
+  { x: 719, y: 99, width: 53, height: 23 },
+  { x: 776, y: 99, width: 53, height: 23 },
+  { x: 833, y: 99, width: 54, height: 23 },
+  { x: 891, y: 99, width: 53, height: 23 },
+  { x: 948, y: 99, width: 53, height: 23 },
+]);
+
+export function brickTileFaceBounds(state) {
+  const width = state.width * 0.84;
+  const height = state.height * 0.48;
+  return Object.freeze({
+    x: -width / 2,
+    y: -height / 2,
+    width,
+    height,
+  });
+}
+
+export function brickFaceSourceRect(image, state) {
+  const source = coverSourceRect(image, WORLD.width / WORLD.height);
+  const sample = BRICK_FACE_SAMPLES[state.index % BRICK_FACE_SAMPLES.length];
+  return Object.freeze({
+    x: source.x + (sample.x / WORLD.width) * source.width,
+    y: source.y + (sample.y / WORLD.height) * source.height,
+    width: (sample.width / WORLD.width) * source.width,
+    height: (sample.height / WORLD.height) * source.height,
   });
 }
 
@@ -770,6 +832,67 @@ function drawInvitationOwlCrest(context, x, y) {
   context.bezierCurveTo(-13, -27, -7, -30, -1, -30);
   context.stroke();
   context.restore();
+}
+
+function appendBrickPortal(context, progress) {
+  const x = lerp(BRICK_GRID.x - 24, -110, progress);
+  const y = lerp(BRICK_GRID.y - 24, -90, progress);
+  const right = lerp(BRICK_GRID.x + BRICK_GRID.width + 24, WORLD.width + 110, progress);
+  const bottom = lerp(BRICK_GRID.y + BRICK_GRID.height + 24, WORLD.height + 90, progress);
+  const width = right - x;
+  const height = bottom - y;
+  const wobble = 12 + progress * 22;
+
+  context.moveTo(x - wobble, y + height * 0.5);
+  context.bezierCurveTo(
+    x - wobble * 0.8,
+    y + height * 0.2,
+    x - wobble * 0.45,
+    y - wobble * 0.65,
+    x + wobble,
+    y - wobble,
+  );
+  context.bezierCurveTo(
+    x + width * 0.28,
+    y - wobble * 0.45,
+    x + width * 0.68,
+    y - wobble * 1.2,
+    right - wobble * 0.55,
+    y - wobble * 0.7,
+  );
+  context.bezierCurveTo(
+    right + wobble * 0.7,
+    y - wobble * 0.25,
+    right + wobble,
+    y + height * 0.28,
+    right + wobble * 0.8,
+    y + height * 0.52,
+  );
+  context.bezierCurveTo(
+    right + wobble * 0.55,
+    y + height * 0.78,
+    right + wobble * 0.2,
+    bottom + wobble * 0.45,
+    right - wobble,
+    bottom + wobble * 0.75,
+  );
+  context.bezierCurveTo(
+    x + width * 0.7,
+    bottom + wobble * 1.1,
+    x + width * 0.3,
+    bottom + wobble * 0.5,
+    x + wobble * 0.4,
+    bottom + wobble,
+  );
+  context.bezierCurveTo(
+    x - wobble * 0.7,
+    bottom + wobble * 0.35,
+    x - wobble,
+    y + height * 0.72,
+    x - wobble,
+    y + height * 0.5,
+  );
+  context.closePath();
 }
 
 function drawStreetReveal(context, image, zoom = 0) {

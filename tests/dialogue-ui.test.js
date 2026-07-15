@@ -103,11 +103,11 @@ describe('adaptive dialogue card', () => {
     }
   });
 
-  it('keeps the two synthetic pre-Malkin Violet review scenes in her casual clothes', () => {
+  it('keeps the silent pre-Malkin Violet beside a narrator-owned review caption', () => {
     const characterRenderer = { draw: vi.fn(), drawPortrait: vi.fn() };
     const renderer = new UIRenderer({ characterRenderer });
 
-    for (const scene of ['ui-broom-caption-review', 'ui-dialogue-center-review']) {
+    for (const scene of ['ui-dialogue-center-review']) {
       const context = recordingDialogueContext();
       context.createLinearGradient = () => ({ addColorStop: () => {} });
       characterRenderer.draw.mockClear();
@@ -121,7 +121,7 @@ describe('adaptive dialogue card', () => {
       );
       expect(characterRenderer.drawPortrait).toHaveBeenCalledWith(
         context,
-        expect.objectContaining({ speaker: 'npc.violet', outfit: 'casual' }),
+        expect.objectContaining({ speaker: 'npc.narrator' }),
         0,
       );
     }
@@ -182,15 +182,13 @@ describe('adaptive dialogue card', () => {
     expect(dialogueSceneContext(street, { speaker: 'npc.guide' }).night).toBe(true);
 
     world.interactSemantic('street.malkinsDoor');
-    world.interactSemantic('malkins.mirror');
-    for (let frame = 0; frame < 240 && !world.dialogue.active; frame += 1) {
-      world.update(1 / 60);
-    }
+    world.update(2);
+    world.runAction({ type: 'dialogue.start', script: 'ch1.tailor.done' });
 
     const shop = world.snapshot();
     expect(shop.roomId).toBe('ch1.malkins');
     expect(shop.roomVariant).toBe('base');
-    expect(shop.dialogue).toMatchObject({ speaker: 'npc.violet', caption: 'A witch!' });
+    expect(shop.dialogue).toMatchObject({ speaker: 'npc.tailor', caption: 'Lovely!' });
     expect(dialogueSceneContext(shop).night).toBe(false);
   });
 

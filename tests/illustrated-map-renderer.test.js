@@ -139,7 +139,7 @@ describe('code-only illustrated map renderer foundation', () => {
       },
       affordance: { kind: 'gold-shimmer', intensity: 'hint' },
     });
-    expect(presentation.objective.affordance.motes).toHaveLength(3);
+    expect(presentation.objective.affordance.motes).toHaveLength(6);
 
     const noMapThread = createIllustratedMapPresentation(
       model,

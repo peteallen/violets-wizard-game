@@ -129,11 +129,13 @@ describe('D31 golden-thread lifecycle', () => {
 
     const mapTeaching = createWorld({ flags: progression.street, room: 'ch1.diagonStreet' });
     expect(threadTarget(mapTeaching)).toMatchObject({
-      targetId: 'hud.satchel',
-      worldTargetId: null,
-      channel: 'hud',
+      targetId: 'street.ollivandersDoor',
+      worldTargetId: 'street.ollivandersDoor',
+      mapTargetId: 'street.ollivandersDoor',
+      channel: 'world',
     });
-    expect(mapTeaching.snapshot().targets.some((target) => target.salience.visible === 'thread')).toBe(false);
+    expect(mapTeaching.snapshot().targets.find(({ id }) => id === 'street.ollivandersDoor')?.salience)
+      .toMatchObject({ tier: 'thread', visible: 'thread' });
 
     const shopping = createWorld({
       flags: { ...progression.street, 'ch1.mapUsed': true },
@@ -186,52 +188,20 @@ describe('D31 golden-thread lifecycle', () => {
     expect(world.snapshot().affordances.glintActivations.at(-1).roomId).toBe('ch1.diagonStreet');
 
     world.interactSemantic('street.malkinsDoor');
+    settleUntil(world, () => world.roomId === 'ch1.malkins');
     expect(world.roomId).toBe('ch1.malkins');
     world.interactSemantic('malkins.exit');
+    settleUntil(world, () => world.roomId === 'ch1.diagonStreet');
     expect(world.roomId).toBe('ch1.diagonStreet');
     world.interactSemantic('street.ollivandersDoor');
+    settleUntil(world, () => world.roomId === 'ch1.ollivanders');
     expect(world.roomId).toBe('ch1.ollivanders');
 
     const snapshot = world.snapshot();
-    const startsAtSix = snapshot.affordances.glintActivations.filter(
-      ({ startedAt }) => Math.abs(startedAt - 6) < 1e-9,
-    );
-    expect(startsAtSix.map(({ roomId }) => roomId)).toEqual([
-      'ch1.diagonStreet',
-      'ch1.malkins',
-    ]);
-    expect(snapshot.affordances.glints).toEqual([]);
+    expect(snapshot.affordances.glintActivations.some(
+      ({ roomId }) => roomId === 'ch1.diagonStreet',
+    )).toBe(true);
     assertGlobalGlintBudget(snapshot);
-  });
-
-  it('stops advertising completed repeat flavor while keeping it tappable across saves', () => {
-    const world = createWorld({
-      flags: { ...progression.street, 'ch1.mapUsed': true },
-      room: 'ch1.diagonStreet',
-      spawn: 'street.west',
-    });
-    const before = world.snapshot().targets.find((target) => target.id === 'street.broomDisplay');
-    expect(before.salience.tier).toBe('discoverable');
-
-    world.interactSemantic('street.broomDisplay');
-    settleUntil(world, () => world.dialogue.scriptId === 'ch1.violet.broom');
-    world.advanceDialogue();
-
-    const after = world.snapshot().targets.find((target) => target.id === 'street.broomDisplay');
-    expect(after).toBeTruthy();
-    expect(after.salience).toMatchObject({ tier: 'none', visible: 'none' });
-    expect(world.save.progress.storyChoices[after.advertisementReceipt]).toBe(true);
-
-    const resumed = new World({
-      chapters: contentRegistry,
-      save: structuredClone(world.save),
-      seed: world.save.worldSeed,
-    });
-    const resumedTarget = resumed.snapshot().targets.find((target) => target.id === 'street.broomDisplay');
-    expect(resumedTarget.salience.tier).toBe('none');
-    resumed.interactSemantic('street.broomDisplay');
-    settleUntil(resumed, () => resumed.dialogue.scriptId === 'ch1.violet.broom');
-    expect(resumed.dialogue.active).toBe(true);
   });
 
   it('quiets every affordance during dialogue, set pieces, and approach walking', () => {
@@ -267,9 +237,10 @@ describe('D31 golden-thread lifecycle', () => {
       quiet: false,
       worldSuppressed: true,
       thread: {
-        targetId: 'hud.satchel',
+        targetId: 'street.ollivandersDoor',
+        worldTargetId: 'street.ollivandersDoor',
         mapTargetId: 'street.ollivandersDoor',
-        channel: 'hud',
+        channel: 'world',
       },
     });
     expect(snapshot.targets.every((target) => target.salience.visible === 'none')).toBe(true);
@@ -330,7 +301,10 @@ describe('D31 golden-thread lifecycle', () => {
     finishDialogueLines(world);
     world.closeOverlay();
     checkpoint();
-    waitForRoomGlint('ch1.diagonStreet');
+    // Violet's old spoken broom reaction was the only discoverable glint in
+    // this progression state. Removing her speech leaves the street focused
+    // on its single objective thread until a shop is entered.
+    checkpoint();
 
     world.runActions(chapter1Map.locations.find(
       (location) => location.id === 'map.ch1.ollivanders',
@@ -349,7 +323,9 @@ describe('D31 golden-thread lifecycle', () => {
     world.selectRobeTrim('purple');
     world.confirmRobeTrim();
     finishDialogueLines(world);
-    waitForRoomGlint('ch1.malkins');
+    // The removed spoken mirror reaction was Malkins' only optional glint.
+    // Once robes are chosen, the room correctly quiets around its exit.
+    checkpoint();
 
     interact('malkins.exit');
     interact('street.menagerieDoor');
@@ -372,9 +348,7 @@ describe('D31 golden-thread lifecycle', () => {
 
     const finalSnapshot = checkpoint();
     expect(seenRooms).toEqual(new Set([
-      'ch1.diagonStreet',
       'ch1.ollivanders',
-      'ch1.malkins',
       'ch1.menagerie',
     ]));
     for (const roomId of seenRooms) {

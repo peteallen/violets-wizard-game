@@ -132,6 +132,19 @@ async function settleAsyncAction() {
   await Promise.resolve();
 }
 
+async function stepGameTo(game, seconds) {
+  if (seconds < game.simTime) {
+    throw new Error('Harness stepping cannot rewind a live game; create a fresh harness instance.');
+  }
+  while (game.simTime + FIXED_STEP <= seconds + 1e-9) {
+    game.update(FIXED_STEP);
+    if (game.roomTransition && !game.roomTransition.ready) {
+      await game.waitForRoomTransitionReady();
+    }
+  }
+  game.render();
+}
+
 async function preloadVisibleRoom(game) {
   if (!game.world) return;
   if (typeof game.roomRenderer.preloadRoom === 'function') {
@@ -250,19 +263,19 @@ export async function bootHarness({
 
     const appliedActions = actionsThroughFrame(actionFixture, frame);
     for (const action of appliedActions) {
-      game.stepTo(action.frame * FIXED_STEP);
+      await stepGameTo(game, action.frame * FIXED_STEP);
       eventLog.push({ type: 'harness.action', frame: action.frame, action: structuredClone(action) });
       if (action.type === 'hold') {
         game.beginSemanticHold(action.target);
         const holdEndFrame = Math.min(frame, action.frame + action.durationFrames);
-        game.stepTo(holdEndFrame * FIXED_STEP);
+        await stepGameTo(game, holdEndFrame * FIXED_STEP);
         if (holdEndFrame === action.frame + action.durationFrames) game.endSemanticHold();
       } else game.tapSemantic(action.target);
       await settleAsyncAction();
       await game.waitForRoomTransitionReady();
     }
     const targetTime = frame * FIXED_STEP;
-    if (targetTime > game.simTime + 1e-9) game.stepTo(targetTime);
+    if (targetTime > game.simTime + 1e-9) await stepGameTo(game, targetTime);
     else game.render();
     await settleAsyncAction();
     await globalThis.document?.fonts?.ready;

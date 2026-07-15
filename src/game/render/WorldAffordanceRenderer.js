@@ -6,7 +6,11 @@ const VISUAL_PROFILES = Object.freeze({
   letter: Object.freeze([0.95, 0.56, 0, 'letter']),
   door: Object.freeze([0.52, 1, 0, 'door']),
   sparkle: Object.freeze([0.86, 0.86, 0, 'circle']),
-  wand: Object.freeze([0.62, 0.11, -0.025, 'wand']),
+  // Ollivanders' tappable objects are the three painted wand cases. The hit
+  // areas stay generously round for touch, while the visible shimmer follows
+  // each long, shallow case instead of drawing a tiny wand-shaped bow tie in
+  // the empty space above the display.
+  wand: Object.freeze([0.98, 0.34, 0, 'wand-case']),
   robes: Object.freeze([0.72, 0.72, 0.08, 'robes']),
   look: Object.freeze([0.9, 0.34, 0, 'circle']),
   'frog-card': Object.freeze([0.46, 0.58, 0, 'letter']),
@@ -18,11 +22,15 @@ const DEFAULT_VISUAL_PROFILE = Object.freeze([0.82, 0.82, 0, 'circle']);
 // live silhouette instead of on the smaller circle around his face and chest.
 const GUIDE_VISUAL_PROFILE = Object.freeze([1.25, 1.9, 0.1, 'guide']);
 const FIGURE_VISUAL_PROFILE = Object.freeze([0.68, 1.45, 0.16, 'figure']);
-const HALO_CONTOURS = Object.freeze([
-  Object.freeze({ padding: 25, width: 9, alpha: 0.48, color: PALETTE.interactive }),
-  Object.freeze({ padding: 18, width: 7, alpha: 0.65, color: PALETTE.interactive }),
-  Object.freeze({ padding: 12, width: 5, alpha: 0.82, color: PALETTE.honey }),
-]);
+// One broad translucent brush band plus one bright edge reads as a magical
+// shimmer. Several evenly spaced outline copies read as concentric UI rings,
+// especially around small targets, so the soft band deliberately stays single.
+const HALO_CONTOUR = Object.freeze({
+  padding: 11,
+  width: 18,
+  alpha: 0.34,
+  color: PALETTE.interactive,
+});
 
 export class WorldAffordanceRenderer {
   draw(context, state, time, {
@@ -33,6 +41,9 @@ export class WorldAffordanceRenderer {
       state?.affordances?.quiet || state?.affordances?.worldSuppressed,
     );
     if (quiet) return;
+    const hintEscalated = (state?.targets ?? []).some(({ salience }) => (
+      salience?.visible === 'thread' && salience.intensity === 'hint'
+    ));
     for (const target of state?.targets ?? []) {
       const presentation = worldAffordanceState(target, time, {
         cameraX: state?.cameraX ?? 0,
@@ -41,6 +52,9 @@ export class WorldAffordanceRenderer {
         quiet,
       });
       if (!presentation || !isOnScreen(presentation.bounds)) continue;
+      // Once Violet asks for stronger help, unrelated scheduled glints pause
+      // so the strengthened object is the only plausible next step.
+      if (hintEscalated && presentation.kind === 'glint') continue;
       drawAffordancePresentation(context, presentation);
     }
   }
@@ -78,19 +92,35 @@ export function worldAffordanceState(target, time, {
   const intensity = pressed ? 'press' : salience.intensity;
   const hinted = intensity === 'hint';
   const breath = reducedMotion ? 0.5 : 0.5 + Math.sin(time * 0.78 + phase * TAU) * 0.5;
-  const strength = hinted ? 1 : pressed ? 0.7 : 0.84;
-  const moteCount = hinted ? 3 : 2;
+  const strength = hinted ? 1 : pressed ? 0.78 : 0.9;
+  const wandCase = bounds.shape === 'wand-case';
+  const moteCount = wandCase ? (hinted ? 7 : 4) : (hinted ? 6 : 4);
   const rotation = phase * TAU + (reducedMotion ? 0 : time * (hinted ? 0.32 : 0.24));
   const orbitX = bounds.width * 0.52 + 8;
   const orbitY = bounds.height * 0.52 + 8;
+  const caseAnchors = Object.freeze([
+    Object.freeze({ x: 0.08, y: 0.5, shape: 'dust' }),
+    Object.freeze({ x: 0.23, y: 0.23, shape: 'spark' }),
+    Object.freeze({ x: 0.39, y: 0.63, shape: 'dash' }),
+    Object.freeze({ x: 0.54, y: 0.34, shape: 'dust' }),
+    Object.freeze({ x: 0.68, y: 0.67, shape: 'spark' }),
+    Object.freeze({ x: 0.82, y: 0.22, shape: 'dash' }),
+    Object.freeze({ x: 0.94, y: 0.51, shape: 'dust' }),
+  ]);
   const motes = Array.from({ length: moteCount }, (_, index) => {
     const angle = rotation + index * TAU / moteCount;
+    const anchor = caseAnchors[index];
     return Object.freeze({
-      x: bounds.x + bounds.width / 2 + Math.cos(angle) * orbitX,
-      y: bounds.y + bounds.height / 2 + Math.sin(angle) * orbitY,
-      size: (hinted ? 5.8 : 4.7) + Math.sin(phase * 19 + index * 2.1) * 0.55,
+      x: wandCase
+        ? bounds.x + bounds.width * anchor.x + Math.cos(angle) * (reducedMotion ? 0 : 3.2)
+        : bounds.x + bounds.width / 2 + Math.cos(angle) * orbitX,
+      y: wandCase
+        ? bounds.y + bounds.height * anchor.y + Math.sin(angle * 1.3) * (reducedMotion ? 0 : 2.6)
+        : bounds.y + bounds.height / 2 + Math.sin(angle) * orbitY,
+      size: (hinted ? 6.8 : 5.5) + Math.sin(phase * 19 + index * 2.1) * 0.65,
       alpha: strength * (0.72 + Math.sin(angle * 1.7 + phase) * 0.12),
       angle,
+      shape: wandCase ? anchor.shape : 'spark',
     });
   });
 
@@ -99,8 +129,8 @@ export function worldAffordanceState(target, time, {
     bounds,
     phase,
     intensity,
-    haloAlpha: strength * (0.11 + breath * 0.055),
-    edgeAlpha: strength * (0.11 + breath * 0.045),
+    haloAlpha: strength * (0.24 + breath * 0.1),
+    edgeAlpha: strength * (0.36 + breath * 0.12),
     motes: Object.freeze(motes),
   });
 }
@@ -117,27 +147,59 @@ function drawGoldShimmer(context, presentation) {
   context.lineCap = 'round';
   context.lineJoin = 'round';
 
-  // Nested translucent contours keep every brush mark outside the authored
-  // target instead of washing gold across its face, coat, or painted details.
-  // World targets are composited beneath code-drawn actors in Game, so a
-  // figure naturally masks the inside half of each soft contour.
-  for (let layer = 0; layer < HALO_CONTOURS.length; layer += 1) {
-    const contour = HALO_CONTOURS[layer];
-    context.globalAlpha = haloAlpha * contour.alpha;
-    context.strokeStyle = contour.color;
-    context.lineWidth = contour.width;
-    traceTargetShape(context, bounds, contour.padding, phase + layer * 0.19);
+  if (bounds.shape === 'wand-case') {
+    // Wand hints live on the painted case itself: scattered dry-brush flecks
+    // and mixed gold-dust shapes make the object shimmer without enclosing it
+    // in a ring or pointing at it with an arrow.
+    drawWandCaseShimmer(context, presentation);
+  } else {
+    // A single broad translucent contour keeps the brush mark outside the
+    // authored target without washing gold across its face, coat, or details.
+    // World targets are composited beneath code-drawn actors in Game, so a
+    // figure naturally masks the inside half of the soft contour.
+    context.globalAlpha = haloAlpha * HALO_CONTOUR.alpha;
+    context.strokeStyle = HALO_CONTOUR.color;
+    context.lineWidth = HALO_CONTOUR.width;
+    traceTargetShape(context, bounds, HALO_CONTOUR.padding, phase);
+    context.stroke();
+
+    context.globalAlpha = edgeAlpha;
+    context.strokeStyle = PALETTE.honey;
+    context.lineWidth = 3.2;
+    traceTargetShape(context, bounds, 4.5, phase);
     context.stroke();
   }
 
-  context.globalAlpha = edgeAlpha;
-  context.strokeStyle = PALETTE.honey;
-  context.lineWidth = 3.5;
-  traceTargetShape(context, bounds, 7, phase);
-  context.stroke();
-
   for (const mote of presentation.motes) drawPaintedMote(context, mote);
   context.restore();
+}
+
+function drawWandCaseShimmer(context, { bounds, haloAlpha, edgeAlpha, phase }) {
+  const left = bounds.x;
+  const top = bounds.y;
+  const flecks = [
+    { x: left + bounds.width * 0.04, y: top + bounds.height * 0.39, length: 23, width: 3.1, skew: -2 },
+    { x: left + bounds.width * 0.27, y: top + bounds.height * 0.72, length: 16, width: 2.4, skew: -5 },
+    { x: left + bounds.width * 0.48, y: top + bounds.height * 0.16, length: 28, width: 2.8, skew: 2 },
+    { x: left + bounds.width * 0.69, y: top + bounds.height * 0.57, length: 19, width: 2.2, skew: -4 },
+    { x: left + bounds.width * 0.86, y: top + bounds.height * 0.34, length: 13, width: 1.8, skew: 3 },
+  ];
+  context.fillStyle = PALETTE.interactive;
+  flecks.forEach((fleck, index) => {
+    context.globalAlpha = (index % 2 === 0 ? edgeAlpha : haloAlpha) * (0.52 - index * 0.035);
+    traceBrushFleck(context, fleck, phase + index * 0.23);
+    context.fill();
+  });
+}
+
+function traceBrushFleck(context, { x, y, length, width, skew }, phase) {
+  const wobble = Math.sin(phase * 17) * 1.2;
+  context.beginPath();
+  context.moveTo(x, y + wobble);
+  context.lineTo(x + length, y + skew - width * 0.35);
+  context.lineTo(x + length * 0.74, y + skew + width * 0.48);
+  context.lineTo(x + length * 0.16, y + width + wobble * 0.3);
+  context.closePath();
 }
 
 function drawPaintedMote(context, mote) {
@@ -146,53 +208,68 @@ function drawPaintedMote(context, mote) {
   context.rotate(mote.angle * 0.12);
   context.globalAlpha = mote.alpha * 0.34;
   context.fillStyle = PALETTE.interactive;
-  organicMotePath(context, mote.size * 1.85, mote.angle);
+  traceMoteShape(context, mote, mote.size * 1.85, mote.angle);
   context.fill();
   context.globalAlpha = mote.alpha;
   context.fillStyle = PALETTE.candle;
-  organicMotePath(context, mote.size, mote.angle + 0.8);
+  traceMoteShape(context, mote, mote.size, mote.angle + 0.8);
   context.fill();
   context.globalAlpha = mote.alpha * 0.8;
   context.fillStyle = PALETTE.parchment;
-  organicMotePath(context, mote.size * 0.43, mote.angle + 1.7, -mote.size * 0.15, -mote.size * 0.18);
+  traceMoteShape(
+    context,
+    mote,
+    mote.size * 0.43,
+    mote.angle + 1.7,
+    -mote.size * 0.15,
+    -mote.size * 0.18,
+  );
   context.fill();
   context.restore();
 }
 
+function traceMoteShape(context, mote, radius, phase, offsetX = 0, offsetY = 0) {
+  if (mote.shape === 'dash') {
+    traceBrushFleck(context, {
+      x: offsetX - radius,
+      y: offsetY,
+      length: radius * 2.15,
+      width: Math.max(1, radius * 0.34),
+      skew: -radius * 0.28,
+    }, phase);
+  } else if (mote.shape === 'dust') {
+    organicMotePath(context, radius * 0.58, phase, offsetX, offsetY);
+  } else paintedSparkPath(context, radius, phase, offsetX, offsetY);
+}
+
 function drawScheduledGlint(context, presentation) {
   const shortSide = Math.min(presentation.bounds.width, presentation.bounds.height);
-  const halfLength = Math.min(24, shortSide * 0.26);
+  const radius = Math.min(12, shortSide * 0.2);
   const tierAlpha = presentation.tier === 'secret' ? 0.72 : 1;
   context.save();
   context.translate(presentation.x, presentation.y);
   context.rotate(-0.42);
-  context.lineCap = 'round';
 
   context.globalAlpha = presentation.alpha * tierAlpha * 0.28;
-  context.strokeStyle = PALETTE.interactive;
-  context.lineWidth = 10;
-  context.beginPath();
-  context.moveTo(-halfLength, 2);
-  context.quadraticCurveTo(0, -3, halfLength, 1);
-  context.stroke();
+  context.fillStyle = PALETTE.interactive;
+  paintedSparkPath(context, radius * 1.8, presentation.phase * TAU);
+  context.fill();
 
   context.globalAlpha = presentation.alpha * tierAlpha;
-  context.strokeStyle = PALETTE.honey;
-  context.lineWidth = 3.5;
-  context.beginPath();
-  context.moveTo(-halfLength * 0.75, 1);
-  context.quadraticCurveTo(0, -2, halfLength * 0.75, 0);
-  context.stroke();
+  context.fillStyle = PALETTE.honey;
+  paintedSparkPath(context, radius, presentation.phase * TAU + 0.8);
+  context.fill();
 
   context.globalAlpha = presentation.alpha * tierAlpha * 0.78;
   context.fillStyle = PALETTE.parchment;
-  organicMotePath(context, 3.4, presentation.phase * TAU, halfLength * 0.12, -2);
+  paintedSparkPath(context, radius * 0.36, presentation.phase * TAU + 1.7, radius * 0.08, -1.2);
   context.fill();
   context.restore();
 }
 
 function traceTargetShape(context, bounds, padding, phase) {
-  if (bounds.shape === 'wand') traceOrganicWand(context, bounds, padding, phase);
+  if (bounds.shape === 'wand-case') traceOrganicWandCase(context, bounds, padding, phase);
+  else if (bounds.shape === 'wand') traceOrganicWand(context, bounds, padding, phase);
   else if (bounds.shape === 'door') traceOrganicDoor(context, bounds, padding, phase);
   else if (bounds.shape === 'guide') traceOrganicGuide(context, bounds, padding, phase);
   else if (bounds.shape === 'figure') traceOrganicFigure(context, bounds, padding, phase);
@@ -201,6 +278,28 @@ function traceTargetShape(context, bounds, padding, phase) {
   else if (bounds.shape === 'rect' || bounds.shape === 'letter') {
     traceOrganicRect(context, bounds, padding, phase);
   } else traceOrganicEllipse(context, bounds, padding, phase);
+}
+
+function traceOrganicWandCase(context, bounds, padding, phase) {
+  const left = bounds.x - padding;
+  const right = bounds.x + bounds.width + padding;
+  const top = bounds.y - padding;
+  const bottom = bounds.y + bounds.height + padding;
+  const lip = Math.min(bounds.width * 0.08, bounds.height * 0.28 + padding * 0.2);
+  const wobble = Math.sin(phase * 19) * 1.7;
+
+  // The painted cases are subtly wider at their upholstered base. This loose
+  // six-sided contour follows that silhouette without turning the hint into a
+  // ruler-perfect UI rectangle.
+  context.beginPath();
+  context.moveTo(left + lip, top + wobble);
+  context.quadraticCurveTo((left + right) / 2, top - wobble, right - lip, top + wobble * 0.35);
+  context.quadraticCurveTo(right + wobble, top + lip * 0.55, right, bottom - lip * 0.34);
+  context.quadraticCurveTo(right - lip * 0.2, bottom + wobble, right - lip, bottom);
+  context.quadraticCurveTo((left + right) / 2, bottom - wobble * 0.45, left + lip, bottom);
+  context.quadraticCurveTo(left + wobble * 0.35, bottom - lip * 0.18, left, top + lip * 0.62);
+  context.quadraticCurveTo(left + lip * 0.18, top + wobble * 0.25, left + lip, top + wobble);
+  context.closePath();
 }
 
 function traceOrganicGuide(context, bounds, padding, phase) {
@@ -475,6 +574,23 @@ function organicMotePath(context, radius, phase, offsetX = 0, offsetY = 0) {
     points.push({
       x: offsetX + Math.cos(angle) * radius * wobble,
       y: offsetY + Math.sin(angle) * radius * (1.04 - (wobble - 0.78) * 0.45),
+    });
+  }
+  traceSmoothedLoop(context, points);
+}
+
+function paintedSparkPath(context, radius, phase, offsetX = 0, offsetY = 0) {
+  const points = [];
+  const rayScale = [1, 0.7, 0.9, 0.62, 0.82];
+  const hollowScale = [0.2, 0.3, 0.23, 0.27, 0.18];
+  for (let index = 0; index < 10; index += 1) {
+    const angle = index * TAU / 10 + phase * 0.07 - Math.PI / 2;
+    const longRay = index % 2 === 0;
+    const ray = Math.floor(index / 2);
+    const distance = radius * (longRay ? rayScale[ray] : hollowScale[ray]);
+    points.push({
+      x: offsetX + Math.cos(angle) * distance,
+      y: offsetY + Math.sin(angle) * distance * (ray % 2 === 0 ? 1.08 : 0.86),
     });
   }
   traceSmoothedLoop(context, points);

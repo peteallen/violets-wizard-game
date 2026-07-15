@@ -144,6 +144,9 @@ describe('Hagrid leads Violet through the first two rooms', () => {
       .toMatchObject({ tier: 'thread', visible: 'thread' });
 
     world.interactSemantic('leaky.courtyardDoor');
+    expect(world.roomId).toBe('ch1.leaky');
+    expect(world.pendingInteraction?.targetId).toBe('leaky.courtyardDoor');
+    world.update(4);
     expect(world.roomId).toBe('ch1.courtyard');
   });
 

@@ -3,7 +3,10 @@ import { chapter1LetterLines } from '../src/game/content/chapters/ch1-letter.js'
 import {
   BRICK_GRID,
   SetPieceRenderer,
+  brickFaceSourceRect,
+  brickTileFaceBounds,
   brickTileState,
+  brickTileStates,
   brickTileSourceRect,
   deliveryLetteringAlpha,
   drawReadableInvitation,
@@ -190,23 +193,23 @@ describe('SetPieceRenderer dispatch', () => {
       ]));
   });
 
-  it('opens an exact ten-by-eight brick grid from the center before the corners', () => {
-    expect(BRICK_GRID.columns * BRICK_GRID.rows).toBe(80);
+  it('opens an exact ten-by-eight mortar grid from the center with one brick face per moving cell', () => {
+    const initialStates = brickTileStates(0);
+    expect(initialStates).toHaveLength(80);
     const center = brickTileState(3, 4, 1);
     const corner = brickTileState(0, 0, 1);
     expect(center.progress).toBeGreaterThan(corner.progress);
     expect(center.offsetX).not.toBe(0);
+    expect(brickTileFaceBounds(center)).toMatchObject({
+      width: center.width * 0.84,
+      height: center.height * 0.48,
+    });
 
-    const finalStates = [];
-    for (let row = 0; row < BRICK_GRID.rows; row += 1) {
-      for (let column = 0; column < BRICK_GRID.columns; column += 1) {
-        finalStates.push(brickTileState(row, column, 2.2));
-      }
-    }
+    const finalStates = brickTileStates(2.2);
     expect(finalStates.every((state) => state.progress === 1 && state.alpha === 0)).toBe(true);
   });
 
-  it('draws moving courtyard pixels directly without allocating eighty sprite canvases', () => {
+  it('draws the street as the stage beneath all eighty wall tiles without allocating sprite canvases', () => {
     const canvasFactory = vi.fn(() => { throw new Error('The wall must not allocate a tile canvas.'); });
     const renderer = new SetPieceRenderer({ canvasFactory });
     const courtyard = { complete: true, naturalWidth: 1672, naturalHeight: 941 };
@@ -214,8 +217,8 @@ describe('SetPieceRenderer dispatch', () => {
     renderer.imageRecords.set('rooms/ch1/courtyard/base', { ready: true, image: courtyard });
     renderer.imageRecords.set('rooms/ch1/diagon/day', { ready: true, image: reveal });
     const context = Object.fromEntries([
-      'save', 'restore', 'beginPath', 'rect', 'clip', 'drawImage', 'translate', 'rotate',
-      'scale', 'fill', 'stroke', 'fillRect', 'arc', 'roundRect',
+      'save', 'restore', 'beginPath', 'rect', 'clip', 'closePath', 'drawImage', 'translate', 'rotate',
+      'scale', 'fill', 'stroke', 'fillRect', 'arc', 'arcTo', 'moveTo', 'bezierCurveTo', 'roundRect',
     ].map((name) => [name, vi.fn()]));
 
     renderer.draw(context, {
@@ -226,11 +229,31 @@ describe('SetPieceRenderer dispatch', () => {
     }, {});
 
     expect(canvasFactory).not.toHaveBeenCalled();
-    expect(context.drawImage.mock.calls.some((call) => call[0] === courtyard && call.length === 9)).toBe(true);
-    const source = brickTileSourceRect(courtyard, brickTileState(3, 4, 1.4));
+    expect(context.drawImage.mock.calls[0][0]).toBe(reveal);
+    expect(context.drawImage.mock.calls[0].slice(-4)).toEqual([0, 0, 1280, 720]);
+    expect(context.drawImage.mock.calls.filter((call) => call[0] === courtyard && call.length === 9))
+      .toHaveLength(brickTileStates(1.4).length);
+    const movingState = brickTileState(3, 4, 1.4);
+    const source = brickTileSourceRect(courtyard, movingState);
+    const faceSource = brickFaceSourceRect(courtyard, movingState);
     expect(source).toMatchObject({ width: expect.any(Number), height: expect.any(Number) });
     expect(source.x).toBeGreaterThan(0);
     expect(source.y).toBeGreaterThan(0);
+    expect(faceSource.width).toBeLessThan(source.width);
+    expect(faceSource.height).toBeLessThan(source.height);
+
+    const coverContext = Object.fromEntries([
+      'save', 'restore', 'beginPath', 'rect', 'clip', 'closePath', 'drawImage', 'translate', 'rotate',
+      'scale', 'fill', 'stroke', 'fillRect', 'arc', 'arcTo', 'moveTo', 'bezierCurveTo', 'roundRect',
+    ].map((name) => [name, vi.fn()]));
+    renderer.drawBrickWallCover(coverContext, {
+      id: 'sp.brickWall',
+      requestedId: 'sp.brickWall',
+      time: 2.3,
+    });
+    expect(coverContext.bezierCurveTo).toHaveBeenCalled();
+    expect(coverContext.drawImage.mock.calls[0][0]).toBe(reveal);
+    expect(coverContext.drawImage.mock.calls[0].slice(-4)).toEqual([0, 0, 1280, 720]);
 
     renderer.draw(context, null, {});
     expect(renderer.imageRecords.size).toBe(0);

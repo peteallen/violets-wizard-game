@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 import { Game } from '../src/game/Game.js';
+import { chapter1 } from '../src/game/content/chapters/ch1.js';
 import {
   WorldAffordanceRenderer,
   worldAffordanceState,
@@ -11,7 +12,7 @@ function wandTarget(salience) {
     id: 'ollivanders.wand1',
     semanticId: 'wand.first',
     kind: 'action',
-    hitArea: { shape: 'circle', x: 690, y: 345, radius: 75 },
+    hitArea: { shape: 'circle', x: 535, y: 382, radius: 90 },
     presentation: { icon: 'wand', glow: 'objective' },
     salience,
   });
@@ -78,12 +79,41 @@ describe('world interaction salience rendering', () => {
 
     expect(normal).toEqual(replayed);
     expect(normal).toMatchObject({ kind: 'gold-shimmer', intensity: 'normal' });
-    expect(normal.bounds).toMatchObject({ shape: 'wand' });
-    expect(normal.bounds.width).toBeGreaterThan(normal.bounds.height * 5);
-    expect(normal.motes).toHaveLength(2);
+    expect(normal.bounds).toMatchObject({ shape: 'wand-case' });
+    expect(normal.bounds.width).toBeGreaterThan(normal.bounds.height * 2.7);
+    expect(normal.bounds.width).toBeLessThan(normal.bounds.height * 3);
+    expect(normal.motes).toHaveLength(4);
     expect(hinted).toMatchObject({ kind: 'gold-shimmer', intensity: 'hint' });
-    expect(hinted.motes).toHaveLength(3);
+    expect(hinted.motes).toHaveLength(7);
+    expect(new Set(hinted.motes.map(({ shape }) => shape))).toEqual(new Set([
+      'dust', 'spark', 'dash',
+    ]));
     expect(hinted.haloAlpha).toBeGreaterThan(normal.haloAlpha);
+  });
+
+  it('centers every Ollivanders wand target and case shimmer on the painted displays', () => {
+    const wands = chapter1.rooms['ch1.ollivanders'].hotspots
+      .filter(({ id }) => id.startsWith('ollivanders.wand'));
+    expect(wands.map(({ hitArea }) => ({
+      x: hitArea.x, y: hitArea.y, radius: hitArea.radius,
+    }))).toEqual([
+      { x: 535, y: 382, radius: 90 },
+      { x: 782, y: 382, radius: 90 },
+      { x: 1054, y: 382, radius: 100 },
+    ]);
+
+    for (const target of wands) {
+      const presentation = worldAffordanceState({
+        ...target,
+        salience: { tier: 'thread', visible: 'thread', intensity: 'hint', glint: null },
+      }, 1.25);
+      expect(presentation.bounds.shape).toBe('wand-case');
+      expect(presentation.bounds.x + presentation.bounds.width / 2).toBe(target.hitArea.x);
+      expect(presentation.bounds.y + presentation.bounds.height / 2).toBe(target.hitArea.y);
+      expect(presentation.bounds.width).toBeGreaterThanOrEqual(176);
+      expect(presentation.bounds.width / presentation.bounds.height).toBeGreaterThan(2.7);
+      expect(presentation.bounds.width / presentation.bounds.height).toBeLessThan(3);
+    }
   });
 
   it('renders no advertisement for a quiet or spent target', () => {
@@ -174,7 +204,29 @@ describe('world interaction salience rendering', () => {
     });
   });
 
-  it('draws contour shimmer and glints without dashed rings, glyph badges, or leaked canvas state', () => {
+  it('pauses unrelated scheduled glints while the active thread is escalated', () => {
+    const renderer = new WorldAffordanceRenderer();
+    const context = recordingContext();
+    renderer.draw(context, {
+      targets: [
+        wandTarget({ tier: 'thread', visible: 'thread', intensity: 'hint', glint: null }),
+        {
+          id: 'ollivanders.exit',
+          kind: 'door',
+          hitArea: { shape: 'circle', x: 50, y: 390, radius: 64 },
+          presentation: { icon: 'door', glow: 'discoverable' },
+          salience: {
+            tier: 'discoverable', visible: 'glint', intensity: 'quiet',
+            glint: { targetId: 'ollivanders.exit', tier: 'discoverable', progress: 0.5, alpha: 0.8 },
+          },
+        },
+      ],
+    }, 1);
+
+    expect(context.calls.filter(([name]) => name === 'translate')).toHaveLength(7);
+  });
+
+  it('draws localized wand-case shimmer and glints without rings, glyph badges, or leaked canvas state', () => {
     const renderer = new WorldAffordanceRenderer();
     const context = recordingContext();
     renderer.draw(context, {
@@ -194,14 +246,15 @@ describe('world interaction salience rendering', () => {
       ],
     }, 1);
 
-    expect(context.calls.filter(([name]) => name === 'fill')).toHaveLength(7);
-    expect(context.calls.filter(([name]) => name === 'stroke').length).toBeGreaterThanOrEqual(6);
+    expect(context.calls.filter(([name]) => name === 'fill')).toHaveLength(20);
+    expect(context.calls.filter(([name]) => name === 'stroke')).toHaveLength(0);
+    expect(context.calls.filter(([name]) => name === 'closePath').length).toBeGreaterThanOrEqual(9);
     expect(context.calls.some(([name]) => name === 'setLineDash')).toBe(false);
     expect(context.calls.some(([name]) => name === 'fillText')).toBe(false);
     expect(context.depth).toBe(0);
   });
 
-  it('keeps Hagrid free of interior gold washes while preserving organic halo contours and motes', () => {
+  it('keeps Hagrid free of interior gold washes while preserving one organic halo and its motes', () => {
     const renderer = new WorldAffordanceRenderer();
     const context = recordingContext();
     const target = guideTarget({
@@ -218,9 +271,10 @@ describe('world interaction salience rendering', () => {
     expect(presentation.bounds).toEqual({
       shape: 'guide', x: 131.25, y: 293.5, width: 237.5, height: 361,
     });
-    expect(presentation.motes).toHaveLength(2);
+    expect(presentation.motes).toHaveLength(4);
     expect(context.paints.map(({ method }) => method)).toEqual([
-      'stroke', 'stroke', 'stroke', 'stroke',
+      'stroke', 'stroke',
+      'fill', 'fill', 'fill', 'fill', 'fill', 'fill',
       'fill', 'fill', 'fill', 'fill', 'fill', 'fill',
     ]);
     expect(context.paints.every(({ alpha }) => alpha > 0 && alpha < 1)).toBe(true);

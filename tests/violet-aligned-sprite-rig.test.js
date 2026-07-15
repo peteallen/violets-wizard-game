@@ -47,6 +47,7 @@ describe('approved aligned Violet rig', () => {
   it('preloads every unique approved frame at the canonical aligned dimensions', async () => {
     const created = [];
     const rig = new AlignedSpriteRig(violetAlignedSpriteManifest, {
+      maxConcurrentLoads: 10,
       imageFactory: (url) => {
         const image = {
           url,

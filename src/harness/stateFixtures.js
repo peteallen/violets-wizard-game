@@ -297,18 +297,24 @@ registry
     }),
   ))
   .register('transition-ink-review', createFixture(
-    'A live room change from the Leaky Cauldron into the courtyard, staged for the organic ink reveal.',
+    'Violet walking through Ollivanders’ open doorway before the shop gives way to Diagon Alley in the organic ink reveal.',
     { chapter: 1, scene: 'transition-ink-review' },
     createSave({
-      scene: 'ch1.leakyArrival',
-      room: 'ch1.leaky',
-      spawn: 'guide',
+      scene: 'ch1.wandShopping',
+      room: 'ch1.ollivanders',
+      spawn: 'wandmaker',
       questFlags: {
         'ch1.owlTapped': true,
         'ch1.letterOpened': true,
         'ch1.letterRead': true,
         'ch1.guideMet': true,
         'ch1.leakyReached': true,
+        'ch1.courtyardReached': true,
+        'ch1.wallOpened': true,
+        'ch1.diagonReached': true,
+        'ch1.satchelReceived': true,
+        'ch1.mapUsed': true,
+        'ch1.wandChosen': true,
       },
     }),
   ))
@@ -333,7 +339,7 @@ registry
     }),
   ))
   .register('sp-brick-wall-review', createFixture(
-    'The courtyard wall staged for its real ten-by-eight center-out reveal.',
+    'The courtyard wall staged for its ten-by-eight, individual-brick center-out reveal.',
     { chapter: 1, scene: 'sp-brick-wall-review' },
     createSave({
       scene: 'ch1.wallOpening',
@@ -498,7 +504,7 @@ registry
   ))
   .register('ui-dialogue-center-review', characterReviewFixture(
     'ui-dialogue-center-review',
-    'The narrowed dialogue scroll beside a centered Violet with the longest shipped caption.',
+    'The narrowed narrated scroll beside a centered, silent Violet with the longest shipped caption.',
   ))
   .register('ui-dialogue-live-review', createFixture(
     'The adaptive dialogue scroll opposite Hagrid in Violet’s painted bedroom.',
@@ -535,10 +541,6 @@ registry
       robeTrim: 'purple',
       pet: { type: 'cat', name: 'Biscuit' },
     }),
-  ))
-  .register('ui-broom-caption-review', characterReviewFixture(
-    'ui-broom-caption-review',
-    'Violet’s broom reaction with its complete spoken line and short knowledge-independent caption.',
   ))
   .register('ui-letter-reading-review', characterReviewFixture(
     'ui-letter-reading-review',

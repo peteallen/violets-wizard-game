@@ -265,7 +265,7 @@ function resolvedRects(rects, overrides = {}) {
   ])));
 }
 
-export function sampleAlignedSpriteFrame(manifest, {
+function sampleValidatedAlignedSpriteFrame(manifest, {
   appearance,
   pose = 'idle',
   expression,
@@ -276,7 +276,6 @@ export function sampleAlignedSpriteFrame(manifest, {
   lightSide = 'left',
   reducedMotion = false,
 } = {}) {
-  validateAlignedSpriteManifest(manifest);
   if (!Object.hasOwn(manifest.appearances, appearance)) {
     throw new RangeError(`${manifest.id} does not support appearance ${appearance}.`);
   }
@@ -336,6 +335,11 @@ export function sampleAlignedSpriteFrame(manifest, {
   });
 }
 
+export function sampleAlignedSpriteFrame(manifest, options = {}) {
+  validateAlignedSpriteManifest(manifest);
+  return sampleValidatedAlignedSpriteFrame(manifest, options);
+}
+
 export function transformAlignedSpriteAnchor(manifest, sample, anchor, {
   x = 0,
   y = 0,
@@ -384,11 +388,45 @@ export function transformAlignedSpriteAnchor(manifest, sample, anchor, {
   });
 }
 
+export const ALIGNED_SPRITE_LOADING_LIMITS = Object.freeze({
+  concurrentImages: 2,
+  decodedImages: 8,
+});
+
+function positiveInteger(value, path) {
+  if (!Number.isInteger(value) || value <= 0) {
+    throw new RangeError(`${path} must be a positive integer.`);
+  }
+  return value;
+}
+
 export class AlignedSpriteRig {
-  constructor(manifest, { imageFactory } = {}) {
+  constructor(manifest, {
+    imageFactory,
+    maxConcurrentLoads = ALIGNED_SPRITE_LOADING_LIMITS.concurrentImages,
+    maxDecodedImages = ALIGNED_SPRITE_LOADING_LIMITS.decodedImages,
+  } = {}) {
     this.manifest = validateAlignedSpriteManifest(manifest);
     this.imageFactory = imageFactory ?? (() => new Image());
+    this.maxConcurrentLoads = positiveInteger(maxConcurrentLoads, 'maxConcurrentLoads');
+    // Keeping one complete displayed sample while its replacement decodes
+    // requires room for two samples. Whole-frame characters have one layer;
+    // layered rigs retain the same guarantee without allowing an undersized
+    // caller-provided limit to make a complete sample impossible.
+    this.maxDecodedImages = Math.max(
+      positiveInteger(maxDecodedImages, 'maxDecodedImages'),
+      this.manifest.layerOrder.length * 2,
+    );
     this.images = new Map();
+    this.imageUse = new Map();
+    this.loads = new Map();
+    this.failures = new Map();
+    this.loadQueue = [];
+    this.activeLoadCount = 0;
+    this.useSequence = 0;
+    this.protectedUrls = new Set();
+    this.loadGroups = new Map();
+    this.retainAllImages = false;
     this.ready = false;
     this.loading = null;
   }
@@ -396,35 +434,206 @@ export class AlignedSpriteRig {
   preload() {
     if (this.loading) return this.loading;
     const urls = [...new Set(Object.values(this.manifest.assets).flatMap((asset) => [asset.left, asset.right]))];
-    this.loading = Promise.all(urls.map((url) => new Promise((resolve, reject) => {
-      const image = this.imageFactory(url);
-      image.onload = () => {
-        const hasNaturalDimensions = image.naturalWidth !== undefined || image.naturalHeight !== undefined;
-        if (hasNaturalDimensions && (
-          image.naturalWidth !== this.manifest.canvas.width
-          || image.naturalHeight !== this.manifest.canvas.height
-        )) {
-          reject(new Error(
-            `${this.manifest.id} asset ${url} is ${image.naturalWidth}x${image.naturalHeight}; `
-            + `expected ${this.manifest.canvas.width}x${this.manifest.canvas.height}.`,
-          ));
-          return;
-        }
-        this.images.set(url, image);
-        resolve();
-      };
-      image.onerror = () => reject(new Error(`Failed to load ${this.manifest.id} asset ${url}.`));
-      image.src = url;
-    }))).then(() => { this.ready = true; });
+    // This exhaustive path is reserved for deterministic review captures.
+    // Ordinary character draws use requestFrame() and remain cache-bounded.
+    this.retainAllImages = true;
+    this.loading = this.loadUrls(urls).then(() => {
+      this.ready = true;
+    }, (error) => {
+      this.retainAllImages = false;
+      this.enforceDecodedImageLimit();
+      throw error;
+    });
     return this.loading;
   }
 
+  sample(options = {}) {
+    return sampleValidatedAlignedSpriteFrame(this.manifest, options);
+  }
+
+  samplesForClip(sample, options = {}) {
+    const clip = this.manifest.clips[sample.clip];
+    return clip.frames.map((unused, index) => sampleValidatedAlignedSpriteFrame(this.manifest, {
+      ...options,
+      pose: sample.clip,
+      localTime: index / clip.fps,
+      actionProgress: undefined,
+      // sample.clip has already resolved the reduced-motion redirect. Turning
+      // this off avoids following a second redirect while enumerating it.
+      reducedMotion: false,
+    }));
+  }
+
+  requestFrame(options = {}, {
+    includeClip = false,
+    baselinePoses = [],
+    sample = this.sample(options),
+  } = {}) {
+    if (!Array.isArray(baselinePoses)) {
+      throw new TypeError('baselinePoses must be an array.');
+    }
+    const samples = [sample];
+    if (includeClip) samples.push(...this.samplesForClip(sample, options));
+    for (const pose of baselinePoses) {
+      const baseline = this.sample({
+        ...options,
+        pose,
+        localTime: 0,
+        actionProgress: undefined,
+        reducedMotion: false,
+      });
+      samples.push(...this.samplesForClip(baseline, {
+        ...options,
+        pose,
+        actionProgress: undefined,
+        reducedMotion: false,
+      }));
+    }
+    const urls = [...new Set(samples.flatMap((entry) => entry.layers.map(({ url }) => url)))];
+    return Object.freeze({
+      sample,
+      urls: Object.freeze(urls),
+      loading: this.loadUrls(urls),
+    });
+  }
+
+  loadUrls(urls) {
+    const uniqueUrls = [...new Set(urls)];
+    const key = [...uniqueUrls].sort().join('\n');
+    if (this.loadGroups.has(key)) return this.loadGroups.get(key);
+    const loading = Promise.all(uniqueUrls.map((url) => this.loadUrl(url)));
+    this.loadGroups.set(key, loading);
+    loading.then(
+      () => { if (this.loadGroups.get(key) === loading) this.loadGroups.delete(key); },
+      () => { if (this.loadGroups.get(key) === loading) this.loadGroups.delete(key); },
+    );
+    return loading;
+  }
+
+  loadUrl(url) {
+    assertId(url, 'asset URL');
+    if (this.images.has(url)) {
+      this.touchImage(url);
+      return Promise.resolve(this.images.get(url));
+    }
+    if (this.failures.has(url)) return Promise.reject(this.failures.get(url));
+    if (this.loads.has(url)) return this.loads.get(url);
+
+    let resolveLoad;
+    let rejectLoad;
+    const loading = new Promise((resolve, reject) => {
+      resolveLoad = resolve;
+      rejectLoad = reject;
+    });
+    this.loads.set(url, loading);
+    this.loadQueue.push({ url, loading, resolve: resolveLoad, reject: rejectLoad });
+    this.pumpLoadQueue();
+    return loading;
+  }
+
+  pumpLoadQueue() {
+    while (this.activeLoadCount < this.maxConcurrentLoads && this.loadQueue.length > 0) {
+      const task = this.loadQueue.shift();
+      this.activeLoadCount += 1;
+      void this.decodeImage(task.url).then((image) => {
+        this.images.set(task.url, image);
+        this.touchImage(task.url);
+        this.enforceDecodedImageLimit();
+        task.resolve(image);
+      }, (error) => {
+        this.failures.set(task.url, error);
+        task.reject(error);
+      }).finally(() => {
+        if (this.loads.get(task.url) === task.loading) this.loads.delete(task.url);
+        this.activeLoadCount -= 1;
+        this.pumpLoadQueue();
+      });
+    }
+  }
+
+  async decodeImage(url) {
+    const image = this.imageFactory(url);
+    if (!image || (typeof image !== 'object' && typeof image !== 'function')) {
+      throw new TypeError(`Image factory returned no source for ${url}.`);
+    }
+    try {
+      image.decoding = 'async';
+    } catch {
+      // A minimal canvas-image shim may expose decoding as read-only.
+    }
+
+    if (typeof image.decode === 'function') {
+      image.src = url;
+      try {
+        await image.decode();
+      } catch (cause) {
+        throw new Error(`Failed to load ${this.manifest.id} asset ${url}.`, { cause });
+      }
+    } else {
+      await new Promise((resolve, reject) => {
+        image.onload = resolve;
+        image.onerror = () => reject(new Error(`Failed to load ${this.manifest.id} asset ${url}.`));
+        image.src = url;
+      });
+    }
+
+    const hasNaturalDimensions = image.naturalWidth !== undefined || image.naturalHeight !== undefined;
+    if (hasNaturalDimensions && (
+      image.naturalWidth !== this.manifest.canvas.width
+      || image.naturalHeight !== this.manifest.canvas.height
+    )) {
+      throw new Error(
+        `${this.manifest.id} asset ${url} is ${image.naturalWidth}x${image.naturalHeight}; `
+        + `expected ${this.manifest.canvas.width}x${this.manifest.canvas.height}.`,
+      );
+    }
+    return image;
+  }
+
+  touchImage(url) {
+    this.imageUse.set(url, ++this.useSequence);
+  }
+
+  protectSamples(samples = []) {
+    this.protectedUrls = new Set(samples.flatMap((sample) => (
+      sample?.layers?.map(({ url }) => url) ?? []
+    )));
+    this.enforceDecodedImageLimit();
+  }
+
+  enforceDecodedImageLimit() {
+    if (this.retainAllImages) return;
+    while (this.images.size > this.maxDecodedImages) {
+      const oldest = [...this.images.keys()]
+        .filter((url) => !this.protectedUrls.has(url))
+        .sort((left, right) => (this.imageUse.get(left) ?? 0) - (this.imageUse.get(right) ?? 0))[0];
+      if (!oldest) break;
+      this.images.delete(oldest);
+      this.imageUse.delete(oldest);
+    }
+  }
+
+  isSampleReady(sample, { touch = false } = {}) {
+    const ready = sample.layers.every(({ url }) => this.images.has(url));
+    if (ready && touch) sample.layers.forEach(({ url }) => this.touchImage(url));
+    return ready;
+  }
+
   draw(context, options = {}) {
-    if (!this.ready) throw new Error(`${this.manifest.id} must be preloaded before drawing.`);
+    const sample = this.sample(options);
+    if (!this.isSampleReady(sample)) {
+      throw new Error(`${this.manifest.id} must be preloaded before drawing.`);
+    }
+    return this.drawSample(context, sample, options);
+  }
+
+  drawSample(context, sample, options = {}) {
+    if (!this.isSampleReady(sample, { touch: true })) {
+      throw new Error(`${this.manifest.id} frame must finish loading before drawing.`);
+    }
     if (options.resolveImage !== undefined && typeof options.resolveImage !== 'function') {
       throw new TypeError('options.resolveImage must be a function.');
     }
-    const sample = sampleAlignedSpriteFrame(this.manifest, options);
     const x = Number.isFinite(options.x) ? options.x : 0;
     const y = Number.isFinite(options.y) ? options.y : 0;
     const scale = Number.isFinite(options.scale) ? options.scale : 1;

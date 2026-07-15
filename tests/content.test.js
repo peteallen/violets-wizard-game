@@ -157,6 +157,21 @@ describe('chapter content contracts', () => {
       voice: 'voice/ch1/wandmaker/chosen',
       text: 'Curious…',
       caption: 'Your wand!',
+      next: 'finish',
+    });
+  });
+
+  it('keeps Violet as a silent player avatar throughout authored gameplay', () => {
+    const spokenLines = Object.values(chapter1.dialogues).flatMap((dialogue) => (
+      Object.values(dialogue.nodes).filter((node) => node.type === 'line')
+    ));
+
+    expect(spokenLines.filter((line) => line.speaker === 'npc.violet')).toEqual([]);
+    expect(spokenLines.filter((line) => line.voice.includes('/violet/'))).toEqual([]);
+    expect(chapter1AssetKeys.filter((key) => key.startsWith('voice/') && key.includes('/violet/'))).toEqual([]);
+    expect(chapter1.npcs['npc.violet']).toMatchObject({
+      voiceRole: 'silent',
+      defaultTalk: null,
     });
   });
 
@@ -228,6 +243,8 @@ describe('chapter content contracts', () => {
     expect(world.dialogue.scriptId).toBe('ch1.guide.map');
     finishLines();
     expect(world.flags['ch1.satchelReceived']).toBe(true);
+    expect(world.overlay).toBeNull();
+    world.runAction({ type: 'ui.open', surface: 'satchel', tab: 'map' });
     expect(world.overlay).toEqual({ surface: 'satchel', tab: 'map' });
     world.closeOverlay();
     world.runActions(chapter1Map.locations.find((location) => location.id === 'map.ch1.ollivanders').onSelect);

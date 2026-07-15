@@ -149,10 +149,13 @@ describe('one-tap world interactions', () => {
       .toMatchObject({ tier: 'thread', visible: 'thread' });
 
     world.interactSemantic('leaky.courtyardDoor');
+    expect(world.roomId).toBe('ch1.leaky');
+    expect(world.pendingInteraction?.targetId).toBe('leaky.courtyardDoor');
+    settle(world, 4);
     expect(world.roomId).toBe('ch1.courtyard');
   });
 
-  it('gives Violet the satchel tutorial before asking her to use the map', () => {
+  it('gives Violet the satchel without forcing the optional map open', () => {
     const world = createWorld({
       flags: {
         'ch1.owlTapped': true,
@@ -170,6 +173,14 @@ describe('one-tap world interactions', () => {
     settle(world, 3.6);
 
     expect(world.roomId).toBe('ch1.diagonStreet');
+    expect(world.drainEvents()).toContainEqual(expect.objectContaining({
+      type: 'room.transitionRequested',
+      payload: expect.objectContaining({
+        from: 'ch1.courtyard',
+        to: 'ch1.diagonStreet',
+        effect: 'none',
+      }),
+    }));
     expect(world.dialogue.scriptId).toBe('ch1.guide.map');
     expect(world.flags['ch1.satchelReceived']).not.toBe(true);
     expect(world.snapshot().hasSatchel).toBe(false);
@@ -178,7 +189,7 @@ describe('one-tap world interactions', () => {
 
     expect(world.flags['ch1.satchelReceived']).toBe(true);
     expect(world.snapshot().hasSatchel).toBe(true);
-    expect(world.overlay).toEqual({ surface: 'satchel', tab: 'map' });
+    expect(world.overlay).toBeNull();
     expect(world.unlockedRooms()).toContain('ch1.ollivanders');
   });
 
@@ -205,7 +216,7 @@ describe('one-tap world interactions', () => {
     world.advanceDialogue();
 
     expect(world.flags['ch1.satchelReceived']).toBe(true);
-    expect(world.overlay).toEqual({ surface: 'satchel', tab: 'map' });
+    expect(world.overlay).toBeNull();
   });
 
   it('keeps an empty-floor tap as walk-only and cancels the queued interaction', () => {
@@ -223,7 +234,7 @@ describe('one-tap world interactions', () => {
   it('does not activate a queued target after another modal interaction interrupts it', () => {
     const world = createWorld();
     world.tap({ x: 1060, y: 210 });
-    world.runAction({ type: 'dialogue.start', script: 'ch1.violet.noSpells' });
+    world.runAction({ type: 'dialogue.start', script: 'ch1.guide.arrival' });
 
     world.update(1 / 60);
 

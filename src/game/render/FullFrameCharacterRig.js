@@ -469,7 +469,11 @@ export class FullFrameCharacterRig {
     this.manifest = definitionOrManifest?.fullFrame
       ? definitionOrManifest
       : createFullFrameCharacterManifest(definitionOrManifest, options);
-    this.alignedRig = new AlignedSpriteRig(this.manifest, { imageFactory: options.imageFactory });
+    this.alignedRig = new AlignedSpriteRig(this.manifest, {
+      imageFactory: options.imageFactory,
+      maxConcurrentLoads: options.maxConcurrentLoads,
+      maxDecodedImages: options.maxDecodedImages,
+    });
     if (options.imageTransform !== undefined && typeof options.imageTransform !== 'function') {
       throw new TypeError('imageTransform must be a function.');
     }
@@ -484,6 +488,8 @@ export class FullFrameCharacterRig {
     this.imageTransform = options.imageTransform ?? null;
     this.shadowOpacity = options.shadowOpacity;
     this.loadingError = null;
+    this.lastReadyFrame = null;
+    this.trackedLoadings = new WeakSet();
   }
 
   get ready() {
@@ -496,26 +502,31 @@ export class FullFrameCharacterRig {
 
   preload() {
     const loading = this.alignedRig.preload();
-    loading.catch((error) => { this.loadingError = error; });
+    this.trackLoading(loading);
     return loading;
   }
 
-  ensureLoading() {
-    if (!this.alignedRig.loading) void this.preload().catch(() => {});
+  trackLoading(loading) {
+    if (!this.trackedLoadings.has(loading)) {
+      this.trackedLoadings.add(loading);
+      loading.catch((error) => { this.loadingError = error; });
+    }
+    return loading;
   }
 
-  draw(context, character = {}, time = 0) {
-    const animation = resolveFullFrameCharacterAnimation(this.manifest, character, time);
-    this.ensureLoading();
-    if (this.loadingError) {
-      return Object.freeze({ status: 'failed', error: this.loadingError, animation });
-    }
-    if (!this.ready) return Object.freeze({ status: 'loading', animation });
+  baselinePoses(animation) {
+    const appearance = this.manifest.fullFrame.appearances[animation.appearance];
+    const directionalBlink = appearance.directions.blink?.[animation.facing];
+    return [...new Set([
+      appearance.clips.idle,
+      appearance.clips.blink ?? appearance.clips[directionalBlink],
+    ].filter(Boolean))];
+  }
 
-    const surface = character.detail === 'portrait' ? 'portrait' : 'world';
+  drawOptions(character, animation, surface) {
     const placement = this.manifest.fullFrame.placement[surface];
     const characterScale = Number.isFinite(character.scale) ? character.scale : 1;
-    const sample = this.alignedRig.draw(context, {
+    return {
       appearance: animation.appearance,
       pose: animation.pose,
       localTime: animation.localTime,
@@ -545,8 +556,85 @@ export class FullFrameCharacterRig {
           }),
         }
         : {}),
+    };
+  }
+
+  prepareFrame(character = {}, time = 0) {
+    const animation = resolveFullFrameCharacterAnimation(this.manifest, character, time);
+    const surface = character.detail === 'portrait' ? 'portrait' : 'world';
+    const options = this.drawOptions(character, animation, surface);
+    const sample = this.alignedRig.sample(options);
+    this.alignedRig.protectSamples([this.lastReadyFrame?.sample, sample].filter(Boolean));
+    const request = this.alignedRig.requestFrame(options, {
+      sample,
+      includeClip: true,
+      baselinePoses: this.baselinePoses(animation),
     });
-    return Object.freeze({ status: 'drawn', animation, sample });
+    this.trackLoading(request.loading);
+    return { animation, surface, options, sample, loading: request.loading };
+  }
+
+  ensureLoading(character = {}, time = 0) {
+    return this.prepareFrame(character, time).loading;
+  }
+
+  rememberReadyFrame(sample, animation) {
+    this.lastReadyFrame = Object.freeze({ sample, animation });
+    this.alignedRig.protectSamples([sample]);
+  }
+
+  draw(context, character = {}, time = 0) {
+    const animation = resolveFullFrameCharacterAnimation(this.manifest, character, time);
+    if (this.loadingError) {
+      return Object.freeze({ status: 'failed', error: this.loadingError, animation });
+    }
+
+    const surface = character.detail === 'portrait' ? 'portrait' : 'world';
+    const options = this.drawOptions(character, animation, surface);
+
+    // Deterministic review scenes explicitly call preload(), which retains
+    // the complete manifest and keeps their historical synchronous draw path.
+    if (this.ready) {
+      const sample = this.alignedRig.draw(context, options);
+      this.rememberReadyFrame(sample, animation);
+      return Object.freeze({ status: 'drawn', animation, sample });
+    }
+
+    const targetSample = this.alignedRig.sample(options);
+    this.alignedRig.protectSamples([this.lastReadyFrame?.sample, targetSample].filter(Boolean));
+    const request = this.alignedRig.requestFrame(options, {
+      sample: targetSample,
+      includeClip: true,
+      baselinePoses: this.baselinePoses(animation),
+    });
+    this.trackLoading(request.loading);
+
+    if (this.alignedRig.isSampleReady(targetSample)) {
+      const sample = this.alignedRig.drawSample(context, targetSample, options);
+      this.rememberReadyFrame(sample, animation);
+      return Object.freeze({ status: 'drawn', animation, sample });
+    }
+
+    if (
+      this.lastReadyFrame
+      && this.alignedRig.isSampleReady(this.lastReadyFrame.sample)
+    ) {
+      const displayed = this.lastReadyFrame;
+      const fallbackOptions = this.drawOptions(character, displayed.animation, surface);
+      const sample = this.alignedRig.drawSample(context, displayed.sample, fallbackOptions);
+      this.alignedRig.protectSamples([displayed.sample, targetSample]);
+      return Object.freeze({
+        status: 'drawn',
+        animation,
+        sample,
+        pending: true,
+        displayedAnimation: displayed.animation,
+        loading: request.loading,
+      });
+    }
+
+    this.lastReadyFrame = null;
+    return Object.freeze({ status: 'loading', animation, loading: request.loading });
   }
 }
 

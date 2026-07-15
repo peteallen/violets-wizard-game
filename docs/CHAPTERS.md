@@ -28,7 +28,7 @@ Every chapter ends with an illustrated **chapter card** (like a picture-book pag
 
 **Mechanics proven:** rooms, walking, dialogue, hotspots, cosmetic choice, pet follow, map (introduced trivially: two locations), save/resume, chapter card.
 
-**Asset list:** 7 room paintings; voices: narrator, Hagrid, Ollivander, Madam Malkin, shopkeeper, Violet (short exclamations); music: wonder theme + Diagon Alley bustle; SFX: owl taps, seal break, brick wall, wand chaos ×2, wand chosen, coins, pet sounds ×3.
+**Asset list:** 7 room paintings; voices: narrator, Hagrid, Ollivander, Madam Malkin, shopkeeper; music: wonder theme + Diagon Alley bustle; SFX: owl taps, seal break, brick wall, wand chaos ×2, wand chosen, coins, pet sounds ×3. Violet is a silent player avatar whose reactions are visual.
 
 ---
 

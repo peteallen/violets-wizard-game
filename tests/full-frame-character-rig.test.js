@@ -252,10 +252,11 @@ describe('full-frame animation resolution', () => {
 });
 
 describe('full-frame character loader and renderer opt-in', () => {
-  it('loads every equal-sized frame, reports loading explicitly, and draws at configured placement', async () => {
+  it('loads only the active clip and idle baseline, then holds the prior frame across a clip change', async () => {
     const created = [];
     const rig = new FullFrameCharacterRig(definition(), {
       resolveFrame: (path) => path,
+      maxConcurrentLoads: 20,
       imageFactory: (url) => {
         const image = {
           url, onload: null, onerror: null, naturalWidth: 100, naturalHeight: 160,
@@ -266,10 +267,21 @@ describe('full-frame character loader and renderer opt-in', () => {
     });
     const context = recordingContext();
 
-    expect(rig.draw(context, { pose: 'walking', x: 300, y: 500 }, 0).status).toBe('loading');
+    const opening = rig.draw(context, { pose: 'walking', x: 300, y: 500 }, 0);
+    expect(opening.status).toBe('loading');
     expect(context.calls).toEqual([]);
+    expect(new Set(created.map(({ url }) => url))).toEqual(new Set([
+      'assets/art/characters/test/casual/walk-contact-a.png',
+      'assets/art/characters/test/casual/walk-pass-a.png',
+      'assets/art/characters/test/casual/idle.png',
+      'assets/art/characters/test/casual/blink.png',
+    ]));
+    expect(created.some(({ url }) => url.includes('/robes/'))).toBe(false);
+    expect(created.some(({ url }) => url.includes('wand-test'))).toBe(false);
     created.forEach((image) => image.onload());
-    await rig.preload();
+    await opening.loading;
+    expect(rig.ready).toBe(false);
+    expect(rig.alignedRig.loading).toBeNull();
 
     const world = rig.draw(context, {
       pose: 'walking', x: 300, y: 500, scale: 2, facing: 'left', lightSide: 'right',
@@ -279,10 +291,23 @@ describe('full-frame character loader and renderer opt-in', () => {
     expect(context.calls).toContainEqual(['scale', -2, 2]);
 
     const portrait = recordingContext();
+    const loadingStart = created.length;
+    const portraitPending = rig.draw(portrait, {
+      pose: 'talk', x: 10, y: 20, scale: 0.8, detail: 'portrait',
+    }, 0.3);
+    expect(portraitPending).toMatchObject({ status: 'drawn', pending: true });
+    expect(portrait.calls.some(([name, image]) => (
+      name === 'drawImage' && image.url.endsWith('/casual/walk-pass-a.png')
+    ))).toBe(true);
+    created.slice(loadingStart).forEach((image) => image.onload());
+    await portraitPending.loading;
+
+    portrait.calls.length = 0;
     const portraitResult = rig.draw(portrait, {
       pose: 'talk', x: 10, y: 20, scale: 0.8, detail: 'portrait',
     }, 0.3);
     expect(portraitResult.status).toBe('drawn');
+    expect(portraitResult.pending).toBeUndefined();
     expect(portrait.calls).toContainEqual(['translate', 11.6, 22.4]);
     expect(portrait.calls).toContainEqual(['scale', 0.4, 0.4]);
     expect(portrait.calls.some(([name]) => name === 'ellipse')).toBe(false);
@@ -295,6 +320,7 @@ describe('full-frame character loader and renderer opt-in', () => {
     const rig = new FullFrameCharacterRig(definition(), {
       resolveFrame: (path) => path,
       imageTransform,
+      maxConcurrentLoads: 50,
       imageFactory: (url) => {
         const image = {
           url, onload: null, onerror: null, naturalWidth: 100, naturalHeight: 160,
@@ -320,6 +346,43 @@ describe('full-frame character loader and renderer opt-in', () => {
       surface: 'portrait',
     }));
     expect(context.calls.some(([name, image]) => name === 'drawImage' && image === transformed)).toBe(true);
+  });
+
+  it('keeps the decoded full-frame cache bounded while new poses replace old ones', async () => {
+    const created = [];
+    const rig = new FullFrameCharacterRig(definition(), {
+      resolveFrame: (path) => path,
+      maxConcurrentLoads: 20,
+      maxDecodedImages: 5,
+      imageFactory: (url) => {
+        const image = {
+          url, onload: null, onerror: null, naturalWidth: 100, naturalHeight: 160,
+        };
+        created.push(image);
+        return image;
+      },
+    });
+
+    for (const character of [
+      { pose: 'idle' },
+      { pose: 'proud' },
+      { pose: 'walking' },
+      { pose: 'talk' },
+      { actorAnimation: { action: 'inspect', localTime: 0 } },
+      { outfit: 'robes', pose: 'idle' },
+    ]) {
+      const start = created.length;
+      const pending = rig.draw(recordingContext(), character, 0);
+      created.slice(start).forEach((image) => image.onload());
+      if (pending.loading) await pending.loading;
+      expect(rig.draw(recordingContext(), character, 0).status).toBe('drawn');
+      expect(rig.alignedRig.images.size).toBeLessThanOrEqual(5);
+    }
+
+    expect(created.length).toBeGreaterThan(5);
+    expect(rig.alignedRig.images.size).toBe(5);
+    expect([...rig.alignedRig.images.keys()].some((url) => url.endsWith('/casual/proud.png'))).toBe(false);
+    expect([...rig.alignedRig.images.keys()].some((url) => url.endsWith('/robes/idle.png'))).toBe(true);
   });
 
   it('keeps a registered generated character authoritative while its images load', () => {

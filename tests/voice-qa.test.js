@@ -25,6 +25,13 @@ describe('voice transcription QA', () => {
     expect(guideLines.every((line) => line.text.length > 0)).toBe(true);
   });
 
+  it('collects no spoken lines or voice assets for Violet', () => {
+    const lines = collectExpectedVoiceLines();
+
+    expect(lines.filter((line) => line.role === 'violet')).toEqual([]);
+    expect(lines.filter((line) => line.key.includes('/violet/'))).toEqual([]);
+  });
+
   it('ignores harmless punctuation and letter-case differences', () => {
     expect(normalizeSpokenText("Here’s Violet & Hagrid!"))
       .toBe(normalizeSpokenText('HERES VIOLET AND HAGRID'));
@@ -58,7 +65,7 @@ describe('voice transcription QA', () => {
     const result = await runVoiceQa();
 
     expect(result.issues).toEqual([]);
-    expect(result.totals).toMatchObject({ expected: 39, present: 39, matched: 39, missing: 0, mismatched: 0 });
+    expect(result.totals).toMatchObject({ expected: 34, present: 34, matched: 34, missing: 0, mismatched: 0 });
     expect(result.roles.guide).toMatchObject({ expected: 6, present: 6, matched: 6, missing: 0 });
     expect(result.passed).toBe(true);
   });
