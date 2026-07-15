@@ -120,8 +120,8 @@ priority decision:
 
 ## Process rules (velocity-first, per D32)
 
-1. **Review complete outcomes**: character work gives one fresh Art Director the named proposed shipping subset in the context of all generated batches, then proceeds to deterministic slicing and immediate integration. The assembled character is captured in the game at both required sizes for another fresh Art Director review. There is no per-frame approval queue, and unused malformed figures do not block selected panels.
-2. **No human gates anywhere** (D32): no GIF approvals, no PENDING queue, no golden blessing. Agents self-review strictly, then a fresh Art Director performs the required independent review before the local `npm run build` gate and merge. CI re-runs the full test, asset, voice, audio, and bundle battery and gates deployment. Taste-risky changes get a plain-language heads-up in the report so Pete knows what to look at *in the deployed game*.
+1. **Inspect complete outcomes**: character work inspects the named proposed shipping subset in the context of all generated batches, then proceeds to deterministic slicing and immediate integration. The assembled character is captured in the game at both required sizes and inspected again as a complete player-visible result. There is no per-frame approval queue, and unused malformed figures do not block selected panels.
+2. **No review gates anywhere** (D32, D64): no GIF approvals, no PENDING queue, no golden blessing, and no separate reviewer requirement. Agents self-review strictly before the local `npm run build` gate and merge. CI re-runs the full test, asset, voice, audio, and bundle battery and gates deployment. Taste-risky changes get a plain-language heads-up in the report so Pete knows what to look at *in the deployed game*.
 3. **Fix what play exposes**: after integration, character refinements answer player-visible defects in captures or play. Source-level concerns that disappear at runtime scale do not restart production.
 4. Log the drift batch this pass resolves in DECISIONS.md as it lands (dashed-ring removal, text rule, map rebuild replacing the hardcoded renderer bypass, etc.).
 
@@ -138,7 +138,7 @@ VU-01 starts from the locked Violet V8 identity and does not wait for more
 reference art. The deferred workstreams above preserve useful product direction,
 but they do not authorize parallel implementation before the cast test.
 
-Every VU work package follows the standing loop (VERIFICATION.md): implement → capture → self-review against the upgraded checklist → fresh Art Director review → merge when green. For character work, the increment is one complete playable character rather than one isolated sprite. Commit and push **every green increment** (D33) so the GitHub Pages build is always current; Pete tests there continuously and feedback arrives as conversation.
+Every VU work package follows the standing loop (VERIFICATION.md): implement → capture → self-review against the upgraded checklist → merge when green. For character work, the increment is one complete playable character rather than one isolated sprite. Commit and push **every green increment** (D33) so the GitHub Pages build is always current; Pete tests there continuously and feedback arrives as conversation.
 
 ## Non-goals
 

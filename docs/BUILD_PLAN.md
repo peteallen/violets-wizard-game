@@ -34,11 +34,11 @@ and pushed.
    V8 source at
    `art/characters/violet/canonical/casual-approved.png` and that neutral identity
    is never regenerated.
-3. Give one fresh Art Director every batch sheet for context and name the panels
-   proposed for shipping. Resolve CRITICAL and MAJOR findings that affect that
-   subset or its extraction; record defects in unused figures without letting
-   them block usable panels. Do not add review gates for individual faces,
-   limbs, poses, or frames.
+3. Inspect every batch sheet against the Storybook Standard and name the panels
+   proposed for shipping. Resolve visible defects that affect that subset or
+   its extraction; record defects in unused figures without letting them block
+   usable panels. Do not add approval gates for individual faces, limbs, poses,
+   or frames.
 4. Slice known panel rectangles deterministically onto aligned transparent
    canvases, record provenance and runtime mappings, and place only reviewed
    shipping assets under `public/assets`. Prompts, sources, and metadata remain
@@ -49,16 +49,15 @@ and pushed.
    simulation code deterministic and independent of Canvas, the DOM, audio,
    wall-clock APIs, and unseeded randomness.
 6. Capture the assembled character in its registered harness and moving in a
-   normal in-world scene at 1280×720 and 2560×1440. One fresh Art Director reviews
-   the assembled character as a whole. Refine only defects visible in those
-   captures or during play.
+   normal in-world scene at 1280×720 and 2560×1440. Inspect the assembled
+   character as a whole and refine only defects visible in those captures or
+   during play.
 7. Run `npm run build`, fix the full local gate, commit the self-contained green
    character, and push it to `main` immediately. GitHub Pages is the feedback
    surface; a sheet or harness-only scene is not a delivered character.
 
 The detailed art workflow lives in
-[CHARACTER_PIPELINE.md](CHARACTER_PIPELINE.md), and the fresh-review protocol
-lives in [ART_DIRECTOR.md](ART_DIRECTOR.md).
+[CHARACTER_PIPELINE.md](CHARACTER_PIPELINE.md).
 
 ## Standing project gates
 
@@ -68,7 +67,7 @@ matching decision-log entry. Generated-service credentials never enter browser
 code or the repository.
 
 Visual work retains a registered harness scene, the two required capture sizes,
-and fresh Art Director review. `npm run build` is the release gate: tests, asset
+and author inspection against the illusion checklist. `npm run build` is the release gate: tests, asset
 validation, voice quality checks, audio loudness checks, and the production
 bundle must all pass before a push. CI repeats that gate and controls Pages
 deployment, but local green is required so every push is expected to deploy.

@@ -52,22 +52,23 @@ compositing project. If none of the required figures are usable, regenerate the
 sheet as a unit. Otherwise name the usable production subset, record any missing
 normal-game state, and move the usable work into the game.
 
-## Review once at the meaningful source boundary
+## Inspect at the meaningful source boundary
 
-A fresh Art Director reviews the proposed shipping panels across the complete
-batch before any slicing or shipping, following `docs/ART_DIRECTOR.md`. The review
-judges identity across selected views, action readability, age and emotional
-readability, room-style fit, scale, anchors, and whether normal gameplay is
-covered. The verdict names the accepted subset and any blocking correction.
-Violet’s review treats V8 as the decided identity, not as an invitation to reopen
-her proportions. Defects in unused panels do not block integration.
+Before slicing or shipping, inspect the proposed shipping panels across the
+complete batch. Judge identity across selected views, action readability, age
+and emotional readability, room-style fit, scale, anchors, and whether normal
+gameplay is covered. Name the accepted subset and correct visible defects in
+that subset. Violet's inspection treats V8 as the decided identity, not as an
+invitation to reopen her proportions. Defects in unused panels do not block
+integration.
 
-There is no separate review gate for every face, arm, leg, or animation frame.
-The proposed shipping subset across the batch is the single generated-art review unit.
+There is no separate approval gate for every face, arm, leg, or animation frame.
+The proposed shipping subset across the batch is the single generated-art
+inspection unit.
 
 ## Slice deterministically and integrate immediately
 
-After the proposed shipping subset passes, slice its known panel rectangles
+After the proposed shipping subset is clean, slice its known panel rectangles
 with deterministic local tooling. Slicing may isolate connected components,
 remove the sheet background, normalize selected figures to a common scale,
 place them on the shared transparent canvas, clean extraction edges, apply a
@@ -83,8 +84,8 @@ character. Preserve save data and simulation determinism while the renderer
 changes, and keep the game playable as each member of the cast lands.
 
 Capture the assembled character in its registered harness and in-world context
-at 1280×720 and 2560×1440, then have a fresh Art Director perform the required
-assembled visual review. This is a single character-level review, not a new
+at 1280×720 and 2560×1440, then inspect the assembled result against the
+Storybook Standard. This is a single character-level inspection, not a new
 per-frame loop.
 Refine only defects that are visible in these captures or during play, using
 `google/gemini-3.1-flash-image` through `google-vertex/global` again. Prefer a
@@ -97,10 +98,10 @@ preview.
 
 ## Completion
 
-A character is complete when the reviewed sheet covers every state the current
+A character is complete when the inspected sheet covers every state the current
 game requests, deterministic slices and anchors are in the production manifest,
 the real game uses them for world and portrait rendering without a legacy-art
-fallback, both required capture sizes have passed assembled Art Director review,
+fallback, both required capture sizes have been inspected as an assembled whole,
 and the full build is green. Chapter One is complete only when this is true for
 Violet, Hagrid, the Wandmaker, Madam Malkin, the Menagerie keeper, the narrator
 portrait, the post owl, the cat, the pet owl, and the pet toad.

@@ -1,7 +1,7 @@
 // Hagrid assembled from AI-painted sprite parts (D48/D51). Parts are sliced
 // from art/spikes/sp-f-hagrid (the best sheet to date; its full verdict trail
 // lives in that folder's README) and load through Vite asset imports. The
-// whole set swaps wholesale whenever a better sheet passes the art director —
+// whole set swaps wholesale whenever a better sheet passes source inspection —
 // gameplay code never references individual parts.
 import { SpriteRig } from './SpriteRig.js';
 import headOpenUrl from '../../../art/spikes/sp-f-hagrid/parts/headOpen.png';
