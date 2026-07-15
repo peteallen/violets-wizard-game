@@ -1,0 +1,48 @@
+import { defineOwlDrawingProfile } from '../owl/sharedDrawing.js';
+
+export const postOwlDrawingProfile = defineOwlDrawingProfile({
+  defaultPose: 'perch',
+  defaultScale: 1,
+  palette: {
+    body: '#a77b4f',
+    bodyLight: '#c39a68',
+    bodyShadow: '#6f5038',
+    wing: '#7d5a3f',
+    wingDark: '#56402f',
+    facial: '#f0dfb9',
+    facialShadow: '#d5bd91',
+    iris: '#d79a2f',
+    beak: '#d6a142',
+    foot: '#a87935',
+    fleck: '#4b392c',
+    accent: '#f4d58d',
+    rim: '#efd19a',
+  },
+  motion: {
+    blinkPhase: 0.3,
+    bodyTiltAmplitude: 0.012,
+    idleHeadTiltAmplitude: 0,
+    baseTailFan: 0,
+    idleFlick: null,
+  },
+  geometry: {
+    bodyFeatherRows: 5,
+    head: {
+      leftOuterControlY: -122,
+      leftPeakX: -27,
+      leftPeakY: -120,
+      leftInnerX: -16,
+      leftInnerY: -108,
+      centerY: -119,
+      rightInnerX: 18,
+      rightInnerY: -109,
+      rightPeakX: 29,
+      rightPeakY: -121,
+      rightOuterControlX: 31,
+      rightOuterControlY: -116,
+      rimOuterY: -121,
+      rimPeakY: -117,
+      flecks: [[-27, -102], [27, -99], [-30, -84], [30, -82], [-21, -70], [22, -70]],
+    },
+  },
+});
