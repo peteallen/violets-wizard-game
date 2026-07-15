@@ -6,7 +6,8 @@ import {
   chapter1Map,
   chapter1ResumeRecaps,
 } from './chapters/ch1.js';
-import { chapter2, chapter2AssetKeys, chapter2Status } from './chapters/ch2.js';
+import { chapter2, chapter2AssetKeys } from './chapters/ch2.js';
+import { chapterCatalog, chapterDescriptors } from '../chapters/catalog.js';
 
 export const contentRegistry = Object.freeze({
   ch1: chapter1,
@@ -15,7 +16,9 @@ export const contentRegistry = Object.freeze({
 
 export const chapters = Object.freeze(Object.values(contentRegistry));
 
-export const chapterAvailability = Object.freeze({ ch1: 'playable', ch2: chapter2Status });
+export const chapterAvailability = Object.freeze(Object.fromEntries(
+  chapterDescriptors.map((descriptor) => [descriptor.id, descriptor.availability]),
+));
 export const chapterAssetKeys = Object.freeze({ ch1: chapter1AssetKeys, ch2: chapter2AssetKeys });
 export const maps = Object.freeze({ [chapter1Map.id]: validateMap(chapter1Map) });
 export const resumeRecaps = Object.freeze({ ch1: chapter1ResumeRecaps });
@@ -35,8 +38,11 @@ export function getChapter(idOrNumber) {
 }
 
 export function isChapterPlayable(idOrNumber) {
-  const chapter = getChapter(idOrNumber);
-  return chapter ? chapterAvailability[chapter.id] === 'playable' : false;
+  return chapterCatalog.getDescriptor(idOrNumber)?.availability === 'playable';
+}
+
+export function loadChapterPackage(idOrNumber, kind = 'content') {
+  return chapterCatalog.load(idOrNumber, kind);
 }
 
 export function getMap(id) {
@@ -44,3 +50,4 @@ export function getMap(id) {
 }
 
 export { cards, cardsById };
+export { chapterCatalog, chapterDescriptors };
