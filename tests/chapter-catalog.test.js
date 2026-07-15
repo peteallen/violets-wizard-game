@@ -30,6 +30,7 @@ import {
   chapterPreviewActionAt,
   chapterPreviewLayout,
 } from '../src/game/render/ChapterPreviewRenderer.js';
+import { chapter1SceneDefinitions } from '../src/game/chapters/ch1/content/scenes/index.js';
 
 function descriptor(number, overrides = {}) {
   const id = `ch${number}`;
@@ -122,6 +123,14 @@ describe('production chapter packages', () => {
     expect(chapterTwoPackage.characterDependencies).toBe(chapter2CharacterIds);
     expect(Object.isFrozen(chapterOnePackage)).toBe(true);
     expect(Object.isFrozen(chapterTwoPackage)).toBe(true);
+  });
+
+  it('authors Chapter One scenes with explicit immutable order while preserving the v1 view', () => {
+    const ordered = [...chapter1SceneDefinitions].sort((left, right) => left.order - right.order);
+    expect(new Set(ordered.map(({ order }) => order)).size).toBe(ordered.length);
+    expect(Object.keys(chapter1.scenes)).toEqual(ordered.map(({ id }) => id));
+    expect(ordered.every((scene) => Object.isFrozen(scene))).toBe(true);
+    expect(Object.values(chapter1.scenes).every((scene) => !Object.hasOwn(scene, 'order'))).toBe(true);
   });
 
   it('loads the Chapter Two preview as an independent exact-key presentation registration', async () => {

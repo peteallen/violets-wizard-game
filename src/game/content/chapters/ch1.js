@@ -30,6 +30,7 @@ import {
   chapter1CodeResourceKeys,
   chapter1Flags,
 } from '../../chapters/ch1/content/resources.js';
+import { chapter1SceneDefinitions } from '../../chapters/ch1/content/scenes/index.js';
 
 export {
   chapter1CharacterIds,
@@ -582,7 +583,8 @@ const sceneDoneWhen = {
 };
 
 function sceneMap(drafts) {
-  return Object.fromEntries(drafts.map((draft, index) => {
+  const ordered = [...drafts].sort((left, right) => left.order - right.order);
+  return Object.fromEntries(ordered.map((draft, index) => {
     const room = draft.room ?? 'ch1.chapterCardRoom';
     const spawn = draft.spawn?.split('.').at(-1) ?? 'start';
     return [draft.id, {
@@ -592,7 +594,7 @@ function sceneMap(drafts) {
       when: draft.when,
       onEnter: draft.onEnter,
       doneWhen: sceneDoneWhen[draft.id],
-      next: drafts[index + 1]?.id ?? null,
+      next: ordered[index + 1]?.id ?? null,
       resumeAt: { room, spawn },
     }];
   }));
@@ -605,29 +607,7 @@ export const chapter1 = {
   title: 'The Letter & Diagon Alley',
   season: 'late-summer',
   start: { scene: 'ch1.letter', room: 'ch1.bedroom', spawn: 'start' },
-  scenes: sceneMap([
-    { id: 'ch1.letter', room: 'ch1.bedroom', spawn: 'bedroom.start', quest: 'ch1.openLetter', when: when({ noFlags: ['ch1.letterRead'] }), onEnter: [] },
-    { id: 'ch1.guideArrival', room: 'ch1.bedroom', spawn: 'bedroom.letter', quest: 'ch1.followGuide', when: when({ allFlags: ['ch1.letterRead'], noFlags: ['ch1.guideMet'] }), onEnter: [] },
-    { id: 'ch1.leakyArrival', room: 'ch1.leaky', spawn: 'leaky.entry', quest: 'ch1.followGuide', when: when({ allFlags: ['ch1.guideMet'], noFlags: ['ch1.leakyReached'] }), onEnter: [dialogueStart('ch1.guide.leaky')] },
-    { id: 'ch1.wallOpening', room: 'ch1.courtyard', spawn: 'courtyard.entry', quest: 'ch1.followGuide', when: when({ allFlags: ['ch1.leakyReached'], noFlags: ['ch1.wallOpened'] }), onEnter: [flagSet('ch1.courtyardReached'), dialogueStart('ch1.guide.wall')] },
-    { id: 'ch1.diagonMapIntro', room: 'ch1.diagonStreet', spawn: 'street.west', quest: 'ch1.useMap', when: when({ allFlags: ['ch1.wallOpened'], noFlags: ['ch1.satchelReceived'] }), backgroundVariant: 'day', onEnter: [flagSet('ch1.diagonReached'), dialogueStart('ch1.guide.map')] },
-    { id: 'ch1.diagonArrival', room: 'ch1.diagonStreet', spawn: 'street.west', quest: 'ch1.useMap', when: when({ allFlags: ['ch1.wallOpened', 'ch1.satchelReceived'], noFlags: ['ch1.shoppingComplete'] }), backgroundVariant: 'day', onEnter: [flagSet('ch1.diagonReached')] },
-    {
-      id: 'ch1.wandShopping',
-      room: 'ch1.ollivanders',
-      spawn: 'ollivanders.entry',
-      quest: 'ch1.chooseWand',
-      when: when({ allFlags: ['ch1.satchelReceived'], noFlags: ['ch1.wandChosen'] }),
-      // Keep the legacy receipt save-compatible: reaching Ollivanders by its
-      // street door now satisfies the same route step as taking the map.
-      onEnter: [flagSet('ch1.mapUsed'), dialogueStart('ch1.wandmaker.welcome')],
-    },
-    { id: 'ch1.robeShopping', room: 'ch1.malkins', spawn: 'malkins.entry', quest: 'ch1.chooseRobes', when: when({ allFlags: ['ch1.wandChosen'], noFlags: ['ch1.trimChosen'] }), onEnter: [] },
-    { id: 'ch1.petShopping', room: 'ch1.menagerie', spawn: 'menagerie.entry', quest: 'ch1.choosePet', when: when({ allFlags: ['ch1.trimChosen'], noFlags: ['ch1.petNamed'] }), onEnter: [] },
-    { id: 'ch1.ticket', room: 'ch1.diagonStreet', spawn: 'street.east', quest: 'ch1.returnToGuide', when: when({ allFlags: ['ch1.petNamed'], noFlags: ['ch1.ticketReceived'] }), backgroundVariant: 'dusk', onEnter: [] },
-    { id: 'ch1.chapterCard', room: null, spawn: null, quest: null, when: when({ allFlags: ['ch1.ticketReceived'], noFlags: ['ch1.chapterCardSeen'] }), onEnter: [setPiecePlay('sp.chapterCard')] },
-    { id: 'ch1.freeRoam', room: 'ch1.diagonStreet', spawn: 'street.west', quest: null, when: when({ allFlags: ['ch1.complete'] }), backgroundVariant: 'dusk', onEnter: [] },
-  ]),
+  scenes: sceneMap(chapter1SceneDefinitions),
   rooms: roomMap([
     {
       id: 'ch1.bedroom',
