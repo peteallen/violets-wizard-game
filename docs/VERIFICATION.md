@@ -7,7 +7,7 @@ The hard problem this doc solves: engineers on this project are largely AI agent
 > **D32/D64: no approval or separate-review gates.** This is a family project; velocity beats ceremony. Pete's feedback comes from *playing the deployed game* whenever he likes, delivered conversationally — never from processing a review queue. The author inspects deterministic captures against the illusion checklist before the build gate.
 
 1. **Headless sim tests** (Vitest) — logic: quest graphs, encounters, saves, geometry. Fast, exhaustive, no pixels.
-2. **Content lint** — the data contract police (see ARCHITECTURE.md §Testing).
+2. **Content and architecture lint** — the data contract police plus a ratcheting ban on concrete chapter/character routing and reference-only runtime imports (see ARCHITECTURE.md §Testing).
 3. **Harness keyframe self-review** — agents capture deterministic frames of visual work and *look at them* against written illusion checklists (including the Storybook Standard section). **VERIFIED: the Read tool renders PNGs visually — agents genuinely see their work.**
 4. **Play it** — Pete and Violet, on the deployed game and the actual iPad. iPad Safari renders with a different rasterizer and DPR than the capture harness; nothing replaces the actual glass. Feedback arrives as conversation and lands in DECISIONS.md. Authors fix obvious defects such as bad posture, dead eyes, and floating parts during capture inspection whenever possible.
 
@@ -34,7 +34,7 @@ before visual work and remain non-negotiable:
 - devDependencies: `playwright@1.58.2`, `pixelmatch`, `pngjs`. Nothing else.
 - **Node footgun (CONFIRMED)**: non-interactive shells on this machine resolve node **v14.15.4**, which breaks Vite 7 and Playwright. The repo ships `.nvmrc` (`22.17.0`), `"engines": {"node": ">=22"}`, and a fail-fast version guard at the top of every script in `scripts/` that prints the fix.
 - Captures standardize on `__snapshot()`/toDataURL, **not** `page.screenshot` — verified pixel-identical at dpr=1 today, but toDataURL reads the raw backing store (immune to future CSS scaling) and keeps all frames RGBA, which matters because of a **verified ffmpeg gotcha**: a PNG sequence mixing RGBA and RGB frames makes the image2 demuxer silently blank frames in GIF/tile output.
-- Harness captures at 640×360, dpr forced to 1 (headless default, verified). Production runs dpr≤2 — one smoke scene gets a `deviceScaleFactor: 2` capture variant so the dpr path isn't entirely unexercised.
+- Harness captures at 640×360 remain the quick iteration preview. Any renderer, room, set-piece, overlay, or layout change is reviewed at 1280×720 and 2560×1440 with dpr forced to 1; both profiles are required so gameplay scale and large-screen composition remain visible during refactors. Production runs dpr≤2, and one smoke scene keeps a `deviceScaleFactor: 2` variant so that path is not entirely unexercised.
 
 ## The tools
 

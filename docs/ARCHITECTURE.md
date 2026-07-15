@@ -10,9 +10,11 @@ Vite + vanilla ES modules + one full-window Canvas 2D + Vitest — the family ho
 
 `World` is a **headless simulation**: rooms, entity positions, walking, interactions, dialogue state, quest flags, encounters, learning-beat state. It is seedable, steppable (`world.update(1/60)`), and never touches canvas, audio, or DOM. `Game` is the shell: rendering, input routing, audio, transitions. This is the soccer game's Match/Game split, and it's what makes the deterministic test suite possible — tests drive the real `World` through entire chapters headlessly.
 
-### 2. Engine vs. content
+### 2. Engine vs. packages
 
-Systems interpret **data**; chapters *are* data. Adding Chapter 5 means writing a content module and generating its assets — no engine changes. Content-lint tests (below) enforce the contract mechanically.
+Systems interpret contracts; chapters and characters arrive through packages. Chapter content remains pure data, while its presentation and review harness load separately. A chapter descriptor contains metadata and lazy loaders rather than importing its implementation into the engine. Character definitions contain stable identity, capabilities, bounds, and assets, while their Canvas runtime loads only when the active chapter declares that character as a dependency. Adding Chapter 5 or a new character must not require a branch in `Game`, `World`, a generic renderer, asset-manifest code, or harness boot.
+
+The package foundation is intentionally landing before the existing Chapter One and renderer monoliths move. `CharacterDefinition`, `CharacterRegistry`, the chapter descriptor/composer, and the aggregate linker therefore coexist temporarily with the old runtime paths. `npm run check:architecture` records every remaining concrete chapter route, named-character route, source-art import, browser boundary leak, and nondeterministic headless API as a counted allowance. Any new leak fails immediately; removing a leak also requires removing its stale allowance. Completion means that allowance is empty.
 
 ## Module layout
 
@@ -25,6 +27,10 @@ src/
     config.js                 frozen tunables: WORLD (1280×720 virtual), timing, hint ladder
                               delays, duel windows, palette constants
     world/World.js            HEADLESS sim (see above)
+    characters/
+      CharacterDefinition.js  immutable identity, capability, bounds, asset contract
+      CharacterRegistry.js    duplicate-safe definitions + lazy world/portrait runtimes
+      <identity>/              one package per canonical character identity
     systems/
       Dialogue.js             voiced line queue, captions, icon choices, replay
       Quests.js               flag machine: steps, triggers, rewards, hint-ladder state
@@ -51,6 +57,10 @@ src/
       assetUrl.js             BASE_URL-relative paths + ?v=<build SHA> busting
       VersionWatcher.js       polls version.json, prompts reload on new deploy
     content/
+      chapterDescriptor.js    metadata + independent content/presentation/harness loaders
+      chapterAuthoring.js     immutable pure-data room and scene helpers
+      chapterComposer.js      duplicate-safe fragment composition + explicit scene order
+      chapterLinker.js        aggregate reference resolution through injected registries
       vocabulary.js           core caption vocabulary (the deliberate sight-word set)
       spells.js               spell defs: id, verb, icon, incantation (+ syllable split,
                               phonetic TTS spelling), signature color/sfx
@@ -143,6 +153,7 @@ Schema in [GAME_DESIGN.md](GAME_DESIGN.md#save-and-persistence). Implementation 
   - every hotspot/exit/mapStar/flag/spell/card id resolves;
   - every quest graph is completable (topological reachability from chapter start);
   - every manifest entry exists on disk with sane size (> 1KB), and every disk asset is in the manifest (`npm run check:assets`, robotgame pattern — build fails on drift).
+- **Architecture lint**: the generic engine may not import concrete chapter or character implementations, runtime code may not import reference-only `art` or `audio`, headless code may not touch browser or nondeterministic APIs, and generic dispatch may not route on chapter or named-character literals. The temporary allowance is exact and stale-entry checked, so each extraction visibly reduces the remaining debt.
 
 ## Deploy
 
@@ -159,6 +170,7 @@ GitHub Pages, mirroring the siblings:
 ```bash
 npm run dev          # Vite dev server
 npm test             # Vitest (sim + lint suites)
+npm run check:architecture # package boundaries + deterministic/headless boundaries
 npm run check:assets # manifest ⇄ disk ⇄ scripts drift gate
 npm run build        # production build (runs check:assets first)
 ```

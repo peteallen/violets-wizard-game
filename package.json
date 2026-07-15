@@ -9,8 +9,9 @@
   },
   "scripts": {
     "check:node": "node scripts/check-node.mjs",
+    "check:architecture": "node scripts/check-architecture.mjs",
     "dev": "npm run check:node && vite --host 0.0.0.0",
-    "test": "npm run check:node && vitest run",
+    "test": "npm run check:node && npm run check:architecture && vitest run",
     "test:watch": "vitest",
     "check:assets": "node scripts/check-assets.mjs",
     "check:voice-qa": "node scripts/check-voice-qa.mjs",

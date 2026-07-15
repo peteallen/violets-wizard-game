@@ -5,6 +5,12 @@ Each character moves from one coherent source sheet set into the real game in on
 short pass, and only defects that remain visible in play earn another art
 generation.
 
+## One package per stable identity
+
+Every character lives under its canonical identity, such as `character.violet` or `character.hagrid`; chapter roles such as guide, tailor, or speaker are not renderer identities. The pure `CharacterDefinition` is the authoritative home for display and voice metadata, supported world and portrait surfaces, appearances, poses, actions, defaults, bounds, and the explicit asset fragment. Its lazy runtime owns drawing, preload, reduced-motion behavior, release, and that character's review registrations. Importing a definition must not decode images, touch Canvas, or register global side effects.
+
+Chapters declare the exact character identities they need. The duplicate-rejecting `CharacterRegistry` loads only those runtimes, validates every requested appearance, pose, action, and surface, and releases their decoded caches when the chapter scope ends. Unknown or unsupported requests are authoring failures; they never silently draw Hagrid, a generic human, or an old Bézier fallback. Temporary aliases may bridge old content while it migrates, but the final chapter data and world snapshots carry canonical character identities.
+
 ## One model and one identity
 
 Every production character sheet and every later production refinement uses
@@ -78,8 +84,8 @@ or reinterpret the figure. The character manifest must map every state the
 current game requests and must fail visibly in development if a state is
 missing rather than silently returning to the legacy puppet.
 
-Hook the complete character into its real rooms, dialogue, movement, and story
-actions immediately. A standalone sheet or harness is not a finished
+Hook the complete character package into its real rooms, dialogue, movement,
+and story actions immediately. A standalone sheet or harness is not a finished
 character. Preserve save data and simulation determinism while the renderer
 changes, and keep the game playable as each member of the cast lands.
 
