@@ -47,6 +47,12 @@ const CHARACTER_IMAGE_PATHS = Object.freeze({
   'characters/violet/robes/robe-present': 'assets/art/characters/violet/robes/robe-present.png',
   'characters/violet/robes/wand-hold': 'assets/art/characters/violet/robes/wand-hold.png',
   'characters/violet/robes/cheer': 'assets/art/characters/violet/robes/cheer.png',
+  'characters/hagrid/default/neutral': 'assets/art/characters/hagrid/default/neutral.png',
+  'characters/hagrid/default/blink': 'assets/art/characters/hagrid/default/blink.png',
+  'characters/hagrid/default/talk-a': 'assets/art/characters/hagrid/default/talk-a.png',
+  'characters/hagrid/default/talk-b': 'assets/art/characters/hagrid/default/talk-b.png',
+  'characters/hagrid/default/profile-right': 'assets/art/characters/hagrid/default/profile-right.png',
+  'characters/hagrid/default/walk-contact': 'assets/art/characters/hagrid/default/walk-contact.png',
 });
 
 const AMBIENCE_ALIASES = Object.freeze({

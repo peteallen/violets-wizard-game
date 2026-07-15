@@ -431,7 +431,7 @@ registry
   ))
   .register('hagrid-sprite-review', characterReviewFixture(
     'hagrid-sprite-review',
-    'The code-drawn Hagrid beside the painted sprite-part Hagrid, idle, walking, and beckoning.',
+    'Hagrid’s production full-frame neutral, blink, speaking, and two walking directions.',
   ))
   .register('violet-expression-review', characterReviewFixture(
     'violet-expression-review',

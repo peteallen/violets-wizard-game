@@ -428,6 +428,10 @@ export class AlignedSpriteRig {
     const x = Number.isFinite(options.x) ? options.x : 0;
     const y = Number.isFinite(options.y) ? options.y : 0;
     const scale = Number.isFinite(options.scale) ? options.scale : 1;
+    const shadowOpacity = options.shadowOpacity ?? 0.24;
+    if (!Number.isFinite(shadowOpacity) || shadowOpacity < 0 || shadowOpacity > 1) {
+      throw new RangeError('options.shadowOpacity must be between zero and one.');
+    }
     if (options.mirror !== undefined && typeof options.mirror !== 'boolean') {
       throw new TypeError('options.mirror must be boolean.');
     }
@@ -439,7 +443,7 @@ export class AlignedSpriteRig {
       context.save();
       context.translate(x, y);
       context.scale(scale, scale);
-      context.fillStyle = 'rgba(27, 18, 24, 0.24)';
+      context.fillStyle = `rgba(27, 18, 24, ${shadowOpacity})`;
       context.beginPath();
       context.ellipse(
         shadow.x + shadow.width / 2 - canvas.ground.x,

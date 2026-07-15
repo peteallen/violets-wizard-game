@@ -473,7 +473,16 @@ export class FullFrameCharacterRig {
     if (options.imageTransform !== undefined && typeof options.imageTransform !== 'function') {
       throw new TypeError('imageTransform must be a function.');
     }
+    if (
+      options.shadowOpacity !== undefined
+      && (!Number.isFinite(options.shadowOpacity)
+        || options.shadowOpacity < 0
+        || options.shadowOpacity > 1)
+    ) {
+      throw new RangeError('shadowOpacity must be between zero and one.');
+    }
     this.imageTransform = options.imageTransform ?? null;
+    this.shadowOpacity = options.shadowOpacity;
     this.loadingError = null;
   }
 
@@ -520,6 +529,7 @@ export class FullFrameCharacterRig {
       y: (Number.isFinite(character.y) ? character.y : 0) + placement.y * characterScale,
       scale: placement.scale * characterScale,
       shadow: surface === 'world' && character.shadow !== false,
+      shadowOpacity: this.shadowOpacity,
       // Whole-frame rigs do not interpret robe color themselves. Keeping the
       // selected trim on the aligned draw contract gives Violet's production
       // renderer one stable hook for the selective recolor pass.

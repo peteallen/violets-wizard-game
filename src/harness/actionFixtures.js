@@ -177,7 +177,7 @@ registry
     'Hold the code-drawn and painted-part Violets side by side on deterministic loops.',
   ))
   .register('hagrid-sprite-review', createFixture(
-    'Hold the code-drawn and painted-part Hagrids side by side on deterministic loops.',
+    'Hold Hagrid’s aligned neutral, blink, speaking, and walking poses on deterministic loops.',
   ))
   .register('violet-expression-review', createFixture(
     'Hold every approved aligned Violet expression without animation or input.',

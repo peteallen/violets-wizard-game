@@ -179,11 +179,11 @@ const REVIEW_SCENE_ILLUSION_CHECKS = Object.freeze({
     'Posture reads confident and upright at 2×: weight balanced over the feet, visible shoulder line, chin level, arms resting beside the body with hands near the outer thighs — never curled inward, hunched, or creeping.',
   ],
   'hagrid-sprite-review': [
-    'Exactly five labeled figures remain separated on plinths: two code-drawn Hagrids on the left, three painted sprite-part Hagrids on the right, each with a grounded contact shadow.',
-    'Each painted figure reads as one connected half-giant at gameplay scale: head, mane, torso, both arms, and both legs join with no visible gaps, floating parts, or double edges at idle, mid-stride, and mid-beckon.',
-    'The painted figures keep the reference identity: wild dark-brown mane and beard with a visible warm smile, patched deep-brown coat with brass toggles, deep-green waistcoat, plum scarf, and matching two-buckle boots.',
-    'Part edges show no pale keying halo and no fragments of neighboring sheet parts; the beckoning arm raises from the shoulder without detaching or covering the face.',
-    'Posture reads grounded and mighty at 2×: weight over the feet, level chin, the resting arm beside the coat, and every figure’s boot soles meet the top of their contact shadow with no lit gap — never hunched, floating, or knock-kneed.',
+    'Exactly five labeled full-frame Hagrids remain separated on plinths: neutral, blink, speaking, walking right, and walking left, each with a grounded contact shadow.',
+    'Every pose reads as one connected half-giant painting at gameplay scale, with no assembled-limb seams, floating parts, double edges, or independently mirrored hands.',
+    'Both hands remain anatomically oriented and attached to the correct arms in every pose, including the single whole-frame mirror used for the leftward walk.',
+    'Every figure keeps the same identity: wild dark-brown mane and beard with a visible warm smile, patched deep-brown coat with brass toggles, deep-green waistcoat, plum scarf, and matching two-buckle boots.',
+    'The speaking loop has two readable mouth shapes, the walk has two distinct planted steps, and every boot sole meets its contact shadow with no lit gap at both review sizes.',
   ],
   'violet-expression-review': [
     'Exactly seven labeled Violet states appear as matched portrait and full-body pairs: neutral, blink, talk A, talk B, wonder, proud, and curious.',

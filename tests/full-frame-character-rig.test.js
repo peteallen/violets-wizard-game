@@ -12,6 +12,7 @@ import {
   resolveFullFrameCharacterAnimation,
 } from '../src/game/render/FullFrameCharacterRig.js';
 import { violetFullFrameCharacterRig } from '../src/game/render/VioletFullFrameCharacterRig.js';
+import { hagridFullFrameCharacterRig } from '../src/game/render/HagridFullFrameCharacterRig.js';
 
 function definition() {
   return {
@@ -345,14 +346,17 @@ describe('full-frame character loader and renderer opt-in', () => {
   it('awaits every opted-in rig before an existing registered harness capture', async () => {
     const rig = { preload: vi.fn(async () => {}) };
     const violetPreload = vi.spyOn(violetFullFrameCharacterRig, 'preload').mockResolvedValue();
+    const hagridPreload = vi.spyOn(hagridFullFrameCharacterRig, 'preload').mockResolvedValue();
     productionFullFrameCharacterRigs.set('review-test', rig);
     try {
       await preloadCharacterReviewScene('character-cast-review');
       expect(violetPreload).toHaveBeenCalledOnce();
+      expect(hagridPreload).toHaveBeenCalledOnce();
       expect(rig.preload).toHaveBeenCalledOnce();
     } finally {
       productionFullFrameCharacterRigs.delete('review-test');
       violetPreload.mockRestore();
+      hagridPreload.mockRestore();
     }
   });
 });

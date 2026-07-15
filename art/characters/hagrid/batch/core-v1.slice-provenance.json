@@ -1,0 +1,563 @@
+{
+  "schema_version": 1,
+  "algorithm": {
+    "id": "cyan-flood-aligned-character-sheet-v1",
+    "component_connectivity": 8,
+    "scale_filter": "premultiplied-rgba-box-rational-v1",
+    "output_color_type": 6,
+    "output_bit_depth": 8,
+    "deterministic": true
+  },
+  "slice_spec": {
+    "path": "art/characters/hagrid/batch/core-v1.layout.json",
+    "bytes": 1789,
+    "sha256": "f9804df265610a8fdcdd09cc761e76171ac4801529bdbcb8151bfa061ae19613",
+    "schema_version": 1,
+    "id": "hagrid.core-v1"
+  },
+  "source": {
+    "path": "art/characters/hagrid/batch/core-v1.png",
+    "bytes": 19542590,
+    "expected_sha256": "c7780ac0e5ac635b6f6aa1255f5100a3cff02f409265cd084ec745ddbb77c788",
+    "sha256": "c7780ac0e5ac635b6f6aa1255f5100a3cff02f409265cd084ec745ddbb77c788",
+    "rgba_sha256": "df395700046c57bc132b5c4ee2ecf55694d926a391784b969e117786082f5ada",
+    "dimensions": {
+      "width": 4800,
+      "height": 3584
+    }
+  },
+  "controls": {
+    "output_canvas": {
+      "width": 896,
+      "height": 1200,
+      "center_x": 448,
+      "ground_y": 1132
+    },
+    "common_scale": {
+      "numerator": 2,
+      "denominator": 3
+    },
+    "key": {
+      "color": {
+        "red": 98,
+        "green": 200,
+        "blue": 214
+      },
+      "tolerance": 28,
+      "alpha": {
+        "opaque_cyan_excess": 50,
+        "transparent_cyan_excess": 90,
+        "edge_spill_radius": 8,
+        "edge_spill_opaque_cyan_excess": 30,
+        "edge_spill_max_green_blue_delta": 70,
+        "matte_low_alpha": 170,
+        "matte_high_alpha": 245,
+        "edge_color_radius": 0
+      }
+    },
+    "components": {
+      "detail_min_pixels": 8,
+      "detail_max_pixels": 5000,
+      "detail_max_distance": 48
+    }
+  },
+  "outputs": [
+    {
+      "name": "neutral",
+      "path": "public/assets/art/characters/hagrid/default/neutral.png",
+      "media_type": "image/png",
+      "bytes": 1000151,
+      "sha256": "c0e530b143ca85fab454681e661d20604a4ae6a54b41111cf5f1e75879f54eda",
+      "rgba_sha256": "23d966e66e006a96dcf73a59f17ec1fb10f2c9113a98283dbdbe0bb73291e343",
+      "dimensions": {
+        "width": 896,
+        "height": 1200
+      },
+      "crop": {
+        "x": 0,
+        "y": 0,
+        "width": 1600,
+        "height": 1792
+      },
+      "source_content_bounds": {
+        "x": 196,
+        "y": 106,
+        "width": 1090,
+        "height": 1645
+      },
+      "scaled_dimensions": {
+        "width": 727,
+        "height": 1097
+      },
+      "placement": {
+        "x": 85,
+        "y": 36,
+        "width": 727,
+        "height": 1097,
+        "center_x": 448,
+        "ground_y": 1132
+      },
+      "flood": {
+        "background_pixels": 1608512,
+        "non_background_pixels": 1258688,
+        "background_fraction": 0.5610044642857143
+      },
+      "components": {
+        "found": 9,
+        "dominant_pixels": 1250990,
+        "kept": 1,
+        "removed": 8,
+        "selected_pixels": 1250990,
+        "details": [
+          {
+            "pixels": 1,
+            "distance_from_dominant": 4,
+            "kept": false
+          },
+          {
+            "pixels": 1,
+            "distance_from_dominant": 2,
+            "kept": false
+          },
+          {
+            "pixels": 1,
+            "distance_from_dominant": 2,
+            "kept": false
+          },
+          {
+            "pixels": 2,
+            "distance_from_dominant": 7,
+            "kept": false
+          },
+          {
+            "pixels": 4,
+            "distance_from_dominant": 3,
+            "kept": false
+          },
+          {
+            "pixels": 1,
+            "distance_from_dominant": 2,
+            "kept": false
+          },
+          {
+            "pixels": 5,
+            "distance_from_dominant": 5,
+            "kept": false
+          },
+          {
+            "pixels": 1,
+            "distance_from_dominant": 6,
+            "kept": false
+          }
+        ]
+      },
+      "alpha": {
+        "transparent_pixels": 1616210,
+        "soft_pixels": 3353,
+        "opaque_pixels": 1247637
+      },
+      "edge_artifacts_repaired": 0
+    },
+    {
+      "name": "blink",
+      "path": "public/assets/art/characters/hagrid/default/blink.png",
+      "media_type": "image/png",
+      "bytes": 986158,
+      "sha256": "d29c703fab1cdf243c9a5572480dddb23e8391895dfd64686df67b2a8c7caf01",
+      "rgba_sha256": "5042f0fa43dcd34caed4806ce551d167468a592cbb410dd72e2132927326fa6b",
+      "dimensions": {
+        "width": 896,
+        "height": 1200
+      },
+      "crop": {
+        "x": 1600,
+        "y": 0,
+        "width": 1600,
+        "height": 1792
+      },
+      "source_content_bounds": {
+        "x": 268,
+        "y": 105,
+        "width": 1091,
+        "height": 1646
+      },
+      "scaled_dimensions": {
+        "width": 728,
+        "height": 1098
+      },
+      "placement": {
+        "x": 84,
+        "y": 35,
+        "width": 728,
+        "height": 1098,
+        "center_x": 448,
+        "ground_y": 1132
+      },
+      "flood": {
+        "background_pixels": 1607348,
+        "non_background_pixels": 1259852,
+        "background_fraction": 0.5605984933035715
+      },
+      "components": {
+        "found": 6,
+        "dominant_pixels": 1252465,
+        "kept": 4,
+        "removed": 2,
+        "selected_pixels": 1252502,
+        "details": [
+          {
+            "pixels": 1,
+            "distance_from_dominant": 2,
+            "kept": false
+          },
+          {
+            "pixels": 10,
+            "distance_from_dominant": 5,
+            "kept": true
+          },
+          {
+            "pixels": 12,
+            "distance_from_dominant": 2,
+            "kept": true
+          },
+          {
+            "pixels": 15,
+            "distance_from_dominant": 2,
+            "kept": true
+          },
+          {
+            "pixels": 1,
+            "distance_from_dominant": 6,
+            "kept": false
+          }
+        ]
+      },
+      "alpha": {
+        "transparent_pixels": 1614698,
+        "soft_pixels": 3392,
+        "opaque_pixels": 1249110
+      },
+      "edge_artifacts_repaired": 0
+    },
+    {
+      "name": "talk-a",
+      "path": "public/assets/art/characters/hagrid/default/talk-a.png",
+      "media_type": "image/png",
+      "bytes": 972934,
+      "sha256": "1c4813fe58132952c24aa26aa6becbd3449da5d9e7f54b880547ff9190419949",
+      "rgba_sha256": "e8e3cfe74019e1026756192298a243843226f2014807cafd78b54c94cd496763",
+      "dimensions": {
+        "width": 896,
+        "height": 1200
+      },
+      "crop": {
+        "x": 3200,
+        "y": 0,
+        "width": 1600,
+        "height": 1792
+      },
+      "source_content_bounds": {
+        "x": 216,
+        "y": 102,
+        "width": 1101,
+        "height": 1649
+      },
+      "scaled_dimensions": {
+        "width": 734,
+        "height": 1100
+      },
+      "placement": {
+        "x": 81,
+        "y": 33,
+        "width": 734,
+        "height": 1100,
+        "center_x": 448,
+        "ground_y": 1132
+      },
+      "flood": {
+        "background_pixels": 1594948,
+        "non_background_pixels": 1272252,
+        "background_fraction": 0.5562737165178572
+      },
+      "components": {
+        "found": 4,
+        "dominant_pixels": 1264253,
+        "kept": 3,
+        "removed": 1,
+        "selected_pixels": 1264288,
+        "details": [
+          {
+            "pixels": 9,
+            "distance_from_dominant": 3,
+            "kept": true
+          },
+          {
+            "pixels": 2,
+            "distance_from_dominant": 5,
+            "kept": false
+          },
+          {
+            "pixels": 26,
+            "distance_from_dominant": 2,
+            "kept": true
+          }
+        ]
+      },
+      "alpha": {
+        "transparent_pixels": 1602912,
+        "soft_pixels": 3329,
+        "opaque_pixels": 1260959
+      },
+      "edge_artifacts_repaired": 0
+    },
+    {
+      "name": "talk-b",
+      "path": "public/assets/art/characters/hagrid/default/talk-b.png",
+      "media_type": "image/png",
+      "bytes": 974287,
+      "sha256": "c52cd8a9b23bc2c90bc57608f9a3cfcaf69136f5f4978432ce540d787ac3209d",
+      "rgba_sha256": "f410d926683f8dbbd8a30e05796e963697257570930199b0eafc535ce1f1b765",
+      "dimensions": {
+        "width": 896,
+        "height": 1200
+      },
+      "crop": {
+        "x": 0,
+        "y": 1792,
+        "width": 1600,
+        "height": 1792
+      },
+      "source_content_bounds": {
+        "x": 213,
+        "y": 82,
+        "width": 1096,
+        "height": 1664
+      },
+      "scaled_dimensions": {
+        "width": 731,
+        "height": 1110
+      },
+      "placement": {
+        "x": 83,
+        "y": 23,
+        "width": 731,
+        "height": 1110,
+        "center_x": 448,
+        "ground_y": 1132
+      },
+      "flood": {
+        "background_pixels": 1590990,
+        "non_background_pixels": 1276210,
+        "background_fraction": 0.5548932756696429
+      },
+      "components": {
+        "found": 8,
+        "dominant_pixels": 1269171,
+        "kept": 3,
+        "removed": 5,
+        "selected_pixels": 1269194,
+        "details": [
+          {
+            "pixels": 1,
+            "distance_from_dominant": 3,
+            "kept": false
+          },
+          {
+            "pixels": 8,
+            "distance_from_dominant": 6,
+            "kept": true
+          },
+          {
+            "pixels": 7,
+            "distance_from_dominant": 2,
+            "kept": false
+          },
+          {
+            "pixels": 15,
+            "distance_from_dominant": 6,
+            "kept": true
+          },
+          {
+            "pixels": 2,
+            "distance_from_dominant": 4,
+            "kept": false
+          },
+          {
+            "pixels": 2,
+            "distance_from_dominant": 4,
+            "kept": false
+          },
+          {
+            "pixels": 2,
+            "distance_from_dominant": 3,
+            "kept": false
+          }
+        ]
+      },
+      "alpha": {
+        "transparent_pixels": 1598006,
+        "soft_pixels": 3469,
+        "opaque_pixels": 1265725
+      },
+      "edge_artifacts_repaired": 0
+    },
+    {
+      "name": "profile-right",
+      "path": "public/assets/art/characters/hagrid/default/profile-right.png",
+      "media_type": "image/png",
+      "bytes": 728848,
+      "sha256": "03637182cbfe420933101cd73415dcde648c17986dc98c31d3db835480f94822",
+      "rgba_sha256": "65b15b85807c5ca71174e859567ff8fda225343bebcc7d1657ddd676881b71fd",
+      "dimensions": {
+        "width": 896,
+        "height": 1200
+      },
+      "crop": {
+        "x": 1600,
+        "y": 1792,
+        "width": 1067,
+        "height": 1792
+      },
+      "source_content_bounds": {
+        "x": 34,
+        "y": 83,
+        "width": 875,
+        "height": 1642
+      },
+      "scaled_dimensions": {
+        "width": 584,
+        "height": 1095
+      },
+      "placement": {
+        "x": 156,
+        "y": 38,
+        "width": 584,
+        "height": 1095,
+        "center_x": 448,
+        "ground_y": 1132
+      },
+      "flood": {
+        "background_pixels": 972803,
+        "non_background_pixels": 939261,
+        "background_fraction": 0.508771149919668
+      },
+      "components": {
+        "found": 5,
+        "dominant_pixels": 927506,
+        "kept": 1,
+        "removed": 4,
+        "selected_pixels": 927506,
+        "details": [
+          {
+            "pixels": 1,
+            "distance_from_dominant": 8,
+            "kept": false
+          },
+          {
+            "pixels": 4,
+            "distance_from_dominant": 2,
+            "kept": false
+          },
+          {
+            "pixels": 7,
+            "distance_from_dominant": 2,
+            "kept": false
+          },
+          {
+            "pixels": 2795,
+            "distance_from_dominant": 159,
+            "kept": false
+          }
+        ]
+      },
+      "alpha": {
+        "transparent_pixels": 984558,
+        "soft_pixels": 3767,
+        "opaque_pixels": 923739
+      },
+      "edge_artifacts_repaired": 0
+    },
+    {
+      "name": "walk-contact",
+      "path": "public/assets/art/characters/hagrid/default/walk-contact.png",
+      "media_type": "image/png",
+      "bytes": 733008,
+      "sha256": "26869f0f8ba8495f416be010550f08a8190f2c587421367f086e7c081c2c46a4",
+      "rgba_sha256": "0c93b38b47c43f8a40a01e724f22e43681dceae985fa4cd13a36a630a54dba1c",
+      "dimensions": {
+        "width": 896,
+        "height": 1200
+      },
+      "crop": {
+        "x": 3573,
+        "y": 1792,
+        "width": 1227,
+        "height": 1792
+      },
+      "source_content_bounds": {
+        "x": 100,
+        "y": 82,
+        "width": 972,
+        "height": 1634
+      },
+      "scaled_dimensions": {
+        "width": 648,
+        "height": 1090
+      },
+      "placement": {
+        "x": 124,
+        "y": 43,
+        "width": 648,
+        "height": 1090,
+        "center_x": 448,
+        "ground_y": 1132
+      },
+      "flood": {
+        "background_pixels": 1254911,
+        "non_background_pixels": 943873,
+        "background_fraction": 0.5707295486960066
+      },
+      "components": {
+        "found": 6,
+        "dominant_pixels": 934029,
+        "kept": 2,
+        "removed": 4,
+        "selected_pixels": 934075,
+        "details": [
+          {
+            "pixels": 1,
+            "distance_from_dominant": 2,
+            "kept": false
+          },
+          {
+            "pixels": 3,
+            "distance_from_dominant": 2,
+            "kept": false
+          },
+          {
+            "pixels": 46,
+            "distance_from_dominant": 2,
+            "kept": true
+          },
+          {
+            "pixels": 3,
+            "distance_from_dominant": 13,
+            "kept": false
+          },
+          {
+            "pixels": 1,
+            "distance_from_dominant": 2,
+            "kept": false
+          }
+        ]
+      },
+      "alpha": {
+        "transparent_pixels": 1264709,
+        "soft_pixels": 3968,
+        "opaque_pixels": 930107
+      },
+      "edge_artifacts_repaired": 0
+    }
+  ],
+  "provenance_path": "art/characters/hagrid/batch/core-v1.slice-provenance.json"
+}

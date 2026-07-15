@@ -9,6 +9,7 @@ import {
 } from './VioletAlignedSpriteRig.js';
 import { productionFullFrameCharacterRigs } from './FullFrameCharacterRig.js';
 import './VioletFullFrameCharacterRig.js';
+import './HagridFullFrameCharacterRig.js';
 
 const OUTLINE = STORYBOOK_INK.primary;
 const DEEP_OUTLINE = STORYBOOK_INK.deep;
@@ -677,25 +678,20 @@ export class CharacterRenderer {
 
   drawHagridSpriteReview(context, time) {
     const rows = [
-      { label: 'Today · idle', x: 140, sprite: false, pose: 'idle' },
-      { label: 'Today · walking', x: 370, sprite: false, pose: 'walking' },
-      { label: 'Painted · idle', x: 660, sprite: true, pose: 'idle' },
-      { label: 'Painted · walking', x: 895, sprite: true, pose: 'walking' },
-      { label: 'Painted · beckoning', x: 1130, sprite: true, pose: 'beckoning' },
+      { label: 'Neutral', x: 130, pose: 'idle', facing: 'right' },
+      { label: 'Blink', x: 385, pose: 'blink', facing: 'right' },
+      { label: 'Speaking', x: 640, pose: 'speaking', facing: 'right' },
+      { label: 'Walk right', x: 895, pose: 'walking', facing: 'right' },
+      { label: 'Walk left', x: 1150, pose: 'walking', facing: 'left' },
     ];
     for (const entry of rows) {
-      drawReviewPlinth(context, entry.x, 625, entry.label);
-      if (entry.sprite) {
-        const drew = hagridSpriteRig.draw(context, {
-          x: entry.x, y: 595, scale: 1, pose: entry.pose, time: time + entry.x * 0.001,
-        });
-        if (!drew) drawReviewLabel(context, entry.x, 480, 'parts loading');
-      } else {
-        this.draw(context, {
-          kind: 'guide', x: entry.x, y: 595, scale: 1, medium: 'bezier',
-          pose: entry.pose === 'beckoning' ? 'speaking' : entry.pose,
-        }, time + entry.x * 0.001);
-      }
+      // The production rig owns its floor-space contact shadow. A second
+      // detached review-plinth oval falsely makes the figure look airborne.
+      drawReviewLabel(context, entry.x, 660, entry.label);
+      this.draw(context, {
+        kind: 'guide', x: entry.x, y: 595, scale: 1,
+        pose: entry.pose, facing: entry.facing,
+      }, time + entry.x * 0.001);
     }
   }
 
@@ -1153,7 +1149,7 @@ function drawReviewBackground(context, scene) {
     'character-portraits-review': 'Dialogue cameos · one shared puppet family',
     'owl-motion-review': 'Hero owl · pose and motion library',
     'character-sprite-spike-review': 'SP-E spike · code-drawn vs painted parts',
-    'hagrid-sprite-review': 'SP-F · code-drawn vs painted Hagrid',
+    'hagrid-sprite-review': 'Hagrid · aligned production poses',
     'violet-expression-review': 'Approved Violet · aligned expressions and portraits',
   };
   context.fillText(titles[scene], 640, 77);

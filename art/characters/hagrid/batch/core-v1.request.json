@@ -1,0 +1,25 @@
+{
+  "schema_version": 1,
+  "prompt": {
+    "path": "art/characters/hagrid/batch/core-v1.prompt.md",
+    "section": "Prompt"
+  },
+  "references": [
+    {
+      "path": "art/character-refs/hagrid.png",
+      "role": "accepted Hagrid identity, anatomy, outfit, palette, proportions, and painted finish"
+    },
+    {
+      "path": "art/guides/ch1-room-style-triptych.png",
+      "role": "minimum room-style guidance for painterly texture, warm key light, and violet-blue shadows only"
+    }
+  ],
+  "generation": {
+    "aspect_ratio": "4:3",
+    "resolution": "4K"
+  },
+  "output": {
+    "image": "art/characters/hagrid/batch/core-v1.png",
+    "provenance": "art/characters/hagrid/batch/core-v1.metadata.json"
+  }
+}

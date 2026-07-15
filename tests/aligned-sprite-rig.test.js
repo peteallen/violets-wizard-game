@@ -225,6 +225,9 @@ describe('aligned sprite rig contract', () => {
     const firstLayer = context.calls.findIndex(([name]) => name === 'drawImage');
     expect(shadowFill).toBeGreaterThan(-1);
     expect(shadowFill).toBeLessThan(firstLayer);
+    expect(() => rig.draw(recordingContext(), {
+      appearance: 'casual', shadowOpacity: 1.1,
+    })).toThrow('between zero and one');
 
     const preOriented = recordingContext();
     rig.draw(preOriented, {
