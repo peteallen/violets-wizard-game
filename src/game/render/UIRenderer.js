@@ -468,10 +468,10 @@ export function titleForegroundLayout(presentation) {
   return Object.freeze({
     masthead,
     action: Object.freeze({
-      x: envelope.x + envelope.width * (24 / 550),
-      y: envelope.y + envelope.height * (29 / 196),
-      width: envelope.width * (492 / 550),
-      height: envelope.height * (142 / 196),
+      x: envelope.x + envelope.width * (18 / 420),
+      y: envelope.y + envelope.height * (24 / 180),
+      width: envelope.width * (384 / 420),
+      height: envelope.height * (126 / 180),
     }),
   });
 }
@@ -3032,177 +3032,359 @@ function drawDisplayTitle(context, text, x, y, size) {
 
 function drawTitleLetter(context, label, rect, { time = 0 } = {}) {
   const { x, y, width, height } = rect;
-  const scale = Math.min(width / 492, height / 142);
-  const pulse = 1 + Math.sin(time * 2.1) * 0.018;
+  const scale = Math.min(width / 384, height / 126);
+  const pulse = 1 + Math.sin(time * 1.8) * 0.012;
+  const tilt = -0.024 + Math.sin(time * 0.72 + 0.8) * 0.0035;
   context.save();
   context.translate(x + width / 2, y + height / 2);
+  context.rotate(tilt);
   context.scale(pulse, pulse);
   context.translate(-(x + width / 2), -(y + height / 2));
 
-  context.save();
   for (const [spread, fill] of [
-    [18, 'rgba(232,185,83,0.045)'],
-    [11, 'rgba(232,185,83,0.075)'],
-    [5, 'rgba(244,213,141,0.14)'],
+    [15, 'rgba(232,185,83,0.035)'],
+    [9, 'rgba(232,185,83,0.06)'],
+    [4, 'rgba(244,213,141,0.11)'],
   ]) {
     const inset = spread * scale;
     context.fillStyle = fill;
-    traceTitleLetter(context, x - inset, y - inset, width + inset * 2, height + inset * 2);
+    traceTitleInvitation(context, x - inset, y - inset, width + inset * 2, height + inset * 2);
     context.fill();
   }
+
+  context.fillStyle = 'rgba(13,10,24,0.43)';
+  traceTitleInvitation(context, x + 7 * scale, y + 10 * scale, width, height);
+  context.fill();
+  context.fillStyle = '#d3b77d';
+  traceTitleInvitation(context, x, y, width, height);
+  context.fill();
+  context.strokeStyle = '#4d352a';
+  context.lineWidth = 3.2 * scale;
+  context.stroke();
+
+  context.save();
+  traceTitleInvitation(context, x, y, width, height);
+  context.clip();
+  context.fillStyle = 'rgba(255,243,204,0.34)';
+  traceTitleInvitationLight(context, x, y, width, height);
+  context.fill();
+  context.fillStyle = 'rgba(92,57,39,0.18)';
+  traceTitleInvitationShade(context, x, y, width, height);
+  context.fill();
+  drawTitlePaperGrain(context, x, y, width, height, scale);
   context.restore();
 
-  context.fillStyle = 'rgba(13,10,24,0.48)';
-  traceTitleLetter(context, x + 9 * scale, y + 12 * scale, width, height);
-  context.fill();
-  context.fillStyle = '#ead7ad';
-  traceTitleLetter(context, x, y, width, height);
-  context.fill();
-  context.strokeStyle = '#c89a43';
-  context.lineWidth = 5 * scale;
-  context.stroke();
-  context.strokeStyle = 'rgba(255,244,207,0.64)';
-  context.lineWidth = 1.5 * scale;
-  traceTitleLetter(
+  context.strokeStyle = 'rgba(255,244,207,0.54)';
+  context.lineWidth = 1.25 * scale;
+  traceTitleInvitation(
     context,
-    x + 8 * scale,
-    y + 7 * scale,
-    width - 16 * scale,
-    height - 14 * scale,
+    x + 7 * scale,
+    y + 6 * scale,
+    width - 14 * scale,
+    height - 12 * scale,
   );
   context.stroke();
 
-  context.strokeStyle = 'rgba(112,78,48,0.56)';
-  context.lineWidth = 2.4 * scale;
+  context.strokeStyle = 'rgba(83,55,39,0.47)';
+  context.lineWidth = 1.8 * scale;
   context.beginPath();
-  context.moveTo(x + 12 * scale, y + 12 * scale);
+  context.moveTo(x + 12 * scale, y + 14 * scale);
   context.bezierCurveTo(
-    x + width * 0.24,
-    y + height * 0.25,
-    x + width * 0.39,
-    y + height * 0.5,
+    x + width * 0.2,
+    y + height * 0.23,
+    x + width * 0.38,
+    y + height * 0.43,
     x + width / 2,
-    y + height * 0.58,
+    y + height * 0.53,
   );
   context.bezierCurveTo(
-    x + width * 0.62,
-    y + height * 0.48,
-    x + width * 0.78,
-    y + height * 0.24,
+    x + width * 0.63,
+    y + height * 0.42,
+    x + width * 0.8,
+    y + height * 0.22,
     x + width - 12 * scale,
-    y + 12 * scale,
+    y + 14 * scale,
   );
-  context.moveTo(x + 14 * scale, y + height - 13 * scale);
+  context.moveTo(x + 12 * scale, y + height - 12 * scale);
   context.bezierCurveTo(
-    x + width * 0.22,
-    y + height * 0.81,
-    x + width * 0.33,
+    x + width * 0.23,
+    y + height * 0.83,
+    x + width * 0.36,
     y + height * 0.61,
-    x + width * 0.4,
-    y + height * 0.5,
+    x + width * 0.46,
+    y + height * 0.54,
   );
-  context.moveTo(x + width - 14 * scale, y + height - 13 * scale);
+  context.moveTo(x + width - 12 * scale, y + height - 12 * scale);
   context.bezierCurveTo(
-    x + width * 0.79,
-    y + height * 0.79,
-    x + width * 0.68,
-    y + height * 0.6,
-    x + width * 0.6,
-    y + height * 0.5,
+    x + width * 0.78,
+    y + height * 0.82,
+    x + width * 0.65,
+    y + height * 0.61,
+    x + width * 0.54,
+    y + height * 0.54,
   );
   context.stroke();
 
-  context.strokeStyle = 'rgba(120,82,48,0.18)';
-  context.lineWidth = Math.max(0.8, 1.05 * scale);
+  const labelRect = {
+    x: x + 91 * scale,
+    y: y + 27 * scale,
+    width: width - 111 * scale,
+    height: 72 * scale,
+  };
+  drawTitleAddressSlip(context, labelRect, scale);
+  drawTitleWaxSeal(context, x + 55 * scale, y + height * 0.52, 29 * scale);
+
+  context.fillStyle = '#3a2923';
+  context.textAlign = 'center';
+  context.textBaseline = 'middle';
+  context.font = `700 ${25 * scale}px "Andika", "Trebuchet MS", sans-serif`;
+  fitText(
+    context,
+    label,
+    labelRect.x + labelRect.width / 2,
+    labelRect.y + labelRect.height / 2 + 1.5 * scale,
+    labelRect.width - 28 * scale,
+  );
+  drawTitleInvitationMotes(context, x, y, width, height, time, scale);
+  context.restore();
+}
+
+function traceTitleInvitation(context, x, y, width, height) {
+  context.beginPath();
+  context.moveTo(x + 17, y + 2);
+  context.bezierCurveTo(
+    x + width * 0.27,
+    y - 1,
+    x + width * 0.7,
+    y + 4,
+    x + width - 15,
+    y + 2,
+  );
+  context.bezierCurveTo(
+    x + width - 1,
+    y + 6,
+    x + width - 4,
+    y + height * 0.66,
+    x + width - 8,
+    y + height - 15,
+  );
+  context.bezierCurveTo(
+    x + width - 10,
+    y + height,
+    x + width * 0.29,
+    y + height - 3,
+    x + 15,
+    y + height - 2,
+  );
+  context.bezierCurveTo(
+    x + 1,
+    y + height - 4,
+    x + 5,
+    y + height * 0.31,
+    x + 3,
+    y + 17,
+  );
+  context.bezierCurveTo(x + 4, y + 5, x + 8, y + 1, x + 17, y + 2);
+  context.closePath();
+}
+
+function traceTitleInvitationLight(context, x, y, width, height) {
+  context.beginPath();
+  context.moveTo(x + 10, y + 8);
+  context.bezierCurveTo(x + width * 0.28, y + 2, x + width * 0.57, y + 8, x + width * 0.76, y + 5);
+  context.bezierCurveTo(x + width * 0.54, y + height * 0.34, x + width * 0.25, y + height * 0.46, x + 8, y + height * 0.57);
+  context.bezierCurveTo(x + 5, y + height * 0.37, x + 7, y + height * 0.18, x + 10, y + 8);
+  context.closePath();
+}
+
+function traceTitleInvitationShade(context, x, y, width, height) {
+  context.beginPath();
+  context.moveTo(x + width * 0.58, y + height * 0.56);
+  context.bezierCurveTo(x + width * 0.76, y + height * 0.43, x + width * 0.92, y + height * 0.3, x + width - 3, y + height * 0.24);
+  context.bezierCurveTo(x + width - 4, y + height * 0.55, x + width - 7, y + height * 0.84, x + width - 13, y + height - 4);
+  context.bezierCurveTo(x + width * 0.82, y + height - 1, x + width * 0.68, y + height * 0.78, x + width * 0.58, y + height * 0.56);
+  context.closePath();
+}
+
+function drawTitlePaperGrain(context, x, y, width, height, scale) {
+  context.strokeStyle = 'rgba(97,62,42,0.14)';
+  context.lineWidth = Math.max(0.7, scale * 0.85);
   context.beginPath();
   for (const [startX, startY, length, bend] of [
-    [0.26, 0.2, 0.1, -0.018],
-    [0.48, 0.76, 0.13, 0.015],
-    [0.69, 0.29, 0.09, 0.021],
-    [0.77, 0.7, 0.08, -0.014],
+    [0.06, 0.24, 0.09, -0.018],
+    [0.24, 0.16, 0.12, 0.014],
+    [0.31, 0.84, 0.11, -0.013],
+    [0.56, 0.18, 0.08, 0.018],
+    [0.72, 0.79, 0.12, 0.014],
+    [0.86, 0.27, 0.08, -0.017],
   ]) {
     const grainX = x + width * startX;
     const grainY = y + height * startY;
     context.moveTo(grainX, grainY);
     context.bezierCurveTo(
-      grainX + width * length * 0.31,
+      grainX + width * length * 0.3,
       grainY + height * bend,
-      grainX + width * length * 0.7,
-      grainY - height * bend * 0.45,
+      grainX + width * length * 0.72,
+      grainY - height * bend * 0.6,
       grainX + width * length,
-      grainY + height * bend * 0.2,
+      grainY + height * bend * 0.15,
     );
   }
   context.stroke();
+}
 
-  drawWaxMedallion(
-    context,
-    x + width * (73 / 492),
-    y + height / 2,
-    44 * scale,
-    (sealContext, sealX, sealY, sealSize) => drawVectorIcon(
-      sealContext,
-      'owl',
-      sealX,
-      sealY,
-      sealSize * 0.88,
-      { color: '#fff1c6', secondary: '#e5be6a' },
-    ),
+function drawTitleAddressSlip(context, rect, scale) {
+  context.fillStyle = 'rgba(49,30,27,0.23)';
+  traceTitleAddressSlip(context, { ...rect, x: rect.x + 3 * scale, y: rect.y + 4 * scale });
+  context.fill();
+  context.fillStyle = '#f0dfb9';
+  traceTitleAddressSlip(context, rect);
+  context.fill();
+  context.fillStyle = 'rgba(255,248,220,0.44)';
+  traceTitleAddressSlipLight(context, rect);
+  context.fill();
+  context.strokeStyle = '#7b583d';
+  context.lineWidth = 1.7 * scale;
+  traceTitleAddressSlip(context, rect);
+  context.stroke();
+  context.strokeStyle = 'rgba(123,88,61,0.13)';
+  context.lineWidth = Math.max(0.7, 0.8 * scale);
+  context.beginPath();
+  context.moveTo(rect.x + rect.width * 0.09, rect.y + rect.height * 0.25);
+  context.bezierCurveTo(
+    rect.x + rect.width * 0.19,
+    rect.y + rect.height * 0.2,
+    rect.x + rect.width * 0.23,
+    rect.y + rect.height * 0.28,
+    rect.x + rect.width * 0.31,
+    rect.y + rect.height * 0.22,
   );
+  context.moveTo(rect.x + rect.width * 0.72, rect.y + rect.height * 0.79);
+  context.bezierCurveTo(
+    rect.x + rect.width * 0.79,
+    rect.y + rect.height * 0.73,
+    rect.x + rect.width * 0.84,
+    rect.y + rect.height * 0.82,
+    rect.x + rect.width * 0.91,
+    rect.y + rect.height * 0.76,
+  );
+  context.stroke();
+}
 
-  context.fillStyle = '#33241f';
-  context.textAlign = 'center';
-  context.font = `700 ${31 * scale}px "Andika", "Trebuchet MS", sans-serif`;
-  fitText(
-    context,
-    label,
-    x + width * (306 / 492),
-    y + height / 2 + 10 * scale,
-    width * (332 / 492),
-  );
+function traceTitleAddressSlip(context, rect) {
+  const { x, y, width, height } = rect;
+  context.beginPath();
+  context.moveTo(x + 9, y + 2);
+  context.bezierCurveTo(x + width * 0.31, y - 1, x + width * 0.69, y + 3, x + width - 8, y + 1);
+  context.bezierCurveTo(x + width + 1, y + 5, x + width - 3, y + height * 0.69, x + width - 6, y + height - 5);
+  context.bezierCurveTo(x + width * 0.72, y + height + 1, x + width * 0.29, y + height - 2, x + 7, y + height);
+  context.bezierCurveTo(x, y + height - 5, x + 4, y + height * 0.31, x + 9, y + 2);
+  context.closePath();
+}
+
+function traceTitleAddressSlipLight(context, rect) {
+  const { x, y, width, height } = rect;
+  context.beginPath();
+  context.moveTo(x + 7, y + 5);
+  context.bezierCurveTo(x + width * 0.26, y + 1, x + width * 0.53, y + 5, x + width * 0.71, y + 4);
+  context.bezierCurveTo(x + width * 0.55, y + height * 0.29, x + width * 0.29, y + height * 0.38, x + 5, y + height * 0.5);
+  context.bezierCurveTo(x + 3, y + height * 0.29, x + 5, y + height * 0.14, x + 7, y + 5);
+  context.closePath();
+}
+
+function drawTitleWaxSeal(context, x, y, radius) {
+  context.save();
+  context.translate(x, y);
+  context.fillStyle = 'rgba(38,22,30,0.31)';
+  traceTitleWaxBlob(context, 3, 4, radius * 1.04);
+  context.fill();
+  context.fillStyle = '#7c2f47';
+  traceTitleWaxBlob(context, 0, 0, radius);
+  context.fill();
+  context.strokeStyle = '#482333';
+  context.lineWidth = Math.max(1.6, radius * 0.09);
+  context.stroke();
+  context.fillStyle = 'rgba(224,139,139,0.3)';
+  traceTitleWaxHighlight(context, radius);
+  context.fill();
+  drawPressedOwlMark(context, radius);
   context.restore();
 }
 
-function traceTitleLetter(context, x, y, width, height) {
+function traceTitleWaxBlob(context, x, y, radius) {
   context.beginPath();
-  context.moveTo(x + 18, y + 1);
-  context.bezierCurveTo(
-    x + width * 0.28,
-    y - 2,
-    x + width * 0.69,
-    y + 5,
-    x + width - 14,
-    y + 3,
-  );
-  context.quadraticCurveTo(x + width, y + 5, x + width - 2, y + 21);
-  context.bezierCurveTo(
-    x + width + 1,
-    y + height * 0.32,
-    x + width - 9,
-    y + height * 0.72,
-    x + width - 5,
-    y + height - 17,
-  );
-  context.quadraticCurveTo(x + width - 7, y + height, x + width - 24, y + height - 1);
-  context.bezierCurveTo(
-    x + width * 0.68,
-    y + height + 3,
-    x + width * 0.31,
-    y + height - 7,
-    x + 15,
-    y + height - 4,
-  );
-  context.quadraticCurveTo(x, y + height - 7, x + 3, y + height - 23);
-  context.bezierCurveTo(
-    x - 2,
-    y + height * 0.71,
-    x + 7,
-    y + height * 0.3,
-    x + 1,
-    y + 18,
-  );
-  context.quadraticCurveTo(x + 3, y + 3, x + 18, y);
+  context.moveTo(x - radius * 0.94, y - radius * 0.12);
+  context.bezierCurveTo(x - radius * 1.02, y - radius * 0.65, x - radius * 0.5, y - radius * 1.02, x - radius * 0.08, y - radius * 0.92);
+  context.bezierCurveTo(x + radius * 0.43, y - radius * 1.05, x + radius * 0.98, y - radius * 0.6, x + radius * 0.91, y - radius * 0.04);
+  context.bezierCurveTo(x + radius * 1.03, y + radius * 0.43, x + radius * 0.44, y + radius, x - radius * 0.05, y + radius * 0.9);
+  context.bezierCurveTo(x - radius * 0.56, y + radius * 1.02, x - radius * 1.04, y + radius * 0.47, x - radius * 0.94, y - radius * 0.12);
   context.closePath();
+}
+
+function traceTitleWaxHighlight(context, radius) {
+  context.beginPath();
+  context.moveTo(-radius * 0.62, -radius * 0.3);
+  context.bezierCurveTo(-radius * 0.4, -radius * 0.78, radius * 0.22, -radius * 0.82, radius * 0.52, -radius * 0.39);
+  context.bezierCurveTo(radius * 0.15, -radius * 0.51, -radius * 0.23, -radius * 0.42, -radius * 0.62, -radius * 0.3);
+  context.closePath();
+}
+
+function drawPressedOwlMark(context, radius) {
+  context.strokeStyle = '#4d2635';
+  context.lineWidth = Math.max(1.2, radius * 0.075);
+  context.beginPath();
+  context.moveTo(-radius * 0.48, -radius * 0.25);
+  context.bezierCurveTo(-radius * 0.31, -radius * 0.54, -radius * 0.12, -radius * 0.53, 0, -radius * 0.31);
+  context.bezierCurveTo(radius * 0.15, -radius * 0.54, radius * 0.34, -radius * 0.5, radius * 0.5, -radius * 0.22);
+  context.moveTo(-radius * 0.44, -radius * 0.18);
+  context.bezierCurveTo(-radius * 0.42, radius * 0.23, -radius * 0.23, radius * 0.52, 0, radius * 0.61);
+  context.bezierCurveTo(radius * 0.27, radius * 0.5, radius * 0.43, radius * 0.22, radius * 0.48, -radius * 0.16);
+  context.stroke();
+  for (const eyeX of [-radius * 0.21, radius * 0.21]) {
+    traceOrganicSpot(context, eyeX, -radius * 0.13, radius * 0.16, radius * 0.19, eyeX < 0 ? -0.025 : 0.025);
+    context.stroke();
+  }
+  context.beginPath();
+  context.moveTo(-radius * 0.28, radius * 0.27);
+  context.bezierCurveTo(-radius * 0.21, radius * 0.39, -radius * 0.14, radius * 0.41, -radius * 0.08, radius * 0.31);
+  context.moveTo(radius * 0.08, radius * 0.31);
+  context.bezierCurveTo(radius * 0.14, radius * 0.41, radius * 0.21, radius * 0.39, radius * 0.28, radius * 0.27);
+  context.stroke();
+
+  context.fillStyle = '#4d2635';
+  for (const eyeX of [-radius * 0.21, radius * 0.21]) {
+    traceOrganicSpot(context, eyeX, -radius * 0.13, radius * 0.075, radius * 0.095, eyeX < 0 ? -0.04 : 0.04);
+    context.fill();
+  }
+  context.beginPath();
+  context.moveTo(-radius * 0.11, radius * 0.02);
+  context.bezierCurveTo(-radius * 0.04, -radius * 0.02, radius * 0.05, -radius * 0.01, radius * 0.11, radius * 0.03);
+  context.bezierCurveTo(radius * 0.06, radius * 0.13, radius * 0.01, radius * 0.21, -radius * 0.02, radius * 0.24);
+  context.bezierCurveTo(-radius * 0.04, radius * 0.17, -radius * 0.08, radius * 0.09, -radius * 0.11, radius * 0.02);
+  context.closePath();
+  context.fill();
+  context.fillStyle = 'rgba(229,150,143,0.32)';
+  traceOrganicSpot(context, -radius * 0.04, -radius * 0.38, radius * 0.26, radius * 0.1, 0.03);
+  context.fill();
+}
+
+function drawTitleInvitationMotes(context, x, y, width, height, time, scale) {
+  const positions = [
+    [0.05, -0.06, 0.2],
+    [0.94, 0.09, 1.8],
+    [0.12, 1.05, 3.2],
+    [0.87, 1.01, 4.6],
+  ];
+  for (const [px, py, phase] of positions) {
+    const shimmer = 0.45 + (Math.sin(time * 1.25 + phase) + 1) * 0.18;
+    context.globalAlpha = shimmer;
+    context.fillStyle = '#ffd76a';
+    const moteX = x + width * px;
+    const moteY = y + height * py;
+    traceOrganicSpot(context, moteX, moteY, 2.4 * scale, 3.1 * scale, Math.sin(phase) * 0.08);
+    context.fill();
+  }
+  context.globalAlpha = 1;
 }
 
 function drawDressingMirror(context, rect, time, reducedMotion) {
