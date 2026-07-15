@@ -268,4 +268,48 @@ describe('aligned sprite rig contract', () => {
     await expect(loading).rejects.toThrow('is 99x160; expected 100x160');
     expect(rig.ready).toBe(false);
   });
+
+  it('releases active and decoded image generations without letting stale decodes repopulate', async () => {
+    const created = [];
+    const imageFactory = (url) => {
+      const image = {
+        url, onload: null, onerror: null, naturalWidth: 100, naturalHeight: 160,
+      };
+      created.push(image);
+      return image;
+    };
+    const rig = new AlignedSpriteRig(manifest(), { imageFactory, maxConcurrentLoads: 1 });
+    const firstLoading = rig.preload();
+
+    expect(created).toHaveLength(1);
+    rig.release();
+    await expect(firstLoading).rejects.toThrow('image loading was released');
+    expect(rig.ready).toBe(false);
+    expect(rig.loading).toBeNull();
+    expect(rig.images.size).toBe(0);
+    expect(rig.loads.size).toBe(0);
+    expect(rig.loadQueue).toEqual([]);
+
+    created[0].onload();
+    await Promise.resolve();
+    await Promise.resolve();
+    expect(rig.images.size).toBe(0);
+
+    const secondLoading = rig.preload();
+    const completed = new Set([created[0]]);
+    const expectedUrlCount = new Set(
+      Object.values(manifest().assets).flatMap(({ left, right }) => [left, right]),
+    ).size;
+    while (completed.size - 1 < expectedUrlCount) {
+      await Promise.resolve();
+      for (const image of created) {
+        if (completed.has(image)) continue;
+        completed.add(image);
+        image.onload();
+      }
+    }
+    await secondLoading;
+    expect(rig.ready).toBe(true);
+    expect(rig.images.size).toBe(expectedUrlCount);
+  });
 });

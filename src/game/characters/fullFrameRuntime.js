@@ -1,0 +1,51 @@
+function renderRequest(rig, surface, request) {
+  if (!request || typeof request !== 'object' || Array.isArray(request)) {
+    throw new TypeError(`Full-frame ${surface} render request must be an object.`);
+  }
+  const {
+    context,
+    time = 0,
+    characterId: _characterId,
+    surface: _surface,
+    action,
+    actionProgress,
+    actionTime,
+    actorAnimation: _legacyActorAnimation,
+    detail: _legacyDetail,
+    outfit: _legacyOutfit,
+    walking: _legacyWalking,
+    ...character
+  } = request;
+  if (!context || (typeof context !== 'object' && typeof context !== 'function')) {
+    throw new TypeError(`Full-frame ${surface} rendering requires a drawing context.`);
+  }
+  const actorAnimation = action
+    ? {
+      action,
+      localTime: Number.isFinite(actionTime) ? actionTime : time,
+      ...(Number.isFinite(actionProgress) ? { progress: actionProgress } : {}),
+    }
+    : undefined;
+  return rig.draw(context, {
+    ...character,
+    ...(actorAnimation ? { actorAnimation } : {}),
+    detail: surface,
+  }, time);
+}
+
+export function createFullFrameCharacterRuntime(rig) {
+  if (!rig || typeof rig.draw !== 'function' || typeof rig.preload !== 'function') {
+    throw new TypeError('Full-frame character runtime requires a rig with draw() and preload().');
+  }
+  return Object.freeze({
+    renderers: Object.freeze({
+      world: (request) => renderRequest(rig, 'world', request),
+      portrait: (request) => renderRequest(rig, 'portrait', request),
+    }),
+    // Chapter activation loads the lightweight runtime module but leaves image
+    // decoding clip-scoped (D63). Deterministic review scopes opt into the
+    // exhaustive manifest preload so captures never record a loading frame.
+    preload: ({ context } = {}) => (context?.review === true ? rig.preload() : undefined),
+    release: () => rig.release?.(),
+  });
+}

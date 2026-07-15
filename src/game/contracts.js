@@ -71,6 +71,7 @@ const TIMELINE_CUE_EVENT_TYPE_SET = new Set(TIMELINE_CUE_EVENT_TYPES);
 const ACTION_TYPE_SET = new Set(ACTION_TYPES);
 const GENERAL_ID = /^[a-z][A-Za-z0-9]*(?:[.-][A-Za-z0-9][A-Za-z0-9-]*)+$/;
 const CHAPTER_ID = /^ch[1-9][0-9]*$/;
+const CHARACTER_ID = /^character\.[a-z0-9]+(?:[.-][a-z0-9]+)*$/;
 const FLAG_ID = /^ch[1-9][0-9]*\.[A-Za-z0-9][A-Za-z0-9.-]*$/;
 const LOCAL_ID = /^[A-Za-z][A-Za-z0-9_-]*$/;
 const PROFILE_PATHS = new Set(['house', 'pet.type', 'pet.name', 'appearance.robeTrim', 'wandId']);
@@ -172,6 +173,14 @@ function id(value, path) {
 function chapterId(value, path) {
   string(value, path, { max: 20 });
   if (!CHAPTER_ID.test(value)) fail(path, 'must be a chapter identifier such as ch1');
+  return value;
+}
+
+function characterId(value, path) {
+  string(value, path, { max: 160 });
+  if (!CHARACTER_ID.test(value)) {
+    fail(path, 'must be a canonical character identity such as character.violet');
+  }
   return value;
 }
 
@@ -424,10 +433,11 @@ function validateController(value, path) {
 
 export function validateNpc(value, path = 'npc') {
   exactObject(value, path, [
-    'id', 'displayName', 'puppet', 'portrait', 'voiceRole', 'scale',
+    'id', 'characterId', 'displayName', 'puppet', 'portrait', 'voiceRole', 'scale',
     'hitRadius', 'defaultPose', 'controller', 'defaultTalk',
   ]);
   id(value.id, `${path}.id`);
+  characterId(value.characterId, `${path}.characterId`);
   string(value.displayName, `${path}.displayName`, { max: 80 });
   ref(value.puppet, `${path}.puppet`);
   ref(value.portrait, `${path}.portrait`);

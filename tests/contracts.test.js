@@ -102,6 +102,7 @@ function chapterFixture() {
     npcs: {
       'npc.guide': {
         id: 'npc.guide',
+        characterId: 'character.hagrid',
         displayName: 'The Guide',
         puppet: 'puppets/guide',
         portrait: 'portraits/guide',
@@ -240,6 +241,8 @@ describe('content contracts', () => {
 
   it.each([
     ['unknown keys', (chapter) => { chapter.unreviewed = true; }],
+    ['NPCs without canonical character identities', (chapter) => { delete chapter.npcs['npc.guide'].characterId; }],
+    ['role aliases used as character identities', (chapter) => { chapter.npcs['npc.guide'].characterId = 'npc.guide'; }],
     ['unknown room-light directions', (chapter) => { chapter.rooms['ch1.bedroom'].background.keyLight = 'top'; }],
     ['undersized touch targets', (chapter) => { chapter.rooms['ch1.bedroom'].hotspots[0].hitArea.radius = 40; }],
     ['unresolved dialogue edges', (chapter) => { chapter.dialogues['ch1.guide.hello'].nodes.hello.next = 'missing'; }],

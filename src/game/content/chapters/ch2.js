@@ -1,5 +1,13 @@
 import { storybookChecklist } from '../visualVerification.js';
 
+export const chapter2CharacterIds = Object.freeze([
+  'character.violet',
+  'character.narrator',
+  'character.cat',
+  'character.pet-owl',
+  'character.toad',
+]);
+
 const noCondition = Object.freeze({});
 
 const previewDialogue = {
@@ -87,8 +95,22 @@ export const chapter2 = {
     },
   },
   npcs: {
+    'npc.violet': {
+      id: 'npc.violet',
+      characterId: 'character.violet',
+      displayName: 'Violet',
+      puppet: 'puppet.violet',
+      portrait: 'portrait.violet',
+      voiceRole: 'silent',
+      scale: 1,
+      hitRadius: 88,
+      defaultPose: 'idle',
+      controller: { kind: 'static' },
+      defaultTalk: null,
+    },
     'npc.narrator': {
       id: 'npc.narrator',
+      characterId: 'character.narrator',
       displayName: 'Narrator',
       puppet: 'puppet.none',
       portrait: 'portrait.none',
@@ -97,6 +119,45 @@ export const chapter2 = {
       hitRadius: 88,
       defaultPose: 'idle',
       controller: { kind: 'static' },
+      defaultTalk: null,
+    },
+    'npc.pet.cat': {
+      id: 'npc.pet.cat',
+      characterId: 'character.cat',
+      displayName: 'Cat',
+      puppet: 'puppet.pet.cat',
+      portrait: 'portrait.pet.cat',
+      voiceRole: 'creature',
+      scale: 0.55,
+      hitRadius: 88,
+      defaultPose: 'idle',
+      controller: { kind: 'follow', target: 'npc.violet', minimumDistance: 70, maxDistance: 190 },
+      defaultTalk: null,
+    },
+    'npc.pet.owl': {
+      id: 'npc.pet.owl',
+      characterId: 'character.pet-owl',
+      displayName: 'Owl',
+      puppet: 'puppet.pet.owl',
+      portrait: 'portrait.pet.owl',
+      voiceRole: 'creature',
+      scale: 0.55,
+      hitRadius: 88,
+      defaultPose: 'idle',
+      controller: { kind: 'follow', target: 'npc.violet', minimumDistance: 90, maxDistance: 220 },
+      defaultTalk: null,
+    },
+    'npc.pet.toad': {
+      id: 'npc.pet.toad',
+      characterId: 'character.toad',
+      displayName: 'Toad',
+      puppet: 'puppet.pet.toad',
+      portrait: 'portrait.pet.toad',
+      voiceRole: 'creature',
+      scale: 0.42,
+      hitRadius: 88,
+      defaultPose: 'idle',
+      controller: { kind: 'follow', target: 'npc.violet', minimumDistance: 55, maxDistance: 150 },
       defaultTalk: null,
     },
   },

@@ -93,7 +93,6 @@ describe('state fixtures', () => {
       'character-pets-review',
       'character-portraits-review',
       'owl-motion-review',
-      'character-sprite-spike-review',
       'hagrid-sprite-review',
       'wandmaker-sprite-review',
       'wandmaker-live-review',

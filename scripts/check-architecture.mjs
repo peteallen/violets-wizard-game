@@ -16,13 +16,11 @@ export const ARCHITECTURE_RULES = Object.freeze({
 
 const LEGACY_CHARACTER_IMPLEMENTATIONS = Object.freeze([
   'src/game/render/HagridFullFrameCharacterRig.js',
-  'src/game/render/HagridSpriteRig.js',
   'src/game/render/MadamMalkinFullFrameCharacterRig.js',
   'src/game/render/OwlRenderer.js',
   'src/game/render/VioletAlignedSpriteRig.js',
   'src/game/render/VioletFullFrameCharacterRig.js',
   'src/game/render/VioletRobeRecolor.js',
-  'src/game/render/VioletSpriteRig.js',
   'src/game/render/WandmakerFullFrameCharacterRig.js',
 ]);
 
@@ -156,8 +154,6 @@ const CURRENT_ALLOWLIST = Object.freeze([
   ]),
   ...allowMany(ARCHITECTURE_RULES.GENERIC_CHARACTER_IMPORT, 'src/game/render/CharacterRenderer.js', [
     './OwlRenderer.js',
-    './VioletSpriteRig.js',
-    './HagridSpriteRig.js',
     './VioletAlignedSpriteRig.js',
     './VioletFullFrameCharacterRig.js',
     './HagridFullFrameCharacterRig.js',
@@ -166,16 +162,6 @@ const CURRENT_ALLOWLIST = Object.freeze([
   ]),
   ...allowMany(ARCHITECTURE_RULES.GENERIC_CONCRETE_ROUTING, 'src/game/render/FullFrameCharacterRig.js', [
     'ch1',
-  ]),
-  ...allowMany(ARCHITECTURE_RULES.RUNTIME_SOURCE_ASSET_IMPORT, 'src/game/render/HagridSpriteRig.js', [
-    '../../../art/spikes/sp-f-hagrid/parts/headOpen.png',
-    '../../../art/spikes/sp-f-hagrid/parts/headBlink.png',
-    '../../../art/spikes/sp-f-hagrid/parts/backHair.png',
-    '../../../art/spikes/sp-f-hagrid/parts/torso.png',
-    '../../../art/spikes/sp-f-hagrid/parts/arm.png',
-    '../../../art/spikes/sp-f-hagrid/parts/armBeckon.png',
-    '../../../art/spikes/sp-f-hagrid/parts/legLeft.png',
-    '../../../art/spikes/sp-f-hagrid/parts/legRight.png',
   ]),
   ...allowMany(ARCHITECTURE_RULES.GENERIC_CONCRETE_ROUTING, 'src/game/render/RoomRenderer.js', [
     'ch1.bedroom',
@@ -238,15 +224,6 @@ const CURRENT_ALLOWLIST = Object.freeze([
     'ch1.diagonStreet',
     'npc.violet',
     'npc.violet',
-  ]),
-  ...allowMany(ARCHITECTURE_RULES.RUNTIME_SOURCE_ASSET_IMPORT, 'src/game/render/VioletSpriteRig.js', [
-    '../../../art/spikes/sp-e-violet/parts/headOpen.png',
-    '../../../art/spikes/sp-e-violet/parts/headBlink.png',
-    '../../../art/spikes/sp-e-violet/parts/backHair.png',
-    '../../../art/spikes/sp-e-violet/parts/torso.png',
-    '../../../art/spikes/sp-e-violet/parts/arm.png',
-    '../../../art/spikes/sp-e-violet/parts/legLeft.png',
-    '../../../art/spikes/sp-e-violet/parts/legRight.png',
   ]),
   ...allowMany(ARCHITECTURE_RULES.GENERIC_CONCRETE_ROUTING, 'src/game/render/WorldPropRenderer.js', [
     'ch1.letter.read',

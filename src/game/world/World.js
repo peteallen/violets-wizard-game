@@ -27,6 +27,8 @@ const PET_HINT_CORRIDOR_END = 0.16;
 const INTERACTION_ACTIVATION_DISTANCE = 45;
 const EXIT_ACTIVATION_DISTANCE = 2;
 const DOORWAY_SCALE = 0.82;
+const PLAYER_ACTOR_ID = 'npc.violet';
+const PET_ACTOR_PREFIX = 'npc.pet.';
 
 export class World {
   constructor({ chapters, save, seed, clock = () => '2000-01-01T00:00:00.000Z', onDirty = () => {} }) {
@@ -103,11 +105,19 @@ export class World {
       && this.save.character.pet?.name
       ? `${this.save.character.pet.name}!`
       : null;
-    if (!presentation.speaker) return namedPetCaption ? { ...presentation, caption: namedPetCaption } : presentation;
+    if (!presentation.speaker) {
+      return {
+        ...presentation,
+        ...(namedPetCaption ? { caption: namedPetCaption } : {}),
+        portraitCharacterId: null,
+      };
+    }
+    const speaker = requireNpcDefinition(this.chapter, presentation.speaker);
     return {
       ...presentation,
       ...(namedPetCaption ? { caption: namedPetCaption } : {}),
-      speakerLabel: this.chapter.npcs[presentation.speaker]?.displayName ?? presentation.speakerLabel ?? 'Friend',
+      speakerLabel: speaker.displayName ?? presentation.speakerLabel ?? 'Friend',
+      portraitCharacterId: speaker.characterId,
     };
   }
 
@@ -321,7 +331,7 @@ export class World {
     }
     for (const occupant of this.room.occupants ?? []) {
       if (!conditionMatches(occupant.when, this.save)) continue;
-      if (occupant.npc === 'npc.violet' || occupant.npc.startsWith('npc.pet.')) continue;
+      if (occupant.npc === PLAYER_ACTOR_ID || occupant.npc.startsWith(PET_ACTOR_PREFIX)) continue;
       const npc = this.chapter.npcs[occupant.npc];
       if (!npc?.defaultTalk) continue;
       targets.push({
@@ -906,6 +916,14 @@ export class World {
       glintActivationHistory: activationState.history,
     });
     const pet = applyPetHint(basePet, affordances.petHint, this.room, this.player.facing);
+    const actorAnimations = this.actorAnimationSnapshot();
+    const actors = createActorSnapshots({
+      chapter: this.chapter,
+      player: this.player,
+      occupants,
+      pet,
+      actorAnimations,
+    });
     return {
       time: this.time,
       chapterId: this.chapter.id,
@@ -918,7 +936,8 @@ export class World {
       ),
       cameraX: this.cameraX,
       player: { ...this.player },
-      actorAnimations: this.actorAnimationSnapshot(),
+      actorAnimations,
+      actors,
       pet,
       occupants,
       tapToWalkCue,
@@ -951,6 +970,73 @@ export class World {
     if (this.flags['ch1.trimChosen']) unlocked.push('ch1.menagerie');
     return unlocked;
   }
+}
+
+function requireNpcDefinition(chapter, actorId) {
+  const definition = chapter?.npcs?.[actorId];
+  if (!definition) {
+    throw new Error(`Unknown actor ${actorId} in chapter ${chapter?.id ?? 'unknown'}.`);
+  }
+  if (typeof definition.characterId !== 'string') {
+    throw new Error(`Actor ${actorId} in chapter ${chapter?.id ?? 'unknown'} has no canonical characterId.`);
+  }
+  return definition;
+}
+
+function createActorSnapshot(chapter, actorId, renderState, depth = renderState.y) {
+  const definition = requireNpcDefinition(chapter, actorId);
+  return {
+    actorId,
+    characterId: definition.characterId,
+    depth,
+    renderState: {
+      ...renderState,
+      scale: renderState.scale ?? 1,
+      pose: renderState.pose ?? definition.defaultPose,
+    },
+  };
+}
+
+function createActorSnapshots({
+  chapter,
+  player,
+  occupants,
+  pet,
+  actorAnimations,
+}) {
+  const playerAnimation = actorAnimations[PLAYER_ACTOR_ID] ?? null;
+  const actors = occupants
+    .filter((occupant) => occupant.npc !== PLAYER_ACTOR_ID)
+    .map((occupant) => {
+      const animation = actorAnimations[occupant.npc] ?? null;
+      return createActorSnapshot(chapter, occupant.npc, {
+        ...occupant,
+        action: animation?.action ?? null,
+        actorAnimation: animation,
+      });
+    });
+
+  actors.push(createActorSnapshot(chapter, PLAYER_ACTOR_ID, {
+    ...player,
+    appearance: player.outfit,
+    pose: player.walking ? 'walking' : 'idle',
+    action: playerAnimation?.action ?? null,
+    actorAnimation: playerAnimation,
+  }));
+
+  if (pet) {
+    const petActorId = `${PET_ACTOR_PREFIX}${pet.type}`;
+    actors.push(createActorSnapshot(chapter, petActorId, {
+      ...pet,
+      facing: pet.facing ?? player.facing,
+      pose: pet.pose ?? (player.walking ? 'pet-follow' : 'idle'),
+      action: null,
+      actorAnimation: null,
+    }, pet.y + 1));
+  }
+
+  actors.sort((left, right) => left.depth - right.depth);
+  return actors;
 }
 
 function hitTest(point, hitArea) {

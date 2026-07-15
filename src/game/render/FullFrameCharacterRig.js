@@ -490,6 +490,7 @@ export class FullFrameCharacterRig {
     this.loadingError = null;
     this.lastReadyFrame = null;
     this.trackedLoadings = new WeakSet();
+    this.generation = 0;
   }
 
   get ready() {
@@ -509,9 +510,20 @@ export class FullFrameCharacterRig {
   trackLoading(loading) {
     if (!this.trackedLoadings.has(loading)) {
       this.trackedLoadings.add(loading);
-      loading.catch((error) => { this.loadingError = error; });
+      const generation = this.generation;
+      loading.catch((error) => {
+        if (generation === this.generation) this.loadingError = error;
+      });
     }
     return loading;
+  }
+
+  release() {
+    this.generation += 1;
+    this.loadingError = null;
+    this.lastReadyFrame = null;
+    this.trackedLoadings = new WeakSet();
+    this.alignedRig.release();
   }
 
   baselinePoses(animation) {

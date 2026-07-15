@@ -426,25 +426,49 @@ export class AlignedSpriteRig {
     this.useSequence = 0;
     this.protectedUrls = new Set();
     this.loadGroups = new Map();
+    this.activeTasks = new Set();
     this.retainAllImages = false;
     this.ready = false;
     this.loading = null;
+    this.generation = 0;
   }
 
   preload() {
     if (this.loading) return this.loading;
+    const generation = this.generation;
     const urls = [...new Set(Object.values(this.manifest.assets).flatMap((asset) => [asset.left, asset.right]))];
     // This exhaustive path is reserved for deterministic review captures.
     // Ordinary character draws use requestFrame() and remain cache-bounded.
     this.retainAllImages = true;
-    this.loading = this.loadUrls(urls).then(() => {
-      this.ready = true;
+    const loading = this.loadUrls(urls).then(() => {
+      if (generation === this.generation) this.ready = true;
     }, (error) => {
-      this.retainAllImages = false;
-      this.enforceDecodedImageLimit();
+      if (generation === this.generation) {
+        this.retainAllImages = false;
+        this.enforceDecodedImageLimit();
+      }
       throw error;
     });
+    this.loading = loading;
     return this.loading;
+  }
+
+  release() {
+    this.generation += 1;
+    const error = new Error(`${this.manifest.id} image loading was released.`);
+    for (const task of this.loadQueue) task.reject(error);
+    for (const task of this.activeTasks) task.reject(error);
+    this.loadQueue = [];
+    this.images.clear();
+    this.imageUse.clear();
+    this.loads.clear();
+    this.failures.clear();
+    this.loadGroups.clear();
+    this.protectedUrls.clear();
+    this.useSequence = 0;
+    this.retainAllImages = false;
+    this.ready = false;
+    this.loading = null;
   }
 
   sample(options = {}) {
@@ -526,7 +550,13 @@ export class AlignedSpriteRig {
       rejectLoad = reject;
     });
     this.loads.set(url, loading);
-    this.loadQueue.push({ url, loading, resolve: resolveLoad, reject: rejectLoad });
+    this.loadQueue.push({
+      url,
+      loading,
+      resolve: resolveLoad,
+      reject: rejectLoad,
+      generation: this.generation,
+    });
     this.pumpLoadQueue();
     return loading;
   }
@@ -535,15 +565,19 @@ export class AlignedSpriteRig {
     while (this.activeLoadCount < this.maxConcurrentLoads && this.loadQueue.length > 0) {
       const task = this.loadQueue.shift();
       this.activeLoadCount += 1;
+      this.activeTasks.add(task);
       void this.decodeImage(task.url).then((image) => {
+        if (task.generation !== this.generation) return;
         this.images.set(task.url, image);
         this.touchImage(task.url);
         this.enforceDecodedImageLimit();
         task.resolve(image);
       }, (error) => {
+        if (task.generation !== this.generation) return;
         this.failures.set(task.url, error);
         task.reject(error);
       }).finally(() => {
+        this.activeTasks.delete(task);
         if (this.loads.get(task.url) === task.loading) this.loads.delete(task.url);
         this.activeLoadCount -= 1;
         this.pumpLoadQueue();

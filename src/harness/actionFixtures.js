@@ -173,9 +173,6 @@ registry
   .register('owl-motion-review', createFixture(
     'Hold the hero owl pose library on deterministic motion loops.',
   ))
-  .register('character-sprite-spike-review', createFixture(
-    'Hold the code-drawn and painted-part Violets side by side on deterministic loops.',
-  ))
   .register('hagrid-sprite-review', createFixture(
     'Hold Hagrid’s aligned neutral, blink, speaking, and walking poses on deterministic loops.',
   ))

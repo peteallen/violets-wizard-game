@@ -17,3 +17,31 @@ export {
   UnsupportedCharacterSurfaceError,
   validateCharacterRuntime,
 } from './CharacterRegistry.js';
+
+export {
+  loadVioletCharacterRuntime,
+  violetCharacterDefinition,
+  violetCharacterReview,
+  violetFullFrameCharacterDefinition,
+} from './violet/index.js';
+
+export {
+  hagridCharacterDefinition,
+  hagridCharacterReview,
+  hagridFullFrameCharacterDefinition,
+  loadHagridCharacterRuntime,
+} from './hagrid/index.js';
+
+export {
+  loadWandmakerCharacterRuntime,
+  wandmakerCharacterDefinition,
+  wandmakerCharacterReview,
+  wandmakerFullFrameCharacterDefinition,
+} from './wandmaker/index.js';
+
+export {
+  loadMadamMalkinCharacterRuntime,
+  madamMalkinCharacterDefinition,
+  madamMalkinCharacterReview,
+  madamMalkinFullFrameCharacterDefinition,
+} from './madam-malkin/index.js';

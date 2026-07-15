@@ -385,6 +385,40 @@ describe('full-frame character loader and renderer opt-in', () => {
     expect([...rig.alignedRig.images.keys()].some((url) => url.endsWith('/robes/idle.png'))).toBe(true);
   });
 
+  it('releases its displayed frame and decoded cache, then reloads cleanly', async () => {
+    const created = [];
+    const rig = new FullFrameCharacterRig(definition(), {
+      resolveFrame: (path) => path,
+      maxConcurrentLoads: 50,
+      imageFactory: (url) => {
+        const image = {
+          url, onload: null, onerror: null, naturalWidth: 100, naturalHeight: 160,
+        };
+        created.push(image);
+        return image;
+      },
+    });
+    const first = rig.draw(recordingContext(), { pose: 'idle' }, 0);
+    created.forEach((image) => image.onload());
+    await first.loading;
+    expect(rig.draw(recordingContext(), { pose: 'idle' }, 0).status).toBe('drawn');
+    expect(rig.lastReadyFrame).not.toBeNull();
+
+    const firstGenerationCount = created.length;
+    rig.release();
+    expect(rig.lastReadyFrame).toBeNull();
+    expect(rig.loadingError).toBeNull();
+    expect(rig.alignedRig.images.size).toBe(0);
+    expect(rig.alignedRig.ready).toBe(false);
+
+    const reloading = rig.draw(recordingContext(), { pose: 'idle' }, 0);
+    expect(reloading.status).toBe('loading');
+    expect(created.length).toBeGreaterThan(firstGenerationCount);
+    created.slice(firstGenerationCount).forEach((image) => image.onload());
+    await reloading.loading;
+    expect(rig.draw(recordingContext(), { pose: 'idle' }, 0).status).toBe('drawn');
+  });
+
   it('keeps a registered generated character authoritative while its images load', () => {
     const generatedRig = { draw: vi.fn(() => ({ status: 'loading' })) };
     const renderer = new CharacterRenderer({

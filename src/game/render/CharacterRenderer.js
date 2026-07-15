@@ -1,8 +1,6 @@
 import { PALETTE } from '../config.js';
 import { drawVectorOwl } from './OwlRenderer.js';
 import { STORYBOOK_INK, STORYBOOK_LINE_WEIGHT } from './storybookInk.js';
-import { violetSpriteRig } from './VioletSpriteRig.js';
-import { hagridSpriteRig } from './HagridSpriteRig.js';
 import {
   violetAlignedSpriteManifest,
   violetAlignedSpriteRig,
@@ -218,7 +216,6 @@ export const CHARACTER_REVIEW_SCENES = Object.freeze([
   'character-pets-review',
   'character-portraits-review',
   'owl-motion-review',
-  'character-sprite-spike-review',
   'hagrid-sprite-review',
   'wandmaker-sprite-review',
   'madam-malkin-sprite-review',
@@ -310,45 +307,7 @@ export class CharacterRenderer {
     return undefined;
   }
 
-  // D51: painted sprite rigs render live characters wherever their parts can
-  // express the moment; anything they can't yet (portraits, the wand hand,
-  // robed Violet) falls back to the code-drawn puppet, as does the first
-  // frame or two while part images decode. `medium: 'bezier'` pins a call to
-  // the code-drawn puppet for side-by-side review scenes.
-  drawPaintedCharacter(context, rig, character, time, kind) {
-    rig.ensureLoading();
-    if (!rig.ready || rig.failed) return false;
-    const scale = character.scale ?? 1;
-    const direction = character.facing === 'left' ? -1 : 1;
-    const walking = Boolean(character.walking) || character.pose === 'walking';
-    const pose = walking
-      ? 'walking'
-      : kind === 'guide' && character.pose === 'speaking'
-        ? 'beckoning'
-        : 'idle';
-    return rig.draw(context, {
-      x: character.x,
-      y: character.y,
-      scale,
-      facing: character.facing ?? 'right',
-      pose,
-      time,
-      phase: character.phase ?? 0,
-      // The rig's own shadow is sized to its parts and painted before the
-      // bob translate, so it stays planted (D47) and never spills like the
-      // bezier-sized grounding ellipse did under painted characters.
-      shadow: true,
-    });
-  }
-
   drawViolet(context, character, time) {
-    if (
-      character.medium !== 'bezier'
-      && character.outfit === 'casual'
-      && !character.wand
-      && character.detail !== 'portrait'
-      && this.drawPaintedCharacter(context, violetSpriteRig, character, time, 'violet')
-    ) return;
     const scale = character.scale ?? 1;
     const direction = character.facing === 'left' ? -1 : 1;
     const lightSide = character.lightSide === 'right' ? 'right' : 'left';
@@ -429,12 +388,6 @@ export class CharacterRenderer {
   }
 
   drawNpc(context, character, time) {
-    if (
-      character.kind === 'guide'
-      && character.medium !== 'bezier'
-      && character.detail !== 'portrait'
-      && this.drawPaintedCharacter(context, hagridSpriteRig, character, time, 'guide')
-    ) return;
     const kind = character.kind in CHARACTER_COLORS ? character.kind : 'guide';
     const palette = CHARACTER_COLORS[kind];
     const scale = (character.scale ?? 1) * (kind === 'guide' ? HAGRID_STYLE.worldScale : 1.04);
@@ -584,7 +537,6 @@ export class CharacterRenderer {
     if (scene === 'character-cast-review') this.drawCastReview(context, time);
     else if (scene === 'character-pets-review') this.drawPetsReview(context, time, reducedMotion);
     else if (scene === 'character-portraits-review') this.drawPortraitReview(context, time);
-    else if (scene === 'character-sprite-spike-review') this.drawSpriteSpikeReview(context, time);
     else if (scene === 'hagrid-sprite-review') this.drawHagridSpriteReview(context, time);
     else if (scene === 'wandmaker-sprite-review') this.drawWandmakerSpriteReview(context, time);
     else if (scene === 'madam-malkin-sprite-review') this.drawMadamMalkinSpriteReview(context, time);
@@ -657,29 +609,6 @@ export class CharacterRenderer {
         lightSide: 'left',
       });
     });
-  }
-
-  drawSpriteSpikeReview(context, time) {
-    const rows = [
-      { label: 'Today · idle', x: 210, sprite: false, pose: 'idle' },
-      { label: 'Today · walking', x: 440, sprite: false, pose: 'walking' },
-      { label: 'Painted · idle', x: 810, sprite: true, pose: 'idle' },
-      { label: 'Painted · walking', x: 1050, sprite: true, pose: 'walking' },
-    ];
-    for (const entry of rows) {
-      drawReviewPlinth(context, entry.x, 625, entry.label);
-      if (entry.sprite) {
-        const drew = violetSpriteRig.draw(context, {
-          x: entry.x, y: 595, scale: 1, pose: entry.pose, time: time + entry.x * 0.001,
-        });
-        if (!drew) drawReviewLabel(context, entry.x, 480, 'parts loading');
-      } else {
-        this.draw(context, {
-          kind: 'violet', x: entry.x, y: 595, scale: 1, pose: entry.pose,
-          outfit: 'casual', robeTrim: '#7952b7', medium: 'bezier',
-        }, time + entry.x * 0.001);
-      }
-    }
   }
 
   drawHagridSpriteReview(context, time) {
@@ -1188,7 +1117,6 @@ function drawReviewBackground(context, scene) {
     'character-pets-review': 'Companions · follow animation and material detail',
     'character-portraits-review': 'Dialogue cameos · one shared puppet family',
     'owl-motion-review': 'Hero owl · pose and motion library',
-    'character-sprite-spike-review': 'SP-E spike · code-drawn vs painted parts',
     'hagrid-sprite-review': 'Hagrid · aligned production poses',
     'wandmaker-sprite-review': 'Wandmaker · aligned production expressions',
     'madam-malkin-sprite-review': 'Madam Malkin · aligned production expressions',
