@@ -1,12 +1,14 @@
 import {
   chapter1,
   chapter1AssetKeys,
-  chapter1CharacterIds,
+} from '../../content/chapters/ch1.js';
+import { chapter1CharacterIds } from './content/characters.js';
+import { chapter1Map } from './content/map.js';
+import { chapter1ResumeRecaps } from './content/recaps.js';
+import {
   chapter1CodeResourceKeys,
   chapter1Flags,
-  chapter1Map,
-  chapter1ResumeRecaps,
-} from '../../content/chapters/ch1.js';
+} from './content/resources.js';
 
 export const chapter1ContentPackage = Object.freeze({
   id: chapter1.id,

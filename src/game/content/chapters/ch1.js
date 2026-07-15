@@ -1,118 +1,43 @@
 import { chapter1LetterNarration } from './ch1-letter.js';
 import { storybookChecklist } from '../visualVerification.js';
+import {
+  audioSfx,
+  circle,
+  dialogueStart,
+  flagSet,
+  hagridLayoutBounds,
+  musicCue,
+  noCondition,
+  owlLayoutBounds,
+  petLayoutBounds,
+  rect,
+  roomSize,
+  setPiecePlay,
+  sfxCue,
+  standardSpeakerLayoutBounds,
+  streetSize,
+  travel,
+  uiOpen,
+  violetActionCue,
+  voiceLine,
+  walkBand,
+  when,
+} from '../../chapters/ch1/content/authoring.js';
+import { chapter1CharacterIds } from '../../chapters/ch1/content/characters.js';
+import { chapter1Map } from '../../chapters/ch1/content/map.js';
+import { chapter1ResumeRecaps } from '../../chapters/ch1/content/recaps.js';
+import {
+  chapter1CodeResourceKeys,
+  chapter1Flags,
+} from '../../chapters/ch1/content/resources.js';
 
-export const chapter1CharacterIds = Object.freeze([
-  'character.violet',
-  'character.narrator',
-  'character.hagrid',
-  'character.wandmaker',
-  'character.madam-malkin',
-  'character.menagerie-keeper',
-  'character.post-owl',
-  'character.cat',
-  'character.pet-owl',
-  'character.toad',
-]);
-
-const noCondition = Object.freeze({});
-const standardSpeakerLayoutBounds = Object.freeze({ width: 148, height: 236, ground: 32 });
-const hagridLayoutBounds = Object.freeze({ width: 244, height: 340, ground: 35 });
-const owlLayoutBounds = Object.freeze({ width: 154, height: 188, ground: 25 });
-const petLayoutBounds = Object.freeze({ width: 132, height: 142, ground: 28 });
-
-function when({ allFlags = [], noFlags = [], profileEquals } = {}) {
-  return {
-    ...(allFlags.length ? { allFlags } : {}),
-    ...(noFlags.length ? { noFlags } : {}),
-    ...(profileEquals ? { profileEquals } : {}),
-  };
-}
-
-function circle(x, y, radius) {
-  return { shape: 'circle', x, y, radius: Math.max(88, radius) };
-}
-
-function rect(x, y, width, height) {
-  return { shape: 'rect', x, y, width, height };
-}
-
-function flagSet(flag, value = true) {
-  return { type: 'flag.set', flag, value };
-}
-
-function dialogueStart(script) {
-  return { type: 'dialogue.start', script };
-}
-
-function setPiecePlay(id) {
-  return { type: 'setPiece.play', id };
-}
-
-function uiOpen(surface, tab = null) {
-  return { type: 'ui.open', surface, ...(tab ? { tab } : {}) };
-}
-
-function audioSfx(key) {
-  return { type: 'audio.command', command: 'sfx', key };
-}
-
-function sfxCue(at, key) {
-  return { type: 'cue', at, event: 'audio.command', payload: { command: 'sfx', key } };
-}
-
-function violetActionCue(action, { expression, temporaryProp } = {}) {
-  return {
-    type: 'cue',
-    at: 0,
-    event: 'actor.animationRequested',
-    payload: {
-      actor: 'npc.violet',
-      action,
-      ...(expression ? { expression } : {}),
-      ...(temporaryProp ? { temporaryProp } : {}),
-    },
-  };
-}
-
-function musicCue(at, key) {
-  return { type: 'cue', at, event: 'audio.command', payload: { command: 'music', key, mode: 'crossfade', fadeSeconds: 0.8 } };
-}
-
-function travel(room, spawn, transition) {
-  return {
-    type: 'travel.request',
-    room,
-    spawn: spawn.split('.').at(-1),
-    ...(transition ? { transition } : {}),
-  };
-}
-
-function mapLocation({ beforeTravel = [], to, ...location }) {
-  const destination = { room: to.room, spawn: to.spawn.split('.').at(-1) };
-  return {
-    ...location,
-    alwaysUnlocked: location.alwaysUnlocked ?? false,
-    to: destination,
-    onSelect: [...beforeTravel, { type: 'travel.request', ...destination }],
-  };
-}
-
-function voiceLine({ speaker, voice, text, caption, next, portraitPose = 'talk' }) {
-  return {
-    type: 'line',
-    speaker,
-    voice,
-    text,
-    caption,
-    phoneticText: null,
-    portraitPose,
-    next,
-  };
-}
-
-const roomSize = Object.freeze({ width: 1280, height: 720 });
-const streetSize = roomSize;
-const walkBand = Object.freeze({ top: 560, bottom: 640 });
+export {
+  chapter1CharacterIds,
+  chapter1CodeResourceKeys,
+  chapter1Flags,
+  chapter1Map,
+  chapter1ResumeRecaps,
+};
 
 const dialogueGraphs = [
   {
@@ -1328,101 +1253,6 @@ export const chapter1 = {
   yearbookMoments: ['ch1.wandChosen'],
 };
 
-export const chapter1Map = {
-  contractVersion: 1,
-  id: 'map.ch1.diagon',
-  asset: 'maps/ch1/diagon',
-  locations: [
-    mapLocation({
-      id: 'map.ch1.diagonStreet',
-      icon: 'street',
-      caption: 'Explore',
-      alwaysUnlocked: true,
-      to: { room: 'ch1.diagonStreet', spawn: 'west' },
-      objectiveTarget: { room: 'ch1.diagonStreet', hotspot: 'street.guideTicket' },
-      vignette: { x: 114, y: 374, width: 212, height: 184 },
-    }),
-    mapLocation({
-      id: 'map.ch1.ollivanders',
-      icon: 'wand-shop',
-      caption: 'Wand',
-      to: { room: 'ch1.ollivanders', spawn: 'entry' },
-      objectiveTarget: { room: 'ch1.diagonStreet', hotspot: 'street.ollivandersDoor' },
-      vignette: { x: 324, y: 282, width: 212, height: 184 },
-      beforeTravel: [flagSet('ch1.mapUsed')],
-    }),
-    mapLocation({
-      id: 'map.ch1.malkins',
-      icon: 'robes-shop',
-      caption: 'Robes',
-      to: { room: 'ch1.malkins', spawn: 'entry' },
-      objectiveTarget: { room: 'ch1.diagonStreet', hotspot: 'street.malkinsDoor' },
-      vignette: { x: 588, y: 236, width: 212, height: 184 },
-    }),
-    mapLocation({
-      id: 'map.ch1.menagerie',
-      icon: 'pet-shop',
-      caption: 'Pet',
-      to: { room: 'ch1.menagerie', spawn: 'entry' },
-      objectiveTarget: { room: 'ch1.diagonStreet', hotspot: 'street.menagerieDoor' },
-      vignette: { x: 894, y: 350, width: 212, height: 184 },
-    }),
-  ],
-  routes: [
-    {
-      id: 'route.ch1.streetToOllivanders',
-      from: 'map.ch1.diagonStreet',
-      to: 'map.ch1.ollivanders',
-      points: [{ x: 220, y: 466 }, { x: 315, y: 344 }, { x: 430, y: 374 }],
-    },
-    {
-      id: 'route.ch1.ollivandersToMalkins',
-      from: 'map.ch1.ollivanders',
-      to: 'map.ch1.malkins',
-      points: [{ x: 430, y: 374 }, { x: 565, y: 286 }, { x: 694, y: 328 }],
-    },
-    {
-      id: 'route.ch1.malkinsToMenagerie',
-      from: 'map.ch1.malkins',
-      to: 'map.ch1.menagerie',
-      points: [{ x: 694, y: 328 }, { x: 848, y: 402 }, { x: 1000, y: 442 }],
-    },
-  ],
-};
-
-export const chapter1ResumeRecaps = [
-  { step: 'openLetter', voice: 'voice/ch1/recap/openLetter', text: 'An owl brought a letter for Violet.', caption: 'A letter!' },
-  { step: 'followGuide', voice: 'voice/ch1/recap/followGuide', text: 'Hagrid is waiting to show you the magical street.', caption: 'Follow Hagrid!' },
-  { step: 'useMap', voice: 'voice/ch1/recap/useMap', text: 'The magical street is open. Your wand is waiting.', caption: 'Find your wand!' },
-  { step: 'chooseRobes', voice: 'voice/ch1/recap/chooseRobes', text: 'Your wand chose you. Now choose your robes.', caption: 'Choose your robes!' },
-  { step: 'choosePet', voice: 'voice/ch1/recap/choosePet', text: 'You found your wand and robes. Now choose a friend.', caption: 'Choose a pet!' },
-  { step: 'returnToGuide', voice: 'voice/ch1/recap/returnToGuide', text: 'Your new friend is ready. Hagrid has your ticket.', caption: 'Find Hagrid!' },
-];
-
-export const chapter1Flags = [
-    'ch1.owlTapped',
-    'ch1.letterOpened',
-    'ch1.letterRead',
-    'ch1.guideMet',
-    'ch1.leakyReached',
-    'ch1.courtyardReached',
-    'ch1.wallOpened',
-    'ch1.diagonReached',
-    'ch1.satchelReceived',
-    'ch1.mapUsed',
-    'ch1.wandTry1',
-    'ch1.wandTry2',
-    'ch1.wandChosen',
-    'ch1.trimChosen',
-    'ch1.petChosen',
-    'ch1.petNamed',
-    'ch1.shoppingComplete',
-    'ch1.ticketReceived',
-    'ch1.chapterCardSeen',
-    'ch1.complete',
-    'ch1.previewSeen',
-];
-
 export const chapter1AssetKeys = [
     'rooms/ch1/bedroom/base',
     'rooms/ch1/bedroom/sky',
@@ -1473,25 +1303,6 @@ export const chapter1AssetKeys = [
     'voice/ch1/recap/chooseRobes',
     'voice/ch1/recap/choosePet',
     'voice/ch1/recap/returnToGuide',
-];
-
-export const chapter1CodeResourceKeys = [
-    'puppet.violet',
-    'puppet.guide',
-    'puppet.wandmaker',
-    'puppet.tailor',
-    'puppet.menagerieKeeper',
-    'puppet.owlPost',
-    'puppet.pet.cat',
-    'puppet.pet.owl',
-    'puppet.pet.toad',
-    'prop.ch1.letter',
-    'prop.ch1.seal',
-    'prop.ch1.ticket',
-    'prop.ch1.wand1',
-    'prop.ch1.wand2',
-    'prop.ch1.wandChosen',
-    'prop.ch1.vaseShards',
 ];
 
 export default chapter1;
