@@ -197,6 +197,18 @@ const REVIEW_SCENE_ILLUSION_CHECKS = Object.freeze({
     'The two speaking mouth shapes remain readable without moving his registration, while his full body stays planted beside the counter and clear of Violet, the parchment, and both dialogue controls.',
     'The Wandmaker reads as a small, kind elder at the intended room scale, with silver-white hair, dusty plum waistcoat, yellow measuring tape, warm charcoal trousers, and amber-brown shoes all readable against Ollivanders.',
   ],
+  'madam-malkin-sprite-review': [
+    'Exactly four labeled full-frame Madam Malkins remain visually separated: neutral, blink, talk A, and talk B, each with one figure-sized grounded contact shadow.',
+    'Every state reads as one connected motherly tailor painting with no assembled-limb seams, floating parts, double edges, background field, or independently mirrored hands.',
+    'All four states keep the same identity, silhouette, and registration: silver-streaked auburn bun, warm hazel-brown eyes when open, rosy face, heather-purple work dress, cream apron with chalk and ruler, tomato-red wrist pincushion, and plum lace-up boots.',
+    'Blink changes only the eyelids, while talk A and talk B provide two distinct readable mouth shapes without changing Madam Malkin’s head, hands, clothing, tools, or body proportions.',
+    'Both boot soles meet their contact shadows with no lit gap, and every figure remains clear of its label and the outer gold frame at both review sizes.',
+  ],
+  'madam-malkin-live-review': [
+    'After Violet approaches the robe-shop stool in normal gameplay, Madam Malkin welcomes her with the same identity in her world figure and attached dialogue portrait.',
+    'The two speaking mouth shapes remain readable without moving her registration, while her full body stays planted beside the fitting area and clear of Violet, the parchment, and both dialogue controls.',
+    'Madam Malkin reads as a warm, brisk, motherly tailor at the intended room scale, with her silver-streaked bun, purple work dress, cream apron tools, red wrist pincushion, and plum boots readable against the painted shop.',
+  ],
   'violet-expression-review': [
     'Exactly seven labeled Violet states appear as matched portrait and full-body pairs: neutral, blink, talk A, talk B, wonder, proud, and curious.',
     'Every state retains the locked Violet identity and unchanged full-body silhouette: dark-green rectangular glasses, warm light-brown hair with attached wisps, warm brown eyes when open, purple-and-blue soccer jersey, dark leggings, and gray-purple trainers.',

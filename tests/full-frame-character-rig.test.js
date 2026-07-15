@@ -13,6 +13,8 @@ import {
 } from '../src/game/render/FullFrameCharacterRig.js';
 import { violetFullFrameCharacterRig } from '../src/game/render/VioletFullFrameCharacterRig.js';
 import { hagridFullFrameCharacterRig } from '../src/game/render/HagridFullFrameCharacterRig.js';
+import { wandmakerFullFrameCharacterRig } from '../src/game/render/WandmakerFullFrameCharacterRig.js';
+import { madamMalkinFullFrameCharacterRig } from '../src/game/render/MadamMalkinFullFrameCharacterRig.js';
 
 function definition() {
   return {
@@ -347,16 +349,22 @@ describe('full-frame character loader and renderer opt-in', () => {
     const rig = { preload: vi.fn(async () => {}) };
     const violetPreload = vi.spyOn(violetFullFrameCharacterRig, 'preload').mockResolvedValue();
     const hagridPreload = vi.spyOn(hagridFullFrameCharacterRig, 'preload').mockResolvedValue();
+    const wandmakerPreload = vi.spyOn(wandmakerFullFrameCharacterRig, 'preload').mockResolvedValue();
+    const madamMalkinPreload = vi.spyOn(madamMalkinFullFrameCharacterRig, 'preload').mockResolvedValue();
     productionFullFrameCharacterRigs.set('review-test', rig);
     try {
       await preloadCharacterReviewScene('character-cast-review');
       expect(violetPreload).toHaveBeenCalledOnce();
       expect(hagridPreload).toHaveBeenCalledOnce();
+      expect(wandmakerPreload).toHaveBeenCalledOnce();
+      expect(madamMalkinPreload).toHaveBeenCalledOnce();
       expect(rig.preload).toHaveBeenCalledOnce();
     } finally {
       productionFullFrameCharacterRigs.delete('review-test');
       violetPreload.mockRestore();
       hagridPreload.mockRestore();
+      wandmakerPreload.mockRestore();
+      madamMalkinPreload.mockRestore();
     }
   });
 });

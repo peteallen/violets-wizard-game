@@ -458,6 +458,32 @@ registry
       },
     }),
   ))
+  .register('madam-malkin-sprite-review', characterReviewFixture(
+    'madam-malkin-sprite-review',
+    'Madam Malkin’s production full-frame neutral, blink, and two speaking mouth shapes.',
+  ))
+  .register('madam-malkin-live-review', createFixture(
+    'The generated Madam Malkin welcoming Violet in normal robe-shop gameplay.',
+    { chapter: 1, scene: 'ch1.robeShopping' },
+    createSave({
+      scene: 'ch1.robeShopping',
+      room: 'ch1.malkins',
+      spawn: 'malkins.entry',
+      questFlags: {
+        'ch1.owlTapped': true,
+        'ch1.letterOpened': true,
+        'ch1.letterRead': true,
+        'ch1.guideMet': true,
+        'ch1.leakyReached': true,
+        'ch1.courtyardReached': true,
+        'ch1.wallOpened': true,
+        'ch1.diagonReached': true,
+        'ch1.satchelReceived': true,
+        'ch1.mapUsed': true,
+        'ch1.wandChosen': true,
+      },
+    }),
+  ))
   .register('violet-expression-review', characterReviewFixture(
     'violet-expression-review',
     'The owner-approved aligned Violet shown in every accepted neutral and facial-expression state, as both portraits and grounded full figures.',

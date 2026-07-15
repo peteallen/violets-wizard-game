@@ -1,0 +1,287 @@
+{
+  "schema_version": 1,
+  "algorithm": {
+    "id": "cyan-flood-aligned-character-sheet-v1",
+    "component_connectivity": 8,
+    "scale_filter": "premultiplied-rgba-box-rational-v1",
+    "output_color_type": 6,
+    "output_bit_depth": 8,
+    "deterministic": true
+  },
+  "slice_spec": {
+    "path": "art/characters/madam-malkin/batch/core-v1.layout.json",
+    "bytes": 1521,
+    "sha256": "009fe842bfe1abd5c0ffba9c8d65a6b6eb48951c10de9f1f433a0f24405feaf4",
+    "schema_version": 1,
+    "id": "madam-malkin.core-v1"
+  },
+  "source": {
+    "path": "art/characters/madam-malkin/batch/core-v1.png",
+    "bytes": 18061916,
+    "expected_sha256": "243a3864eb55b362017bc853c60bca0ea3966cb119e43c48752f7320e3fc2c4c",
+    "sha256": "243a3864eb55b362017bc853c60bca0ea3966cb119e43c48752f7320e3fc2c4c",
+    "rgba_sha256": "33ab1d5cdfa06d930480fd29235def100f881434daf6791fbfe7b0da2302c637",
+    "dimensions": {
+      "width": 4800,
+      "height": 3584
+    }
+  },
+  "controls": {
+    "output_canvas": {
+      "width": 896,
+      "height": 1200,
+      "center_x": 448,
+      "ground_y": 1132
+    },
+    "common_scale": {
+      "numerator": 2,
+      "denominator": 3
+    },
+    "key": {
+      "color": {
+        "red": 118,
+        "green": 196,
+        "blue": 208
+      },
+      "tolerance": 28,
+      "alpha": {
+        "opaque_cyan_excess": 50,
+        "transparent_cyan_excess": 90,
+        "edge_spill_radius": 8,
+        "edge_spill_opaque_cyan_excess": 30,
+        "edge_spill_max_green_blue_delta": 70,
+        "matte_low_alpha": 170,
+        "matte_high_alpha": 245,
+        "edge_color_radius": 0
+      }
+    },
+    "components": {
+      "detail_min_pixels": 8,
+      "detail_max_pixels": 5000,
+      "detail_max_distance": 48
+    }
+  },
+  "outputs": [
+    {
+      "name": "neutral",
+      "path": "public/assets/art/characters/madam-malkin/default/neutral.png",
+      "media_type": "image/png",
+      "bytes": 628233,
+      "sha256": "954c763c4011a3330196f18c3e0a7519d196c3f41b04d853de928c8e654c370e",
+      "rgba_sha256": "36c73cc8adb9455b5a96a59150b5f27b231f9111546f4a2ed4611faa3688468c",
+      "dimensions": {
+        "width": 896,
+        "height": 1200
+      },
+      "crop": {
+        "x": 0,
+        "y": 0,
+        "width": 1200,
+        "height": 1792
+      },
+      "source_content_bounds": {
+        "x": 274,
+        "y": 100,
+        "width": 812,
+        "height": 1658
+      },
+      "scaled_dimensions": {
+        "width": 542,
+        "height": 1106
+      },
+      "placement": {
+        "x": 177,
+        "y": 27,
+        "width": 542,
+        "height": 1106,
+        "center_x": 448,
+        "ground_y": 1132
+      },
+      "flood": {
+        "background_pixels": 1278367,
+        "non_background_pixels": 872033,
+        "background_fraction": 0.5944787016369047
+      },
+      "components": {
+        "found": 1,
+        "dominant_pixels": 871624,
+        "kept": 1,
+        "removed": 0,
+        "selected_pixels": 871624,
+        "details": []
+      },
+      "alpha": {
+        "transparent_pixels": 1278776,
+        "soft_pixels": 207,
+        "opaque_pixels": 871417
+      },
+      "edge_artifacts_repaired": 0
+    },
+    {
+      "name": "blink",
+      "path": "public/assets/art/characters/madam-malkin/default/blink.png",
+      "media_type": "image/png",
+      "bytes": 623843,
+      "sha256": "41d10bfec1d102816026a05b8b22e709448f889d4c1e0835f58966a6ba21aca3",
+      "rgba_sha256": "3b9aa9391629e499b1822b4379bcb90c10cc24786786b8c5de021933aeabf0d2",
+      "dimensions": {
+        "width": 896,
+        "height": 1200
+      },
+      "crop": {
+        "x": 1200,
+        "y": 0,
+        "width": 1200,
+        "height": 1792
+      },
+      "source_content_bounds": {
+        "x": 248,
+        "y": 100,
+        "width": 812,
+        "height": 1657
+      },
+      "scaled_dimensions": {
+        "width": 542,
+        "height": 1105
+      },
+      "placement": {
+        "x": 177,
+        "y": 28,
+        "width": 542,
+        "height": 1105,
+        "center_x": 448,
+        "ground_y": 1132
+      },
+      "flood": {
+        "background_pixels": 1278896,
+        "non_background_pixels": 871504,
+        "background_fraction": 0.5947247023809524
+      },
+      "components": {
+        "found": 1,
+        "dominant_pixels": 871229,
+        "kept": 1,
+        "removed": 0,
+        "selected_pixels": 871229,
+        "details": []
+      },
+      "alpha": {
+        "transparent_pixels": 1279171,
+        "soft_pixels": 292,
+        "opaque_pixels": 870937
+      },
+      "edge_artifacts_repaired": 0
+    },
+    {
+      "name": "talk-a",
+      "path": "public/assets/art/characters/madam-malkin/default/talk-a.png",
+      "media_type": "image/png",
+      "bytes": 634458,
+      "sha256": "84a7c53091381835b73911a8f8cf5e85d3c2271f1463435cc1fc61d06829bce5",
+      "rgba_sha256": "448d937a2873de8d0e8089cbd3fca7eaf689b1cca8742e9ce2fdc4c8053c6c81",
+      "dimensions": {
+        "width": 896,
+        "height": 1200
+      },
+      "crop": {
+        "x": 0,
+        "y": 1792,
+        "width": 1200,
+        "height": 1792
+      },
+      "source_content_bounds": {
+        "x": 278,
+        "y": 48,
+        "width": 816,
+        "height": 1667
+      },
+      "scaled_dimensions": {
+        "width": 544,
+        "height": 1112
+      },
+      "placement": {
+        "x": 176,
+        "y": 21,
+        "width": 544,
+        "height": 1112,
+        "center_x": 448,
+        "ground_y": 1132
+      },
+      "flood": {
+        "background_pixels": 1265313,
+        "non_background_pixels": 885087,
+        "background_fraction": 0.588408203125
+      },
+      "components": {
+        "found": 1,
+        "dominant_pixels": 884752,
+        "kept": 1,
+        "removed": 0,
+        "selected_pixels": 884752,
+        "details": []
+      },
+      "alpha": {
+        "transparent_pixels": 1265648,
+        "soft_pixels": 321,
+        "opaque_pixels": 884431
+      },
+      "edge_artifacts_repaired": 0
+    },
+    {
+      "name": "talk-b",
+      "path": "public/assets/art/characters/madam-malkin/default/talk-b.png",
+      "media_type": "image/png",
+      "bytes": 633753,
+      "sha256": "bff3127dd7d576f675f30611ff62b9332d08692af297246831392e6eae4d4125",
+      "rgba_sha256": "0d4f2a7274b0292220e0c39d7d8b01cb9690a71791724783225bff286d7d4c07",
+      "dimensions": {
+        "width": 896,
+        "height": 1200
+      },
+      "crop": {
+        "x": 2400,
+        "y": 1792,
+        "width": 1200,
+        "height": 1792
+      },
+      "source_content_bounds": {
+        "x": 226,
+        "y": 49,
+        "width": 817,
+        "height": 1667
+      },
+      "scaled_dimensions": {
+        "width": 545,
+        "height": 1112
+      },
+      "placement": {
+        "x": 176,
+        "y": 21,
+        "width": 545,
+        "height": 1112,
+        "center_x": 448,
+        "ground_y": 1132
+      },
+      "flood": {
+        "background_pixels": 1265183,
+        "non_background_pixels": 885217,
+        "background_fraction": 0.5883477492559523
+      },
+      "components": {
+        "found": 1,
+        "dominant_pixels": 885090,
+        "kept": 1,
+        "removed": 0,
+        "selected_pixels": 885090,
+        "details": []
+      },
+      "alpha": {
+        "transparent_pixels": 1265310,
+        "soft_pixels": 594,
+        "opaque_pixels": 884496
+      },
+      "edge_artifacts_repaired": 0
+    }
+  ],
+  "provenance_path": "art/characters/madam-malkin/batch/core-v1.slice-provenance.json"
+}

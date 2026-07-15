@@ -57,6 +57,10 @@ const CHARACTER_IMAGE_PATHS = Object.freeze({
   'characters/wandmaker/default/blink': 'assets/art/characters/wandmaker/default/blink.png',
   'characters/wandmaker/default/talk-a': 'assets/art/characters/wandmaker/default/talk-a.png',
   'characters/wandmaker/default/talk-b': 'assets/art/characters/wandmaker/default/talk-b.png',
+  'characters/madam-malkin/default/neutral': 'assets/art/characters/madam-malkin/default/neutral.png',
+  'characters/madam-malkin/default/blink': 'assets/art/characters/madam-malkin/default/blink.png',
+  'characters/madam-malkin/default/talk-a': 'assets/art/characters/madam-malkin/default/talk-a.png',
+  'characters/madam-malkin/default/talk-b': 'assets/art/characters/madam-malkin/default/talk-b.png',
 });
 
 const AMBIENCE_ALIASES = Object.freeze({

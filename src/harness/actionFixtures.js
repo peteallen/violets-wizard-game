@@ -185,6 +185,13 @@ registry
   .register('wandmaker-live-review', createFixture(
     'Hold the Wandmaker’s automatic welcome dialogue in the painted shop.',
   ))
+  .register('madam-malkin-sprite-review', createFixture(
+    'Hold Madam Malkin’s aligned neutral, blink, and two speaking mouth shapes without input.',
+  ))
+  .register('madam-malkin-live-review', createFixture(
+    'Approach the robe-shop stool and hold Madam Malkin’s welcome dialogue in the painted shop.',
+    [{ frame: 30, type: 'tap', target: 'malkins.stool' }],
+  ))
   .register('violet-expression-review', createFixture(
     'Hold every approved aligned Violet expression without animation or input.',
   ))

@@ -11,6 +11,7 @@ import { productionFullFrameCharacterRigs } from './FullFrameCharacterRig.js';
 import './VioletFullFrameCharacterRig.js';
 import './HagridFullFrameCharacterRig.js';
 import './WandmakerFullFrameCharacterRig.js';
+import './MadamMalkinFullFrameCharacterRig.js';
 
 const OUTLINE = STORYBOOK_INK.primary;
 const DEEP_OUTLINE = STORYBOOK_INK.deep;
@@ -220,6 +221,7 @@ export const CHARACTER_REVIEW_SCENES = Object.freeze([
   'character-sprite-spike-review',
   'hagrid-sprite-review',
   'wandmaker-sprite-review',
+  'madam-malkin-sprite-review',
   'violet-expression-review',
 ]);
 
@@ -585,6 +587,7 @@ export class CharacterRenderer {
     else if (scene === 'character-sprite-spike-review') this.drawSpriteSpikeReview(context, time);
     else if (scene === 'hagrid-sprite-review') this.drawHagridSpriteReview(context, time);
     else if (scene === 'wandmaker-sprite-review') this.drawWandmakerSpriteReview(context, time);
+    else if (scene === 'madam-malkin-sprite-review') this.drawMadamMalkinSpriteReview(context, time);
     else if (scene === 'violet-expression-review') this.drawVioletExpressionReview(context);
     else this.drawOwlMotionReview(context, time, reducedMotion);
     return true;
@@ -711,6 +714,22 @@ export class CharacterRenderer {
       drawReviewLabel(context, entry.x, 660, entry.label);
       this.draw(context, {
         kind: 'wandmaker', x: entry.x, y: 595, scale: 1,
+        pose: entry.pose, facing: 'right', shadow: true,
+      }, time + entry.x * 0.001);
+    }
+  }
+
+  drawMadamMalkinSpriteReview(context, time) {
+    const rows = [
+      { label: 'Neutral', x: 190, pose: 'neutral' },
+      { label: 'Blink', x: 490, pose: 'blink' },
+      { label: 'Talk A', x: 790, pose: 'talk-a' },
+      { label: 'Talk B', x: 1090, pose: 'talk-b' },
+    ];
+    for (const entry of rows) {
+      drawReviewLabel(context, entry.x, 660, entry.label);
+      this.draw(context, {
+        kind: 'tailor', x: entry.x, y: 595, scale: 1,
         pose: entry.pose, facing: 'right', shadow: true,
       }, time + entry.x * 0.001);
     }
@@ -1172,6 +1191,7 @@ function drawReviewBackground(context, scene) {
     'character-sprite-spike-review': 'SP-E spike · code-drawn vs painted parts',
     'hagrid-sprite-review': 'Hagrid · aligned production poses',
     'wandmaker-sprite-review': 'Wandmaker · aligned production expressions',
+    'madam-malkin-sprite-review': 'Madam Malkin · aligned production expressions',
     'violet-expression-review': 'Approved Violet · aligned expressions and portraits',
   };
   context.fillText(titles[scene], 640, 77);
