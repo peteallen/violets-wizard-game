@@ -19,6 +19,19 @@ export {
 } from './CharacterRegistry.js';
 
 export {
+  CharacterModule,
+  CharacterModuleValidationError,
+  defineCharacterModule,
+  validateCharacterModule,
+} from './CharacterModule.js';
+
+export {
+  CharacterCatalog,
+  CharacterCatalogError,
+  buildCharacterCatalog,
+} from './CharacterCatalog.js';
+
+export {
   loadVioletCharacterRuntime,
   violetCharacterDefinition,
   violetCharacterReview,
