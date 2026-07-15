@@ -193,14 +193,16 @@ describe('canonical full-frame character packages', () => {
         for (const action of definition.capabilities.actions) {
           expect(() => resolveFullFrameCharacterAnimation(manifest, {
             appearance,
-            actorAnimation: { action, localTime: 0, progress: 0 },
+            action,
+            actionTime: 0,
+            actionProgress: 0,
           })).not.toThrow();
         }
       }
     }
   });
 
-  it('translates explicit registry surfaces and actions into the legacy rig contract', async () => {
+  it('passes explicit registry surfaces and actions into the full-frame rig contract', async () => {
     const runtimeModule = await import('../src/game/characters/violet/runtime.js');
     const runtime = runtimeModule.violetCharacterRuntime;
     const draw = vi.spyOn(runtimeModule.violetFullFrameCharacterRig, 'draw')
@@ -210,13 +212,12 @@ describe('canonical full-frame character packages', () => {
     expect(runtime.renderers.portrait({
       context,
       time: 1.5,
+      characterId: 'character.violet',
+      surface: 'portrait',
       appearance: 'robes',
       pose: 'idle',
       action: 'chosen-wand',
       actionProgress: 0.5,
-      outfit: 'casual',
-      walking: true,
-      actorAnimation: { action: 'unregistered-action' },
     })).toEqual({ status: 'drawn' });
     expect(draw).toHaveBeenCalledWith(context, {
       appearance: 'robes',
@@ -227,13 +228,9 @@ describe('canonical full-frame character packages', () => {
       x: 0,
       y: 118,
       scale: 0.82,
-      actorAnimation: {
-        action: 'chosen-wand',
-        localTime: 1.5,
-        progress: 0.5,
-      },
-      detail: 'portrait',
-    }, 1.5);
+      action: 'chosen-wand',
+      actionProgress: 0.5,
+    }, 1.5, 'portrait');
     draw.mockRestore();
   });
 
@@ -252,12 +249,11 @@ describe('canonical full-frame character packages', () => {
     preload.mockRestore();
   });
 
-  it('keeps Violet robe recoloring owned once and re-exported at the old path', async () => {
+  it('keeps Violet robe recoloring owned by Violet’s package', async () => {
     const identityModule = await import('../src/game/characters/violet/robeRecolor.js');
-    const compatibilityModule = await import('../src/game/render/VioletRobeRecolor.js');
 
-    expect(compatibilityModule.VioletRobeRecolorer).toBe(identityModule.VioletRobeRecolorer);
-    expect(compatibilityModule.violetRobeRecolorer).toBe(identityModule.violetRobeRecolorer);
-    expect(compatibilityModule.recolorVioletRobeFrame).toBe(identityModule.recolorVioletRobeFrame);
+    expect(identityModule.VioletRobeRecolorer).toBeTypeOf('function');
+    expect(identityModule.violetRobeRecolorer).toBeInstanceOf(identityModule.VioletRobeRecolorer);
+    expect(identityModule.recolorVioletRobeFrame).toBeTypeOf('function');
   });
 });

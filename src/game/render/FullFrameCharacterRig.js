@@ -2,6 +2,13 @@ import { assetUrl } from '../core/assetUrl.js';
 import { AlignedSpriteRig } from './AlignedSpriteRig.js';
 
 const SURFACES = Object.freeze(['world', 'portrait']);
+const SURFACE_SET = new Set(SURFACES);
+const REMOVED_STATE_FIELDS = Object.freeze([
+  'actorAnimation',
+  'detail',
+  'outfit',
+  'walking',
+]);
 
 function object(value, path) {
   if (!value || typeof value !== 'object' || Array.isArray(value)) {
@@ -26,6 +33,21 @@ function positive(value, path) {
   finite(value, path);
   if (value <= 0) throw new RangeError(`${path} must be greater than zero.`);
   return value;
+}
+
+function surface(value, path = 'surface') {
+  if (!SURFACE_SET.has(value)) {
+    throw new TypeError(`${path} must be world or portrait.`);
+  }
+  return value;
+}
+
+function rejectRemovedStateFields(value) {
+  for (const field of REMOVED_STATE_FIELDS) {
+    if (Object.hasOwn(value, field)) {
+      throw new TypeError(`Full-frame character state field ${field} is no longer supported.`);
+    }
+  }
 }
 
 function freezeTree(value, seen = new WeakSet()) {
@@ -194,7 +216,6 @@ function normalizeDirectionalMap(value, path, knownClips) {
 export function createFullFrameCharacterManifest(definition, { resolveFrame = assetUrl } = {}) {
   object(definition, 'definition');
   id(definition.id, 'definition.id');
-  id(definition.kind, 'definition.kind');
   if (typeof resolveFrame !== 'function') throw new TypeError('resolveFrame must be a function.');
 
   const canvas = object(definition.canvas, 'definition.canvas');
@@ -312,15 +333,6 @@ export function createFullFrameCharacterManifest(definition, { resolveFrame = as
     throw new TypeError('definition.requiredAnchors must be a non-empty array.');
   }
 
-  const appearanceAliases = definition.appearanceAliases ?? {};
-  object(appearanceAliases, 'definition.appearanceAliases');
-  for (const [alias, appearance] of Object.entries(appearanceAliases)) {
-    id(alias, 'definition.appearanceAliases key');
-    if (!Object.hasOwn(runtimeAppearances, appearance)) {
-      throw new RangeError(`definition.appearanceAliases.${alias} references unknown appearance ${appearance}.`);
-    }
-  }
-
   const blink = {
     interval: definition.blink?.interval ?? 4.7,
     duration: definition.blink?.duration ?? 0.18,
@@ -350,11 +362,8 @@ export function createFullFrameCharacterManifest(definition, { resolveFrame = as
     anchors,
     bounds,
     fullFrame: {
-      kind: definition.kind,
-      chapter: definition.chapter ?? 'ch1',
       defaultAppearance,
       appearances: runtimeAppearances,
-      appearanceAliases: { ...appearanceAliases },
       placement: normalizePlacement(definition, bounds),
       blink,
       assetFiles: [...assetFiles],
@@ -364,12 +373,11 @@ export function createFullFrameCharacterManifest(definition, { resolveFrame = as
 
 function appearanceFor(manifest, character) {
   const runtime = manifest.fullFrame;
-  const requested = character.outfit ?? character.appearance ?? runtime.defaultAppearance;
-  const appearance = runtime.appearanceAliases[requested] ?? requested;
-  if (!Object.hasOwn(runtime.appearances, appearance)) {
+  const requested = character.appearance ?? runtime.defaultAppearance;
+  if (!Object.hasOwn(runtime.appearances, requested)) {
     throw new RangeError(`${manifest.id} does not support appearance ${requested}.`);
   }
-  return appearance;
+  return requested;
 }
 
 function blinkIsActive(blink, time, phase) {
@@ -382,9 +390,10 @@ export function resolveFullFrameCharacterAnimation(manifest, character = {}, tim
   object(manifest, 'manifest');
   const runtime = object(manifest.fullFrame, 'manifest.fullFrame');
   object(character, 'character');
+  rejectRemovedStateFields(character);
   const appearance = appearanceFor(manifest, character);
   const catalog = runtime.appearances[appearance];
-  const actorAnimation = character.actorAnimation ?? null;
+  const action = character.action ?? null;
   const safeTime = Number.isFinite(time) ? time : 0;
   const phase = Number.isFinite(character.phase) ? character.phase : 0;
   const facing = character.facing === 'left' ? 'left' : 'right';
@@ -393,18 +402,19 @@ export function resolveFullFrameCharacterAnimation(manifest, character = {}, tim
   let requestedActionProgress;
   let localTime = safeTime;
 
-  if (actorAnimation) {
-    object(actorAnimation, 'character.actorAnimation');
-    const action = id(actorAnimation.action, 'character.actorAnimation.action');
-    semantic = catalog.actions[action]
-      ?? (catalog.clips[action] || catalog.directions[action] ? action : null);
+  if (action !== null) {
+    const actionId = id(action, 'character.action');
+    semantic = catalog.actions[actionId]
+      ?? (catalog.clips[actionId] || catalog.directions[actionId] ? actionId : null);
     if (!semantic) {
-      throw new RangeError(`${manifest.id} appearance ${appearance} does not support action ${action}.`);
+      throw new RangeError(`${manifest.id} appearance ${appearance} does not support action ${actionId}.`);
     }
-    localTime = Number.isFinite(actorAnimation.localTime) ? actorAnimation.localTime : 0;
-    if (Number.isFinite(actorAnimation.progress)) requestedActionProgress = actorAnimation.progress;
+    localTime = Number.isFinite(character.actionTime) ? character.actionTime : safeTime;
+    if (Number.isFinite(character.actionProgress)) {
+      requestedActionProgress = character.actionProgress;
+    }
   } else {
-    const requestedPose = character.walking ? 'walking' : (character.pose ?? 'idle');
+    const requestedPose = character.pose ?? 'idle';
     const requestedExpression = character.expression;
     if (
       requestedExpression
@@ -453,15 +463,6 @@ export function resolveFullFrameCharacterAnimation(manifest, character = {}, tim
     lightSide: character.lightSide === 'right' ? 'right' : 'left',
     reducedMotion: Boolean(character.reducedMotion),
   });
-}
-
-export function fullFrameAssetManifestEntries(manifest) {
-  object(manifest, 'manifest');
-  const runtime = object(manifest.fullFrame, 'manifest.fullFrame');
-  return Object.freeze(Object.fromEntries(runtime.assetFiles.map((path, index) => [
-    `${manifest.id}/frame-${String(index).padStart(3, '0')}`,
-    Object.freeze({ path, kind: 'image', chapter: runtime.chapter }),
-  ])));
 }
 
 export class FullFrameCharacterRig {
@@ -571,10 +572,10 @@ export class FullFrameCharacterRig {
     };
   }
 
-  prepareFrame(character = {}, time = 0) {
+  prepareFrame(character = {}, time = 0, requestedSurface = 'world') {
     const animation = resolveFullFrameCharacterAnimation(this.manifest, character, time);
-    const surface = character.detail === 'portrait' ? 'portrait' : 'world';
-    const options = this.drawOptions(character, animation, surface);
+    const renderSurface = surface(requestedSurface, 'Full-frame render surface');
+    const options = this.drawOptions(character, animation, renderSurface);
     const sample = this.alignedRig.sample(options);
     this.alignedRig.protectSamples([this.lastReadyFrame?.sample, sample].filter(Boolean));
     const request = this.alignedRig.requestFrame(options, {
@@ -583,11 +584,17 @@ export class FullFrameCharacterRig {
       baselinePoses: this.baselinePoses(animation),
     });
     this.trackLoading(request.loading);
-    return { animation, surface, options, sample, loading: request.loading };
+    return {
+      animation,
+      surface: renderSurface,
+      options,
+      sample,
+      loading: request.loading,
+    };
   }
 
-  ensureLoading(character = {}, time = 0) {
-    return this.prepareFrame(character, time).loading;
+  ensureLoading(character = {}, time = 0, requestedSurface = 'world') {
+    return this.prepareFrame(character, time, requestedSurface).loading;
   }
 
   rememberReadyFrame(sample, animation) {
@@ -595,14 +602,14 @@ export class FullFrameCharacterRig {
     this.alignedRig.protectSamples([sample]);
   }
 
-  draw(context, character = {}, time = 0) {
+  draw(context, character = {}, time = 0, requestedSurface = 'world') {
     const animation = resolveFullFrameCharacterAnimation(this.manifest, character, time);
+    const renderSurface = surface(requestedSurface, 'Full-frame render surface');
     if (this.loadingError) {
       return Object.freeze({ status: 'failed', error: this.loadingError, animation });
     }
 
-    const surface = character.detail === 'portrait' ? 'portrait' : 'world';
-    const options = this.drawOptions(character, animation, surface);
+    const options = this.drawOptions(character, animation, renderSurface);
 
     // Deterministic review scenes explicitly call preload(), which retains
     // the complete manifest and keeps their historical synchronous draw path.
@@ -632,7 +639,7 @@ export class FullFrameCharacterRig {
       && this.alignedRig.isSampleReady(this.lastReadyFrame.sample)
     ) {
       const displayed = this.lastReadyFrame;
-      const fallbackOptions = this.drawOptions(character, displayed.animation, surface);
+      const fallbackOptions = this.drawOptions(character, displayed.animation, renderSurface);
       const sample = this.alignedRig.drawSample(context, displayed.sample, fallbackOptions);
       this.alignedRig.protectSamples([displayed.sample, targetSample]);
       return Object.freeze({
@@ -649,8 +656,3 @@ export class FullFrameCharacterRig {
     return Object.freeze({ status: 'loading', animation, loading: request.loading });
   }
 }
-
-// Production manifests register here one identity at a time only after their
-// complete required clip set exists. CharacterRenderer treats every entry as
-// authoritative: loading or failed generated art never falls back to Béziers.
-export const productionFullFrameCharacterRigs = new Map();

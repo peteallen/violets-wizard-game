@@ -36,19 +36,11 @@ export const menagerieKeeperStyle = Object.freeze({
 });
 
 export const menagerieKeeperPresentation = Object.freeze({
-  legacyKind: 'keeper',
-  portraitAliases: Object.freeze(['keeper', 'menagerie']),
   world: Object.freeze({ scaleMultiplier: 1.04, phase: 2.22 }),
   portrait: Object.freeze({
     y: 116,
     scale: 0.84,
     backdrop: Object.freeze(['#2f4939', '#66856d']),
-  }),
-  reviews: Object.freeze({
-    cast: Object.freeze({
-      order: 4, label: 'Keeper', x: 1085, y: 595, scale: 1.05, pose: 'proud',
-    }),
-    portrait: Object.freeze({ order: 4, label: 'Keeper', speaker: 'keeper' }),
   }),
 });
 

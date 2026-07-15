@@ -11,9 +11,7 @@ const MADAM_MALKIN_ALIASES = Object.freeze({ talk: 'speaking' });
 
 /** Madam Malkin's shipped robe-shop and dialogue paintings. */
 export const madamMalkinFullFrameCharacterDefinition = Object.freeze({
-  id: 'puppet.madam-malkin.full-frame',
-  kind: 'tailor',
-  chapter: 'ch1',
+  id: 'character.madam-malkin',
   basePath: 'assets/art/characters/madam-malkin',
   canvas: Object.freeze({
     width: 896,

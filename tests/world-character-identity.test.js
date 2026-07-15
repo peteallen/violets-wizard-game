@@ -136,7 +136,6 @@ describe('canonical character identity in content and world snapshots', () => {
         lookX: -0.35,
         layoutBounds: { width: 132, height: 142, ground: 28 },
         action: null,
-        actorAnimation: null,
       },
     });
     expect(snapshot.actors.find(({ actorId }) => actorId === 'npc.pet.toad').renderState)
@@ -148,7 +147,6 @@ describe('canonical character identity in content and world snapshots', () => {
         timeOffset: 1.3,
         layoutBounds: { width: 132, height: 142, ground: 28 },
         action: null,
-        actorAnimation: null,
       });
     expectSupportedActorStates(snapshot);
   });
@@ -176,7 +174,6 @@ describe('canonical character identity in content and world snapshots', () => {
         lookX: -1,
         lookY: (610 - 210 - 170) / 300,
         action: null,
-        actorAnimation: null,
       },
     });
     expectSupportedActorStates(snapshot);
@@ -277,7 +274,6 @@ describe('canonical character identity in content and world snapshots', () => {
         pose: 'idle',
         lookX: 0.45,
         action: null,
-        actorAnimation: null,
       });
     expectSupportedActorStates(chapterTwoSnapshot);
     expect(chapterTwoWorld.dialoguePresentation).toMatchObject({

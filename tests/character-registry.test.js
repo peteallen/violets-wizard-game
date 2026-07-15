@@ -85,36 +85,24 @@ describe('CharacterDefinition', () => {
 });
 
 describe('CharacterRegistry identity and runtime boundaries', () => {
-  it('rejects duplicate identities and resolves only explicitly declared compatibility aliases', () => {
-    const registry = new CharacterRegistry({
-      aliases: {
-        'npc.guide': 'character.hagrid',
-        'npc.guideLegacy': 'character.hagrid',
-      },
-    });
+  it('rejects duplicate identities and accepts only exact character IDs', () => {
+    const registry = new CharacterRegistry();
     registry.register(definition('character.hagrid'), async () => runtime());
 
     expect(registry.resolveId('character.hagrid')).toBe('character.hagrid');
-    expect(registry.resolveId('npc.guide')).toBe('character.hagrid');
-    expect(registry.resolveId('npc.guideLegacy')).toBe('character.hagrid');
-    expect(registry.aliases()).toEqual({
-      'npc.guide': 'character.hagrid',
-      'npc.guideLegacy': 'character.hagrid',
-    });
+    expect(registry.has('character.hagrid')).toBe(true);
+    expect(registry.has('npc.guide')).toBe(false);
+    expect(() => registry.resolveId('npc.guide')).toThrow(UnknownCharacterError);
     expect(() => registry.resolveId('guide')).toThrow(UnknownCharacterError);
     expect(() => registry.register(definition('character.hagrid'), async () => runtime())).toThrow(
       /already registered/,
     );
   });
 
-  it('validates alias targets when sealed and prevents later side-effect registration', () => {
-    const unresolved = new CharacterRegistry({ aliases: { 'npc.guide': 'character.hagrid' } });
-    expect(() => unresolved.seal()).toThrow(/targets unregistered character/);
-
+  it('prevents side-effect registration after sealing', () => {
     const registry = new CharacterRegistry();
     registry.register(definition(), async () => runtime()).seal();
     expect(registry.sealed).toBe(true);
-    expect(() => registry.registerAlias('npc.violet', 'character.violet')).toThrow(/sealed/);
     expect(() => registry.register(definition('character.hagrid'), async () => runtime())).toThrow(/sealed/);
   });
 
@@ -145,11 +133,11 @@ describe('CharacterRegistry identity and runtime boundaries', () => {
 
   it('dispatches world and portrait exactly while supplying canonical defaults', async () => {
     const characterRuntime = runtime();
-    const registry = new CharacterRegistry({ aliases: { 'npc.violet': 'character.violet' } });
+    const registry = new CharacterRegistry();
     registry.register(definition(), async () => characterRuntime);
     await registry.loadRuntime('character.violet');
 
-    expect(registry.render('npc.violet', 'world', { x: 20 })).toBe('world-frame');
+    expect(registry.render('character.violet', 'world', { x: 20 })).toBe('world-frame');
     expect(registry.render('character.violet', 'portrait', {
       appearance: 'robes',
       pose: 'speaking',
@@ -192,10 +180,10 @@ describe('CharacterRegistry identity and runtime boundaries', () => {
 });
 
 describe('CharacterRegistry dependency scopes', () => {
-  it('preloads and releases only requested character dependencies, with aliases deduplicated', async () => {
+  it('preloads and releases only requested exact character dependencies, with duplicates removed', async () => {
     const lifecycle = new Map();
     const loaders = new Map();
-    const registry = new CharacterRegistry({ aliases: { 'npc.guide': 'character.hagrid' } });
+    const registry = new CharacterRegistry();
     for (const characterId of ['character.violet', 'character.hagrid', 'character.wandmaker']) {
       const preload = vi.fn();
       const release = vi.fn();
@@ -207,7 +195,7 @@ describe('CharacterRegistry dependency scopes', () => {
 
     const dependencies = await registry.preload([
       'character.violet',
-      'npc.guide',
+      'character.hagrid',
       'character.hagrid',
     ], { chapterId: 'ch1' });
 

@@ -41,17 +41,18 @@ async function renderer() {
 }
 
 describe('registered character renderer', () => {
-  it('dispatches one exact identity and surface while normalizing actor state', async () => {
+  it('dispatches one exact identity and surface without rewriting canonical actor state', async () => {
     const harness = await renderer();
     const context = {};
-    const animation = { action: 'celebrate', localTime: 0.4, progress: 0.25 };
 
     expect(harness.renderer.draw(context, {
       characterId: 'character.test',
       surface: 'world',
-      outfit: 'robes',
-      walking: true,
-      actorAnimation: animation,
+      appearance: 'robes',
+      pose: 'walking',
+      action: 'celebrate',
+      actionTime: 0.4,
+      actionProgress: 0.25,
       x: 120,
     }, 3)).toBe('world');
     expect(harness.world).toHaveBeenCalledWith(expect.objectContaining({
@@ -69,20 +70,38 @@ describe('registered character renderer', () => {
     expect(harness.portrait).not.toHaveBeenCalled();
   });
 
-  it('uses the same call for portraits and never guesses an identity', async () => {
+  it('uses the same exact call for portraits and never guesses identity or surface', async () => {
     const harness = await renderer();
-    expect(harness.renderer.drawPortrait({}, {
-      portraitCharacterId: 'character.test',
+    expect(harness.renderer.draw({}, {
+      characterId: 'character.test',
+      surface: 'portrait',
       appearance: 'casual',
       pose: 'speaking',
     }, 2)).toBe('portrait');
     expect(harness.portrait).toHaveBeenCalledOnce();
 
     expect(() => harness.renderer.draw({}, { characterId: 'character.missing' }))
-      .toThrow(UnknownCharacterError);
+      .toThrow(/exact world or portrait surface/);
+    expect(() => harness.renderer.draw({}, {
+      characterId: 'character.missing', surface: 'world',
+    })).toThrow(UnknownCharacterError);
     expect(() => harness.renderer.draw({}, { kind: 'guide' }))
       .toThrow(/exact characterId/);
   });
+
+  it.each(['actorAnimation', 'detail', 'outfit', 'portraitCharacterId', 'walking'])(
+    'rejects the removed %s compatibility field',
+    async (field) => {
+      const harness = await renderer();
+      expect(() => harness.renderer.draw({}, {
+        characterId: 'character.test',
+        surface: 'world',
+        appearance: 'casual',
+        pose: 'idle',
+        [field]: field === 'walking' ? false : 'legacy',
+      })).toThrow(`field ${field} is no longer supported`);
+    },
+  );
 
   it('requires runtimes to be explicitly loaded before synchronous drawing', () => {
     const registry = new CharacterRegistry();
@@ -91,7 +110,10 @@ describe('registered character renderer', () => {
     })).seal();
     const characterRenderer = new RegisteredCharacterRenderer({ registry });
 
-    expect(() => characterRenderer.draw({}, { characterId: 'character.test' }))
+    expect(() => characterRenderer.draw({}, {
+      characterId: 'character.test',
+      surface: 'world',
+    }))
       .toThrow(/is not loaded/);
   });
 });

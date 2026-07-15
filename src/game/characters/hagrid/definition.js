@@ -14,9 +14,7 @@ const HAGRID_ALIASES = Object.freeze({
 
 /** Hagrid's complete aligned paintings; no body-part assembly occurs at runtime. */
 export const hagridFullFrameCharacterDefinition = Object.freeze({
-  id: 'puppet.hagrid.full-frame',
-  kind: 'guide',
-  chapter: 'ch1',
+  id: 'character.hagrid',
   basePath: 'assets/art/characters/hagrid',
   canvas: Object.freeze({
     width: 896,

@@ -1058,6 +1058,15 @@ function occupantRenderState(occupant, positions) {
   };
 }
 
+function actorActionRenderState(animation) {
+  if (!animation) return { action: null };
+  return {
+    action: animation.action,
+    actionProgress: animation.progress,
+    actionTime: animation.localTime,
+  };
+}
+
 function createActorSnapshots({
   chapter,
   player,
@@ -1074,8 +1083,7 @@ function createActorSnapshots({
       const animation = actorAnimations[occupant.npc] ?? null;
       return createActorSnapshot(chapter, occupant.npc, {
         ...occupantRenderState(occupant, positions),
-        action: animation?.action ?? null,
-        actorAnimation: animation,
+        ...actorActionRenderState(animation),
       }, occupant.y);
     });
 
@@ -1088,8 +1096,7 @@ function createActorSnapshots({
     robeTrim: player.robeTrim,
     appearance: player.outfit,
     pose: player.walking ? 'walking' : 'idle',
-    action: playerAnimation?.action ?? null,
-    actorAnimation: playerAnimation,
+    ...actorActionRenderState(playerAnimation),
   }));
 
   if (pet) {
@@ -1101,7 +1108,6 @@ function createActorSnapshots({
       ...(pet.lookX !== undefined ? { lookX: pet.lookX } : {}),
       ...(pet.lookY !== undefined ? { lookY: pet.lookY } : {}),
       action: null,
-      actorAnimation: null,
     }, pet.y + 1));
   }
 

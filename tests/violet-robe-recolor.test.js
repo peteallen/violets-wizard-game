@@ -3,7 +3,7 @@ import {
   VIOLET_ROBE_FRAME_SIZE,
   VioletRobeRecolorer,
   parseHexColor,
-} from '../src/game/render/VioletRobeRecolor.js';
+} from '../src/game/characters/violet/robeRecolor.js';
 
 const { width, height } = VIOLET_ROBE_FRAME_SIZE;
 const PIXEL_COUNT = width * height;

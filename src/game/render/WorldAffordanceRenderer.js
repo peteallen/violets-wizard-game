@@ -16,10 +16,9 @@ const VISUAL_PROFILES = Object.freeze({
   'frog-card': Object.freeze([0.46, 0.58, 0, 'letter']),
 });
 const DEFAULT_VISUAL_PROFILE = Object.freeze([0.82, 0.82, 0, 'circle']);
-// Hagrid's authored puppet occupies approximately x -79…79 and y -211…29,
-// and CharacterRenderer applies its 1.5 world scale. The authored talk
-// circle is 190 pixels square, so these ratios put the guide bounds on that
-// live silhouette instead of on the smaller circle around his face and chest.
+// The guide talk target is deliberately broader and taller than the authored
+// interaction circle so its shimmer follows Hagrid's live painted silhouette
+// instead of clustering around only his face and chest.
 const GUIDE_VISUAL_PROFILE = Object.freeze([1.25, 1.9, 0.1, 'guide']);
 const FIGURE_VISUAL_PROFILE = Object.freeze([0.68, 1.45, 0.16, 'figure']);
 // One broad translucent brush band plus one bright edge reads as a magical

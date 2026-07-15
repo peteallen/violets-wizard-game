@@ -9,23 +9,8 @@ export const catStyle = Object.freeze({
 });
 
 export const catPresentation = Object.freeze({
-  legacyType: 'cat',
-  portraitAliases: Object.freeze(['cat']),
   portrait: Object.freeze({
     y: 78, scale: 0.96, backdrop: Object.freeze(['#49352b', '#b18464']),
-  }),
-  reviews: Object.freeze({
-    pet: Object.freeze({
-      order: 0,
-      label: 'Cat companion',
-      x: 225,
-      y: 550,
-      plinthY: 610,
-      scale: 1.9,
-      pose: 'pet-follow',
-      timeOffset: 0,
-    }),
-    portrait: Object.freeze({ order: 6, label: 'Cat', speaker: 'cat' }),
   }),
 });
 

@@ -33,9 +33,7 @@ const COMMON_ALIASES = Object.freeze({
  * 896 x 1200 canvas, so runtime animation only selects whole painted frames.
  */
 export const violetFullFrameCharacterDefinition = Object.freeze({
-  id: 'puppet.violet.full-frame',
-  kind: 'violet',
-  chapter: 'ch1',
+  id: 'character.violet',
   basePath: 'assets/art/characters/violet',
   canvas: Object.freeze({
     width: 896,
@@ -44,7 +42,6 @@ export const violetFullFrameCharacterDefinition = Object.freeze({
   }),
   worldHeight: 235,
   defaultAppearance: CASUAL,
-  appearanceAliases: Object.freeze({ robe: ROBES, robed: ROBES }),
   appearances: Object.freeze({
     [CASUAL]: Object.freeze({
       clips: Object.freeze({

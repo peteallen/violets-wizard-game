@@ -104,13 +104,11 @@ describe('CharacterCatalog construction', () => {
       assetPath: 'assets/art/characters/test-guide/idle.png',
       reviewScene: 'review.test-guide',
     });
-    const catalog = buildCharacterCatalog([violet.module, guide.module], {
-      aliases: { 'npc.testGuide': 'character.test-guide' },
-    });
+    const catalog = buildCharacterCatalog([violet.module, guide.module]);
 
     expect(catalog.registry.sealed).toBe(true);
     expect(catalog.ids()).toEqual(['character.test-violet', 'character.test-guide']);
-    expect(catalog.getModule('npc.testGuide')).toBe(guide.module);
+    expect(catalog.getModule('character.test-guide')).toBe(guide.module);
     expect(catalog.assets).toEqual({
       'characters/test-violet/idle': {
         path: 'assets/art/characters/test-violet/idle.png',

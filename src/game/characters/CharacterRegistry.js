@@ -1,14 +1,8 @@
 import {
   CharacterDefinition,
-  assertCharacterId,
   assertCharacterSurface,
   defineCharacter,
 } from './CharacterDefinition.js';
-
-// Compatibility aliases deliberately accept the legacy camel-cased content IDs
-// already present in saves and Chapter One. Canonical character IDs remain
-// strictly lowercase through assertCharacterId().
-const REFERENCE_ID_PATTERN = /^[a-z][A-Za-z0-9]*(?:[.-][A-Za-z0-9][A-Za-z0-9-]*)+$/;
 
 export class CharacterRegistryError extends Error {
   constructor(message) {
@@ -18,10 +12,9 @@ export class CharacterRegistryError extends Error {
 }
 
 export class UnknownCharacterError extends CharacterRegistryError {
-  constructor(id, availableIds, aliases) {
+  constructor(id, availableIds) {
     const available = availableIds.join(', ') || '(none)';
-    const compatibilityAliases = aliases.join(', ') || '(none)';
-    super(`Unknown character "${id}". Registered identities: ${available}. Compatibility aliases: ${compatibilityAliases}.`);
+    super(`Unknown character "${id}". Registered identities: ${available}.`);
     this.name = 'UnknownCharacterError';
     this.characterId = id;
   }
@@ -46,13 +39,6 @@ export class UnsupportedCharacterCapabilityError extends CharacterRegistryError 
   }
 }
 
-function assertReferenceId(value, path) {
-  if (typeof value !== 'string' || !REFERENCE_ID_PATTERN.test(value)) {
-    throw new TypeError(`${path} must be a legacy namespaced identifier using letters, numbers, dots, and hyphens.`);
-  }
-  return value;
-}
-
 function isPlainObject(value) {
   if (value === null || typeof value !== 'object' || Array.isArray(value)) return false;
   const prototype = Object.getPrototypeOf(value);
@@ -62,12 +48,6 @@ function isPlainObject(value) {
 function assertPlainObject(value, path) {
   if (!isPlainObject(value)) throw new TypeError(`${path} must be a plain object.`);
   return value;
-}
-
-function normalizeAliasEntries(aliases) {
-  if (aliases === undefined) return [];
-  assertPlainObject(aliases, 'Character compatibility aliases');
-  return Object.entries(aliases);
 }
 
 function runtimeCandidate(value) {
@@ -133,8 +113,6 @@ export class CharacterRegistry {
 
   #loaders = new Map();
 
-  #aliases = new Map();
-
   #runtimes = new Map();
 
   #runtimePromises = new Map();
@@ -145,12 +123,6 @@ export class CharacterRegistry {
 
   #sealed = false;
 
-  constructor({ aliases } = {}) {
-    for (const [alias, characterId] of normalizeAliasEntries(aliases)) {
-      this.registerAlias(alias, characterId);
-    }
-  }
-
   register(source, loadRuntime) {
     if (this.#sealed) throw new CharacterRegistryError('Character registry is sealed.');
     const definition = source instanceof CharacterDefinition ? source : defineCharacter(source);
@@ -160,37 +132,12 @@ export class CharacterRegistry {
     if (this.#definitions.has(definition.id)) {
       throw new CharacterRegistryError(`Character "${definition.id}" is already registered.`);
     }
-    if (this.#aliases.has(definition.id)) {
-      throw new CharacterRegistryError(`Character "${definition.id}" collides with an explicit compatibility alias.`);
-    }
     this.#definitions.set(definition.id, definition);
     this.#loaders.set(definition.id, loadRuntime);
     return this;
   }
 
-  registerAlias(alias, characterId) {
-    if (this.#sealed) throw new CharacterRegistryError('Character registry is sealed.');
-    assertReferenceId(alias, 'Character compatibility alias');
-    assertCharacterId(characterId, `Compatibility target for ${alias}`);
-    if (alias === characterId) {
-      throw new CharacterRegistryError(`Compatibility alias "${alias}" cannot point to itself.`);
-    }
-    if (this.#definitions.has(alias)) {
-      throw new CharacterRegistryError(`Compatibility alias "${alias}" collides with a registered character identity.`);
-    }
-    if (this.#aliases.has(alias)) {
-      throw new CharacterRegistryError(`Compatibility alias "${alias}" is already registered.`);
-    }
-    this.#aliases.set(alias, characterId);
-    return this;
-  }
-
   seal() {
-    for (const [alias, characterId] of this.#aliases) {
-      if (!this.#definitions.has(characterId)) {
-        throw new CharacterRegistryError(`Compatibility alias "${alias}" targets unregistered character "${characterId}".`);
-      }
-    }
     this.#sealed = true;
     return this;
   }
@@ -198,21 +145,11 @@ export class CharacterRegistry {
   resolveId(reference) {
     if (typeof reference !== 'string') throw new TypeError('Character reference must be a string.');
     if (this.#definitions.has(reference)) return reference;
-    if (this.#aliases.has(reference)) {
-      const characterId = this.#aliases.get(reference);
-      if (!this.#definitions.has(characterId)) {
-        throw new CharacterRegistryError(`Compatibility alias "${reference}" targets unregistered character "${characterId}".`);
-      }
-      return characterId;
-    }
-    throw new UnknownCharacterError(reference, this.ids(), [...this.#aliases.keys()]);
+    throw new UnknownCharacterError(reference, this.ids());
   }
 
   has(reference) {
-    if (typeof reference !== 'string') return false;
-    if (this.#definitions.has(reference)) return true;
-    const target = this.#aliases.get(reference);
-    return target !== undefined && this.#definitions.has(target);
+    return typeof reference === 'string' && this.#definitions.has(reference);
   }
 
   getDefinition(reference) {
@@ -234,10 +171,6 @@ export class CharacterRegistry {
 
   entries() {
     return Object.freeze([...this.#definitions.values()]);
-  }
-
-  aliases() {
-    return Object.freeze(Object.fromEntries(this.#aliases));
   }
 
   get sealed() {

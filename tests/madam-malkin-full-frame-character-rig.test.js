@@ -1,18 +1,17 @@
 import { describe, expect, it, vi } from 'vitest';
-import { assetManifest } from '../src/game/core/assetManifest.js';
-import { sampleAlignedSpriteFrame } from '../src/game/render/AlignedSpriteRig.js';
 import {
-  CHARACTER_REVIEW_SCENES,
-  CharacterRenderer,
-} from '../src/game/render/CharacterRenderer.js';
+  madamMalkinCharacterDefinition,
+  madamMalkinCharacterModule,
+  madamMalkinCharacterReview,
+} from '../src/game/characters/madam-malkin/index.js';
 import {
-  productionFullFrameCharacterRigs,
-  resolveFullFrameCharacterAnimation,
-} from '../src/game/render/FullFrameCharacterRig.js';
-import {
+  madamMalkinCharacterRuntime,
   madamMalkinFullFrameCharacterManifest,
   madamMalkinFullFrameCharacterRig,
-} from '../src/game/render/MadamMalkinFullFrameCharacterRig.js';
+} from '../src/game/characters/madam-malkin/runtime.js';
+import { assetManifest } from '../src/game/core/assetManifest.js';
+import { sampleAlignedSpriteFrame } from '../src/game/render/AlignedSpriteRig.js';
+import { resolveFullFrameCharacterAnimation } from '../src/game/render/FullFrameCharacterRig.js';
 
 function framePaths(clip) {
   return madamMalkinFullFrameCharacterManifest.clips[`default/${clip}`].frames.map((frame) => {
@@ -39,31 +38,51 @@ function drawingContext() {
 }
 
 describe('Madam Malkin production full-frame rig', () => {
-  it('is authoritative for ordinary world and Madam Malkin portrait rendering', () => {
-    expect(productionFullFrameCharacterRigs.get('tailor'))
-      .toBe(madamMalkinFullFrameCharacterRig);
-    expect(madamMalkinFullFrameCharacterManifest.fullFrame.kind).toBe('tailor');
+  it('is owned by Madam Malkin’s canonical package for world and portrait rendering', async () => {
+    expect(madamMalkinCharacterModule.definition).toBe(madamMalkinCharacterDefinition);
+    expect(await madamMalkinCharacterModule.loadRuntime()).toBe(madamMalkinCharacterRuntime);
+    expect(madamMalkinFullFrameCharacterManifest.id).toBe('character.madam-malkin');
     expect(madamMalkinFullFrameCharacterManifest.fullFrame.placement.portrait.y).toBe(12);
 
-    const renderer = new CharacterRenderer();
     const failed = { status: 'failed', error: new Error('test decode failure') };
     const draw = vi.spyOn(madamMalkinFullFrameCharacterRig, 'draw').mockReturnValue(failed);
-    const worldCharacter = {
-      kind: 'tailor', x: 310, y: 610, facing: 'right', pose: 'idle',
-    };
+    const worldContext = {};
 
-    expect(renderer.draw({}, worldCharacter, 1.25)).toBe(failed);
-    expect(draw).toHaveBeenNthCalledWith(1, {}, worldCharacter, 1.25);
+    expect(madamMalkinCharacterRuntime.renderers.world({
+      context: worldContext,
+      time: 1.25,
+      characterId: 'character.madam-malkin',
+      surface: 'world',
+      appearance: 'default',
+      x: 310,
+      y: 610,
+      facing: 'right',
+      pose: 'idle',
+    })).toBe(failed);
+    expect(draw).toHaveBeenNthCalledWith(1, worldContext, {
+      appearance: 'default',
+      x: 310,
+      y: 610,
+      facing: 'right',
+      pose: 'idle',
+    }, 1.25, 'world');
 
-    renderer.drawPortrait(drawingContext(), {
-      speaker: 'Madam Malkin', pose: 'talk', facing: 'left', x: 80, y: 90,
-    }, 0.75);
+    madamMalkinCharacterRuntime.renderers.portrait({
+      context: drawingContext(),
+      time: 0.75,
+      characterId: 'character.madam-malkin',
+      surface: 'portrait',
+      appearance: 'default',
+      pose: 'talk',
+      facing: 'left',
+      x: 80,
+      y: 90,
+    });
     expect(draw).toHaveBeenNthCalledWith(2, expect.anything(), expect.objectContaining({
-      kind: 'tailor',
+      appearance: 'default',
       pose: 'speaking',
       facing: 'left',
-      detail: 'portrait',
-    }), 0.75);
+    }), 0.75, 'portrait');
 
     // Generated art remains authoritative while loading or failed; the old
     // code-drawn tailor must never appear underneath it as a hidden fallback.
@@ -127,32 +146,18 @@ describe('Madam Malkin production full-frame rig', () => {
       pose: 'profile-right',
     })).toThrow(/does not support pose profile-right/);
     expect(() => resolveFullFrameCharacterAnimation(madamMalkinFullFrameCharacterManifest, {
-      actorAnimation: { action: 'measure-violet', localTime: 0, progress: 0 },
+      action: 'measure-violet', actionTime: 0, actionProgress: 0,
     })).toThrow(/does not support action measure-violet/);
   });
 
-  it('uses a clean grounded review scene for every shipped source state', () => {
-    const draw = vi.fn(() => ({ status: 'drawn' }));
-    const renderer = new CharacterRenderer({
-      fullFrameRigs: new Map([['tailor', { draw }]]),
-    });
-
-    expect(CHARACTER_REVIEW_SCENES).toContain('madam-malkin-sprite-review');
-    expect(renderer.drawReviewScene(
-      drawingContext(),
+  it('publishes its grounded review through Madam Malkin’s package descriptor', () => {
+    expect(madamMalkinCharacterReview.sceneIds).toEqual([
+      'character-cast-review',
+      'character-portraits-review',
       'madam-malkin-sprite-review',
-      1.25,
-    )).toBe(true);
-
-    expect(draw.mock.calls.map(([, character]) => ({
-      pose: character.pose,
-      facing: character.facing,
-      shadow: character.shadow,
-    }))).toEqual([
-      { pose: 'neutral', facing: 'right', shadow: true },
-      { pose: 'blink', facing: 'right', shadow: true },
-      { pose: 'talk-a', facing: 'right', shadow: true },
-      { pose: 'talk-b', facing: 'right', shadow: true },
+    ]);
+    expect(madamMalkinCharacterModule.reviews).toEqual([
+      expect.objectContaining({ sceneId: 'madam-malkin-sprite-review' }),
     ]);
   });
 

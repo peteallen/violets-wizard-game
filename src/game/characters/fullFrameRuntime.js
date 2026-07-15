@@ -6,31 +6,16 @@ function renderRequest(rig, surface, request) {
     context,
     time = 0,
     characterId: _characterId,
-    surface: _surface,
-    action,
-    actionProgress,
-    actionTime,
-    actorAnimation: _legacyActorAnimation,
-    detail: _legacyDetail,
-    outfit: _legacyOutfit,
-    walking: _legacyWalking,
+    surface: requestedSurface,
     ...character
   } = request;
   if (!context || (typeof context !== 'object' && typeof context !== 'function')) {
     throw new TypeError(`Full-frame ${surface} rendering requires a drawing context.`);
   }
-  const actorAnimation = action
-    ? {
-      action,
-      localTime: Number.isFinite(actionTime) ? actionTime : time,
-      ...(Number.isFinite(actionProgress) ? { progress: actionProgress } : {}),
-    }
-    : undefined;
-  return rig.draw(context, {
-    ...character,
-    ...(actorAnimation ? { actorAnimation } : {}),
-    detail: surface,
-  }, time);
+  if (requestedSurface !== surface) {
+    throw new TypeError(`Full-frame ${surface} renderer requires surface: ${surface}.`);
+  }
+  return rig.draw(context, character, time, surface);
 }
 
 export function createFullFrameCharacterRuntime(rig) {

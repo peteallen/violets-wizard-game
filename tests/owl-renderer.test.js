@@ -1,11 +1,13 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import {
   drawOwlBookplate,
-  drawVectorOwl,
-  sampleOwlDelivery,
-  sampleOwlMotion,
-} from '../src/game/render/OwlRenderer.js';
+  drawOwlWithProfile,
+  sampleOwlMotionWithProfile,
+} from '../src/game/characters/owl/sharedDrawing.js';
+import { petOwlDrawingProfile } from '../src/game/characters/pet-owl/profile.js';
+import { postOwlDrawingProfile } from '../src/game/characters/post-owl/profile.js';
 import { LETTER_ENVELOPE_POSE } from '../src/game/render/LetterRenderer.js';
+import { SetPieceRenderer } from '../src/game/render/SetPieceRenderer.js';
 import { STORYBOOK_INK, STORYBOOK_LINE_WEIGHT } from '../src/game/render/storybookInk.js';
 
 function recordingContext() {
@@ -14,9 +16,10 @@ function recordingContext() {
   const lineWidths = [];
   let depth = 0;
   const methods = new Set([
-    'arc', 'arcTo', 'beginPath', 'bezierCurveTo', 'closePath', 'ellipse', 'fill',
-    'fillRect', 'lineTo', 'moveTo', 'quadraticCurveTo', 'rect', 'restore', 'rotate',
-    'roundRect', 'save', 'scale', 'setLineDash', 'stroke', 'strokeRect', 'translate',
+    'arc', 'arcTo', 'beginPath', 'bezierCurveTo', 'clip', 'closePath', 'ellipse', 'fill',
+    'fillRect', 'fillText', 'lineTo', 'moveTo', 'quadraticCurveTo', 'rect', 'restore',
+    'rotate', 'roundRect', 'save', 'scale', 'setLineDash', 'stroke', 'strokeRect',
+    'strokeText', 'translate',
   ]);
   const target = {
     calls,
@@ -51,27 +54,51 @@ function recordingContext() {
   });
 }
 
+function deliveryFrame(time, { reducedMotion = false } = {}) {
+  const context = recordingContext();
+  const characterRenderer = { draw: vi.fn() };
+  const renderer = new SetPieceRenderer({ characterRenderer });
+  renderer.drawLetterDelivery(context, { time }, { reducedMotion, lightSide: 'left' });
+  const [translate] = context.calls.filter(([name]) => name === 'translate');
+  const [rotate] = context.calls.filter(([name]) => name === 'rotate');
+  const [scale] = context.calls.filter(([name]) => name === 'scale');
+  return {
+    owl: characterRenderer.draw.mock.calls[0]?.[1] ?? null,
+    letter: {
+      x: translate[1],
+      y: translate[2],
+      rotation: rotate[1],
+      scale: scale[1],
+    },
+  };
+}
+
 describe('vector owl motion', () => {
   it('is deterministic and keeps sampled transforms finite and bounded', () => {
-    for (const pose of ['perch', 'idle', 'takeoff', 'flight', 'settle', 'pet-follow']) {
-      const input = { time: 2.375, phase: 0.42, pose, lookX: 0.7, lookY: -0.3, variant: 'pet' };
-      const first = sampleOwlMotion(input);
-      const second = sampleOwlMotion(input);
-      expect(first).toEqual(second);
-      for (const value of Object.values(first)) expect(Number.isFinite(value)).toBe(true);
-      expect(Math.abs(first.headTurn)).toBeLessThanOrEqual(0.22);
-      expect(Math.abs(first.headTilt)).toBeLessThanOrEqual(0.2);
-      expect(first.blink).toBeGreaterThanOrEqual(0);
-      expect(first.blink).toBeLessThanOrEqual(1);
-      expect(first.wingSpread).toBeGreaterThanOrEqual(0);
-      expect(first.wingSpread).toBeLessThanOrEqual(1);
+    for (const [profile, poses] of [
+      [postOwlDrawingProfile, ['perch', 'takeoff', 'flight', 'settle']],
+      [petOwlDrawingProfile, ['idle', 'pet-follow']],
+    ]) {
+      for (const pose of poses) {
+        const input = { time: 2.375, phase: 0.42, pose, lookX: 0.7, lookY: -0.3 };
+        const first = sampleOwlMotionWithProfile(profile, input);
+        const second = sampleOwlMotionWithProfile(profile, input);
+        expect(first).toEqual(second);
+        for (const value of Object.values(first)) expect(Number.isFinite(value)).toBe(true);
+        expect(Math.abs(first.headTurn)).toBeLessThanOrEqual(0.22);
+        expect(Math.abs(first.headTilt)).toBeLessThanOrEqual(0.2);
+        expect(first.blink).toBeGreaterThanOrEqual(0);
+        expect(first.blink).toBeLessThanOrEqual(1);
+        expect(first.wingSpread).toBeGreaterThanOrEqual(0);
+        expect(first.wingSpread).toBeLessThanOrEqual(1);
+      }
     }
   });
 
   it('gives the pet owl a distinct curious follow and wing-flick personality', () => {
-    const post = sampleOwlMotion({ time: 3.85, pose: 'perch', variant: 'post' });
-    const pet = sampleOwlMotion({ time: 3.85, pose: 'idle', variant: 'pet' });
-    const follow = sampleOwlMotion({ time: 3.85, pose: 'pet-follow', variant: 'pet' });
+    const post = sampleOwlMotionWithProfile(postOwlDrawingProfile, { time: 3.85, pose: 'perch' });
+    const pet = sampleOwlMotionWithProfile(petOwlDrawingProfile, { time: 3.85, pose: 'idle' });
+    const follow = sampleOwlMotionWithProfile(petOwlDrawingProfile, { time: 3.85, pose: 'pet-follow' });
 
     expect(Math.abs(pet.headTilt)).toBeGreaterThan(Math.abs(post.headTilt));
     expect(pet.wingFlick).toBeGreaterThan(0);
@@ -80,8 +107,12 @@ describe('vector owl motion', () => {
   });
 
   it('keeps reduced motion expressive while substantially limiting flight beats', () => {
-    const full = sampleOwlMotion({ time: 0.42, pose: 'flight', variant: 'post' });
-    const reduced = sampleOwlMotion({ time: 0.42, pose: 'flight', variant: 'post', reducedMotion: true });
+    const full = sampleOwlMotionWithProfile(postOwlDrawingProfile, { time: 0.42, pose: 'flight' });
+    const reduced = sampleOwlMotionWithProfile(postOwlDrawingProfile, {
+      time: 0.42,
+      pose: 'flight',
+      reducedMotion: true,
+    });
 
     expect(Math.abs(reduced.wingBeat)).toBeLessThan(Math.abs(full.wingBeat));
     expect(reduced.wingSpread).toBeLessThan(full.wingSpread);
@@ -98,9 +129,9 @@ describe('storybook owl drawing', () => {
 
   it('uses the shared storybook ink family with separate contour and bold weights', () => {
     const context = recordingContext();
-    drawVectorOwl(context, {
-      variant: 'pet', pose: 'pet-follow', facing: 'left', x: 280, y: 340,
-    }, 3.875);
+    drawOwlWithProfile(context, {
+      pose: 'pet-follow', facing: 'left', x: 280, y: 340,
+    }, 3.875, petOwlDrawingProfile);
 
     const colors = context.styles.map(([, value]) => value);
     for (const ink of Object.values(STORYBOOK_INK)) expect(colors).toContain(ink);
@@ -112,20 +143,22 @@ describe('storybook owl drawing', () => {
   it('draws both owl identities as deterministic layered organic puppets', () => {
     const variants = [
       {
-        owl: { variant: 'post', pose: 'delivery', facing: 'right', x: 280, y: 340 },
+        profile: postOwlDrawingProfile,
+        owl: { pose: 'delivery', facing: 'right', x: 280, y: 340 },
         tones: ['#a77b4f', '#c39a68', '#6f5038', '#7d5a3f', '#efd19a'],
       },
       {
-        owl: { variant: 'pet', pose: 'pet-follow', facing: 'left', x: 280, y: 340 },
+        profile: petOwlDrawingProfile,
+        owl: { pose: 'pet-follow', facing: 'left', x: 280, y: 340 },
         tones: ['#83788b', '#a79aab', '#5b5264', '#665d72', '#dec8e3'],
       },
     ];
 
-    for (const { owl, tones } of variants) {
+    for (const { profile, owl, tones } of variants) {
       const first = recordingContext();
       const replayed = recordingContext();
-      drawVectorOwl(first, owl, 3.875);
-      drawVectorOwl(replayed, owl, 3.875);
+      drawOwlWithProfile(first, owl, 3.875, profile);
+      drawOwlWithProfile(replayed, owl, 3.875, profile);
 
       expect(first.calls).toEqual(replayed.calls);
       expect(first.styles).toEqual(replayed.styles);
@@ -144,10 +177,11 @@ describe('storybook owl drawing', () => {
   it('closes shaped eyelids over the same organic eyes without reverting to geometric covers', () => {
     const open = recordingContext();
     const blink = recordingContext();
-    drawVectorOwl(open, { variant: 'post', pose: 'perch' }, 0);
-    drawVectorOwl(blink, { variant: 'post', pose: 'perch' }, 5.23);
+    drawOwlWithProfile(open, { pose: 'perch' }, 0, postOwlDrawingProfile);
+    drawOwlWithProfile(blink, { pose: 'perch' }, 5.23, postOwlDrawingProfile);
 
-    expect(sampleOwlMotion({ time: 5.23, variant: 'post' }).blink).toBeGreaterThan(0.5);
+    expect(sampleOwlMotionWithProfile(postOwlDrawingProfile, { time: 5.23 }).blink)
+      .toBeGreaterThan(0.5);
     expect(blink.calls.filter(([name]) => name === 'fill').length)
       .toBeGreaterThan(open.calls.filter(([name]) => name === 'fill').length);
     expect(blink.calls.some(([name]) => forbiddenGeometry.has(name))).toBe(false);
@@ -169,12 +203,12 @@ describe('storybook owl drawing', () => {
       const explicitLeft = recordingContext();
       const right = recordingContext();
       const replayedRight = recordingContext();
-      const owl = { variant: 'post', pose: 'perch', facing, x: 280, y: 340 };
+      const owl = { pose: 'perch', facing, x: 280, y: 340 };
 
-      drawVectorOwl(left, owl, 1.375);
-      drawVectorOwl(explicitLeft, { ...owl, lightSide: 'left' }, 1.375);
-      drawVectorOwl(right, { ...owl, lightSide: 'right' }, 1.375);
-      drawVectorOwl(replayedRight, { ...owl, lightSide: 'right' }, 1.375);
+      drawOwlWithProfile(left, owl, 1.375, postOwlDrawingProfile);
+      drawOwlWithProfile(explicitLeft, { ...owl, lightSide: 'left' }, 1.375, postOwlDrawingProfile);
+      drawOwlWithProfile(right, { ...owl, lightSide: 'right' }, 1.375, postOwlDrawingProfile);
+      drawOwlWithProfile(replayedRight, { ...owl, lightSide: 'right' }, 1.375, postOwlDrawingProfile);
 
       expect(left.calls).toEqual(explicitLeft.calls);
       expect(right.calls).toEqual(replayedRight.calls);
@@ -198,28 +232,28 @@ describe('storybook owl drawing', () => {
 });
 
 describe('owl delivery choreography', () => {
-  it('moves through perch, carried-letter flight, release, and exit deterministically', () => {
-    const perch = sampleOwlDelivery(0);
-    const flight = sampleOwlDelivery(0.75);
-    const release = sampleOwlDelivery(1.5);
-    const exit = sampleOwlDelivery(2.2);
+  it('keeps flight and letter release owned by the letter-delivery set piece', () => {
+    const perch = deliveryFrame(0);
+    const flight = deliveryFrame(0.75);
+    const release = deliveryFrame(1.5);
+    const exit = deliveryFrame(2.2);
 
     expect(perch.owl).toMatchObject({ x: 1060, y: 290, pose: 'takeoff', opacity: 1 });
     expect(flight.owl.pose).toBe('delivery');
     expect(flight.letter.scale).toBe(0.3);
     expect(release.letter.scale).toBeGreaterThan(0.3);
     expect(release.letter.x).toBeLessThan(flight.letter.x);
-    expect(exit.owl.opacity).toBe(0);
+    expect(exit.owl).toBeNull();
     expect(exit.letter.x).toBeCloseTo(LETTER_ENVELOPE_POSE.x, 3);
     expect(exit.letter.y).toBeCloseTo(LETTER_ENVELOPE_POSE.y, 3);
     expect(exit.letter.scale).toBeCloseTo(LETTER_ENVELOPE_POSE.scale, 3);
     expect(exit.letter.rotation).toBeCloseTo(LETTER_ENVELOPE_POSE.rotation, 3);
-    expect(sampleOwlDelivery(1.5)).toEqual(release);
+    expect(deliveryFrame(1.5)).toEqual(release);
   });
 
   it('uses a short, low-displacement settle for reduced motion', () => {
-    const full = sampleOwlDelivery(0.75);
-    const reduced = sampleOwlDelivery(0.75, { reducedMotion: true });
+    const full = deliveryFrame(0.75);
+    const reduced = deliveryFrame(0.75, { reducedMotion: true });
     const fullDisplacement = Math.hypot(full.owl.x - 1060, full.owl.y - 290);
     const reducedDisplacement = Math.hypot(reduced.owl.x - 1060, reduced.owl.y - 290);
 

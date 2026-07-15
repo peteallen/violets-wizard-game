@@ -8,6 +8,7 @@ import {
   defineCharacterPortraitPresentation,
 } from '../portraitRuntime.js';
 import { violetFullFrameCharacterDefinition } from './definition.js';
+import { VIOLET_EXPRESSION_REVIEW_VARIANT } from './expressionReviewDefinition.js';
 import { recolorVioletRobeFrame } from './robeRecolor.js';
 
 export { violetFullFrameCharacterDefinition } from './definition.js';
@@ -36,13 +37,45 @@ const violetFullFrameRuntime = createFullFrameCharacterRuntime(
   violetFullFrameCharacterRig,
 );
 
+let expressionReviewRuntime = null;
+
+async function preloadViolet(request = {}) {
+  const loading = [violetFullFrameRuntime.preload(request)];
+  if (
+    request.context?.review === true
+    && request.context?.sceneId === 'violet-expression-review'
+  ) {
+    const reviewModule = await import('./expressionReviewRuntime.js');
+    expressionReviewRuntime = reviewModule.violetExpressionReviewRuntime;
+    loading.push(expressionReviewRuntime.preload(request));
+  }
+  await Promise.all(loading);
+}
+
+function releaseViolet(request) {
+  const releasing = [violetFullFrameRuntime.release(request)];
+  if (expressionReviewRuntime) releasing.push(expressionReviewRuntime.release(request));
+  expressionReviewRuntime = null;
+  return Promise.all(releasing);
+}
+
+function drawVioletWorld(request) {
+  if (request.reviewVariant !== VIOLET_EXPRESSION_REVIEW_VARIANT) {
+    return violetFullFrameRuntime.renderers.world(request);
+  }
+  if (!expressionReviewRuntime) {
+    throw new Error('Violet expression review runtime must be preloaded before rendering.');
+  }
+  const { reviewVariant: _reviewVariant, ...reviewRequest } = request;
+  return expressionReviewRuntime.renderers.world(reviewRequest);
+}
+
 const drawVioletPortrait = createCharacterPortraitRenderer({
   presentation: violetPortraitPresentation,
   drawFigure: violetFullFrameRuntime.renderers.portrait,
   prepareFigureState: (state) => {
     const {
       appearance,
-      outfit,
       pose = 'speaking',
       robeTrim = '#7a4fc9',
       wand,
@@ -50,7 +83,7 @@ const drawVioletPortrait = createCharacterPortraitRenderer({
     } = state;
     return {
       ...rest,
-      appearance: appearance ?? outfit ?? 'robes',
+      appearance: appearance ?? 'robes',
       pose: pose === 'talk' ? 'speaking' : pose,
       robeTrim,
       wand: Boolean(wand),
@@ -59,9 +92,10 @@ const drawVioletPortrait = createCharacterPortraitRenderer({
 });
 
 export const violetCharacterRuntime = Object.freeze({
-  ...violetFullFrameRuntime,
+  preload: preloadViolet,
+  release: releaseViolet,
   renderers: Object.freeze({
-    ...violetFullFrameRuntime.renderers,
+    world: drawVioletWorld,
     portrait: drawVioletPortrait,
   }),
 });

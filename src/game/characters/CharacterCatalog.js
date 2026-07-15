@@ -62,8 +62,8 @@ function collectModules(modules) {
   };
 }
 
-function buildRegistry(modules, aliases) {
-  const registry = new CharacterRegistry({ aliases });
+function buildRegistry(modules) {
+  const registry = new CharacterRegistry();
   for (const characterModule of modules) {
     registry.register(characterModule.definition, characterModule.loadRuntime);
   }
@@ -73,14 +73,14 @@ function buildRegistry(modules, aliases) {
 export class CharacterCatalog {
   #modulesById;
 
-  constructor(modules, { aliases } = {}) {
+  constructor(modules) {
     const normalized = normalizeModules(modules);
     const collected = collectModules(normalized);
     this.#modulesById = new Map([...collected.byId].map(([id, entry]) => [id, entry.module]));
     this.modules = Object.freeze([...normalized]);
     this.assets = collected.assets;
     this.reviews = collected.reviews;
-    this.registry = buildRegistry(normalized, aliases);
+    this.registry = buildRegistry(normalized);
     Object.freeze(this);
   }
 
@@ -127,6 +127,6 @@ export class CharacterCatalog {
   }
 }
 
-export function buildCharacterCatalog(modules, options = {}) {
-  return new CharacterCatalog(modules, options);
+export function buildCharacterCatalog(modules) {
+  return new CharacterCatalog(modules);
 }

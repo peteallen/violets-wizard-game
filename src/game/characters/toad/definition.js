@@ -9,23 +9,8 @@ export const toadStyle = Object.freeze({
 });
 
 export const toadPresentation = Object.freeze({
-  legacyType: 'toad',
-  portraitAliases: Object.freeze(['toad', 'frog']),
   portrait: Object.freeze({
     y: 48, scale: 1.05, backdrop: Object.freeze(['#34412d', '#71875c']),
-  }),
-  reviews: Object.freeze({
-    pet: Object.freeze({
-      order: 2,
-      label: 'Toad companion',
-      x: 1055,
-      y: 570,
-      plinthY: 610,
-      scale: 2.05,
-      pose: 'pet-follow',
-      timeOffset: 0.7,
-    }),
-    portrait: Object.freeze({ order: 8, label: 'Toad', speaker: 'toad' }),
   }),
 });
 

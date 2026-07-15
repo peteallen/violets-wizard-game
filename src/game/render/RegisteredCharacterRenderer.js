@@ -1,28 +1,21 @@
-function renderState(request, context, time, surface) {
+const REMOVED_COMPATIBILITY_FIELDS = Object.freeze([
+  'actorAnimation',
+  'detail',
+  'outfit',
+  'portraitCharacterId',
+  'walking',
+]);
+
+function renderState(request, context, time) {
   const {
-    surface: _requestedSurface,
-    detail: _legacyDetail,
-    outfit,
-    walking,
-    actorAnimation,
-    action: explicitAction,
-    actionProgress: explicitActionProgress,
-    actionTime: explicitActionTime,
+    characterId: _characterId,
+    surface: _surface,
     ...state
   } = request;
-  const action = explicitAction ?? actorAnimation?.action ?? null;
-  const actionProgress = explicitActionProgress ?? actorAnimation?.progress;
-  const actionTime = explicitActionTime ?? actorAnimation?.localTime;
   return {
     ...state,
     context,
     time,
-    surface,
-    ...(state.appearance === undefined && outfit !== undefined ? { appearance: outfit } : {}),
-    ...(state.pose === undefined && walking ? { pose: 'walking' } : {}),
-    action,
-    ...(Number.isFinite(actionProgress) ? { actionProgress } : {}),
-    ...(Number.isFinite(actionTime) ? { actionTime } : {}),
   };
 }
 
@@ -47,20 +40,20 @@ export class RegisteredCharacterRenderer {
     if (typeof characterId !== 'string' || characterId.length === 0) {
       throw new TypeError('Character render request requires an exact characterId.');
     }
-    const surface = request.surface ?? (request.detail === 'portrait' ? 'portrait' : 'world');
+    const surface = request.surface;
+    if (surface !== 'world' && surface !== 'portrait') {
+      throw new TypeError('Character render request requires an exact world or portrait surface.');
+    }
+    for (const field of REMOVED_COMPATIBILITY_FIELDS) {
+      if (Object.hasOwn(request, field)) {
+        throw new TypeError(`Character render request field ${field} is no longer supported.`);
+      }
+    }
     return this.registry.render(
       characterId,
       surface,
-      renderState(request, context, time, surface),
+      renderState(request, context, time),
     );
-  }
-
-  drawPortrait(context, request = {}, time = 0) {
-    return this.draw(context, {
-      ...request,
-      characterId: request.characterId ?? request.portraitCharacterId,
-      surface: 'portrait',
-    }, time);
   }
 
   preload(dependencies, context) {

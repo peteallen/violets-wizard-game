@@ -1,6 +1,3 @@
-import { readFile } from 'node:fs/promises';
-import { dirname, resolve } from 'node:path';
-import { fileURLToPath } from 'node:url';
 import { describe, expect, it, vi } from 'vitest';
 import {
   CharacterRegistry,
@@ -19,10 +16,12 @@ import {
   postOwlCharacterModule,
   postOwlCharacterReview,
 } from '../src/game/characters/post-owl/index.js';
-import * as legacyOwl from '../src/game/characters/owl/legacyCompatibility.js';
-import * as compatibilityOwl from '../src/game/render/OwlRenderer.js';
-
-const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
+import {
+  drawOwlWithProfile,
+} from '../src/game/characters/owl/sharedDrawing.js';
+import { createVectorOwlRuntime } from '../src/game/characters/owl/runtimeSupport.js';
+import { petOwlDrawingProfile } from '../src/game/characters/pet-owl/profile.js';
+import { postOwlDrawingProfile } from '../src/game/characters/post-owl/profile.js';
 
 function recordingContext() {
   const calls = [];
@@ -245,12 +244,12 @@ describe('owl character runtimes', () => {
     });
   });
 
-  it('renders both identities with exactly the legacy world output in full and reduced motion', async () => {
+  it('renders each identity through its own immutable drawing profile', async () => {
     const postRuntime = await loadPostOwlCharacterRuntime();
     const petRuntime = await loadPetOwlCharacterRuntime();
     const cases = [
       {
-        variant: 'post',
+        profile: postOwlDrawingProfile,
         surface: 'world',
         runtime: postRuntime,
         state: {
@@ -259,7 +258,7 @@ describe('owl character runtimes', () => {
         },
       },
       {
-        variant: 'post',
+        profile: postOwlDrawingProfile,
         surface: 'world',
         runtime: postRuntime,
         state: {
@@ -268,7 +267,7 @@ describe('owl character runtimes', () => {
         },
       },
       {
-        variant: 'pet',
+        profile: petOwlDrawingProfile,
         surface: 'world',
         runtime: petRuntime,
         state: {
@@ -279,32 +278,30 @@ describe('owl character runtimes', () => {
     ];
 
     for (const entry of cases) {
-      const legacy = recordedFrame();
+      const shared = recordedFrame();
       const packaged = recordedFrame();
-      const { appearance: _appearance, ...legacyState } = entry.state;
-      legacyOwl.drawVectorOwl(legacy.context, {
-        ...legacyState,
-        variant: entry.variant,
-      }, 3.875);
+      const { appearance: _appearance, ...drawingState } = entry.state;
+      drawOwlWithProfile(shared.context, drawingState, 3.875, entry.profile);
       entry.runtime.renderers[entry.surface]({
         context: packaged.context,
         time: 3.875,
         ...entry.state,
       });
 
-      expect(packaged.snapshot()).toEqual(legacy.snapshot());
+      expect(packaged.snapshot()).toEqual(shared.snapshot());
       expect(packaged.context.depth).toBe(0);
     }
   });
 
-  it('keeps the old renderer path as a thin compatibility re-export', async () => {
-    expect(compatibilityOwl.drawOwlBookplate).toBe(legacyOwl.drawOwlBookplate);
-    expect(compatibilityOwl.drawVectorOwl).toBe(legacyOwl.drawVectorOwl);
-    expect(compatibilityOwl.sampleOwlDelivery).toBe(legacyOwl.sampleOwlDelivery);
-    expect(compatibilityOwl.sampleOwlMotion).toBe(legacyOwl.sampleOwlMotion);
+  it('builds exact runtime surfaces without retaining identity routing in the shared adapter', () => {
+    const postRuntime = createVectorOwlRuntime(postOwlDrawingProfile, ['world']);
+    const petRuntime = createVectorOwlRuntime(petOwlDrawingProfile, ['world', 'portrait']);
 
-    const source = await readFile(resolve(ROOT, 'src/game/render/OwlRenderer.js'), 'utf8');
-    expect(source).not.toMatch(/\bfunction\b|\bclass\b/);
-    expect(source.trim().split('\n')).toHaveLength(6);
+    expect(Object.keys(postRuntime.renderers)).toEqual(['world']);
+    expect(Object.keys(petRuntime.renderers)).toEqual(['world', 'portrait']);
+    expect(postRuntime.preload()).toBeUndefined();
+    expect(postRuntime.release()).toBeUndefined();
+    expect(() => postRuntime.renderers.world({ context: recordingContext(), time: Infinity }))
+      .toThrow(/time must be finite/);
   });
 });

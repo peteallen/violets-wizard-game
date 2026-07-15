@@ -14,7 +14,7 @@ Vite + vanilla ES modules + one full-window Canvas 2D + Vitest — the family ho
 
 Systems interpret contracts; chapters and characters arrive through packages. Chapter content remains pure data, while its presentation and review harness load separately. A chapter descriptor contains metadata and lazy loaders rather than importing its implementation into the engine. Character definitions contain stable identity, capabilities, bounds, and assets, while their Canvas runtime loads only when the active chapter declares that character as a dependency. Adding Chapter 5 or a new character must not require a branch in `Game`, `World`, a generic renderer, asset-manifest code, or harness boot.
 
-The package foundation is intentionally landing before the existing Chapter One and renderer monoliths move. `CharacterDefinition`, `CharacterRegistry`, the chapter descriptor/composer, and the aggregate linker therefore coexist temporarily with the old runtime paths. `npm run check:architecture` records every remaining concrete chapter route, named-character route, source-art import, browser boundary leak, and nondeterministic headless API as a counted allowance. Any new leak fails immediately; removing a leak also requires removing its stale allowance. Completion means that allowance is empty.
+The character package boundary is live: production and harness rendering use exact identities through `CharacterRegistry`, and the role-keyed compatibility renderer graph has been deleted. The chapter descriptor/composer and aggregate linker still coexist temporarily with the synchronous Chapter One content and presentation monoliths. `npm run check:architecture` records every remaining concrete chapter route, source-art import, browser boundary leak, and nondeterministic headless API as a counted allowance. Any new leak fails immediately; removing a leak also requires removing its stale allowance. Completion means that allowance is empty.
 
 ## Module layout
 
@@ -43,7 +43,7 @@ src/
     entities/                 Violet, NPC, Pet, Prop simulation-facing state
     render/
       RoomRenderer.js         cached-background compositing, hotspot glows, exits
-      CharacterRenderer.js    selects the production character renderer
+      RegisteredCharacterRenderer.js exact identity + world/portrait dispatch
       FullFrameCharacterRig.js manifest-driven world/portrait frame selection
       AlignedSpriteRig.js     aligned-canvas transforms and orientation
       UIRenderer.js           HUD, spell fan, ribbons/tiles, satchel, map, parent panel

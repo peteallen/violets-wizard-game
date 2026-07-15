@@ -68,7 +68,8 @@ describe('transient actor-animation channel', () => {
       world.runActions(hotspotActions(target));
 
       const activeSetPiece = world.setPieces.active;
-      const animation = world.snapshot().actorAnimations['npc.violet'];
+      const snapshot = world.snapshot();
+      const animation = snapshot.actorAnimations['npc.violet'];
       expect(activeSetPiece).toMatchObject({ requestedId: setPiece, time: 0 });
       expect(animation).toEqual({
         actor: 'npc.violet',
@@ -81,6 +82,14 @@ describe('transient actor-animation channel', () => {
         localTime: 0,
         progress: 0,
       });
+      expect(snapshot.actors.find(({ actorId }) => actorId === 'npc.violet').renderState)
+        .toMatchObject({
+          action,
+          actionTime: 0,
+          actionProgress: 0,
+        });
+      expect(snapshot.actors.find(({ actorId }) => actorId === 'npc.violet').renderState)
+        .not.toHaveProperty('actorAnimation');
 
       const events = world.drainEvents();
       const setPieceEvent = events.find((event) => event.type === 'setPiece.started');
@@ -146,10 +155,7 @@ describe('transient actor-animation channel', () => {
     expect(resumed.snapshot().actorAnimations).toEqual({});
   });
 
-  it('hands the semantic action to the renderer without turning it into a legacy pose', () => {
-    const animation = {
-      actor: 'npc.violet', action: 'wrong-wand-one', localTime: 0.4, progress: 0.2,
-    };
+  it('hands flat semantic action timing to the renderer without changing the pose', () => {
     const draws = [];
     const game = Object.assign(Object.create(Game.prototype), {
       simTime: 12,
@@ -170,8 +176,9 @@ describe('transient actor-animation channel', () => {
           y: 610,
           facing: 'right',
           pose: 'idle',
-          action: animation.action,
-          actorAnimation: animation,
+          action: 'wrong-wand-one',
+          actionTime: 0.4,
+          actionProgress: 0.2,
         },
       }],
     };
@@ -185,7 +192,9 @@ describe('transient actor-animation channel', () => {
       x: 400,
       pose: 'idle',
       action: 'wrong-wand-one',
-      actorAnimation: animation,
+      actionTime: 0.4,
+      actionProgress: 0.2,
     });
+    expect(draws[0]).not.toHaveProperty('actorAnimation');
   });
 });

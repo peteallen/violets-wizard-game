@@ -302,7 +302,8 @@ function portraitAppearanceState(renderState) {
     facing: _facing,
     pose: _pose,
     action: _action,
-    actorAnimation: _actorAnimation,
+    actionProgress: _actionProgress,
+    actionTime: _actionTime,
     layoutBounds: _layoutBounds,
     ...appearanceState
   } = renderState;
@@ -822,7 +823,6 @@ export class UIRenderer {
       facing: 'right',
       pose: 'wonder',
       appearance: 'robes',
-      walking: false,
       wand: false,
       robeTrim: robeTrimColor(layout.selectedTrim),
     }, animationTime);

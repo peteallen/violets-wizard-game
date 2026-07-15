@@ -10,12 +10,8 @@ export const narratorStyle = Object.freeze({
 });
 
 export const narratorPresentation = Object.freeze({
-  portraitAliases: Object.freeze(['narrator']),
   portrait: Object.freeze({
     backdrop: Object.freeze(['#33283f', '#8d6ca0']),
-  }),
-  reviews: Object.freeze({
-    portrait: Object.freeze({ order: 5, label: 'Narrator', speaker: 'narrator' }),
   }),
 });
 

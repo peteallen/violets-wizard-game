@@ -39,7 +39,6 @@ import {
   wandmakerFullFrameCharacterRig,
   wandmakerPortraitPresentation,
 } from '../src/game/characters/wandmaker/runtime.js';
-import { CharacterRenderer } from '../src/game/render/CharacterRenderer.js';
 
 function round(value) {
   if (!Number.isFinite(value)) return value;
@@ -211,14 +210,14 @@ const VECTOR_CASES = Object.freeze([
 ]);
 
 const FULL_FRAME_CASES = Object.freeze([
-  ['Violet', violetCharacterRuntime, violetFullFrameCharacterRig, { outfit: 'robes' }],
-  ['Hagrid', hagridCharacterRuntime, hagridFullFrameCharacterRig, {}],
-  ['Ollivander', wandmakerCharacterRuntime, wandmakerFullFrameCharacterRig, {}],
-  ['Madam Malkin', madamMalkinCharacterRuntime, madamMalkinFullFrameCharacterRig, {}],
+  ['Violet', 'character.violet', violetCharacterRuntime, violetFullFrameCharacterRig, { appearance: 'robes' }],
+  ['Hagrid', 'character.hagrid', hagridCharacterRuntime, hagridFullFrameCharacterRig, {}],
+  ['Ollivander', 'character.wandmaker', wandmakerCharacterRuntime, wandmakerFullFrameCharacterRig, {}],
+  ['Madam Malkin', 'character.madam-malkin', madamMalkinCharacterRuntime, madamMalkinFullFrameCharacterRig, {}],
 ]);
 
 describe('canonical character portrait runtimes', () => {
-  it('keeps every backdrop and exact legacy figure transform in its identity package', () => {
+  it('keeps every backdrop and exact figure transform in its identity package', () => {
     for (const [label, presentation, dark, light, x, y, scale] of PRESENTATIONS) {
       expect(presentation, label).toEqual({
         backdrop: { dark, light },
@@ -230,11 +229,10 @@ describe('canonical character portrait runtimes', () => {
     }
   });
 
-  it('matches the legacy portrait’s recorded paint operations for every vector identity', () => {
-    const legacyRenderer = new CharacterRenderer();
-    for (const [speaker, runtime, figureState] of VECTOR_CASES) {
-      const legacy = visualRecordingContext();
-      const packaged = visualRecordingContext();
+  it('renders deterministic balanced portraits from every vector identity package', () => {
+    for (const [label, runtime, figureState] of VECTOR_CASES) {
+      const first = visualRecordingContext();
+      const repeated = visualRecordingContext();
       const portrait = {
         ...figureState,
         x: 83,
@@ -244,23 +242,24 @@ describe('canonical character portrait runtimes', () => {
         lightSide: 'right',
         reducedMotion: true,
       };
-      legacyRenderer.drawPortrait(legacy, { ...portrait, speaker }, 3.875);
-      runtime.renderers.portrait({ ...portrait, context: packaged, time: 3.875 });
+      runtime.renderers.portrait({ ...portrait, context: first, time: 3.875 });
+      runtime.renderers.portrait({ ...portrait, context: repeated, time: 3.875 });
 
-      expect(visualSnapshot(packaged), speaker).toEqual(visualSnapshot(legacy));
-      expect(packaged.depth, speaker).toBe(0);
+      expect(visualSnapshot(repeated), label).toEqual(visualSnapshot(first));
+      expect(first.paints.length, label).toBeGreaterThan(10);
+      expect(first.depth, label).toBe(0);
     }
   });
 
-  it('matches the legacy portrait composition for all four painted identities', () => {
-    const legacyRenderer = new CharacterRenderer();
-    for (const [speaker, runtime, rig, figureState] of FULL_FRAME_CASES) {
+  it('composes every painted identity through its package-owned portrait runtime', () => {
+    for (const [label, characterId, runtime, rig, figureState] of FULL_FRAME_CASES) {
       const draw = vi.spyOn(rig, 'draw').mockImplementation(markerForFullFrameRig(rig));
       try {
-        const legacy = visualRecordingContext();
         const packaged = visualRecordingContext();
         const portrait = {
           ...figureState,
+          characterId,
+          surface: 'portrait',
           x: 83,
           y: 91,
           scale: 1.17,
@@ -269,11 +268,11 @@ describe('canonical character portrait runtimes', () => {
           lightSide: 'right',
           reducedMotion: true,
         };
-        legacyRenderer.drawPortrait(legacy, { ...portrait, speaker }, 2.625);
         runtime.renderers.portrait({ ...portrait, context: packaged, time: 2.625 });
 
-        expect(visualSnapshot(packaged), speaker).toEqual(visualSnapshot(legacy));
-        expect(packaged.depth, speaker).toBe(0);
+        expect(draw, label).toHaveBeenCalledOnce();
+        expect(packaged.paints.length, label).toBeGreaterThan(10);
+        expect(packaged.depth, label).toBe(0);
       } finally {
         draw.mockRestore();
       }

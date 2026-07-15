@@ -1,18 +1,17 @@
 import { describe, expect, it, vi } from 'vitest';
-import { assetManifest } from '../src/game/core/assetManifest.js';
-import { sampleAlignedSpriteFrame } from '../src/game/render/AlignedSpriteRig.js';
 import {
-  CHARACTER_REVIEW_SCENES,
-  CharacterRenderer,
-} from '../src/game/render/CharacterRenderer.js';
+  wandmakerCharacterDefinition,
+  wandmakerCharacterModule,
+  wandmakerCharacterReview,
+} from '../src/game/characters/wandmaker/index.js';
 import {
-  productionFullFrameCharacterRigs,
-  resolveFullFrameCharacterAnimation,
-} from '../src/game/render/FullFrameCharacterRig.js';
-import {
+  wandmakerCharacterRuntime,
   wandmakerFullFrameCharacterManifest,
   wandmakerFullFrameCharacterRig,
-} from '../src/game/render/WandmakerFullFrameCharacterRig.js';
+} from '../src/game/characters/wandmaker/runtime.js';
+import { assetManifest } from '../src/game/core/assetManifest.js';
+import { sampleAlignedSpriteFrame } from '../src/game/render/AlignedSpriteRig.js';
+import { resolveFullFrameCharacterAnimation } from '../src/game/render/FullFrameCharacterRig.js';
 
 function framePaths(clip) {
   return wandmakerFullFrameCharacterManifest.clips[`default/${clip}`].frames.map((frame) => {
@@ -39,31 +38,51 @@ function drawingContext() {
 }
 
 describe('Wandmaker production full-frame rig', () => {
-  it('is authoritative for ordinary world and Wandmaker portrait rendering', () => {
-    expect(productionFullFrameCharacterRigs.get('wandmaker'))
-      .toBe(wandmakerFullFrameCharacterRig);
-    expect(wandmakerFullFrameCharacterManifest.fullFrame.kind).toBe('wandmaker');
+  it('is owned by the Wandmaker’s canonical package for world and portrait rendering', async () => {
+    expect(wandmakerCharacterModule.definition).toBe(wandmakerCharacterDefinition);
+    expect(await wandmakerCharacterModule.loadRuntime()).toBe(wandmakerCharacterRuntime);
+    expect(wandmakerFullFrameCharacterManifest.id).toBe('character.wandmaker');
     expect(wandmakerFullFrameCharacterManifest.fullFrame.placement.portrait.y).toBe(12);
 
-    const renderer = new CharacterRenderer();
     const failed = { status: 'failed', error: new Error('test decode failure') };
     const draw = vi.spyOn(wandmakerFullFrameCharacterRig, 'draw').mockReturnValue(failed);
-    const worldCharacter = {
-      kind: 'wandmaker', x: 285, y: 610, facing: 'right', pose: 'idle',
-    };
+    const worldContext = {};
 
-    expect(renderer.draw({}, worldCharacter, 1.25)).toBe(failed);
-    expect(draw).toHaveBeenNthCalledWith(1, {}, worldCharacter, 1.25);
+    expect(wandmakerCharacterRuntime.renderers.world({
+      context: worldContext,
+      time: 1.25,
+      characterId: 'character.wandmaker',
+      surface: 'world',
+      appearance: 'default',
+      x: 285,
+      y: 610,
+      facing: 'right',
+      pose: 'idle',
+    })).toBe(failed);
+    expect(draw).toHaveBeenNthCalledWith(1, worldContext, {
+      appearance: 'default',
+      x: 285,
+      y: 610,
+      facing: 'right',
+      pose: 'idle',
+    }, 1.25, 'world');
 
-    renderer.drawPortrait(drawingContext(), {
-      speaker: 'Ollivander', pose: 'talk', facing: 'left', x: 80, y: 90,
-    }, 0.75);
+    wandmakerCharacterRuntime.renderers.portrait({
+      context: drawingContext(),
+      time: 0.75,
+      characterId: 'character.wandmaker',
+      surface: 'portrait',
+      appearance: 'default',
+      pose: 'talk',
+      facing: 'left',
+      x: 80,
+      y: 90,
+    });
     expect(draw).toHaveBeenNthCalledWith(2, expect.anything(), expect.objectContaining({
-      kind: 'wandmaker',
+      appearance: 'default',
       pose: 'speaking',
       facing: 'left',
-      detail: 'portrait',
-    }), 0.75);
+    }), 0.75, 'portrait');
 
     // Loading and decode failures remain visible; the retained vector puppet
     // must never be substituted beneath an authoritative generated identity.
@@ -127,32 +146,18 @@ describe('Wandmaker production full-frame rig', () => {
       pose: 'profile-right',
     })).toThrow(/does not support pose profile-right/);
     expect(() => resolveFullFrameCharacterAnimation(wandmakerFullFrameCharacterManifest, {
-      actorAnimation: { action: 'present-wand', localTime: 0, progress: 0 },
+      action: 'present-wand', actionTime: 0, actionProgress: 0,
     })).toThrow(/does not support action present-wand/);
   });
 
-  it('uses a clean grounded review scene for every shipped source state', () => {
-    const draw = vi.fn(() => ({ status: 'drawn' }));
-    const renderer = new CharacterRenderer({
-      fullFrameRigs: new Map([['wandmaker', { draw }]]),
-    });
-
-    expect(CHARACTER_REVIEW_SCENES).toContain('wandmaker-sprite-review');
-    expect(renderer.drawReviewScene(
-      drawingContext(),
+  it('publishes its grounded review through the Wandmaker package descriptor', () => {
+    expect(wandmakerCharacterReview.sceneIds).toEqual([
+      'character-cast-review',
+      'character-portraits-review',
       'wandmaker-sprite-review',
-      1.25,
-    )).toBe(true);
-
-    expect(draw.mock.calls.map(([, character]) => ({
-      pose: character.pose,
-      facing: character.facing,
-      shadow: character.shadow,
-    }))).toEqual([
-      { pose: 'neutral', facing: 'right', shadow: true },
-      { pose: 'blink', facing: 'right', shadow: true },
-      { pose: 'talk-a', facing: 'right', shadow: true },
-      { pose: 'talk-b', facing: 'right', shadow: true },
+    ]);
+    expect(wandmakerCharacterModule.reviews).toEqual([
+      expect.objectContaining({ sceneId: 'wandmaker-sprite-review' }),
     ]);
   });
 

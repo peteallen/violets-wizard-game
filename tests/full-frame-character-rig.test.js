@@ -1,26 +1,14 @@
 import { describe, expect, it, vi } from 'vitest';
 import { sampleAlignedSpriteFrame } from '../src/game/render/AlignedSpriteRig.js';
 import {
-  CharacterRenderer,
-  preloadCharacterReviewScene,
-} from '../src/game/render/CharacterRenderer.js';
-import {
   FullFrameCharacterRig,
   createFullFrameCharacterManifest,
-  fullFrameAssetManifestEntries,
-  productionFullFrameCharacterRigs,
   resolveFullFrameCharacterAnimation,
 } from '../src/game/render/FullFrameCharacterRig.js';
-import { violetFullFrameCharacterRig } from '../src/game/render/VioletFullFrameCharacterRig.js';
-import { hagridFullFrameCharacterRig } from '../src/game/render/HagridFullFrameCharacterRig.js';
-import { wandmakerFullFrameCharacterRig } from '../src/game/render/WandmakerFullFrameCharacterRig.js';
-import { madamMalkinFullFrameCharacterRig } from '../src/game/render/MadamMalkinFullFrameCharacterRig.js';
 
 function definition() {
   return {
-    id: 'puppet.test.full-frame',
-    kind: 'violet',
-    chapter: 'ch1',
+    id: 'character.test',
     basePath: 'assets/art/characters/test',
     canvas: { width: 100, height: 160, ground: { x: 50, y: 150 } },
     worldHeight: 142,
@@ -71,7 +59,6 @@ function definition() {
         aliases: { talk: 'speaking' },
       },
     },
-    appearanceAliases: { robe: 'robes' },
   };
 }
 
@@ -89,7 +76,6 @@ describe('compact full-frame character manifest', () => {
     const manifest = createFullFrameCharacterManifest(definition(), { resolveFrame: (path) => `/base/${path}` });
 
     expect(manifest.fullFrame).toMatchObject({
-      kind: 'violet',
       defaultAppearance: 'casual',
       appearances: {
         casual: {
@@ -116,13 +102,9 @@ describe('compact full-frame character manifest', () => {
     expect(manifest.requiredAnchors).toEqual(['ground', 'handLeft', 'handRight']);
     expect(Object.isFrozen(manifest.fullFrame.appearances.casual.clips)).toBe(true);
 
-    const entries = fullFrameAssetManifestEntries(manifest);
-    expect(Object.values(entries)).toContainEqual({
-      path: 'assets/art/characters/test/casual/idle.png',
-      kind: 'image',
-      chapter: 'ch1',
-    });
-    expect(Object.keys(entries)).toHaveLength(manifest.fullFrame.assetFiles.length);
+    expect(manifest.fullFrame.assetFiles).toContain(
+      'assets/art/characters/test/casual/idle.png',
+    );
   });
 
   it('accepts explicit directional-light files while deduplicating reused whole frames', () => {
@@ -159,7 +141,7 @@ describe('compact full-frame character manifest', () => {
     const manifest = createFullFrameCharacterManifest(source, { resolveFrame: (path) => path });
 
     expect(resolveFullFrameCharacterAnimation(manifest, {
-      walking: true, facing: 'left', lightSide: 'right',
+      pose: 'walking', facing: 'left', lightSide: 'right',
     }, 0)).toMatchObject({
       semantic: 'walking',
       frameSemantic: 'walk-left',
@@ -168,7 +150,7 @@ describe('compact full-frame character manifest', () => {
       mirror: false,
     });
     expect(resolveFullFrameCharacterAnimation(manifest, {
-      walking: true, facing: 'right', lightSide: 'right',
+      pose: 'walking', facing: 'right', lightSide: 'right',
     }, 0)).toMatchObject({
       semantic: 'walking',
       frameSemantic: 'walk-right',
@@ -199,7 +181,7 @@ describe('full-frame animation resolution', () => {
   const manifest = createFullFrameCharacterManifest(definition(), { resolveFrame: (path) => path });
 
   it('selects movement, dialogue, emotes, wand state, and deterministic blinks', () => {
-    expect(resolveFullFrameCharacterAnimation(manifest, { walking: true }, 1.2)).toMatchObject({
+    expect(resolveFullFrameCharacterAnimation(manifest, { pose: 'walking' }, 1.2)).toMatchObject({
       appearance: 'casual', semantic: 'walking', pose: 'casual/walking', localTime: 1.2,
     });
     expect(resolveFullFrameCharacterAnimation(manifest, { pose: 'talk' }, 1.2)).toMatchObject({
@@ -222,7 +204,9 @@ describe('full-frame animation resolution', () => {
   it('uses set-piece-local action time and progress without changing save contracts', () => {
     const resolved = resolveFullFrameCharacterAnimation(manifest, {
       pose: 'idle',
-      actorAnimation: { action: 'inspect', localTime: 0.8, progress: 0.4 },
+      action: 'inspect',
+      actionTime: 0.8,
+      actionProgress: 0.4,
     }, 99);
     expect(resolved).toMatchObject({
       semantic: 'wand-test',
@@ -235,19 +219,25 @@ describe('full-frame animation resolution', () => {
     expect(sampled.layers[0].url).toContain('wand-test-a.png');
   });
 
-  it('resolves explicit appearance aliases and rejects unsupported states rather than substituting idle', () => {
-    expect(resolveFullFrameCharacterAnimation(manifest, { outfit: 'robe', pose: 'talk' }, 0)).toMatchObject({
+  it('uses exact appearances and rejects unsupported or removed states rather than substituting idle', () => {
+    expect(resolveFullFrameCharacterAnimation(manifest, { appearance: 'robes', pose: 'talk' }, 0)).toMatchObject({
       appearance: 'robes', semantic: 'speaking', pose: 'robes/speaking',
     });
     expect(() => resolveFullFrameCharacterAnimation(manifest, { pose: 'tumble' }, 0)).toThrow(
       'does not support pose tumble',
     );
     expect(() => resolveFullFrameCharacterAnimation(manifest, {
-      actorAnimation: { action: 'wrong-wand-one' },
+      action: 'wrong-wand-one',
     }, 0)).toThrow('does not support action wrong-wand-one');
-    expect(() => resolveFullFrameCharacterAnimation(manifest, { outfit: 'winter', pose: 'idle' }, 0)).toThrow(
+    expect(() => resolveFullFrameCharacterAnimation(manifest, { appearance: 'winter', pose: 'idle' }, 0)).toThrow(
       'does not support appearance winter',
     );
+    for (const field of ['actorAnimation', 'detail', 'outfit', 'walking']) {
+      expect(() => resolveFullFrameCharacterAnimation(manifest, {
+        pose: 'idle',
+        [field]: field === 'walking' ? false : 'removed',
+      }, 0)).toThrow(`field ${field} is no longer supported`);
+    }
   });
 });
 
@@ -293,8 +283,8 @@ describe('full-frame character loader and renderer opt-in', () => {
     const portrait = recordingContext();
     const loadingStart = created.length;
     const portraitPending = rig.draw(portrait, {
-      pose: 'talk', x: 10, y: 20, scale: 0.8, detail: 'portrait',
-    }, 0.3);
+      pose: 'talk', x: 10, y: 20, scale: 0.8,
+    }, 0.3, 'portrait');
     expect(portraitPending).toMatchObject({ status: 'drawn', pending: true });
     expect(portrait.calls.some(([name, image]) => (
       name === 'drawImage' && image.url.endsWith('/casual/walk-pass-a.png')
@@ -304,8 +294,8 @@ describe('full-frame character loader and renderer opt-in', () => {
 
     portrait.calls.length = 0;
     const portraitResult = rig.draw(portrait, {
-      pose: 'talk', x: 10, y: 20, scale: 0.8, detail: 'portrait',
-    }, 0.3);
+      pose: 'talk', x: 10, y: 20, scale: 0.8,
+    }, 0.3, 'portrait');
     expect(portraitResult.status).toBe('drawn');
     expect(portraitResult.pending).toBeUndefined();
     expect(portrait.calls).toContainEqual(['translate', 11.6, 22.4]);
@@ -335,8 +325,8 @@ describe('full-frame character loader and renderer opt-in', () => {
     const context = recordingContext();
 
     const result = rig.draw(context, {
-      outfit: 'robes', pose: 'idle', robeTrim: '#3f8c88', detail: 'portrait',
-    }, 0);
+      appearance: 'robes', pose: 'idle', robeTrim: '#3f8c88',
+    }, 0, 'portrait');
 
     expect(result.animation).toMatchObject({ appearance: 'robes', semantic: 'idle' });
     expect(imageTransform).toHaveBeenCalledWith(expect.objectContaining({
@@ -368,8 +358,8 @@ describe('full-frame character loader and renderer opt-in', () => {
       { pose: 'proud' },
       { pose: 'walking' },
       { pose: 'talk' },
-      { actorAnimation: { action: 'inspect', localTime: 0 } },
-      { outfit: 'robes', pose: 'idle' },
+      { action: 'inspect', actionTime: 0 },
+      { appearance: 'robes', pose: 'idle' },
     ]) {
       const start = created.length;
       const pending = rig.draw(recordingContext(), character, 0);
@@ -419,49 +409,4 @@ describe('full-frame character loader and renderer opt-in', () => {
     expect(rig.draw(recordingContext(), { pose: 'idle' }, 0).status).toBe('drawn');
   });
 
-  it('keeps a registered generated character authoritative while its images load', () => {
-    const generatedRig = { draw: vi.fn(() => ({ status: 'loading' })) };
-    const renderer = new CharacterRenderer({
-      fullFrameRigs: new Map([['violet', generatedRig], ['guide', generatedRig]]),
-    });
-    const context = recordingContext();
-
-    expect(renderer.draw(context, {
-      kind: 'violet', x: 100, y: 500, outfit: 'casual', pose: 'walking',
-    }, 2)).toEqual({ status: 'loading' });
-    expect(renderer.draw(context, {
-      kind: 'guide', x: 200, y: 500, pose: 'speaking',
-    }, 3)).toEqual({ status: 'loading' });
-    expect(generatedRig.draw).toHaveBeenCalledTimes(2);
-    expect(context.calls).toEqual([]);
-  });
-
-  it('rejects malformed generated-rig registrations immediately', () => {
-    expect(() => new CharacterRenderer({ fullFrameRigs: { violet: {} } })).toThrow(
-      'must map character kinds to drawable rigs',
-    );
-  });
-
-  it('awaits every opted-in rig before an existing registered harness capture', async () => {
-    const rig = { preload: vi.fn(async () => {}) };
-    const violetPreload = vi.spyOn(violetFullFrameCharacterRig, 'preload').mockResolvedValue();
-    const hagridPreload = vi.spyOn(hagridFullFrameCharacterRig, 'preload').mockResolvedValue();
-    const wandmakerPreload = vi.spyOn(wandmakerFullFrameCharacterRig, 'preload').mockResolvedValue();
-    const madamMalkinPreload = vi.spyOn(madamMalkinFullFrameCharacterRig, 'preload').mockResolvedValue();
-    productionFullFrameCharacterRigs.set('review-test', rig);
-    try {
-      await preloadCharacterReviewScene('character-cast-review');
-      expect(violetPreload).toHaveBeenCalledOnce();
-      expect(hagridPreload).toHaveBeenCalledOnce();
-      expect(wandmakerPreload).toHaveBeenCalledOnce();
-      expect(madamMalkinPreload).toHaveBeenCalledOnce();
-      expect(rig.preload).toHaveBeenCalledOnce();
-    } finally {
-      productionFullFrameCharacterRigs.delete('review-test');
-      violetPreload.mockRestore();
-      hagridPreload.mockRestore();
-      wandmakerPreload.mockRestore();
-      madamMalkinPreload.mockRestore();
-    }
-  });
 });

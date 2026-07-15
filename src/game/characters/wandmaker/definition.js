@@ -11,9 +11,7 @@ const WANDMAKER_ALIASES = Object.freeze({ talk: 'speaking' });
 
 /** The Wandmaker's shipped counter and dialogue paintings. */
 export const wandmakerFullFrameCharacterDefinition = Object.freeze({
-  id: 'puppet.wandmaker.full-frame',
-  kind: 'wandmaker',
-  chapter: 'ch1',
+  id: 'character.wandmaker',
   basePath: 'assets/art/characters/wandmaker',
   canvas: Object.freeze({
     width: 896,

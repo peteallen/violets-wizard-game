@@ -1,17 +1,21 @@
 import { describe, expect, it, vi } from 'vitest';
-import { assetManifest } from '../src/game/core/assetManifest.js';
-import { sampleAlignedSpriteFrame } from '../src/game/render/AlignedSpriteRig.js';
-import { CharacterRenderer } from '../src/game/render/CharacterRenderer.js';
 import {
-  FullFrameCharacterRig,
-  productionFullFrameCharacterRigs,
-  resolveFullFrameCharacterAnimation,
-} from '../src/game/render/FullFrameCharacterRig.js';
-import {
+  hagridCharacterDefinition,
+  hagridCharacterModule,
+  hagridCharacterReview,
   hagridFullFrameCharacterDefinition,
+} from '../src/game/characters/hagrid/index.js';
+import {
+  hagridCharacterRuntime,
   hagridFullFrameCharacterManifest,
   hagridFullFrameCharacterRig,
-} from '../src/game/render/HagridFullFrameCharacterRig.js';
+} from '../src/game/characters/hagrid/runtime.js';
+import { assetManifest } from '../src/game/core/assetManifest.js';
+import { sampleAlignedSpriteFrame } from '../src/game/render/AlignedSpriteRig.js';
+import {
+  FullFrameCharacterRig,
+  resolveFullFrameCharacterAnimation,
+} from '../src/game/render/FullFrameCharacterRig.js';
 
 function framePaths(clip) {
   return hagridFullFrameCharacterManifest.clips[`default/${clip}`].frames.map((frame) => {
@@ -38,36 +42,57 @@ function portraitContext() {
 }
 
 describe('Hagrid production full-frame rig', () => {
-  it('is authoritative for ordinary world and Hagrid portrait rendering', () => {
-    expect(productionFullFrameCharacterRigs.get('guide')).toBe(hagridFullFrameCharacterRig);
-    expect(hagridFullFrameCharacterManifest.fullFrame.kind).toBe('guide');
+  it('is owned by Hagrid’s canonical package for world and portrait rendering', async () => {
+    expect(hagridCharacterModule.definition).toBe(hagridCharacterDefinition);
+    expect(await hagridCharacterModule.loadRuntime()).toBe(hagridCharacterRuntime);
+    expect(hagridFullFrameCharacterManifest.id).toBe('character.hagrid');
     expect(hagridFullFrameCharacterManifest.fullFrame.placement.portrait.y).toBe(58);
     expect(hagridFullFrameCharacterManifest.bounds.shadow).toEqual({
       x: 110, y: 1100, width: 676, height: 64,
     });
     expect(hagridFullFrameCharacterRig.shadowOpacity).toBe(0.34);
 
-    const renderer = new CharacterRenderer();
     const draw = vi.spyOn(hagridFullFrameCharacterRig, 'draw').mockReturnValue({ status: 'loading' });
-    const worldCharacter = {
-      kind: 'guide', x: 720, y: 610, facing: 'left', pose: 'walking',
-    };
+    const worldContext = {};
 
-    expect(renderer.draw({}, worldCharacter, 1.25)).toEqual({ status: 'loading' });
-    expect(draw).toHaveBeenNthCalledWith(1, {}, worldCharacter, 1.25);
+    expect(hagridCharacterRuntime.renderers.world({
+      context: worldContext,
+      time: 1.25,
+      characterId: 'character.hagrid',
+      surface: 'world',
+      appearance: 'default',
+      x: 720,
+      y: 610,
+      facing: 'left',
+      pose: 'walking',
+    })).toEqual({ status: 'loading' });
+    expect(draw).toHaveBeenNthCalledWith(1, worldContext, {
+      appearance: 'default',
+      x: 720,
+      y: 610,
+      facing: 'left',
+      pose: 'walking',
+    }, 1.25, 'world');
 
-    renderer.drawPortrait(portraitContext(), {
-      speaker: 'Hagrid', pose: 'talk', facing: 'right', x: 80, y: 90,
-    }, 0.75);
+    hagridCharacterRuntime.renderers.portrait({
+      context: portraitContext(),
+      time: 0.75,
+      characterId: 'character.hagrid',
+      surface: 'portrait',
+      appearance: 'default',
+      pose: 'talk',
+      facing: 'right',
+      x: 80,
+      y: 90,
+    });
     expect(draw).toHaveBeenNthCalledWith(2, expect.anything(), expect.objectContaining({
-      kind: 'guide',
+      appearance: 'default',
       pose: 'speaking',
       facing: 'right',
-      detail: 'portrait',
-    }), 0.75);
+    }), 0.75, 'portrait');
 
-    // A registered full-frame Hagrid owns loading and failure states. The
-    // renderer must not substitute the old assembled-hand puppet underneath.
+    // A registered full-frame Hagrid owns loading and failure states, so a
+    // package decode delay never substitutes a different drawing underneath.
     expect(draw).toHaveBeenCalledTimes(2);
     draw.mockRestore();
   });
@@ -150,23 +175,14 @@ describe('Hagrid production full-frame rig', () => {
       .toBe('default/profile-right');
   });
 
-  it('uses the clean Hagrid review scene for production poses rather than part assembly', () => {
-    const draw = vi.fn(() => ({ status: 'drawn' }));
-    const renderer = new CharacterRenderer({
-      fullFrameRigs: new Map([['guide', { draw }]]),
-    });
-
-    renderer.drawHagridSpriteReview(portraitContext(), 1.25);
-
-    expect(draw.mock.calls.map(([, character]) => ({
-      pose: character.pose,
-      facing: character.facing,
-    }))).toEqual([
-      { pose: 'idle', facing: 'right' },
-      { pose: 'blink', facing: 'right' },
-      { pose: 'speaking', facing: 'right' },
-      { pose: 'walking', facing: 'right' },
-      { pose: 'walking', facing: 'left' },
+  it('publishes the clean Hagrid review through its package descriptor', () => {
+    expect(hagridCharacterReview.sceneIds).toEqual([
+      'character-cast-review',
+      'character-portraits-review',
+      'hagrid-sprite-review',
+    ]);
+    expect(hagridCharacterModule.reviews).toEqual([
+      expect.objectContaining({ sceneId: 'hagrid-sprite-review' }),
     ]);
   });
 

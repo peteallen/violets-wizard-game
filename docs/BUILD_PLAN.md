@@ -1,26 +1,29 @@
 # Build plan — current execution
 
-The engine, Chapter One, deployment, and review infrastructure already exist.
-The active job is to replace the legacy Chapter One cast with finished painted
-characters in the game Pete is testing, one deployable character at a time.
-The milestone sequence beyond that remains in [ROADMAP.md](ROADMAP.md); this
-file describes how current work reaches the live build.
+The engine, Chapter One, deployment, and review infrastructure already exist,
+and all ten production character identities now render through their own lazy
+packages. The active job is the scale-ready character, chapter, scene, and
+presentation refactor: remove the retired compatibility graph, extract Chapter
+One into room and scene modules, make the version-2 content/action/save
+contracts truthful, and then split the game shell and presentation monoliths.
+No additional cast or chapter content is added while those boundaries move.
 
 ## Current priority
 
-Finish Violet first, then Hagrid, the Wandmaker, Madam Malkin, the Menagerie
-keeper, the narrator portrait, the post owl, the cat, the pet owl, and the toad.
-Each character is a complete green increment. Do not build a second animation
-pipeline, polish hidden source details, or prepare the whole cast in an art
-folder before the current character is moving in normal gameplay.
+Finish the exact-identity character cleanup first, including package-owned
+review descriptors, dead renderer deletion, both required capture sizes, and a
+green full build. Then decompose Chapter One without changing its exported
+behavior, activate content contract version 2, introduce the exact action
+registry and save-schema migration, and only then split the game shell, render
+pipeline, UI surfaces, and reusable illustration families. The final pass makes
+chapter presentation and asset ownership lazy, unifies the harness descriptor,
+empties the architecture allowlist, and removes the shared-chunk warning.
 
-Parallel work stays inside the current character: gameplay-state inventory,
-source inspection, integration analysis, tests, and review may overlap when
-they do not create shared-file conflicts. Source production for the next
-character begins only after the current complete character is built, committed,
-and pushed.
+## Per-character loop for future cast additions
 
-## Per-character loop
+The existing cast completed this loop before the scale refactor began. Reuse it
+when a later chapter genuinely introduces another character; it is not the
+current execution queue.
 
 1. Inspect the current renderer and Chapter One content and list only the world,
    portrait, direction, expression, outfit, locomotion, prop, and story-action
@@ -78,9 +81,8 @@ D58 are the active character-production decisions; do not reintroduce the
 per-frame mask, isolated-pose, perfect-grid, or art-folder-first milestones they
 superseded.
 
-## After the cast
+## After the refactor
 
-Pete tests the completed Chapter One cast on GitHub Pages. His player-visible
-findings determine whether the next step is a focused character correction or
-the next milestone in [ROADMAP.md](ROADMAP.md). No later chapter or speculative
-character inventory is expanded before that test.
+Pete tests each green checkpoint on GitHub Pages. Player-visible findings can
+trigger a focused correction, but later chapter content and speculative
+character inventory wait until the scale refactor meets its acceptance suite.

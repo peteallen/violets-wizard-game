@@ -8,10 +8,6 @@ import {
 import { loadChapterPackage } from '../game/content/index.js';
 import { loadGameFonts } from '../game/core/loadFonts.js';
 import { validateSaveV1 } from '../game/systems/Save.js';
-import {
-  CharacterRenderer,
-  preloadCharacterReviewScene,
-} from '../game/render/CharacterRenderer.js';
 import { RegisteredCharacterRenderer } from '../game/render/RegisteredCharacterRenderer.js';
 import {
   ACTION_FIXTURE_IDS,
@@ -24,6 +20,8 @@ import {
   getStateFixture,
   validateStateFixture,
 } from './stateFixtures.js';
+import { RegisteredCharacterReviewRenderer } from './RegisteredCharacterReviewRenderer.js';
+import { productionCharacterReviewCatalog } from './productionCharacterReviewCatalog.js';
 
 const UINT32_MAX = 0xffffffff;
 const FIXED_STEP = 1 / 60;
@@ -106,10 +104,12 @@ export function resolveHarnessScenario(request) {
   stateFixture.save.settings.learning = request.learning;
   validateStateFixture(stateFixture);
   validateSaveV1(stateFixture.save);
+  const reviewDescriptor = productionCharacterReviewCatalog.get(request.scene);
   return {
     stateFixture,
     actionFixture,
-    characterDependencies: Object.freeze([...sceneFixture.characterDependencies]),
+    characterDependencies: reviewDescriptor?.characterDependencies
+      ?? Object.freeze([...sceneFixture.characterDependencies]),
   };
 }
 
@@ -239,7 +239,6 @@ export async function bootHarness({
   canvas.style.height = `${request.height}px`;
   targetWindow.__ready = false;
   await loadGameFonts(globalThis.document);
-  await preloadCharacterReviewScene(request.scene);
 
   let current = null;
 
@@ -272,6 +271,10 @@ export async function bootHarness({
     const characterRenderer = new RegisteredCharacterRenderer({
       registry: productionCharacterCatalog.registry,
     });
+    const characterReviewRenderer = new RegisteredCharacterReviewRenderer({
+      characterRenderer,
+      descriptors: productionCharacterReviewCatalog,
+    });
     let game;
     game = new Game(canvas, {
       harness: true,
@@ -283,7 +286,7 @@ export async function bootHarness({
       saveData: stateFixture.save,
       storage: memoryStorage(),
       characterRenderer,
-      characterReviewRenderer: new CharacterRenderer(),
+      characterReviewRenderer,
       characterScopes,
       enableSaveTransfer: request.scene === 'save-transfer',
       enablePetNameDialog: request.scene === 'pet-name-dialog',

@@ -96,7 +96,6 @@ export function createStorybookTitlePresentation(
       scale: 0.78,
       facing: 'left',
       pose: 'wonder',
-      walking: false,
       wand: false,
       appearance: 'casual',
     }),

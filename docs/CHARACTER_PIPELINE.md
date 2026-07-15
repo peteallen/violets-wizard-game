@@ -9,7 +9,7 @@ generation.
 
 Every character lives under its canonical identity, such as `character.violet` or `character.hagrid`; chapter roles such as guide, tailor, or speaker are not renderer identities. The pure `CharacterDefinition` is the authoritative home for display and voice metadata, supported world and portrait surfaces, appearances, poses, actions, defaults, bounds, and the explicit asset fragment. Its lazy runtime owns drawing, preload, reduced-motion behavior, release, and that character's review registrations. Importing a definition must not decode images, touch Canvas, or register global side effects.
 
-Chapters declare the exact character identities they need. The duplicate-rejecting `CharacterRegistry` loads only those runtimes, validates every requested appearance, pose, action, and surface, and releases their decoded caches when the chapter scope ends. Unknown or unsupported requests are authoring failures; they never silently draw Hagrid, a generic human, or an old Bézier fallback. Temporary aliases may bridge old content while it migrates, but the final chapter data and world snapshots carry canonical character identities.
+Chapters declare the exact character identities they need. The duplicate-rejecting `CharacterRegistry` loads only those runtimes, validates every requested appearance, pose, action, and surface, and releases their decoded caches when the chapter scope ends. Unknown or unsupported requests are authoring failures; they never silently draw Hagrid, a generic human, or an old Bézier fallback. Role aliases are not accepted at the rendering boundary: chapter data, world snapshots, dialogue portraits, and review descriptors all carry canonical character identities.
 
 ## One model and one identity
 

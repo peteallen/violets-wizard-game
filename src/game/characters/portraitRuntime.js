@@ -63,9 +63,9 @@ export function createCharacterPortraitRenderer({
     })), 'Prepared character portrait figure state');
     const figure = definePortraitCameoFigure({
       // Existing figure renderers apply motion before their local scale. Pass
-      // the legacy placement through their request so bob, hop, and frame
-      // offsets retain the same amplitude instead of being scaled twice by an
-      // enclosing Canvas transform.
+      // the package-authored placement through their request so bob, hop, and
+      // frame offsets retain the same amplitude instead of being scaled twice
+      // by an enclosing Canvas transform.
       placement: { x: 0, y: 0, scale: 1 },
       drawFigure: (figureContext, frame) => drawFigure(Object.freeze({
         ...figureState,

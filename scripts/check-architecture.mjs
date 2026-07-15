@@ -14,16 +14,6 @@ export const ARCHITECTURE_RULES = Object.freeze({
   UNUSED_ALLOWLIST_ENTRY: 'unused-architecture-allowlist',
 });
 
-const LEGACY_CHARACTER_IMPLEMENTATIONS = Object.freeze([
-  'src/game/render/HagridFullFrameCharacterRig.js',
-  'src/game/render/MadamMalkinFullFrameCharacterRig.js',
-  'src/game/render/OwlRenderer.js',
-  'src/game/render/VioletAlignedSpriteRig.js',
-  'src/game/render/VioletFullFrameCharacterRig.js',
-  'src/game/render/VioletRobeRecolor.js',
-  'src/game/render/WandmakerFullFrameCharacterRig.js',
-]);
-
 const BROWSER_APIS = Object.freeze([
   api('document', /\bdocument\b/g, 'Pass browser state through an adapter instead of reading document in headless code.'),
   api('window', /\bwindow\b/g, 'Pass browser state through an adapter instead of reading window in headless code.'),
@@ -75,9 +65,8 @@ const DEFAULT_SCOPES = Object.freeze({
 
 const DEFAULT_EXCLUSIONS = Object.freeze({
   all: Object.freeze(['node_modules/**', 'dist/**', '.git/**']),
-  genericEngine: LEGACY_CHARACTER_IMPLEMENTATIONS,
+  genericEngine: Object.freeze([]),
   genericDispatch: Object.freeze([
-    ...LEGACY_CHARACTER_IMPLEMENTATIONS,
     'src/game/render/chapters/**',
     'src/game/render/scenes/**',
   ]),
@@ -89,7 +78,6 @@ const DEFAULT_TARGETS = Object.freeze({
     'src/game/chapters/*/**',
   ]),
   concreteCharacters: Object.freeze([
-    ...LEGACY_CHARACTER_IMPLEMENTATIONS,
     'src/game/characters/*/**',
     'src/game/render/characters/*/**',
   ]),
@@ -142,17 +130,6 @@ const CURRENT_ALLOWLIST = Object.freeze([
     'ch1.petNamed',
     'ch1.ticketReceived',
     'ch1.complete',
-  ]),
-  ...allowMany(ARCHITECTURE_RULES.GENERIC_CHARACTER_IMPORT, 'src/game/render/CharacterRenderer.js', [
-    './OwlRenderer.js',
-    './VioletAlignedSpriteRig.js',
-    './VioletFullFrameCharacterRig.js',
-    './HagridFullFrameCharacterRig.js',
-    './WandmakerFullFrameCharacterRig.js',
-    './MadamMalkinFullFrameCharacterRig.js',
-  ]),
-  ...allowMany(ARCHITECTURE_RULES.GENERIC_CONCRETE_ROUTING, 'src/game/render/FullFrameCharacterRig.js', [
-    'ch1',
   ]),
   ...allowMany(ARCHITECTURE_RULES.GENERIC_CONCRETE_ROUTING, 'src/game/render/RoomRenderer.js', [
     'ch1.bedroom',

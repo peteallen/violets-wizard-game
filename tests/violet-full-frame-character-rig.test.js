@@ -1,17 +1,20 @@
 import { describe, expect, it, vi } from 'vitest';
-import { assetManifest } from '../src/game/core/assetManifest.js';
-import { sampleAlignedSpriteFrame } from '../src/game/render/AlignedSpriteRig.js';
-import { CharacterRenderer } from '../src/game/render/CharacterRenderer.js';
 import {
-  FullFrameCharacterRig,
-  productionFullFrameCharacterRigs,
-  resolveFullFrameCharacterAnimation,
-} from '../src/game/render/FullFrameCharacterRig.js';
+  violetCharacterDefinition,
+  violetCharacterModule,
+} from '../src/game/characters/violet/index.js';
 import {
-  violetFullFrameCharacterDefinition,
+  violetCharacterRuntime,
   violetFullFrameCharacterManifest,
   violetFullFrameCharacterRig,
-} from '../src/game/render/VioletFullFrameCharacterRig.js';
+} from '../src/game/characters/violet/runtime.js';
+import { assetManifest } from '../src/game/core/assetManifest.js';
+import { sampleAlignedSpriteFrame } from '../src/game/render/AlignedSpriteRig.js';
+import {
+  FullFrameCharacterRig,
+  resolveFullFrameCharacterAnimation,
+} from '../src/game/render/FullFrameCharacterRig.js';
+import { violetFullFrameCharacterDefinition } from '../src/game/characters/violet/definition.js';
 
 function framePaths(appearance, clip) {
   return violetFullFrameCharacterManifest.clips[`${appearance}/${clip}`].frames.map((frame) => {
@@ -31,23 +34,35 @@ function sampledPath(character, time = 0) {
 }
 
 describe('Violet production full-frame rig', () => {
-  it('is the authoritative Violet registration used by an ordinary CharacterRenderer', () => {
-    expect(productionFullFrameCharacterRigs.get('violet')).toBe(violetFullFrameCharacterRig);
-    expect(violetFullFrameCharacterManifest.fullFrame.kind).toBe('violet');
+  it('is owned by Violet’s canonical package and world runtime', async () => {
+    expect(violetCharacterModule.definition).toBe(violetCharacterDefinition);
+    expect(await violetCharacterModule.loadRuntime()).toBe(violetCharacterRuntime);
+    expect(violetFullFrameCharacterManifest.id).toBe('character.violet');
 
-    const renderer = new CharacterRenderer();
     const draw = vi.spyOn(violetFullFrameCharacterRig, 'draw').mockReturnValue({ status: 'drawn' });
-    const character = {
-      kind: 'violet', outfit: 'casual', pose: 'walking', x: 340, y: 610,
-    };
-    expect(renderer.draw({}, character, 1.25)).toEqual({ status: 'drawn' });
-    expect(draw).toHaveBeenCalledWith({}, character, 1.25);
+    const context = {};
+    expect(violetCharacterRuntime.renderers.world({
+      context,
+      time: 1.25,
+      characterId: 'character.violet',
+      surface: 'world',
+      appearance: 'casual',
+      pose: 'walking',
+      x: 340,
+      y: 610,
+    })).toEqual({ status: 'drawn' });
+    expect(draw).toHaveBeenCalledWith(context, {
+      appearance: 'casual',
+      pose: 'walking',
+      x: 340,
+      y: 610,
+    }, 1.25, 'world');
     draw.mockRestore();
   });
 
   it('uses the approved casual expressions and mirrors one coherent profile walk', () => {
     for (const expression of ['neutral', 'blink', 'talk-a', 'talk-b', 'wonder', 'proud', 'curious']) {
-      expect(sampledPath({ outfit: 'casual', pose: 'idle', expression })).toBe(
+      expect(sampledPath({ appearance: 'casual', pose: 'idle', expression })).toBe(
         `assets/art/characters/violet/casual/${expression}.png`,
       );
     }
@@ -60,13 +75,13 @@ describe('Violet production full-frame rig', () => {
       'assets/art/characters/violet/casual/walk-contact.png',
     ]);
     expect(resolveFullFrameCharacterAnimation(violetFullFrameCharacterManifest, {
-      outfit: 'casual', walking: true, facing: 'right',
+      appearance: 'casual', pose: 'walking', facing: 'right',
     })).toMatchObject({ pose: 'casual/walking', mirror: false });
     expect(resolveFullFrameCharacterAnimation(violetFullFrameCharacterManifest, {
-      outfit: 'casual', walking: true, facing: 'left',
+      appearance: 'casual', pose: 'walking', facing: 'left',
     })).toMatchObject({ pose: 'casual/walking', mirror: true });
     expect(resolveFullFrameCharacterAnimation(violetFullFrameCharacterManifest, {
-      outfit: 'casual', walking: true, wand: true, facing: 'right',
+      appearance: 'casual', pose: 'walking', wand: true, facing: 'right',
     })).toMatchObject({ semantic: 'walking', pose: 'casual/walking' });
     expect(sampleAlignedSpriteFrame(violetFullFrameCharacterManifest, {
       appearance: 'casual', pose: 'casual/walking', reducedMotion: true,
@@ -75,21 +90,23 @@ describe('Violet production full-frame rig', () => {
 
   it('keeps each wand set piece on one readable, stable prop pose', () => {
     const wrongWand = (action, progress) => sampledPath({
-      outfit: 'casual',
-      actorAnimation: { action, localTime: progress * 2.6, progress },
+      appearance: 'casual',
+      action,
+      actionTime: progress * 2.6,
+      actionProgress: progress,
     });
     expect(wrongWand('wrong-wand-one', 0)).toContain('/wand-hold.png');
     expect(wrongWand('wrong-wand-one', 0.99)).toContain('/wand-hold.png');
     expect(wrongWand('wrong-wand-two', 0)).toContain('/tumble.png');
     expect(wrongWand('wrong-wand-two', 0.99)).toContain('/tumble.png');
     expect(sampledPath({
-      outfit: 'casual', actorAnimation: { action: 'chosen-wand', progress: 0.5 },
+      appearance: 'casual', action: 'chosen-wand', actionProgress: 0.5,
     })).toContain('/cheer.png');
   });
 
   it('provides the complete robed vocabulary from aligned robed frames', () => {
     for (const expression of ['neutral', 'blink', 'talk-a', 'talk-b', 'wonder', 'proud', 'curious']) {
-      expect(sampledPath({ outfit: 'robes', pose: 'idle', expression })).toBe(
+      expect(sampledPath({ appearance: 'robes', pose: 'idle', expression })).toBe(
         `assets/art/characters/violet/robes/${expression}.png`,
       );
     }
@@ -98,10 +115,10 @@ describe('Violet production full-frame rig', () => {
       'assets/art/characters/violet/robes/walk-contact.png',
       'assets/art/characters/violet/robes/walk-pass.png',
     ]);
-    expect(sampledPath({ outfit: 'robes', pose: 'talk' })).toContain('/talk-a.png');
-    expect(sampledPath({ outfit: 'robes', pose: 'wonder' })).toContain('/wonder.png');
+    expect(sampledPath({ appearance: 'robes', pose: 'talk' })).toContain('/talk-a.png');
+    expect(sampledPath({ appearance: 'robes', pose: 'wonder' })).toContain('/wonder.png');
     expect(sampledPath({
-      outfit: 'robes', actorAnimation: { action: 'admire-robes', progress: 0.5 },
+      appearance: 'robes', action: 'admire-robes', actionProgress: 0.5,
     })).toContain('/robe-present.png');
   });
 
@@ -113,7 +130,7 @@ describe('Violet production full-frame rig', () => {
     rig.alignedRig.draw = alignedDraw;
 
     expect(rig.draw({}, {
-      outfit: 'robes', pose: 'wonder', robeTrim: '#4e83b7', x: 315, y: 528,
+      appearance: 'robes', pose: 'wonder', robeTrim: '#4e83b7', x: 315, y: 528,
     }, 0).status).toBe('drawn');
     expect(alignedDraw).toHaveBeenCalledWith({}, expect.objectContaining({
       appearance: 'robes',
