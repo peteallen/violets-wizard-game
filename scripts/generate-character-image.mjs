@@ -265,6 +265,7 @@ export async function prepareCharacterImageRequest({ requestPath, repoRoot = ROO
     provider: {
       only: [CHARACTER_IMAGE_POLICY.provider],
       allow_fallbacks: false,
+      automatic_retries: 0,
     },
   };
   const serializedBody = JSON.stringify(body);

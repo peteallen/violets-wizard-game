@@ -179,6 +179,12 @@ registry
   .register('hagrid-sprite-review', createFixture(
     'Hold Hagrid’s aligned neutral, blink, speaking, and walking poses on deterministic loops.',
   ))
+  .register('wandmaker-sprite-review', createFixture(
+    'Hold the Wandmaker’s aligned neutral, blink, and two speaking mouth shapes without input.',
+  ))
+  .register('wandmaker-live-review', createFixture(
+    'Hold the Wandmaker’s automatic welcome dialogue in the painted shop.',
+  ))
   .register('violet-expression-review', createFixture(
     'Hold every approved aligned Violet expression without animation or input.',
   ))

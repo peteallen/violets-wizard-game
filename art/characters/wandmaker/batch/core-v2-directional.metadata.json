@@ -1,0 +1,372 @@
+{
+  "schema_version": 1,
+  "kind": "openrouter-character-image-generation",
+  "policy": {
+    "model": "google/gemini-3.1-flash-image",
+    "canonical_model_slug": "google/gemini-3.1-flash-image-20260528",
+    "provider": "google-vertex/global",
+    "allow_fallbacks": false,
+    "automatic_retries": 0
+  },
+  "timestamps": {
+    "catalog_checked_at": "2026-07-15T04:42:44.509Z",
+    "generation_started_at": "2026-07-15T04:42:44.615Z",
+    "generation_completed_at": "2026-07-15T04:43:30.490Z",
+    "duration_ms": 45875,
+    "response_created_unix": 0
+  },
+  "repository": {
+    "commit": "a8a2484a990280d0f5aad3aff83842f9b613e065",
+    "dirty": true
+  },
+  "runtime": {
+    "node": "v22.17.0",
+    "platform": "darwin",
+    "architecture": "arm64"
+  },
+  "request_spec": {
+    "path": "art/characters/wandmaker/batch/core-v2-directional.request.json",
+    "bytes": 968,
+    "sha256": "41299d0b5243f04f8d4f0fe678cfa78eec13f19e46f16316a4cd3e9e6d812ad3",
+    "schema_version": 1
+  },
+  "prompt": {
+    "path": "art/characters/wandmaker/batch/core-v2-directional.prompt.md",
+    "section": "Prompt",
+    "document_bytes": 5929,
+    "document_sha256": "d3ee4af88eb19a70da377f1cafb8e425bf3c4b238c5e17d065b69587e74e1a5f",
+    "text_bytes": 4991,
+    "text_sha256": "3b1f8a32ff0a02c5118d496bd67ef3d2da5cf02001e6996aa3ec2e7187738a53"
+  },
+  "references": [
+    {
+      "index": 1,
+      "role": "exact deterministically extracted core-v1 production identity, palette, outfit, facial construction, and painterly finish; not its frontal pose",
+      "path": "public/assets/art/characters/wandmaker/default/neutral.png",
+      "media_type": "image/png",
+      "bytes": 469379,
+      "sha256": "082e8c7d7598539a4f85a489055ec086224e30d16c39cf0e0ff2ef9a259232cd",
+      "dimensions": {
+        "width": 896,
+        "height": 1200
+      },
+      "png": {
+        "bit_depth": 8,
+        "color_type": 6,
+        "has_color": true,
+        "has_alpha": true,
+        "interlaced": false
+      }
+    },
+    {
+      "index": 2,
+      "role": "original Wandmaker identity and proportion anchor",
+      "path": "art/character-refs/wandmaker.png",
+      "media_type": "image/png",
+      "bytes": 1773423,
+      "sha256": "3739379077e2c76e058fb311f931dcaa90ede6c74cafbcd064b67aa91cf19240",
+      "dimensions": {
+        "width": 1376,
+        "height": 768
+      },
+      "png": {
+        "bit_depth": 8,
+        "color_type": 2,
+        "has_color": true,
+        "has_alpha": false,
+        "interlaced": false
+      }
+    },
+    {
+      "index": 3,
+      "role": "painterly room-style texture, upper-left key-light, and violet-blue shadow guidance only",
+      "path": "art/guides/ch1-room-style-triptych.png",
+      "media_type": "image/png",
+      "bytes": 683274,
+      "sha256": "ce0628710e9add1a8641c869ce6df94303457faac6434fcb188733b096450a07",
+      "dimensions": {
+        "width": 1536,
+        "height": 288
+      },
+      "png": {
+        "bit_depth": 8,
+        "color_type": 2,
+        "has_color": true,
+        "has_alpha": false,
+        "interlaced": false
+      }
+    }
+  ],
+  "catalog": {
+    "sha256": "d4547839308c574eb8467a6f7407a89d31225d4c7f0ef37111cb1554846dd4f8",
+    "bytes": 1608,
+    "snapshot": {
+      "model": {
+        "id": "google/gemini-3.1-flash-image",
+        "canonical_slug": "google/gemini-3.1-flash-image-20260528",
+        "created": 1781754065,
+        "context_length": 131072,
+        "architecture": {
+          "input_modalities": [
+            "image",
+            "text"
+          ],
+          "output_modalities": [
+            "image",
+            "text"
+          ]
+        },
+        "pricing": {
+          "prompt": "0.0000005",
+          "completion": "0.000003",
+          "image_output": "0.00006"
+        },
+        "supported_parameters": [
+          "include_reasoning",
+          "max_tokens",
+          "reasoning",
+          "reasoning_effort",
+          "response_format",
+          "seed",
+          "structured_outputs",
+          "temperature",
+          "top_p"
+        ]
+      },
+      "image_model": {
+        "id": "google/gemini-3.1-flash-image",
+        "created": 1781754065,
+        "architecture": {
+          "input_modalities": [
+            "image",
+            "text"
+          ],
+          "output_modalities": [
+            "image",
+            "text"
+          ]
+        },
+        "supported_parameters": {
+          "resolution": {
+            "type": "enum",
+            "values": [
+              "512",
+              "1K",
+              "2K",
+              "4K"
+            ]
+          },
+          "aspect_ratio": {
+            "type": "enum",
+            "values": [
+              "1:1",
+              "1:4",
+              "1:8",
+              "2:3",
+              "3:2",
+              "3:4",
+              "4:1",
+              "4:3",
+              "4:5",
+              "5:4",
+              "8:1",
+              "9:16",
+              "16:9",
+              "21:9"
+            ]
+          },
+          "n": {
+            "type": "range",
+            "min": 1,
+            "max": 1
+          },
+          "input_references": {
+            "type": "range",
+            "min": 0,
+            "max": 14
+          }
+        },
+        "supports_streaming": false,
+        "endpoints": "/api/v1/images/models/google/gemini-3.1-flash-image/endpoints"
+      },
+      "provider_endpoint": {
+        "provider_slug": "google-vertex/global",
+        "provider_tag": "google-vertex/global",
+        "supported_parameters": {
+          "resolution": {
+            "type": "enum",
+            "values": [
+              "512",
+              "1K",
+              "2K",
+              "4K"
+            ]
+          },
+          "aspect_ratio": {
+            "type": "enum",
+            "values": [
+              "1:1",
+              "1:4",
+              "1:8",
+              "2:3",
+              "3:2",
+              "3:4",
+              "4:1",
+              "4:3",
+              "4:5",
+              "5:4",
+              "8:1",
+              "9:16",
+              "16:9",
+              "21:9"
+            ]
+          },
+          "n": {
+            "type": "range",
+            "min": 1,
+            "max": 1
+          },
+          "input_references": {
+            "type": "range",
+            "min": 0,
+            "max": 14
+          }
+        },
+        "allowed_passthrough_parameters": [
+          "cachedContent"
+        ],
+        "supports_streaming": false,
+        "pricing": [
+          {
+            "billable": "output_image",
+            "unit": "token",
+            "cost_usd": 0.00006
+          }
+        ]
+      }
+    },
+    "sources": {
+      "model": {
+        "url": "https://openrouter.ai/api/v1/model/google/gemini-3.1-flash-image",
+        "status": 200,
+        "body_bytes": 1293,
+        "body_sha256": "89be87934f7850b356b2f05cbc229e4d710348e38789983bf5603011ff4c5b83",
+        "response_headers": {
+          "cf-ray": "a1b61a2d1f6c53d6-DEN",
+          "content-type": "application/json",
+          "date": "Wed, 15 Jul 2026 04:42:44 GMT",
+          "server": "cloudflare"
+        }
+      },
+      "image_models": {
+        "url": "https://openrouter.ai/api/v1/images/models",
+        "status": 200,
+        "body_bytes": 27272,
+        "body_sha256": "dbedd85c93b2c6f9693d47298e1a9d4a6b520de472d87c558ef2364a1c26ceb6",
+        "response_headers": {
+          "cf-ray": "a1b61a2d2e39e763-DEN",
+          "content-type": "application/json",
+          "date": "Wed, 15 Jul 2026 04:42:44 GMT",
+          "server": "cloudflare"
+        }
+      },
+      "image_endpoints": {
+        "url": "https://openrouter.ai/api/v1/images/models/google/gemini-3.1-flash-image/endpoints",
+        "status": 200,
+        "body_bytes": 1183,
+        "body_sha256": "be9d700ee208a564ac7aa4b36a014195320b191a6571e54a7bcdd3be1b26984e",
+        "response_headers": {
+          "cf-ray": "a1b61a2d1c73e74f-DEN",
+          "content-type": "application/json",
+          "date": "Wed, 15 Jul 2026 04:42:44 GMT",
+          "server": "cloudflare"
+        }
+      }
+    }
+  },
+  "request": {
+    "endpoint": "https://openrouter.ai/api/v1/images",
+    "method": "POST",
+    "body_bytes": 3906934,
+    "body_sha256": "1ef92ed64248cac7cfffc85c96d2a1dad5b21a4630122f9eec5f2b2c2c5da350",
+    "controls": {
+      "model": "google/gemini-3.1-flash-image",
+      "aspect_ratio": "16:9",
+      "resolution": "4K",
+      "n": 1,
+      "output_format": "png",
+      "reference_count": 3,
+      "provider": {
+        "only": [
+          "google-vertex/global"
+        ],
+        "allow_fallbacks": false,
+        "automatic_retries": 0
+      }
+    }
+  },
+  "response": {
+    "status": 200,
+    "status_text": "OK",
+    "headers": {
+      "cf-ray": "a1b61a2d885953d6-DEN",
+      "content-type": "application/json",
+      "date": "Wed, 15 Jul 2026 04:43:28 GMT",
+      "server": "cloudflare",
+      "x-generation-id": "gen-img-1784090565-TfDFHo0rCLHKayHjkoMS"
+    },
+    "body_bytes": 23473549,
+    "body_sha256": "e1ec76abea08f513a6010d2aa63a8dbed6d2c7e1bebf071f9ae4eff264158032",
+    "request_id": null,
+    "generation_id": "gen-img-1784090565-TfDFHo0rCLHKayHjkoMS",
+    "metadata": {
+      "created": 0,
+      "image_count": 1,
+      "image": {
+        "reported_media_type": "image/png",
+        "bytes": 17604798,
+        "sha256": "f12613f4eedb9447eaf3974362816fa15c6564ec25620c2e89f02f343b6fa185"
+      }
+    }
+  },
+  "usage": {
+    "prompt_tokens": 4487,
+    "completion_tokens": 2520,
+    "total_tokens": 7007,
+    "cost": 0.1534435,
+    "is_byok": false,
+    "prompt_tokens_details": {
+      "cached_tokens": 0,
+      "cache_write_tokens": 0,
+      "audio_tokens": 0,
+      "video_tokens": 0
+    },
+    "cost_details": {
+      "upstream_inference_cost": 0.1534435,
+      "upstream_inference_prompt_cost": 0.0022435,
+      "upstream_inference_completions_cost": 0.1512
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 0,
+      "image_tokens": 2520
+    }
+  },
+  "output": {
+    "path": "art/characters/wandmaker/batch/core-v2-directional.png",
+    "media_type": "image/png",
+    "reported_media_type": "image/png",
+    "bytes": 17604798,
+    "sha256": "f12613f4eedb9447eaf3974362816fa15c6564ec25620c2e89f02f343b6fa185",
+    "dimensions": {
+      "width": 5504,
+      "height": 3072
+    },
+    "png": {
+      "bit_depth": 8,
+      "color_type": 2,
+      "has_color": true,
+      "has_alpha": false,
+      "interlaced": false
+    }
+  }
+}

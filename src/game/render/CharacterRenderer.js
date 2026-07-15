@@ -10,6 +10,7 @@ import {
 import { productionFullFrameCharacterRigs } from './FullFrameCharacterRig.js';
 import './VioletFullFrameCharacterRig.js';
 import './HagridFullFrameCharacterRig.js';
+import './WandmakerFullFrameCharacterRig.js';
 
 const OUTLINE = STORYBOOK_INK.primary;
 const DEEP_OUTLINE = STORYBOOK_INK.deep;
@@ -218,6 +219,7 @@ export const CHARACTER_REVIEW_SCENES = Object.freeze([
   'owl-motion-review',
   'character-sprite-spike-review',
   'hagrid-sprite-review',
+  'wandmaker-sprite-review',
   'violet-expression-review',
 ]);
 
@@ -582,6 +584,7 @@ export class CharacterRenderer {
     else if (scene === 'character-portraits-review') this.drawPortraitReview(context, time);
     else if (scene === 'character-sprite-spike-review') this.drawSpriteSpikeReview(context, time);
     else if (scene === 'hagrid-sprite-review') this.drawHagridSpriteReview(context, time);
+    else if (scene === 'wandmaker-sprite-review') this.drawWandmakerSpriteReview(context, time);
     else if (scene === 'violet-expression-review') this.drawVioletExpressionReview(context);
     else this.drawOwlMotionReview(context, time, reducedMotion);
     return true;
@@ -695,11 +698,29 @@ export class CharacterRenderer {
     }
   }
 
+  drawWandmakerSpriteReview(context, time) {
+    const rows = [
+      { label: 'Neutral', x: 190, pose: 'neutral' },
+      { label: 'Blink', x: 490, pose: 'blink' },
+      { label: 'Talk A', x: 790, pose: 'talk-a' },
+      { label: 'Talk B', x: 1090, pose: 'talk-b' },
+    ];
+    for (const entry of rows) {
+      // The full-frame rig supplies the figure-sized contact shadow. Keeping
+      // the review free of decorative plinth ovals exposes any floating feet.
+      drawReviewLabel(context, entry.x, 660, entry.label);
+      this.draw(context, {
+        kind: 'wandmaker', x: entry.x, y: 595, scale: 1,
+        pose: entry.pose, facing: 'right', shadow: true,
+      }, time + entry.x * 0.001);
+    }
+  }
+
   drawCastReview(context, time) {
     const cast = [
       { label: 'Violet', kind: 'violet', x: 126, y: 595, scale: 1, wand: true, robeTrim: '#7952b7', pose: 'speaking' },
       { label: 'Hagrid', kind: 'guide', x: 365, y: 595, scale: 1.18, pose: 'speaking' },
-      { label: 'Wandmaker', kind: 'wandmaker', x: 625, y: 595, scale: 1.05, pose: 'curious' },
+      { label: 'Wandmaker', kind: 'wandmaker', x: 625, y: 595, scale: 1.05, pose: 'speaking' },
       { label: 'Tailor', kind: 'tailor', x: 855, y: 595, scale: 1.05, pose: 'speaking' },
       { label: 'Keeper', kind: 'keeper', x: 1085, y: 595, scale: 1.05, pose: 'proud' },
     ];
@@ -1150,6 +1171,7 @@ function drawReviewBackground(context, scene) {
     'owl-motion-review': 'Hero owl · pose and motion library',
     'character-sprite-spike-review': 'SP-E spike · code-drawn vs painted parts',
     'hagrid-sprite-review': 'Hagrid · aligned production poses',
+    'wandmaker-sprite-review': 'Wandmaker · aligned production expressions',
     'violet-expression-review': 'Approved Violet · aligned expressions and portraits',
   };
   context.fillText(titles[scene], 640, 77);

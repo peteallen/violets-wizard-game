@@ -1,0 +1,29 @@
+{
+  "schema_version": 1,
+  "prompt": {
+    "path": "art/characters/wandmaker/batch/core-v2-directional.prompt.md",
+    "section": "Prompt"
+  },
+  "references": [
+    {
+      "path": "public/assets/art/characters/wandmaker/default/neutral.png",
+      "role": "exact deterministically extracted core-v1 production identity, palette, outfit, facial construction, and painterly finish; not its frontal pose"
+    },
+    {
+      "path": "art/character-refs/wandmaker.png",
+      "role": "original Wandmaker identity and proportion anchor"
+    },
+    {
+      "path": "art/guides/ch1-room-style-triptych.png",
+      "role": "painterly room-style texture, upper-left key-light, and violet-blue shadow guidance only"
+    }
+  ],
+  "generation": {
+    "aspect_ratio": "16:9",
+    "resolution": "4K"
+  },
+  "output": {
+    "image": "art/characters/wandmaker/batch/core-v2-directional.png",
+    "provenance": "art/characters/wandmaker/batch/core-v2-directional.metadata.json"
+  }
+}

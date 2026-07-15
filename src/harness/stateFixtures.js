@@ -433,6 +433,31 @@ registry
     'hagrid-sprite-review',
     'Hagrid’s production full-frame neutral, blink, speaking, and two walking directions.',
   ))
+  .register('wandmaker-sprite-review', characterReviewFixture(
+    'wandmaker-sprite-review',
+    'The Wandmaker’s production full-frame neutral, blink, and two speaking mouth shapes.',
+  ))
+  .register('wandmaker-live-review', createFixture(
+    'The generated Wandmaker welcoming Violet in normal Ollivanders gameplay.',
+    { chapter: 1, scene: 'ch1.wandShopping' },
+    createSave({
+      scene: 'ch1.wandShopping',
+      room: 'ch1.ollivanders',
+      spawn: 'ollivanders.entry',
+      questFlags: {
+        'ch1.owlTapped': true,
+        'ch1.letterOpened': true,
+        'ch1.letterRead': true,
+        'ch1.guideMet': true,
+        'ch1.leakyReached': true,
+        'ch1.courtyardReached': true,
+        'ch1.wallOpened': true,
+        'ch1.diagonReached': true,
+        'ch1.satchelReceived': true,
+        'ch1.mapUsed': true,
+      },
+    }),
+  ))
   .register('violet-expression-review', characterReviewFixture(
     'violet-expression-review',
     'The owner-approved aligned Violet shown in every accepted neutral and facial-expression state, as both portraits and grounded full figures.',

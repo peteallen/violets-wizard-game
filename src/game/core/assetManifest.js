@@ -53,6 +53,10 @@ const CHARACTER_IMAGE_PATHS = Object.freeze({
   'characters/hagrid/default/talk-b': 'assets/art/characters/hagrid/default/talk-b.png',
   'characters/hagrid/default/profile-right': 'assets/art/characters/hagrid/default/profile-right.png',
   'characters/hagrid/default/walk-contact': 'assets/art/characters/hagrid/default/walk-contact.png',
+  'characters/wandmaker/default/neutral': 'assets/art/characters/wandmaker/default/neutral.png',
+  'characters/wandmaker/default/blink': 'assets/art/characters/wandmaker/default/blink.png',
+  'characters/wandmaker/default/talk-a': 'assets/art/characters/wandmaker/default/talk-a.png',
+  'characters/wandmaker/default/talk-b': 'assets/art/characters/wandmaker/default/talk-b.png',
 });
 
 const AMBIENCE_ALIASES = Object.freeze({

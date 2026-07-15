@@ -185,6 +185,18 @@ const REVIEW_SCENE_ILLUSION_CHECKS = Object.freeze({
     'Every figure keeps the same identity: wild dark-brown mane and beard with a visible warm smile, patched deep-brown coat with brass toggles, deep-green waistcoat, plum scarf, and matching two-buckle boots.',
     'The speaking loop has two readable mouth shapes, the walk has two distinct planted steps, and every boot sole meets its contact shadow with no lit gap at both review sizes.',
   ],
+  'wandmaker-sprite-review': [
+    'Exactly four labeled full-frame Wandmakers remain visually separated: neutral, blink, talk A, and talk B, each with one figure-sized grounded contact shadow.',
+    'Every state reads as one connected small elder painting with no assembled-limb seams, floating parts, double edges, background field, or independently mirrored hands.',
+    'All four states keep the same identity, silhouette, and registration: wispy silver-white hair, pale silver-grey eyes when open, warm knowing face, dusty plum waistcoat, cream rolled-sleeve shirt, warm charcoal trousers, yellow measuring tape, and worn amber-brown shoes.',
+    'Blink changes only the eyelids, while talk A and talk B provide two distinct readable mouth shapes without changing the Wandmaker’s head, hands, clothing, or body proportions.',
+    'Both shoe soles meet their contact shadows with no lit gap, and every figure remains clear of its label and the outer gold frame at both review sizes.',
+  ],
+  'wandmaker-live-review': [
+    'When Violet enters Ollivanders in normal gameplay, the Wandmaker speaks his automatic welcome with the same identity in his world figure and attached dialogue portrait.',
+    'The two speaking mouth shapes remain readable without moving his registration, while his full body stays planted beside the counter and clear of Violet, the parchment, and both dialogue controls.',
+    'The Wandmaker reads as a small, kind elder at the intended room scale, with silver-white hair, dusty plum waistcoat, yellow measuring tape, warm charcoal trousers, and amber-brown shoes all readable against Ollivanders.',
+  ],
   'violet-expression-review': [
     'Exactly seven labeled Violet states appear as matched portrait and full-body pairs: neutral, blink, talk A, talk B, wonder, proud, and curious.',
     'Every state retains the locked Violet identity and unchanged full-body silhouette: dark-green rectangular glasses, warm light-brown hair with attached wisps, warm brown eyes when open, purple-and-blue soccer jersey, dark leggings, and gray-purple trainers.',

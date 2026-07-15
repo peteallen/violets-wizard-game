@@ -370,7 +370,7 @@ describe('illustrated character renderer', () => {
     const world = recordingContext();
     const replayed = recordingContext();
     const character = {
-      kind: 'wandmaker', x: 180, y: 610, facing: 'right', pose: 'curious',
+      kind: 'wandmaker', x: 180, y: 610, facing: 'right', pose: 'idle',
     };
     renderer.draw(world, character, 1.375);
     renderer.draw(replayed, character, 1.375);

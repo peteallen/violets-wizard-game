@@ -95,6 +95,8 @@ describe('state fixtures', () => {
       'owl-motion-review',
       'character-sprite-spike-review',
       'hagrid-sprite-review',
+      'wandmaker-sprite-review',
+      'wandmaker-live-review',
       'violet-expression-review',
       'ui-dialogue-review',
       'ui-dialogue-night-review',
@@ -181,6 +183,8 @@ describe('registered harness scenarios', () => {
       'character-pets-review',
       'character-portraits-review',
       'owl-motion-review',
+      'wandmaker-sprite-review',
+      'wandmaker-live-review',
       'violet-expression-review',
     ]) {
       expect(STATE_FIXTURE_IDS).toContain(id);

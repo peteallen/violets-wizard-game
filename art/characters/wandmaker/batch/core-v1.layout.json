@@ -1,0 +1,63 @@
+{
+  "schema_version": 1,
+  "id": "wandmaker.core-v1",
+  "source": {
+    "path": "art/characters/wandmaker/batch/core-v1.png",
+    "sha256": "095752440f4862673f8eae6fff5780b6b0bff28929e71c279d7a2b2da2967d1e"
+  },
+  "output": {
+    "directory": "public/assets/art/characters/wandmaker/default",
+    "provenance": "art/characters/wandmaker/batch/core-v1.slice-provenance.json",
+    "canvas": {
+      "width": 896,
+      "height": 1200,
+      "center_x": 448,
+      "ground_y": 1132
+    }
+  },
+  "scale": {
+    "numerator": 2,
+    "denominator": 3
+  },
+  "key": {
+    "color": {
+      "red": 104,
+      "green": 192,
+      "blue": 209
+    },
+    "tolerance": 24,
+    "alpha": {
+      "opaque_cyan_excess": 50,
+      "transparent_cyan_excess": 96,
+      "edge_spill_radius": 6,
+      "edge_spill_opaque_cyan_excess": 38,
+      "edge_spill_max_green_blue_delta": 42,
+      "matte_low_alpha": 170,
+      "matte_high_alpha": 245,
+      "edge_color_radius": 0
+    }
+  },
+  "components": {
+    "detail_min_pixels": 8,
+    "detail_max_pixels": 5000,
+    "detail_max_distance": 48
+  },
+  "frames": [
+    {
+      "name": "neutral",
+      "crop": { "x": 0, "y": 0, "width": 1200, "height": 1792 }
+    },
+    {
+      "name": "blink",
+      "crop": { "x": 1200, "y": 0, "width": 1200, "height": 1792 }
+    },
+    {
+      "name": "talk-a",
+      "crop": { "x": 0, "y": 1792, "width": 1200, "height": 1792 }
+    },
+    {
+      "name": "talk-b",
+      "crop": { "x": 3600, "y": 1792, "width": 1200, "height": 1792 }
+    }
+  ]
+}

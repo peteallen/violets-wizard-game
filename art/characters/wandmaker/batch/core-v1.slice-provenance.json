@@ -1,0 +1,316 @@
+{
+  "schema_version": 1,
+  "algorithm": {
+    "id": "cyan-flood-aligned-character-sheet-v1",
+    "component_connectivity": 8,
+    "scale_filter": "premultiplied-rgba-box-rational-v1",
+    "output_color_type": 6,
+    "output_bit_depth": 8,
+    "deterministic": true
+  },
+  "slice_spec": {
+    "path": "art/characters/wandmaker/batch/core-v1.layout.json",
+    "bytes": 1509,
+    "sha256": "5915c5369b87e7e9d17add58875013150d20dd24b47444f90daf89a3d23e588c",
+    "schema_version": 1,
+    "id": "wandmaker.core-v1"
+  },
+  "source": {
+    "path": "art/characters/wandmaker/batch/core-v1.png",
+    "bytes": 17971726,
+    "expected_sha256": "095752440f4862673f8eae6fff5780b6b0bff28929e71c279d7a2b2da2967d1e",
+    "sha256": "095752440f4862673f8eae6fff5780b6b0bff28929e71c279d7a2b2da2967d1e",
+    "rgba_sha256": "6de719809832e0b13856d97355533cade14fbba6a928a1e6286b3346dda69640",
+    "dimensions": {
+      "width": 4800,
+      "height": 3584
+    }
+  },
+  "controls": {
+    "output_canvas": {
+      "width": 896,
+      "height": 1200,
+      "center_x": 448,
+      "ground_y": 1132
+    },
+    "common_scale": {
+      "numerator": 2,
+      "denominator": 3
+    },
+    "key": {
+      "color": {
+        "red": 104,
+        "green": 192,
+        "blue": 209
+      },
+      "tolerance": 24,
+      "alpha": {
+        "opaque_cyan_excess": 50,
+        "transparent_cyan_excess": 96,
+        "edge_spill_radius": 6,
+        "edge_spill_opaque_cyan_excess": 38,
+        "edge_spill_max_green_blue_delta": 42,
+        "matte_low_alpha": 170,
+        "matte_high_alpha": 245,
+        "edge_color_radius": 0
+      }
+    },
+    "components": {
+      "detail_min_pixels": 8,
+      "detail_max_pixels": 5000,
+      "detail_max_distance": 48
+    }
+  },
+  "outputs": [
+    {
+      "name": "neutral",
+      "path": "public/assets/art/characters/wandmaker/default/neutral.png",
+      "media_type": "image/png",
+      "bytes": 469379,
+      "sha256": "082e8c7d7598539a4f85a489055ec086224e30d16c39cf0e0ff2ef9a259232cd",
+      "rgba_sha256": "08b92dbb22d319292f86f0b4b35429ac522de874c95dfed9062723de22671c42",
+      "dimensions": {
+        "width": 896,
+        "height": 1200
+      },
+      "crop": {
+        "x": 0,
+        "y": 0,
+        "width": 1200,
+        "height": 1792
+      },
+      "source_content_bounds": {
+        "x": 333,
+        "y": 99,
+        "width": 571,
+        "height": 1655
+      },
+      "scaled_dimensions": {
+        "width": 381,
+        "height": 1104
+      },
+      "placement": {
+        "x": 258,
+        "y": 29,
+        "width": 381,
+        "height": 1104,
+        "center_x": 448,
+        "ground_y": 1132
+      },
+      "flood": {
+        "background_pixels": 1544244,
+        "non_background_pixels": 606156,
+        "background_fraction": 0.7181194196428572
+      },
+      "components": {
+        "found": 2,
+        "dominant_pixels": 600202,
+        "kept": 1,
+        "removed": 1,
+        "selected_pixels": 600202,
+        "details": [
+          {
+            "pixels": 1,
+            "distance_from_dominant": 2,
+            "kept": false
+          }
+        ]
+      },
+      "alpha": {
+        "transparent_pixels": 1550198,
+        "soft_pixels": 1743,
+        "opaque_pixels": 598459
+      },
+      "edge_artifacts_repaired": 0
+    },
+    {
+      "name": "blink",
+      "path": "public/assets/art/characters/wandmaker/default/blink.png",
+      "media_type": "image/png",
+      "bytes": 466060,
+      "sha256": "f85854d85987888887b10259700fedb3c947da1ab6fb7c4a578c2edcab7cb1fd",
+      "rgba_sha256": "04327d3894cab2e67bbe0eb1b066f866847a083609b68457b7e511fcbb2dacb4",
+      "dimensions": {
+        "width": 896,
+        "height": 1200
+      },
+      "crop": {
+        "x": 1200,
+        "y": 0,
+        "width": 1200,
+        "height": 1792
+      },
+      "source_content_bounds": {
+        "x": 335,
+        "y": 98,
+        "width": 569,
+        "height": 1656
+      },
+      "scaled_dimensions": {
+        "width": 380,
+        "height": 1104
+      },
+      "placement": {
+        "x": 258,
+        "y": 29,
+        "width": 380,
+        "height": 1104,
+        "center_x": 448,
+        "ground_y": 1132
+      },
+      "flood": {
+        "background_pixels": 1543377,
+        "non_background_pixels": 607023,
+        "background_fraction": 0.7177162388392857
+      },
+      "components": {
+        "found": 2,
+        "dominant_pixels": 601236,
+        "kept": 2,
+        "removed": 0,
+        "selected_pixels": 601246,
+        "details": [
+          {
+            "pixels": 10,
+            "distance_from_dominant": 5,
+            "kept": true
+          }
+        ]
+      },
+      "alpha": {
+        "transparent_pixels": 1549154,
+        "soft_pixels": 1801,
+        "opaque_pixels": 599445
+      },
+      "edge_artifacts_repaired": 0
+    },
+    {
+      "name": "talk-a",
+      "path": "public/assets/art/characters/wandmaker/default/talk-a.png",
+      "media_type": "image/png",
+      "bytes": 456482,
+      "sha256": "02d13ea69ed77871f8275bf052467da6c4e44919a986e177c279ca04ef5b262f",
+      "rgba_sha256": "50d060748ae97a21bdacf17b463665a66f911f18a50dfab801a73546deb8863a",
+      "dimensions": {
+        "width": 896,
+        "height": 1200
+      },
+      "crop": {
+        "x": 0,
+        "y": 1792,
+        "width": 1200,
+        "height": 1792
+      },
+      "source_content_bounds": {
+        "x": 345,
+        "y": 77,
+        "width": 560,
+        "height": 1645
+      },
+      "scaled_dimensions": {
+        "width": 374,
+        "height": 1097
+      },
+      "placement": {
+        "x": 261,
+        "y": 36,
+        "width": 374,
+        "height": 1097,
+        "center_x": 448,
+        "ground_y": 1132
+      },
+      "flood": {
+        "background_pixels": 1559064,
+        "non_background_pixels": 591336,
+        "background_fraction": 0.7250111607142857
+      },
+      "components": {
+        "found": 2,
+        "dominant_pixels": 585860,
+        "kept": 1,
+        "removed": 1,
+        "selected_pixels": 585860,
+        "details": [
+          {
+            "pixels": 7,
+            "distance_from_dominant": 17,
+            "kept": false
+          }
+        ]
+      },
+      "alpha": {
+        "transparent_pixels": 1564540,
+        "soft_pixels": 1793,
+        "opaque_pixels": 584067
+      },
+      "edge_artifacts_repaired": 0
+    },
+    {
+      "name": "talk-b",
+      "path": "public/assets/art/characters/wandmaker/default/talk-b.png",
+      "media_type": "image/png",
+      "bytes": 453169,
+      "sha256": "ab7f2796a3eaccbe720948dd6a53ace3c0028e2b2dc6d8231141ba24348c37e9",
+      "rgba_sha256": "d7607c39c22991a1e221129b9bfba337238e44bb9ab5f036f424e4d4d1c9cca2",
+      "dimensions": {
+        "width": 896,
+        "height": 1200
+      },
+      "crop": {
+        "x": 3600,
+        "y": 1792,
+        "width": 1200,
+        "height": 1792
+      },
+      "source_content_bounds": {
+        "x": 332,
+        "y": 77,
+        "width": 560,
+        "height": 1645
+      },
+      "scaled_dimensions": {
+        "width": 374,
+        "height": 1097
+      },
+      "placement": {
+        "x": 261,
+        "y": 36,
+        "width": 374,
+        "height": 1097,
+        "center_x": 448,
+        "ground_y": 1132
+      },
+      "flood": {
+        "background_pixels": 1557801,
+        "non_background_pixels": 592599,
+        "background_fraction": 0.724423828125
+      },
+      "components": {
+        "found": 3,
+        "dominant_pixels": 587001,
+        "kept": 2,
+        "removed": 1,
+        "selected_pixels": 587014,
+        "details": [
+          {
+            "pixels": 13,
+            "distance_from_dominant": 5,
+            "kept": true
+          },
+          {
+            "pixels": 1,
+            "distance_from_dominant": 3,
+            "kept": false
+          }
+        ]
+      },
+      "alpha": {
+        "transparent_pixels": 1563386,
+        "soft_pixels": 1837,
+        "opaque_pixels": 585177
+      },
+      "edge_artifacts_repaired": 0
+    }
+  ],
+  "provenance_path": "art/characters/wandmaker/batch/core-v1.slice-provenance.json"
+}

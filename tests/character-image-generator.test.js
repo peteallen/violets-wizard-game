@@ -76,7 +76,11 @@ describe('character image request contract', () => {
       resolution: '1K',
       n: 1,
       output_format: 'png',
-      provider: { only: ['google-vertex/global'], allow_fallbacks: false },
+      provider: {
+        only: ['google-vertex/global'],
+        allow_fallbacks: false,
+        automatic_retries: 0,
+      },
     });
     expect(prepared.body).not.toHaveProperty('seed');
     expect(prepared.body).not.toHaveProperty('background');
@@ -296,7 +300,11 @@ describe('character image generation', () => {
     expect(new Headers(postCalls[0].init.headers).get('authorization')).toBe(`Bearer ${apiKey}`);
     const transmitted = JSON.parse(postCalls[0].init.body);
     expect(transmitted.model).toBe(CHARACTER_IMAGE_POLICY.model);
-    expect(transmitted.provider).toEqual({ only: ['google-vertex/global'], allow_fallbacks: false });
+    expect(transmitted.provider).toEqual({
+      only: ['google-vertex/global'],
+      allow_fallbacks: false,
+      automatic_retries: 0,
+    });
     expect(transmitted.input_references).toHaveLength(2);
     expect(provenance.request.body_sha256).toBe(hash(postCalls[0].init.body));
   });
