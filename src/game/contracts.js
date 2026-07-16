@@ -1,4 +1,8 @@
+// Compatibility alias for the contracts that remain on v1 during the chapter cutover.
 export const CONTRACT_VERSION = 1;
+export const LEGACY_CHAPTER_CONTRACT_VERSION = 1;
+export const CHAPTER_CONTRACT_VERSION = 2;
+export const MAP_CONTRACT_VERSION = 1;
 
 export const PARTICLE_LIMITS = Object.freeze({
   standardCap: 300,
@@ -69,6 +73,16 @@ export const ACTION_TYPES = Object.freeze([
 const WORLD_EVENT_TYPE_SET = new Set(WORLD_EVENT_TYPES);
 const TIMELINE_CUE_EVENT_TYPE_SET = new Set(TIMELINE_CUE_EVENT_TYPES);
 const ACTION_TYPE_SET = new Set(ACTION_TYPES);
+const PACKAGE_ACTION_ARRAY_KEYS = new Set([
+  'actions',
+  'assistActions',
+  'onComplete',
+  'onEnter',
+  'onExit',
+  'onInteract',
+  'onSelect',
+  'onStart',
+]);
 const GENERAL_ID = /^[a-z][A-Za-z0-9]*(?:[.-][A-Za-z0-9][A-Za-z0-9-]*)+$/;
 const CHAPTER_ID = /^ch[1-9][0-9]*$/;
 const CHARACTER_ID = /^character\.[a-z0-9]+(?:[.-][a-z0-9]+)*$/;
@@ -108,16 +122,24 @@ function object(value, path) {
   return value;
 }
 
-function exactObject(value, path, required, optional = []) {
+function exactObjectForVersion(value, path, required, optional, version) {
   object(value, path);
   const allowed = new Set([...required, ...optional]);
   for (const key of Object.keys(value)) {
-    if (!allowed.has(key)) fail(`${path}.${key}`, 'is not part of contract v1');
+    if (!allowed.has(key)) fail(`${path}.${key}`, `is not part of contract v${version}`);
   }
   for (const key of required) {
     if (!Object.hasOwn(value, key)) fail(`${path}.${key}`, 'is required');
   }
   return value;
+}
+
+function exactObject(value, path, required, optional = []) {
+  return exactObjectForVersion(value, path, required, optional, CONTRACT_VERSION);
+}
+
+function exactObjectV2(value, path, required, optional = []) {
+  return exactObjectForVersion(value, path, required, optional, CHAPTER_CONTRACT_VERSION);
 }
 
 function string(value, path, { allowEmpty = false, max = 5000 } = {}) {
@@ -901,7 +923,7 @@ export function validateSetPiece(value, path = 'setPiece') {
   return value;
 }
 
-function validateScene(value, path) {
+function validateSceneV1(value, path) {
   exactObject(value, path, ['id', 'room', 'spawn', 'when', 'onEnter', 'doneWhen', 'next', 'resumeAt']);
   id(value.id, `${path}.id`);
   id(value.room, `${path}.room`);
@@ -913,6 +935,44 @@ function validateScene(value, path) {
   exactObject(value.resumeAt, `${path}.resumeAt`, ['room', 'spawn']);
   id(value.resumeAt.room, `${path}.resumeAt.room`);
   localId(value.resumeAt.spawn, `${path}.resumeAt.spawn`);
+}
+
+function validateSceneLayerV2(value, path) {
+  exactObjectV2(value, path, ['occupants', 'hotspots', 'exits', 'ambientSetPieces']);
+  for (const key of ['occupants', 'hotspots', 'exits']) {
+    array(value[key], `${path}.${key}`, (entry, entryPath) => {
+      object(entry, entryPath);
+      jsonValue(entry, entryPath);
+    });
+  }
+  stringArray(value.ambientSetPieces, `${path}.ambientSetPieces`, { unique: true });
+  validatePackageActionsV2(value, path);
+  return value;
+}
+
+function validateSceneV2(value, path) {
+  exactObjectV2(
+    value,
+    path,
+    ['id', 'order', 'room', 'spawn', 'when', 'onEnter'],
+    ['quest', 'roomVariant', 'mapId', 'resumeAt', 'layer'],
+  );
+  id(value.id, `${path}.id`);
+  number(value.order, `${path}.order`, { min: 0, integer: true });
+  id(value.room, `${path}.room`);
+  localId(value.spawn, `${path}.spawn`);
+  validateCondition(value.when, `${path}.when`);
+  validateActions(value.onEnter, `${path}.onEnter`);
+  if (value.quest !== undefined && value.quest !== null) id(value.quest, `${path}.quest`);
+  if (value.roomVariant !== undefined) ref(value.roomVariant, `${path}.roomVariant`);
+  if (value.mapId !== undefined) id(value.mapId, `${path}.mapId`);
+  if (value.resumeAt !== undefined) {
+    exactObjectV2(value.resumeAt, `${path}.resumeAt`, ['room', 'spawn']);
+    id(value.resumeAt.room, `${path}.resumeAt.room`);
+    localId(value.resumeAt.spawn, `${path}.resumeAt.spawn`);
+  }
+  if (value.layer !== undefined) validateSceneLayerV2(value.layer, `${path}.layer`);
+  return value;
 }
 
 function validateIdMap(value, path, validate) {
@@ -975,7 +1035,9 @@ function validateMapRoute(value, path) {
 
 export function validateMap(value, path = 'map') {
   exactObject(value, path, ['contractVersion', 'id', 'asset', 'locations', 'routes']);
-  if (value.contractVersion !== CONTRACT_VERSION) fail(`${path}.contractVersion`, `must be ${CONTRACT_VERSION}`);
+  if (value.contractVersion !== MAP_CONTRACT_VERSION) {
+    fail(`${path}.contractVersion`, `must be ${MAP_CONTRACT_VERSION}`);
+  }
   id(value.id, `${path}.id`);
   ref(value.asset, `${path}.asset`);
   array(value.locations, `${path}.locations`, validateMapLocation, { min: 1, max: 64 });
@@ -1004,13 +1066,330 @@ export function validateMap(value, path = 'map') {
   return value;
 }
 
-export function validateChapter(value, path = 'chapter') {
+function validatePackageMapLocationV2(value, path) {
+  exactObjectV2(
+    value,
+    path,
+    ['id', 'to', 'onSelect'],
+    ['icon', 'caption', 'alwaysUnlocked', 'objectiveTarget', 'vignette'],
+  );
+  id(value.id, `${path}.id`);
+  if (value.icon !== undefined) ref(value.icon, `${path}.icon`);
+  if (value.caption !== undefined) caption(value.caption, `${path}.caption`, 3);
+  if (value.alwaysUnlocked !== undefined) boolean(value.alwaysUnlocked, `${path}.alwaysUnlocked`);
+  exactObjectV2(value.to, `${path}.to`, ['room', 'spawn']);
+  id(value.to.room, `${path}.to.room`);
+  localId(value.to.spawn, `${path}.to.spawn`);
+  if (value.objectiveTarget !== undefined && value.objectiveTarget !== null) {
+    exactObjectV2(value.objectiveTarget, `${path}.objectiveTarget`, ['room', 'hotspot']);
+    id(value.objectiveTarget.room, `${path}.objectiveTarget.room`);
+    id(value.objectiveTarget.hotspot, `${path}.objectiveTarget.hotspot`);
+  }
+  if (value.vignette !== undefined) {
+    exactObjectV2(value.vignette, `${path}.vignette`, ['x', 'y', 'width', 'height']);
+    number(value.vignette.x, `${path}.vignette.x`, { min: 0 });
+    number(value.vignette.y, `${path}.vignette.y`, { min: 0 });
+    number(value.vignette.width, `${path}.vignette.width`, { min: 88 });
+    number(value.vignette.height, `${path}.vignette.height`, { min: 88 });
+  }
+  validateActions(value.onSelect, `${path}.onSelect`, { min: 1 });
+
+  const travelActions = value.onSelect
+    .map((action, index) => ({ action, index }))
+    .filter(({ action }) => action.type === 'travel.request');
+  if (travelActions.length !== 1) fail(`${path}.onSelect`, 'must contain exactly one travel.request action');
+  const [{ action: travelAction, index: travelIndex }] = travelActions;
+  if (travelAction.room !== value.to.room || travelAction.spawn !== value.to.spawn) {
+    fail(`${path}.onSelect[${travelIndex}]`, 'travel destination must exactly match to');
+  }
+  if (travelIndex !== value.onSelect.length - 1) {
+    fail(`${path}.onSelect[${travelIndex}]`, 'travel.request must be the final action');
+  }
+}
+
+function validatePackageMapRouteV2(value, path) {
+  exactObjectV2(value, path, ['id', 'from', 'to', 'points']);
+  id(value.id, `${path}.id`);
+  id(value.from, `${path}.from`);
+  id(value.to, `${path}.to`);
+  if (value.from === value.to) fail(`${path}.to`, 'must differ from from');
+  array(value.points, `${path}.points`, (point, pointPath) => {
+    exactObjectV2(point, pointPath, ['x', 'y']);
+    number(point.x, `${pointPath}.x`, { min: 0 });
+    number(point.y, `${pointPath}.y`, { min: 0 });
+  }, { min: 2, max: 12 });
+}
+
+function validatePackageMapV2(value, path) {
+  exactObjectV2(value, path, ['id', 'asset', 'locations', 'routes']);
+  id(value.id, `${path}.id`);
+  ref(value.asset, `${path}.asset`);
+  array(value.locations, `${path}.locations`, validatePackageMapLocationV2, { min: 1, max: 64 });
+  array(value.routes, `${path}.routes`, validatePackageMapRouteV2, { max: 128 });
+
+  const locationIds = new Set();
+  const objectiveTargets = new Set();
+  value.locations.forEach((location, index) => {
+    if (locationIds.has(location.id)) fail(`${path}.locations[${index}].id`, 'must be unique');
+    locationIds.add(location.id);
+    if (!location.objectiveTarget) return;
+    const targetKey = `${location.objectiveTarget.room}:${location.objectiveTarget.hotspot}`;
+    if (objectiveTargets.has(targetKey)) {
+      fail(`${path}.locations[${index}].objectiveTarget`, 'must identify a unique objective target');
+    }
+    objectiveTargets.add(targetKey);
+  });
+
+  const routeIds = new Set();
+  value.routes.forEach((route, index) => {
+    if (routeIds.has(route.id)) fail(`${path}.routes[${index}].id`, 'must be unique');
+    routeIds.add(route.id);
+    if (!locationIds.has(route.from)) fail(`${path}.routes[${index}].from`, 'must reference a map location');
+    if (!locationIds.has(route.to)) fail(`${path}.routes[${index}].to`, 'must reference a map location');
+  });
+  return value;
+}
+
+function validateRecapV2(value, path) {
+  exactObjectV2(value, path, ['id', 'voice', 'text', 'caption'], ['step']);
+  id(value.id, `${path}.id`);
+  ref(value.voice, `${path}.voice`);
+  string(value.text, `${path}.text`, { max: 1000 });
+  caption(value.caption, `${path}.caption`, 3);
+  if (value.step !== undefined) localId(value.step, `${path}.step`);
+}
+
+function validateAssetRecordV2(value, path) {
+  exactObjectV2(value, path, ['key', 'path', 'kind'], ['volume']);
+  ref(value.key, `${path}.key`);
+  ref(value.path, `${path}.path`);
+  oneOf(value.kind, ['image', 'voice', 'sfx', 'music', 'font'], `${path}.kind`);
+  if (value.volume !== undefined) number(value.volume, `${path}.volume`, { min: 0, max: 1 });
+  if (value.volume !== undefined && !['voice', 'sfx', 'music'].includes(value.kind)) {
+    fail(`${path}.volume`, 'is only valid for audio assets');
+  }
+}
+
+function validatePackageActionsV2(value, path, visited = new WeakSet()) {
+  if (value === null || typeof value !== 'object') return;
+  if (visited.has(value)) return;
+  visited.add(value);
+  if (Array.isArray(value)) {
+    value.forEach((entry, index) => validatePackageActionsV2(entry, `${path}[${index}]`, visited));
+    return;
+  }
+  for (const [key, entry] of Object.entries(value)) {
+    const entryPath = `${path}.${key}`;
+    if (PACKAGE_ACTION_ARRAY_KEYS.has(key) && Array.isArray(entry)) {
+      validateActions(entry, entryPath);
+    } else {
+      validatePackageActionsV2(entry, entryPath, visited);
+    }
+  }
+}
+
+function validatePackageEntryV2(value, path) {
+  object(value, path);
+  id(value.id, `${path}.id`);
+  jsonValue(value, path);
+  validatePackageActionsV2(value, path);
+  return value;
+}
+
+function validatePackageRoomV2(value, path) {
+  validatePackageEntryV2(value, path);
+  object(value.spawns, `${path}.spawns`);
+  for (const [spawnId, spawn] of Object.entries(value.spawns)) {
+    localId(spawnId, `${path}.spawns.${spawnId} key`);
+    object(spawn, `${path}.spawns.${spawnId}`);
+    jsonValue(spawn, `${path}.spawns.${spawnId}`);
+  }
+  return value;
+}
+
+function packageIdOwnedByChapter(idValue, chapter, category) {
+  if (idValue.startsWith(`${chapter}.`)) return true;
+  if (category === 'npcs') return idValue.startsWith('npc.');
+  if (category === 'setPieces') {
+    return ['sp.', 'reduced.', 'fallback.', 'am.'].some((prefix) => idValue.startsWith(prefix));
+  }
+  if (category === 'maps' || category === 'mapLocations') {
+    return idValue.startsWith(`map.${chapter}.`);
+  }
+  if (category === 'mapRoutes') return idValue.startsWith(`route.${chapter}.`);
+  return false;
+}
+
+function validatePackageIdsV2(value, path) {
+  const seen = new Map();
+  const register = (idValue, idPath, category) => {
+    if (!packageIdOwnedByChapter(idValue, value.id, category)) {
+      fail(idPath, `must belong to ${value.id} using the ${category} identity convention`);
+    }
+    const previous = seen.get(idValue);
+    if (previous) fail(idPath, `duplicates package id first declared at ${previous}`);
+    seen.set(idValue, idPath);
+  };
+
+  for (const category of [
+    'scenes',
+    'rooms',
+    'npcs',
+    'dialogues',
+    'quests',
+    'learningBeats',
+    'setPieces',
+    'encounters',
+    'minigames',
+    'maps',
+  ]) {
+    for (const [idValue] of Object.entries(value[category])) {
+      register(idValue, `${path}.${category}.${idValue}.id`, category);
+    }
+  }
+  value.recaps.forEach((recap, index) => {
+    register(recap.id, `${path}.recaps[${index}].id`, 'recaps');
+  });
+  for (const [mapId, map] of Object.entries(value.maps)) {
+    map.locations.forEach((location, index) => {
+      register(
+        location.id,
+        `${path}.maps.${mapId}.locations[${index}].id`,
+        'mapLocations',
+      );
+    });
+    map.routes.forEach((route, index) => {
+      register(route.id, `${path}.maps.${mapId}.routes[${index}].id`, 'mapRoutes');
+    });
+  }
+}
+
+export function validateChapterV2(value, path = 'chapter') {
+  exactObjectV2(value, path, [
+    'contractVersion', 'id', 'number', 'title', 'season', 'start', 'sceneOrder',
+    'scenes', 'rooms', 'npcs', 'dialogues', 'quests', 'learningBeats', 'setPieces',
+    'encounters', 'minigames', 'chapterCard', 'yearbookMoments', 'maps', 'recaps',
+    'assets', 'characterDependencies',
+  ]);
+  if (value.contractVersion !== CHAPTER_CONTRACT_VERSION) {
+    fail(`${path}.contractVersion`, `must be ${CHAPTER_CONTRACT_VERSION}`);
+  }
+  chapterId(value.id, `${path}.id`);
+  number(value.number, `${path}.number`, { min: 1, integer: true });
+  if (value.id !== `ch${value.number}`) fail(`${path}.id`, 'must match chapter number');
+  string(value.title, `${path}.title`, { max: 120 });
+  ref(value.season, `${path}.season`);
+  exactObjectV2(value.start, `${path}.start`, ['scene', 'room', 'spawn']);
+  id(value.start.scene, `${path}.start.scene`);
+  id(value.start.room, `${path}.start.room`);
+  localId(value.start.spawn, `${path}.start.spawn`);
+  array(value.sceneOrder, `${path}.sceneOrder`, id, { min: 1, unique: true });
+  validateIdMap(value.scenes, `${path}.scenes`, validateSceneV2);
+  validateIdMap(value.rooms, `${path}.rooms`, validatePackageRoomV2);
+  validateIdMap(value.npcs, `${path}.npcs`, validatePackageEntryV2);
+  validateIdMap(value.dialogues, `${path}.dialogues`, validatePackageEntryV2);
+  validateIdMap(value.quests, `${path}.quests`, validatePackageEntryV2);
+  validateIdMap(value.learningBeats, `${path}.learningBeats`, validatePackageEntryV2);
+  validateIdMap(value.setPieces, `${path}.setPieces`, validatePackageEntryV2);
+  validateIdMap(value.encounters, `${path}.encounters`, validatePackageEntryV2);
+  validateIdMap(value.minigames, `${path}.minigames`, validatePackageEntryV2);
+  exactObjectV2(value.chapterCard, `${path}.chapterCard`, ['art', 'voice', 'title']);
+  ref(value.chapterCard.art, `${path}.chapterCard.art`);
+  ref(value.chapterCard.voice, `${path}.chapterCard.voice`);
+  string(value.chapterCard.title, `${path}.chapterCard.title`, { max: 120 });
+  array(value.yearbookMoments, `${path}.yearbookMoments`, id, { unique: true });
+  value.yearbookMoments.forEach((moment, index) => {
+    if (!moment.startsWith(`${value.id}.`)) {
+      fail(`${path}.yearbookMoments[${index}]`, `must belong to ${value.id}`);
+    }
+  });
+  validateIdMap(value.maps, `${path}.maps`, validatePackageMapV2);
+  array(value.recaps, `${path}.recaps`, validateRecapV2);
+  record(value.assets, `${path}.assets`, (asset, assetPath, key) => {
+    validateAssetRecordV2(asset, assetPath);
+    if (asset.key !== key) fail(`${assetPath}.key`, 'must match its map key');
+  });
+  array(value.characterDependencies, `${path}.characterDependencies`, characterId, { unique: true });
+  validatePackageIdsV2(value, path);
+
+  const sceneIds = Object.keys(value.scenes);
+  if (sceneIds.length !== value.sceneOrder.length) {
+    fail(`${path}.sceneOrder`, 'must contain every scene exactly once');
+  }
+  const sceneOrders = new Map();
+  let previousOrder = -1;
+  value.sceneOrder.forEach((sceneId, index) => {
+    if (sceneIds[index] !== sceneId) {
+      fail(`${path}.sceneOrder[${index}]`, 'must exactly match scenes map order');
+    }
+    const scene = value.scenes[sceneId];
+    if (!scene) fail(`${path}.sceneOrder[${index}]`, 'must reference a scene');
+    const duplicate = sceneOrders.get(scene.order);
+    if (duplicate) fail(`${path}.scenes.${sceneId}.order`, `duplicates scene order used by ${duplicate}`);
+    sceneOrders.set(scene.order, sceneId);
+    if (scene.order <= previousOrder) {
+      fail(`${path}.sceneOrder[${index}]`, 'must follow ascending scene.order');
+    }
+    previousOrder = scene.order;
+  });
+
+  if (!Object.hasOwn(value.scenes, value.start.scene)) fail(`${path}.start.scene`, 'must reference a scene');
+  if (!Object.hasOwn(value.rooms, value.start.room)) fail(`${path}.start.room`, 'must reference a room');
+  const startRoom = value.rooms[value.start.room];
+  if (startRoom && !Object.hasOwn(startRoom.spawns, value.start.spawn)) {
+    fail(`${path}.start.spawn`, 'must reference a room spawn');
+  }
+  const startScene = value.scenes[value.start.scene];
+  if (startScene && startScene.room !== value.start.room) fail(`${path}.start.room`, 'must match the start scene room');
+  if (startScene && startScene.spawn !== value.start.spawn) fail(`${path}.start.spawn`, 'must match the start scene spawn');
+
+  for (const [sceneKey, scene] of Object.entries(value.scenes)) {
+    if (!Object.hasOwn(value.rooms, scene.room)) fail(`${path}.scenes.${sceneKey}.room`, 'must reference a room');
+    const sceneRoom = value.rooms[scene.room];
+    if (sceneRoom && !Object.hasOwn(sceneRoom.spawns, scene.spawn)) {
+      fail(`${path}.scenes.${sceneKey}.spawn`, 'must reference a room spawn');
+    }
+    if (scene.quest !== undefined && scene.quest !== null && !Object.hasOwn(value.quests, scene.quest)) {
+      fail(`${path}.scenes.${sceneKey}.quest`, 'must reference a quest');
+    }
+    if (scene.mapId !== undefined && !Object.hasOwn(value.maps, scene.mapId)) {
+      fail(`${path}.scenes.${sceneKey}.mapId`, 'must reference a package map');
+    }
+    if (scene.resumeAt !== undefined) {
+      const resumeRoom = value.rooms[scene.resumeAt.room];
+      if (!resumeRoom) fail(`${path}.scenes.${sceneKey}.resumeAt.room`, 'must reference a room');
+      if (resumeRoom && !Object.hasOwn(resumeRoom.spawns, scene.resumeAt.spawn)) {
+        fail(`${path}.scenes.${sceneKey}.resumeAt.spawn`, 'must reference a room spawn');
+      }
+    }
+  }
+  for (const [mapKey, map] of Object.entries(value.maps)) {
+    map.locations.forEach((location, index) => {
+      const locationPath = `${path}.maps.${mapKey}.locations[${index}].to`;
+      const room = value.rooms[location.to.room];
+      if (!room) fail(`${locationPath}.room`, 'must reference a room');
+      if (room && !Object.hasOwn(room.spawns, location.to.spawn)) {
+        fail(`${locationPath}.spawn`, 'must reference a room spawn');
+      }
+    });
+  }
+  const recapIds = new Set();
+  value.recaps.forEach((recap, index) => {
+    if (recapIds.has(recap.id)) fail(`${path}.recaps[${index}].id`, 'must be unique');
+    recapIds.add(recap.id);
+  });
+  return value;
+}
+
+export function validateChapterV1(value, path = 'chapter') {
   exactObject(value, path, [
     'contractVersion', 'id', 'number', 'title', 'season', 'start', 'scenes',
     'rooms', 'npcs', 'dialogues', 'quests', 'learningBeats', 'setPieces',
     'encounters', 'minigames', 'chapterCard', 'yearbookMoments',
   ]);
-  if (value.contractVersion !== CONTRACT_VERSION) fail(`${path}.contractVersion`, `must be ${CONTRACT_VERSION}`);
+  if (value.contractVersion !== LEGACY_CHAPTER_CONTRACT_VERSION) {
+    fail(`${path}.contractVersion`, `must be ${LEGACY_CHAPTER_CONTRACT_VERSION}`);
+  }
   chapterId(value.id, `${path}.id`);
   number(value.number, `${path}.number`, { min: 1, integer: true });
   if (value.id !== `ch${value.number}`) fail(`${path}.id`, 'must match chapter number');
@@ -1020,7 +1399,7 @@ export function validateChapter(value, path = 'chapter') {
   id(value.start.scene, `${path}.start.scene`);
   id(value.start.room, `${path}.start.room`);
   localId(value.start.spawn, `${path}.start.spawn`);
-  validateIdMap(value.scenes, `${path}.scenes`, validateScene);
+  validateIdMap(value.scenes, `${path}.scenes`, validateSceneV1);
   validateIdMap(value.rooms, `${path}.rooms`, validateRoom);
   validateIdMap(value.npcs, `${path}.npcs`, validateNpc);
   validateIdMap(value.dialogues, `${path}.dialogues`, validateDialogue);
@@ -1048,6 +1427,16 @@ export function validateChapter(value, path = 'chapter') {
     if (scene.next !== null && !Object.hasOwn(value.scenes, scene.next)) fail(`${path}.scenes.${sceneKey}.next`, 'must reference a scene');
   }
   return value;
+}
+
+export function validateChapter(value, path = 'chapter') {
+  object(value, path);
+  if (value.contractVersion === CHAPTER_CONTRACT_VERSION) return validateChapterV2(value, path);
+  if (value.contractVersion === LEGACY_CHAPTER_CONTRACT_VERSION) return validateChapterV1(value, path);
+  fail(
+    `${path}.contractVersion`,
+    `must be ${LEGACY_CHAPTER_CONTRACT_VERSION} or ${CHAPTER_CONTRACT_VERSION}`,
+  );
 }
 
 function payloadObject(value, path, required, optional = []) {

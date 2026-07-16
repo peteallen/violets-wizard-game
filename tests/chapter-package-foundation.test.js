@@ -13,6 +13,7 @@ import {
   defineChapter,
 } from '../src/game/content/chapterComposer.js';
 import { linkChapterPackage } from '../src/game/content/chapterLinker.js';
+import { validateChapterV2 } from '../src/game/contracts.js';
 
 const actionTypes = new Set([
   'dialogue.start',
@@ -268,6 +269,7 @@ describe('pure chapter authoring and composition', () => {
   it('composes a synthetic Chapter 12 with deterministic explicit scene ordering', () => {
     const chapter = defineChapter(chapterTwelveDefinition());
 
+    expect(validateChapterV2(chapter)).toBe(chapter);
     expect(chapter.id).toBe('ch12');
     expect(chapter.sceneOrder).toEqual(['ch12.scene.arrival', 'ch12.scene.feast']);
     expect(Object.keys(chapter.scenes)).toEqual(chapter.sceneOrder);

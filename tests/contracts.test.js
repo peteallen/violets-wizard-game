@@ -1,8 +1,13 @@
 import { describe, expect, it } from 'vitest';
 import {
+  CHAPTER_CONTRACT_VERSION,
   ContractValidationError,
+  LEGACY_CHAPTER_CONTRACT_VERSION,
+  MAP_CONTRACT_VERSION,
   PARTICLE_LIMITS,
   validateChapter,
+  validateChapterV1,
+  validateChapterV2,
   validateMap,
   validateWorldEvent,
 } from '../src/game/contracts.js';
@@ -218,6 +223,67 @@ function chapterFixture() {
   };
 }
 
+function chapterV2Fixture() {
+  const chapter = chapterFixture();
+  const sceneId = chapter.start.scene;
+  const mapId = 'map.ch1.bedroom';
+  return {
+    ...chapter,
+    contractVersion: CHAPTER_CONTRACT_VERSION,
+    sceneOrder: [sceneId],
+    scenes: {
+      [sceneId]: {
+        id: sceneId,
+        order: 10,
+        room: chapter.start.room,
+        spawn: chapter.start.spawn,
+        when: condition(),
+        onEnter: [],
+        quest: 'ch1.shopping',
+        roomVariant: 'base',
+        mapId,
+        resumeAt: { room: chapter.start.room, spawn: chapter.start.spawn },
+        layer: { occupants: [], hotspots: [], exits: [], ambientSetPieces: [] },
+      },
+    },
+    maps: {
+      [mapId]: {
+        id: mapId,
+        asset: 'maps/ch1/bedroom',
+        locations: [{
+          id: 'map.ch1.bedroom.start',
+          to: { room: chapter.start.room, spawn: chapter.start.spawn },
+          onSelect: [{ type: 'travel.request', room: chapter.start.room, spawn: chapter.start.spawn }],
+        }],
+        routes: [],
+      },
+    },
+    recaps: [{
+      id: 'ch1.recap.letter',
+      step: 'openLetter',
+      voice: 'voice/ch1/recap/letter',
+      text: 'An owl brought Violet a letter.',
+      caption: 'A letter!',
+    }],
+    assets: {
+      'maps/ch1/bedroom': {
+        key: 'maps/ch1/bedroom',
+        path: 'assets/art/maps/ch1-bedroom.webp',
+        kind: 'image',
+      },
+    },
+    characterDependencies: ['character.hagrid'],
+  };
+}
+
+function addSecondV2Scene(chapter, order = 20) {
+  const first = chapter.scenes[chapter.sceneOrder[0]];
+  const id = 'ch1.secondScene';
+  chapter.scenes[id] = { ...first, id, order };
+  chapter.sceneOrder.push(id);
+  return id;
+}
+
 describe('content contracts', () => {
   it('accepts a fully linked Chapter 1 data module', () => {
     const chapter = chapterFixture();
@@ -263,6 +329,97 @@ describe('content contracts', () => {
     const chapter = chapterFixture();
     chapter.quests['ch1.shopping'].steps.visitShop.next = 'visitShop';
     expect(() => validateChapter(chapter)).toThrow(/creates a cycle/);
+  });
+});
+
+describe('chapter v2 content contract', () => {
+  it('dispatches exact v1 and v2 chapters independently from the v1 map contract', () => {
+    const legacy = chapterFixture();
+    const chapter = chapterV2Fixture();
+
+    expect(LEGACY_CHAPTER_CONTRACT_VERSION).toBe(1);
+    expect(CHAPTER_CONTRACT_VERSION).toBe(2);
+    expect(MAP_CONTRACT_VERSION).toBe(1);
+    expect(validateChapterV1(legacy)).toBe(legacy);
+    expect(validateChapter(legacy)).toBe(legacy);
+    expect(validateChapterV2(chapter)).toBe(chapter);
+    expect(validateChapter(chapter)).toBe(chapter);
+    expect(chapter.maps['map.ch1.bedroom'].routes).toEqual([]);
+    expect(() => validateMap(chapter.maps['map.ch1.bedroom'])).toThrow(/contractVersion/);
+  });
+
+  it.each([
+    ['unknown package keys', (chapter) => { chapter.unreviewed = true; }],
+    ['missing package collections', (chapter) => { delete chapter.recaps; }],
+    ['v1 scene fields', (chapter) => { chapter.scenes[chapter.start.scene].doneWhen = condition(); }],
+    ['missing explicit scene order', (chapter) => { delete chapter.scenes[chapter.start.scene].order; }],
+    ['unknown scene-layer keys', (chapter) => { chapter.scenes[chapter.start.scene].layer.props = []; }],
+    ['asset records whose key drifts from the registry', (chapter) => {
+      chapter.assets['maps/ch1/bedroom'].key = 'maps/ch1/other';
+    }],
+    ['foreign package ids', (chapter) => {
+      chapter.quests['ch2.foreign'] = { id: 'ch2.foreign' };
+    }],
+    ['ids reused across package collections', (chapter) => {
+      const sceneId = chapter.start.scene;
+      chapter.rooms[sceneId] = { ...chapter.rooms[chapter.start.room], id: sceneId };
+    }],
+    ['malformed nested action payloads', (chapter) => {
+      chapter.dialogues['ch1.guide.hello'].nodes.finish.actions = [{
+        type: 'flag.set', flag: 'ch1.done',
+      }];
+    }],
+    ['foreign yearbook ids', (chapter) => {
+      chapter.yearbookMoments = ['ch2.foreign'];
+    }],
+    ['malformed scene-layer action payloads', (chapter) => {
+      chapter.scenes[chapter.start.scene].layer.hotspots = [{
+        onInteract: [{ type: 'flag.set', flag: 'ch1.done' }],
+      }];
+    }],
+  ])('rejects %s', (_label, mutate) => {
+    const chapter = chapterV2Fixture();
+    mutate(chapter);
+    expect(() => validateChapter(chapter)).toThrow(ContractValidationError);
+  });
+
+  it.each([
+    ['a scene omitted from sceneOrder', (chapter) => { addSecondV2Scene(chapter); chapter.sceneOrder.pop(); }],
+    ['sceneOrder that differs from map order', (chapter) => { addSecondV2Scene(chapter); chapter.sceneOrder.reverse(); }],
+    ['duplicate explicit scene order', (chapter) => { addSecondV2Scene(chapter, 10); }],
+    ['descending explicit scene order', (chapter) => { addSecondV2Scene(chapter, 5); }],
+  ])('rejects %s', (_label, mutate) => {
+    const chapter = chapterV2Fixture();
+    mutate(chapter);
+    expect(() => validateChapter(chapter)).toThrow(ContractValidationError);
+  });
+
+  it.each([
+    ['unknown scene room', (chapter) => { chapter.scenes[chapter.start.scene].room = 'ch1.missing'; }],
+    ['unknown scene spawn', (chapter) => { chapter.scenes[chapter.start.scene].spawn = 'missing'; }],
+    ['unknown scene quest', (chapter) => { chapter.scenes[chapter.start.scene].quest = 'ch1.missing'; }],
+    ['unknown scene map', (chapter) => { chapter.scenes[chapter.start.scene].mapId = 'map.ch1.missing'; }],
+    ['unknown resume room', (chapter) => { chapter.scenes[chapter.start.scene].resumeAt.room = 'ch1.missing'; }],
+    ['unknown resume spawn', (chapter) => { chapter.scenes[chapter.start.scene].resumeAt.spawn = 'missing'; }],
+    ['unknown map room', (chapter) => {
+      chapter.maps['map.ch1.bedroom'].locations[0].to.room = 'ch1.missing';
+      chapter.maps['map.ch1.bedroom'].locations[0].onSelect[0].room = 'ch1.missing';
+    }],
+    ['unknown map spawn', (chapter) => {
+      chapter.maps['map.ch1.bedroom'].locations[0].to.spawn = 'missing';
+      chapter.maps['map.ch1.bedroom'].locations[0].onSelect[0].spawn = 'missing';
+    }],
+  ])('rejects %s', (_label, mutate) => {
+    const chapter = chapterV2Fixture();
+    mutate(chapter);
+    expect(() => validateChapter(chapter)).toThrow(ContractValidationError);
+  });
+
+  it('rejects unsupported chapter contract versions without changing the map version', () => {
+    const chapter = chapterV2Fixture();
+    chapter.contractVersion = 3;
+    expect(() => validateChapter(chapter)).toThrow(/must be 1 or 2/);
+    expect(validateMap(mapFixture())).toBeTruthy();
   });
 });
 
