@@ -693,6 +693,14 @@ export class Game {
       return;
     }
     if (state.overlay.surface === 'satchel') {
+      if (pointInUiRect(point, UI_RECTS.satchelStartOver)) {
+        this.sound.playSfx('sfx/ui/parchment', 'chime');
+        this.openParentPanel('confirm-start-over', null, {
+          returnTo: 'satchel',
+          returnTab: state.overlay.tab,
+        });
+        return;
+      }
       if (pointInUiRect(point, UI_RECTS.satchelMapTab)) {
         this.world.overlay = { surface: 'satchel', tab: 'map' };
         this.sound.playSfx('sfx/ui/parchment', 'tap');
@@ -739,11 +747,12 @@ export class Game {
     }
   }
 
-  openParentPanel(page = 'play', notice = null, { returnTo = null } = {}) {
+  openParentPanel(page = 'play', notice = null, { returnTo = null, returnTab = null } = {}) {
     if (!this.world) return false;
     this.parentGateProgress = 0;
     this.world.overlay = { surface: 'parent', page, notice };
     if (returnTo) this.world.overlay.returnTo = returnTo;
+    if (returnTab) this.world.overlay.returnTab = returnTab;
     this.render();
     return true;
   }
@@ -763,6 +772,9 @@ export class Game {
       if (pointInUiRect(point, UI_RECTS.parentCancelConfirm)) {
         if (overlay.returnTo === 'chapter-preview') {
           this.world.closeOverlay();
+          this.render();
+        } else if (overlay.returnTo === 'satchel') {
+          this.world.overlay = { surface: 'satchel', tab: overlay.returnTab ?? 'cards' };
           this.render();
         } else this.openParentPanel('save');
         this.sound.playSfx('sfx/ui/page', 'tap');
@@ -1823,6 +1835,7 @@ export class Game {
         { id: 'satchel.map', x: UI_RECTS.satchelMapTab.x + UI_RECTS.satchelMapTab.width / 2, y: UI_RECTS.satchelMapTab.y + UI_RECTS.satchelMapTab.height / 2 },
         { id: 'satchel.cards', x: UI_RECTS.satchelCardsTab.x + UI_RECTS.satchelCardsTab.width / 2, y: UI_RECTS.satchelCardsTab.y + UI_RECTS.satchelCardsTab.height / 2 },
         semanticRect('satchel.grownups', UI_RECTS.satchelKeyhole),
+        semanticRect('satchel.startOver', UI_RECTS.satchelStartOver),
       );
       if (state.overlay.tab === 'cards') {
         for (const slot of state.__cardSlots ?? []) {

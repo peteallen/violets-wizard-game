@@ -64,6 +64,7 @@ export const UI_RECTS = Object.freeze({
   satchelMapTab: { x: 205, y: 145, width: 210, height: 88 },
   satchelCardsTab: { x: 435, y: 145, width: 210, height: 88 },
   satchelKeyhole: { x: 698, y: 141, width: 96, height: 96 },
+  satchelStartOver: { x: 804, y: 145, width: 220, height: 88 },
   close: { x: 1046, y: 76, width: 88, height: 88 },
   replayExit: { x: 430, y: 18, width: 420, height: 88 },
   parentPlayTab: { x: 175, y: 142, width: 230, height: 88 },
@@ -919,6 +920,12 @@ export class UIRenderer {
       activeTab === 'cards',
     );
     drawBrassKeyhole(context, UI_RECTS.satchelKeyhole, { progress: parentGateProgress });
+    drawParchmentAction(context, UI_RECTS.satchelStartOver, {
+      label: childFacingUiText('Start fresh', 'action'),
+      icon: vectorControlIcon('close'),
+      danger: true,
+      compact: true,
+    });
     drawClose(context);
     return content;
   }

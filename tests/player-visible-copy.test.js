@@ -176,8 +176,8 @@ describe('player-visible copy', () => {
           unlockedRooms: ['ch1.ollivanders', 'ch1.malkins'],
           objective: { mapStar: { room: 'ch1.diagonStreet', hotspot: 'street.malkinsDoor' } },
         }, [], { reducedMotion: true }),
-        expected: ['Violet’s Satchel', 'Map', 'Cards'],
-        roles: { properNames: ['Violet’s Satchel'] },
+        expected: ['Violet’s Satchel', 'Map', 'Cards', 'Start fresh'],
+        roles: { properNames: ['Violet’s Satchel'], actions: ['Start fresh'] },
       },
       {
         name: 'satchel cards',
@@ -188,8 +188,8 @@ describe('player-visible copy', () => {
           { id: 'morgana', name: 'Morgana', portraitAsset: null },
           { id: 'dumbledore', name: 'Dumbledore', portraitAsset: null },
         ]),
-        expected: ['Violet’s Satchel', 'Morgana', 'Map', 'Cards'],
-        roles: { properNames: ['Violet’s Satchel', 'Morgana'] },
+        expected: ['Violet’s Satchel', 'Morgana', 'Map', 'Cards', 'Start fresh'],
+        roles: { properNames: ['Violet’s Satchel', 'Morgana'], actions: ['Start fresh'] },
       },
       {
         name: 'selection',

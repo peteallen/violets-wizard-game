@@ -132,10 +132,10 @@ const REVIEW_SCENE_ILLUSION_CHECKS = Object.freeze({
   ],
   'ui-satchel-map-review': [
     'Exactly one objective star marks the current destination, while every unlocked location remains a distinct 88px-or-larger target.',
-    'The map, leather bookmarks, brass keyhole, and close control remain mutually non-overlapping.',
+    'The map, leather bookmarks, brass keyhole, permanent Start fresh action, and close control remain mutually non-overlapping.',
   ],
   'ui-satchel-cards-review': [
-    'The earned and unearned card states are visually distinct, and both card targets remain at least 88×88 without covering the tabs or close control.',
+    'The earned and unearned card states are visually distinct, and every card target remains at least 88×88 without covering the tabs, permanent Start fresh action, or close control.',
   ],
   'ui-objective-review': [
     'Exactly one objective icon and one three-word-or-shorter caption are visible, with zero decorative owl filler.',

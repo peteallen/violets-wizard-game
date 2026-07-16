@@ -30,6 +30,8 @@ function gameStub() {
   game.uiRenderer = new UIRenderer({ characterRenderer: { draw: () => {} } });
   game.simTime = 0;
   game.reducedMotion = false;
+  game.parentGateProgress = 0;
+  game.render = vi.fn();
   return game;
 }
 
@@ -47,6 +49,8 @@ describe('satchel card album', () => {
     }
     expect(UI_RECTS.satchelMapTab.height).toBeGreaterThanOrEqual(88);
     expect(UI_RECTS.satchelCardsTab.height).toBeGreaterThanOrEqual(88);
+    expect(UI_RECTS.satchelStartOver.width).toBeGreaterThanOrEqual(88);
+    expect(UI_RECTS.satchelStartOver.height).toBeGreaterThanOrEqual(88);
   });
 
   it('switches tabs before interpreting map or card content', () => {
@@ -72,6 +76,33 @@ describe('satchel card album', () => {
     game.handleOverlayTap(center(slots[1].__rect), state);
     expect(game.sound.speak).toHaveBeenCalledTimes(1);
     expect(game.sound.playSfx).toHaveBeenLastCalledWith('sfx/ui/locked', 'fizzle');
+  });
+
+  it('offers Start fresh on every satchel tab and resets only after confirmation', () => {
+    const game = gameStub();
+    game.startOverPreservingSettings = vi.fn();
+
+    game.handleOverlayTap(center(UI_RECTS.satchelStartOver), {
+      overlay: { surface: 'satchel', tab: 'map' },
+    });
+
+    expect(game.startOverPreservingSettings).not.toHaveBeenCalled();
+    expect(game.world.overlay).toMatchObject({
+      surface: 'parent',
+      page: 'confirm-start-over',
+      returnTo: 'satchel',
+      returnTab: 'map',
+    });
+
+    game.handleParentPanelTap(center(UI_RECTS.parentCancelConfirm), game.world.overlay);
+    expect(game.world.overlay).toEqual({ surface: 'satchel', tab: 'map' });
+    expect(game.startOverPreservingSettings).not.toHaveBeenCalled();
+
+    game.handleOverlayTap(center(UI_RECTS.satchelStartOver), {
+      overlay: { surface: 'satchel', tab: 'cards' },
+    });
+    game.handleParentPanelTap(center(UI_RECTS.parentAcceptConfirm), game.world.overlay);
+    expect(game.startOverPreservingSettings).toHaveBeenCalledTimes(1);
   });
 
   it('preserves unlocked map travel from the map tab', () => {
@@ -105,6 +136,7 @@ describe('satchel card album', () => {
       UI_RECTS.satchelMapTab,
       UI_RECTS.satchelCardsTab,
       UI_RECTS.satchelKeyhole,
+      UI_RECTS.satchelStartOver,
       UI_RECTS.close,
     ];
     const headerBottom = Math.max(...controls.map((rect) => rect.y + rect.height));
