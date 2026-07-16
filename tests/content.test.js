@@ -249,8 +249,10 @@ describe('chapter content contracts', () => {
     finishLines();
     interact('bedroom.guide');
     finishLines();
+    settle(2);
     interact('bedroom.exit');
     finishLines();
+    settle(2);
     interact('leaky.courtyardDoor');
     finishLines();
     interact('courtyard.brickWall');

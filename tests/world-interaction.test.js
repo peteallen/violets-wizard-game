@@ -51,7 +51,7 @@ describe('one-tap world interactions', () => {
   it('approaches a character and starts the conversation without a second tap', () => {
     const world = createWorld({ flags: { 'ch1.letterRead': true } });
 
-    world.tap({ x: 250, y: 455 });
+    world.tap({ x: 315, y: 455 });
     expect(world.dialogue.active).toBe(false);
     expect(world.pendingInteraction?.targetId).toBe('bedroom.guide');
 
@@ -60,7 +60,7 @@ describe('one-tap world interactions', () => {
     expect(world.dialogue.active).toBe(true);
     expect(world.dialogue.scriptId).toBe('ch1.guide.arrival');
     expect(world.pendingInteraction).toBeNull();
-    expect(world.player.x).toBe(360);
+    expect(world.player.x).toBe(425);
   });
 
   it('approaches a delivered prop and opens it from one tap', () => {
@@ -111,13 +111,20 @@ describe('one-tap world interactions', () => {
     settle(world, 1);
     expect(world.dialogue.scriptId).toBe('ch1.guide.arrival');
     world.advanceDialogue();
+
+    expect(world.tap({ x: 315, y: 455 })).toEqual({
+      kind: 'blocked',
+      reason: 'guide-departure',
+    });
+    expect(world.snapshot().targets.some(({ id }) => id === 'bedroom.exit')).toBe(false);
+
     settle(world, 2);
 
     expect(world.flags['ch1.guideMet']).toBe(true);
     expect(world.snapshot().tapToWalkCue).toMatchObject({ stage: 'departed' });
     expect(world.snapshot().occupants.some(({ npc }) => npc === 'npc.guide')).toBe(false);
 
-    const result = world.tap({ x: 250, y: 455 });
+    const result = world.tap({ x: 85, y: 455 });
 
     expect(result.id).toBe('bedroom.exit');
     expect(world.roomId).toBe('ch1.leaky');

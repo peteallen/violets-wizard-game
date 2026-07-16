@@ -7,6 +7,7 @@ import {
   hagridLayoutBounds,
   noCondition,
   owlLayoutBounds,
+  rect,
   roomSize,
   setPiecePlay,
   travel,
@@ -52,7 +53,7 @@ export const bedroomRoom = freezePureData({
         },
       },
     },
-    { npc: 'npc.guide', x: 250, y: 610, facing: 'right', pose: 'idle', when: when({ allFlags: ['ch1.letterRead'] }), render: { layoutBounds: hagridLayoutBounds } },
+    { npc: 'npc.guide', x: 315, y: 610, facing: 'right', pose: 'idle', when: when({ allFlags: ['ch1.letterRead'] }), render: { layoutBounds: hagridLayoutBounds } },
   ],
   hotspots: [
     {
@@ -80,8 +81,8 @@ export const bedroomRoom = freezePureData({
     {
       id: 'bedroom.guide',
       kind: 'talk',
-      hitArea: circle(250, 455, 95),
-      approach: { x: 360, y: 610, facing: 'left' },
+      hitArea: circle(315, 455, 95),
+      approach: { x: 425, y: 610, facing: 'left' },
       when: when({ allFlags: ['ch1.letterRead'], noFlags: ['ch1.guideMet'] }),
       presentation: { icon: 'talk', glow: 'objective' },
       repeat: 'until-condition',
@@ -91,7 +92,7 @@ export const bedroomRoom = freezePureData({
     {
       id: 'bedroom.exit',
       kind: 'action',
-      hitArea: circle(250, 455, 150),
+      hitArea: rect(0, 120, 170, 460),
       approach: null,
       when: when({ allFlags: ['ch1.guideMet'] }),
       presentation: { icon: 'door', glow: 'objective' },

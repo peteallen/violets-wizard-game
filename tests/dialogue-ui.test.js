@@ -269,22 +269,22 @@ describe('adaptive dialogue card', () => {
       roomId: 'ch1.bedroom',
       sceneId: 'ch1.guideArrival',
       roomVariant: 'base',
-      player: { kind: 'violet', x: 360, y: 610, facing: 'left' },
-      occupants: [{ npc: 'npc.guide', x: 250, y: 610, facing: 'right' }],
+      player: { kind: 'violet', x: 425, y: 610, facing: 'left' },
+      occupants: [{ npc: 'npc.guide', x: 315, y: 610, facing: 'right' }],
       actors: [
         actor('npc.violet', 'character.violet', {
-          x: 360, y: 610, facing: 'left',
+          x: 425, y: 610, facing: 'left',
           layoutBounds: { x: -74, y: -228, width: 148, height: 260 },
         }),
         actor('npc.guide', 'character.hagrid', {
-          x: 250, y: 610, facing: 'right',
+          x: 315, y: 610, facing: 'right',
           layoutBounds: { x: -122, y: -340, width: 244, height: 375 },
         }),
       ],
       pet: null,
       targets: [{
         id: 'bedroom.guide',
-        hitArea: { shape: 'circle', x: 250, y: 455, radius: 95 },
+        hitArea: { shape: 'circle', x: 315, y: 455, radius: 95 },
         salience: { tier: 'thread' },
       }],
       dialogue: {
@@ -299,7 +299,7 @@ describe('adaptive dialogue card', () => {
     expect(scene.characterBounds.map(({ id }) => id)).toEqual(['npc.violet', 'npc.guide']);
     expect(scene.sceneryBounds.map(({ id }) => id)).toEqual(['scenery:bedroom.guide']);
     expect(layout.side).toBe('right');
-    expect(layout.frame.x).toBe(526);
+    expect(layout.frame.x).toBe(591);
     for (const surface of surfaces) {
       for (const bounds of scene.avoidBounds) expect(overlaps(surface, bounds)).toBe(false);
     }

@@ -145,7 +145,7 @@ const REVIEW_SCENE_ILLUSION_CHECKS = Object.freeze({
   ],
   'ch1-follow-hagrid-review': [
     'Hagrid visibly walks out through the bedroom doorway after his introduction, leaves no stationary second Hagrid interaction behind, and the sparkle footprints point from Violet to that door.',
-    'Violet remains inside the bedroom while the departing Hagrid and the golden-threaded door stay visually distinct.',
+    'Violet remains inside the bedroom, Hagrid never hides the whole doorway, and the door’s golden thread waits until he has visibly cleared it.',
   ],
   'ch1-follow-hagrid-leaky-review': [
     'Hagrid visibly walks out through the Leaky Cauldron courtyard door after “This way!”, leaves no stationary Hagrid interaction behind, and the sparkle footprints point from Violet to that door.',

@@ -206,6 +206,9 @@ export class World {
     if (this.setPieces.active) return { kind: 'blocked', reason: 'set-piece' };
     if (this.dialogue.active) return { kind: 'dialogue' };
     const worldPoint = { x: point.x + this.cameraX, y: point.y };
+    if (this.guideDepartureContains(worldPoint)) {
+      return { kind: 'blocked', reason: 'guide-departure' };
+    }
     const target = this.targetAt(point);
     if (target) {
       this.interactTarget(target);
@@ -229,7 +232,24 @@ export class World {
 
   targetAt(point) {
     const worldPoint = { x: point.x + this.cameraX, y: point.y };
+    if (this.guideDepartureContains(worldPoint)) return null;
     return this.targets().find((candidate) => hitTest(worldPoint, candidate.hitArea)) ?? null;
+  }
+
+  guideDepartureContains(worldPoint) {
+    const departure = this.guideWalkCueSnapshot();
+    if (!departure?.guide.visible) return false;
+    const occupant = (this.room.occupants ?? []).find(({ npc }) => npc === departure.guide.npc);
+    const layout = occupant?.render?.layoutBounds;
+    if (!layout || !Number.isFinite(layout.width) || !Number.isFinite(layout.height)) return false;
+    const ground = Number.isFinite(layout.ground) ? layout.ground : 0;
+    return hitTest(worldPoint, {
+      shape: 'rect',
+      x: departure.guide.x - layout.width / 2,
+      y: departure.guide.y - layout.height,
+      width: layout.width,
+      height: layout.height + ground,
+    });
   }
 
   interactTarget(target) {
@@ -302,8 +322,13 @@ export class World {
 
   targets() {
     const targets = [];
+    const departure = this.guideWalkCueSnapshot();
+    const coveredDestination = departure?.guide.visible
+      ? departure.destinationTargetId
+      : null;
     for (const hotspot of this.room.hotspots ?? []) {
       if (!conditionMatches(hotspot.when, this.save)) continue;
+      if (hotspot.id === coveredDestination) continue;
       targets.push({
         id: hotspot.id,
         semanticId: hotspot.semanticId,
@@ -319,6 +344,7 @@ export class World {
     }
     for (const exit of this.room.exits ?? []) {
       if (!conditionMatches(exit.when, this.save)) continue;
+      if (exit.id === coveredDestination) continue;
       targets.push({
         id: exit.id,
         kind: 'exit',

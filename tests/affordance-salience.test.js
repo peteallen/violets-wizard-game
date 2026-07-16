@@ -121,6 +121,7 @@ describe('D31 golden-thread lifecycle', () => {
 
     for (const [flags, room, expectedTarget] of cases) {
       const world = createWorld({ flags, room });
+      settleUntil(world, () => world.targets().some(({ id }) => id === expectedTarget));
       const snapshot = world.snapshot();
       expect(snapshot.affordances.thread?.worldTargetId, room).toBe(expectedTarget);
       expect(snapshot.targets.filter((target) => target.salience.tier === 'thread'), room).toHaveLength(1);
@@ -293,8 +294,10 @@ describe('D31 golden-thread lifecycle', () => {
     checkpoint();
     interact('bedroom.guide');
     finishDialogueLines(world);
+    settleUntil(world, () => world.targets().some(({ id }) => id === 'bedroom.exit'));
     interact('bedroom.exit');
     finishDialogueLines(world);
+    settleUntil(world, () => world.targets().some(({ id }) => id === 'leaky.courtyardDoor'));
     interact('leaky.courtyardDoor');
     finishDialogueLines(world);
     interact('courtyard.brickWall');
