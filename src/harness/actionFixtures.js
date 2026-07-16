@@ -189,6 +189,13 @@ registry
     'Approach the robe-shop stool and hold Madam Malkin’s welcome dialogue in the painted shop.',
     [{ frame: 30, type: 'tap', target: 'malkins.stool' }],
   ))
+  .register('menagerie-keeper-sprite-review', createFixture(
+    'Hold the Menagerie Keeper’s aligned neutral, blink, and two speaking mouth shapes without input.',
+  ))
+  .register('menagerie-keeper-live-review', createFixture(
+    'Approach the keeper and hold her welcome dialogue in the painted Menagerie.',
+    [{ frame: 30, type: 'tap', target: 'menagerie.keeper' }],
+  ))
   .register('violet-expression-review', createFixture(
     'Hold every approved aligned Violet expression without animation or input.',
   ))

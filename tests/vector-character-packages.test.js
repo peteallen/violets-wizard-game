@@ -6,12 +6,6 @@ import {
 } from '../src/game/characters/cat/index.js';
 import { sampleCatMotion } from '../src/game/characters/cat/runtime.js';
 import {
-  loadMenagerieKeeperCharacterRuntime,
-  menagerieKeeperCharacterDefinition,
-  menagerieKeeperCharacterModule,
-} from '../src/game/characters/menagerie-keeper/index.js';
-import { sampleKeeperMotion } from '../src/game/characters/menagerie-keeper/runtime.js';
-import {
   loadNarratorCharacterRuntime,
   narratorCharacterDefinition,
   narratorCharacterModule,
@@ -53,13 +47,6 @@ function recordingContext() {
 
 const PACKAGES = [
   {
-    definition: menagerieKeeperCharacterDefinition,
-    module: menagerieKeeperCharacterModule,
-    id: 'character.menagerie-keeper',
-    surfaces: ['world', 'portrait'],
-    poses: ['idle', 'walking', 'speaking', 'talk', 'proud'],
-  },
-  {
     definition: narratorCharacterDefinition,
     module: narratorCharacterModule,
     id: 'character.narrator',
@@ -100,7 +87,6 @@ describe('vector character identity packages', () => {
 
   it('loads each runtime lazily through a stable package-local loader', async () => {
     const loaders = [
-      loadMenagerieKeeperCharacterRuntime,
       loadNarratorCharacterRuntime,
       loadCatCharacterRuntime,
       loadToadCharacterRuntime,
@@ -116,8 +102,6 @@ describe('vector character identity packages', () => {
 
   it('renders deterministic world and portrait calls without leaking context state', async () => {
     const cases = [
-      [await loadMenagerieKeeperCharacterRuntime(), 'world', { x: 20, y: 220, pose: 'proud' }],
-      [await loadMenagerieKeeperCharacterRuntime(), 'portrait', { pose: 'speaking' }],
       [await loadNarratorCharacterRuntime(), 'portrait', { pose: 'speaking' }],
       [await loadCatCharacterRuntime(), 'world', { x: 20, y: 80, pose: 'pet-follow' }],
       [await loadCatCharacterRuntime(), 'portrait', { pose: 'idle' }],
@@ -145,12 +129,6 @@ describe('vector character identity packages', () => {
       expect(reduced.hop).toBeLessThan(full.hop);
       expect(Math.abs(reduced.tilt)).toBeLessThan(Math.abs(full.tilt));
     }
-    const fullKeeper = sampleKeeperMotion({ pose: 'speaking', time: 0.25 });
-    const reducedKeeper = sampleKeeperMotion({
-      pose: 'speaking', time: 0.25, reducedMotion: true,
-    });
-    expect(reducedKeeper.gloveLift).toBeLessThan(fullKeeper.gloveLift);
-
     const catRuntime = await loadCatCharacterRuntime();
     expect(() => catRuntime.renderers.world({ time: 0 })).toThrow(/drawing context/);
     expect(() => catRuntime.renderers.world({

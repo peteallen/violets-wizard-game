@@ -23,6 +23,7 @@ describe('production character catalog', () => {
     expect(Object.keys(productionCharacterCatalog.reviews).sort()).toEqual([
       'hagrid-sprite-review',
       'madam-malkin-sprite-review',
+      'menagerie-keeper-sprite-review',
       'owl-motion-review',
       'violet-expression-review',
       'wandmaker-sprite-review',

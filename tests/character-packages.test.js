@@ -7,12 +7,17 @@ import {
   hagridFullFrameCharacterDefinition,
   loadHagridCharacterRuntime,
   loadMadamMalkinCharacterRuntime,
+  loadMenagerieKeeperCharacterRuntime,
   loadVioletCharacterRuntime,
   loadWandmakerCharacterRuntime,
   madamMalkinCharacterDefinition,
   madamMalkinCharacterModule,
   madamMalkinCharacterReview,
   madamMalkinFullFrameCharacterDefinition,
+  menagerieKeeperCharacterDefinition,
+  menagerieKeeperCharacterModule,
+  menagerieKeeperCharacterReview,
+  menagerieKeeperFullFrameCharacterDefinition,
   violetCharacterDefinition,
   violetCharacterModule,
   violetCharacterReview,
@@ -69,6 +74,17 @@ const PACKAGES = [
     manifestExport: 'madamMalkinFullFrameCharacterManifest',
     runtimeExport: 'madamMalkinCharacterRuntime',
   },
+  {
+    definition: menagerieKeeperCharacterDefinition,
+    module: menagerieKeeperCharacterModule,
+    ownedReviewScenes: ['menagerie-keeper-sprite-review'],
+    source: menagerieKeeperFullFrameCharacterDefinition,
+    review: menagerieKeeperCharacterReview,
+    loadRuntime: loadMenagerieKeeperCharacterRuntime,
+    loadModule: () => import('../src/game/characters/menagerie-keeper/runtime.js'),
+    manifestExport: 'menagerieKeeperFullFrameCharacterManifest',
+    runtimeExport: 'menagerieKeeperCharacterRuntime',
+  },
 ];
 
 function authoredCapabilities(source) {
@@ -113,6 +129,7 @@ describe('canonical full-frame character packages', () => {
       'character.hagrid',
       'character.wandmaker',
       'character.madam-malkin',
+      'character.menagerie-keeper',
     ]);
 
     for (const {

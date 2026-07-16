@@ -12,7 +12,7 @@ The shared style anchors are `../raw/ch1-malkins.png`, `../raw/ch1-menagerie.png
 | Hagrid | `hagrid.png` | `hagrid.prompt.md` | Accepted after direct Storybook Standard review |
 | Wandmaker | `wandmaker.png` | `wandmaker.prompt.md` | Provisional identity anchor (D53) — craft findings on file, true-PASS regen deferred |
 | Tailor | `tailor.png` | `tailor.prompt.md` | Provisional identity anchor (D53) — craft findings on file, true-PASS regen deferred |
-| Menagerie Keeper | `keeper.png` | `keeper.prompt.md` | Pending |
+| Menagerie Keeper | [`identity-v1.png`](../characters/menagerie-keeper/canonical/identity-v1.png) | [`identity-v1.prompt.md`](../characters/menagerie-keeper/canonical/identity-v1.prompt.md) | Accepted canonical identity and shipped four-frame production source |
 | Post owl | `owl-post.png` | `owl-post.prompt.md` | Pending |
 | Pet cat | `pet-cat.png` | `pet-cat.prompt.md` | Pending |
 | Pet owl | `pet-owl.png` | `pet-owl.prompt.md` | Pending |

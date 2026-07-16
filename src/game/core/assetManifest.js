@@ -61,6 +61,10 @@ const CHARACTER_IMAGE_PATHS = Object.freeze({
   'characters/madam-malkin/default/blink': 'assets/art/characters/madam-malkin/default/blink.png',
   'characters/madam-malkin/default/talk-a': 'assets/art/characters/madam-malkin/default/talk-a.png',
   'characters/madam-malkin/default/talk-b': 'assets/art/characters/madam-malkin/default/talk-b.png',
+  'characters/menagerie-keeper/default/neutral': 'assets/art/characters/menagerie-keeper/default/neutral.png',
+  'characters/menagerie-keeper/default/blink': 'assets/art/characters/menagerie-keeper/default/blink.png',
+  'characters/menagerie-keeper/default/talk-a': 'assets/art/characters/menagerie-keeper/default/talk-a.png',
+  'characters/menagerie-keeper/default/talk-b': 'assets/art/characters/menagerie-keeper/default/talk-b.png',
 });
 
 const AMBIENCE_ALIASES = Object.freeze({

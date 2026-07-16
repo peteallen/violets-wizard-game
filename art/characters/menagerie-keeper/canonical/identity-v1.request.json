@@ -1,0 +1,25 @@
+{
+  "schema_version": 1,
+  "prompt": {
+    "path": "art/characters/menagerie-keeper/canonical/identity-v1.prompt.md",
+    "section": "Prompt"
+  },
+  "references": [
+    {
+      "path": "art/raw/ch1-menagerie.png",
+      "role": "the keeper's room, palette, materials, warm upper-left light, and animal-shop personality; no scenery is copied"
+    },
+    {
+      "path": "art/guides/ch1-room-style-triptych.png",
+      "role": "the game's painterly storybook texture, dark-brown edge treatment, and violet-blue shadow language"
+    }
+  ],
+  "generation": {
+    "aspect_ratio": "16:9",
+    "resolution": "4K"
+  },
+  "output": {
+    "image": "art/characters/menagerie-keeper/canonical/identity-v1.png",
+    "provenance": "art/characters/menagerie-keeper/canonical/identity-v1.metadata.json"
+  }
+}

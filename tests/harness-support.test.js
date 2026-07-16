@@ -102,6 +102,8 @@ describe('state fixtures', () => {
       'wandmaker-live-review',
       'madam-malkin-sprite-review',
       'madam-malkin-live-review',
+      'menagerie-keeper-sprite-review',
+      'menagerie-keeper-live-review',
       'violet-expression-review',
       'ui-dialogue-review',
       'ui-dialogue-night-review',
@@ -218,6 +220,8 @@ describe('registered harness scenarios', () => {
       'wandmaker-live-review',
       'madam-malkin-sprite-review',
       'madam-malkin-live-review',
+      'menagerie-keeper-sprite-review',
+      'menagerie-keeper-live-review',
       'violet-expression-review',
     ]) {
       expect(STATE_FIXTURE_IDS).toContain(id);

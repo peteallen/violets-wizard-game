@@ -200,6 +200,18 @@ const REVIEW_SCENE_ILLUSION_CHECKS = Object.freeze({
     'The two speaking mouth shapes remain readable without moving her registration, while her full body stays planted beside the fitting area and clear of Violet, the parchment, and both dialogue controls.',
     'Madam Malkin reads as a warm, brisk, motherly tailor at the intended room scale, with her silver-streaked bun, purple work dress, cream apron tools, red wrist pincushion, and plum boots readable against the painted shop.',
   ],
+  'menagerie-keeper-sprite-review': [
+    'Exactly four labeled full-frame Menagerie Keepers remain visually separated: neutral, blink, talk A, and talk B, each with one figure-sized grounded contact shadow.',
+    'Every state reads as one connected animal keeper painting with no assembled-limb seams, floating parts, double edges, cyan source field, or detached extraction fragments.',
+    'All four states keep the same identity, silhouette, and registration: burnt-auburn side braid, moss-green eyes, freckled face, repaired green work coat, tawny leather apron, left gauntlet, paw-clasp pouch, right-hand grooming brush, sage trousers, and umber lace-up boots.',
+    'Blink changes only the eyelids, while talk A and talk B provide two distinct readable mouth shapes without changing the keeper’s head, braid, hands, tools, clothing, or body proportions.',
+    'Both boot soles meet their contact shadows with no lit gap, the complete grooming brush remains visible, and every figure stays clear of its label and the outer gold frame at both review sizes.',
+  ],
+  'menagerie-keeper-live-review': [
+    'After Violet approaches the keeper in normal Menagerie gameplay, the keeper welcomes her with the same identity in her world figure and attached dialogue portrait.',
+    'The two speaking mouth shapes remain readable without moving her registration, while her full body stays planted beside the counter and clear of Violet, the parchment, the pet choices, and both dialogue controls.',
+    'The keeper reads as a calm, capable animal caretaker at the intended room scale, with her auburn braid, green coat, leather apron, gauntlet, pouch, brush, and boots readable against the painted Menagerie.',
+  ],
   'violet-expression-review': [
     'Exactly seven labeled Violet states appear as matched portrait and full-body pairs: neutral, blink, talk A, talk B, wonder, proud, and curious.',
     'Every state retains the locked Violet identity and unchanged full-body silhouette: dark-green rectangular glasses, warm light-brown hair with attached wisps, warm brown eyes when open, purple-and-blue soccer jersey, dark leggings, and gray-purple trainers.',

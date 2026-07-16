@@ -1,68 +1,76 @@
 import { defineCharacter } from '../CharacterDefinition.js';
-import { defineCharacterReview } from '../packageSupport.js';
+import { characterImageAssets, defineCharacterReview } from '../packageSupport.js';
 
-export const menagerieKeeperStyle = Object.freeze({
-  coatBase: '#496653',
-  coatMid: '#607b65',
-  coatShadow: '#30483b',
-  coatLight: 'rgba(204, 220, 184, 0.2)',
-  apronBase: '#8c6344',
-  apronMid: '#aa7950',
-  apronShadow: '#5d412f',
-  apronLight: 'rgba(236, 199, 145, 0.24)',
-  pouchBase: '#765139',
-  pouchShadow: '#4d3529',
-  pouchLight: '#ae7d51',
-  gauntletBase: '#79583f',
-  gauntletShadow: '#513a2e',
-  gauntletLight: '#aa8158',
-  brushWood: '#6d4933',
-  brushLight: '#b78355',
-  bristle: '#d4bc91',
-  bristleShadow: '#9b805f',
-  featherBase: '#71858a',
-  featherLight: '#aac0b8',
-  hairBase: '#a9633a',
-  hairMid: '#c5804d',
-  hairShadow: '#6e402f',
-  hairLight: '#e1a36c',
-  skin: '#ca906d',
-  skinShadow: '#9d6254',
-  skinLight: 'rgba(255, 222, 177, 0.28)',
-  cheek: 'rgba(180, 77, 76, 0.24)',
-  iris: '#5b5638',
-  shoe: '#3d342f',
-  rim: 'rgba(255, 222, 154, 0.47)',
-});
+const DEFAULT = 'default';
 
-export const menagerieKeeperPresentation = Object.freeze({
-  world: Object.freeze({ scaleMultiplier: 1.04, phase: 2.22 }),
-  portrait: Object.freeze({
-    y: 116,
-    scale: 0.84,
-    backdrop: Object.freeze(['#2f4939', '#66856d']),
+function still(path) {
+  return Object.freeze({ fps: 1, frames: Object.freeze([path]) });
+}
+
+const MENAGERIE_KEEPER_ALIASES = Object.freeze({ talk: 'speaking' });
+
+/** The Menagerie Keeper's shipped animal-shop and dialogue paintings. */
+export const menagerieKeeperFullFrameCharacterDefinition = Object.freeze({
+  id: 'character.menagerie-keeper',
+  basePath: 'assets/art/characters/menagerie-keeper',
+  canvas: Object.freeze({
+    width: 896,
+    height: 1200,
+    ground: Object.freeze({ x: 448, y: 1132 }),
+  }),
+  worldHeight: 225,
+  placement: Object.freeze({
+    portrait: Object.freeze({ y: 12 }),
+  }),
+  defaultAppearance: DEFAULT,
+  appearances: Object.freeze({
+    [DEFAULT]: Object.freeze({
+      clips: Object.freeze({
+        idle: still('default/neutral.png'),
+        neutral: still('default/neutral.png'),
+        blink: still('default/blink.png'),
+        'talk-a': still('default/talk-a.png'),
+        'talk-b': still('default/talk-b.png'),
+        speaking: Object.freeze({
+          fps: 4,
+          frames: Object.freeze(['default/talk-a.png', 'default/talk-b.png']),
+          reducedMotionClip: 'talk-a',
+        }),
+      }),
+      aliases: MENAGERIE_KEEPER_ALIASES,
+    }),
   }),
 });
 
 export const menagerieKeeperCharacterDefinition = defineCharacter({
   id: 'character.menagerie-keeper',
-  metadata: { displayName: 'Menagerie Keeper', kind: 'human', voiceRole: 'keeper' },
+  metadata: {
+    displayName: 'Menagerie Keeper',
+    kind: 'human',
+    voiceRole: 'keeper',
+  },
   surfaces: ['world', 'portrait'],
-  defaults: { appearance: 'default', pose: 'idle' },
+  defaults: { appearance: DEFAULT, pose: 'idle' },
   capabilities: {
-    appearances: ['default'],
-    poses: ['idle', 'walking', 'speaking', 'talk', 'proud'],
+    appearances: [DEFAULT],
+    poses: ['idle', 'neutral', 'blink', 'talk-a', 'talk-b', 'speaking', 'talk'],
     actions: [],
     supportsReducedMotion: true,
   },
   bounds: {
-    world: { x: -65, y: -195, width: 130, height: 225 },
-    portrait: { x: -65, y: -195, width: 130, height: 225 },
+    world: { x: 0, y: 0, width: 896, height: 1132 },
+    portrait: { x: 179.2, y: 0, width: 537.6, height: 504 },
   },
-  assets: {},
+  assets: characterImageAssets('menagerie-keeper', [
+    'default/neutral.png',
+    'default/blink.png',
+    'default/talk-a.png',
+    'default/talk-b.png',
+  ]),
 });
 
 export const menagerieKeeperCharacterReview = defineCharacterReview([
   'character-cast-review',
   'character-portraits-review',
+  'menagerie-keeper-sprite-review',
 ]);

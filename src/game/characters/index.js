@@ -70,7 +70,7 @@ export {
   menagerieKeeperCharacterDefinition,
   menagerieKeeperCharacterModule,
   menagerieKeeperCharacterReview,
-  menagerieKeeperPresentation,
+  menagerieKeeperFullFrameCharacterDefinition,
 } from './menagerie-keeper/index.js';
 
 export {

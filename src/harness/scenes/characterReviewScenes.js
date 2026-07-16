@@ -46,7 +46,7 @@ const CAST = Object.freeze([
   },
   {
     id: 'cast.menagerie-keeper', characterId: 'character.menagerie-keeper', label: 'Keeper', x: 1085,
-    state: { x: 1085, y: 595, scale: 1.05, pose: 'proud' },
+    state: { x: 1085, y: 595, scale: 1.05, pose: 'speaking' },
   },
 ]);
 

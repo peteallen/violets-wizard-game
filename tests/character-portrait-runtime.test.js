@@ -15,6 +15,7 @@ import {
 } from '../src/game/characters/madam-malkin/runtime.js';
 import {
   menagerieKeeperCharacterRuntime,
+  menagerieKeeperFullFrameCharacterRig,
   menagerieKeeperPortraitPresentation,
 } from '../src/game/characters/menagerie-keeper/runtime.js';
 import {
@@ -202,7 +203,6 @@ const PRESENTATIONS = Object.freeze([
 ]);
 
 const VECTOR_CASES = Object.freeze([
-  ['Menagerie keeper', menagerieKeeperCharacterRuntime, { pose: 'talk' }],
   ['Narrator', narratorCharacterRuntime, { pose: 'speaking' }],
   ['cat', catCharacterRuntime, { pose: 'idle' }],
   ['owl', petOwlCharacterRuntime, { pose: 'idle', lookX: 0.35 }],
@@ -214,6 +214,7 @@ const FULL_FRAME_CASES = Object.freeze([
   ['Hagrid', 'character.hagrid', hagridCharacterRuntime, hagridFullFrameCharacterRig, {}],
   ['Ollivander', 'character.wandmaker', wandmakerCharacterRuntime, wandmakerFullFrameCharacterRig, {}],
   ['Madam Malkin', 'character.madam-malkin', madamMalkinCharacterRuntime, madamMalkinFullFrameCharacterRig, {}],
+  ['Menagerie keeper', 'character.menagerie-keeper', menagerieKeeperCharacterRuntime, menagerieKeeperFullFrameCharacterRig, {}],
 ]);
 
 describe('canonical character portrait runtimes', () => {

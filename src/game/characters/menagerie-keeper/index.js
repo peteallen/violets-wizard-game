@@ -8,8 +8,7 @@ import {
 export {
   menagerieKeeperCharacterDefinition,
   menagerieKeeperCharacterReview,
-  menagerieKeeperPresentation,
-  menagerieKeeperStyle,
+  menagerieKeeperFullFrameCharacterDefinition,
 } from './definition.js';
 
 export async function loadMenagerieKeeperCharacterRuntime() {
@@ -20,5 +19,8 @@ export async function loadMenagerieKeeperCharacterRuntime() {
 export const menagerieKeeperCharacterModule = defineCharacterModule({
   definition: menagerieKeeperCharacterDefinition,
   loadRuntime: loadMenagerieKeeperCharacterRuntime,
-  reviews: characterReviewRegistrations(menagerieKeeperCharacterReview, []),
+  reviews: characterReviewRegistrations(
+    menagerieKeeperCharacterReview,
+    ['menagerie-keeper-sprite-review'],
+  ),
 });

@@ -1,0 +1,67 @@
+{
+  "schema_version": 1,
+  "id": "menagerie-keeper.core-v1",
+  "source": {
+    "path": "art/characters/menagerie-keeper/batch/core-v1.png",
+    "sha256": "907b4fbc9f606a646b03b59e815753bc57570d359280e617248f2544dacd0c34"
+  },
+  "output": {
+    "directory": "public/assets/art/characters/menagerie-keeper/default",
+    "provenance": "art/characters/menagerie-keeper/batch/core-v1.slice-provenance.json",
+    "canvas": {
+      "width": 896,
+      "height": 1200,
+      "center_x": 448,
+      "ground_y": 1132
+    }
+  },
+  "scale": {
+    "numerator": 1,
+    "denominator": 3
+  },
+  "key": {
+    "color": {
+      "red": 112,
+      "green": 208,
+      "blue": 216
+    },
+    "tolerance": 28,
+    "alpha": {
+      "opaque_cyan_excess": 50,
+      "transparent_cyan_excess": 90,
+      "edge_spill_radius": 8,
+      "edge_spill_opaque_cyan_excess": 30,
+      "edge_spill_max_green_blue_delta": 70,
+      "matte_low_alpha": 170,
+      "matte_high_alpha": 245,
+      "edge_color_radius": 0
+    }
+  },
+  "components": {
+    "detail_min_pixels": 8,
+    "detail_max_pixels": 5000,
+    "detail_max_distance": 18
+  },
+  "frames": [
+    {
+      "name": "neutral",
+      "crop": { "x": 0, "y": 0, "width": 1200, "height": 3584 },
+      "overlap": { "top": 0, "right": 160, "bottom": 0, "left": 0 }
+    },
+    {
+      "name": "blink",
+      "crop": { "x": 1200, "y": 0, "width": 1200, "height": 3584 },
+      "overlap": { "top": 0, "right": 160, "bottom": 0, "left": 160 }
+    },
+    {
+      "name": "talk-a",
+      "crop": { "x": 2400, "y": 0, "width": 1200, "height": 3584 },
+      "overlap": { "top": 0, "right": 160, "bottom": 0, "left": 160 }
+    },
+    {
+      "name": "talk-b",
+      "crop": { "x": 3600, "y": 0, "width": 1200, "height": 3584 },
+      "overlap": { "top": 0, "right": 0, "bottom": 0, "left": 160 }
+    }
+  ]
+}

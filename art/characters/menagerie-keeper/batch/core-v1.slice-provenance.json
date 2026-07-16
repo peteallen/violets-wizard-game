@@ -1,0 +1,376 @@
+{
+  "schema_version": 1,
+  "algorithm": {
+    "id": "cyan-flood-aligned-character-sheet-v1",
+    "component_connectivity": 8,
+    "scale_filter": "premultiplied-rgba-box-rational-v1",
+    "output_color_type": 6,
+    "output_bit_depth": 8,
+    "deterministic": true
+  },
+  "slice_spec": {
+    "path": "art/characters/menagerie-keeper/batch/core-v1.layout.json",
+    "bytes": 1814,
+    "sha256": "c69331047d4ad22143a7fe9b507b14ddc3378309ac4e864f2127a21cd7e644ca",
+    "schema_version": 1,
+    "id": "menagerie-keeper.core-v1"
+  },
+  "source": {
+    "path": "art/characters/menagerie-keeper/batch/core-v1.png",
+    "bytes": 18903966,
+    "expected_sha256": "907b4fbc9f606a646b03b59e815753bc57570d359280e617248f2544dacd0c34",
+    "sha256": "907b4fbc9f606a646b03b59e815753bc57570d359280e617248f2544dacd0c34",
+    "rgba_sha256": "7aeac910d4c36d58146e48af4664f29911bfd6112fea76dec9f4a49203e03552",
+    "dimensions": {
+      "width": 4800,
+      "height": 3584
+    }
+  },
+  "controls": {
+    "output_canvas": {
+      "width": 896,
+      "height": 1200,
+      "center_x": 448,
+      "ground_y": 1132
+    },
+    "common_scale": {
+      "numerator": 1,
+      "denominator": 3
+    },
+    "key": {
+      "color": {
+        "red": 112,
+        "green": 208,
+        "blue": 216
+      },
+      "tolerance": 28,
+      "alpha": {
+        "opaque_cyan_excess": 50,
+        "transparent_cyan_excess": 90,
+        "edge_spill_radius": 8,
+        "edge_spill_opaque_cyan_excess": 30,
+        "edge_spill_max_green_blue_delta": 70,
+        "matte_low_alpha": 170,
+        "matte_high_alpha": 245,
+        "edge_color_radius": 0
+      }
+    },
+    "components": {
+      "detail_min_pixels": 8,
+      "detail_max_pixels": 5000,
+      "detail_max_distance": 18
+    }
+  },
+  "outputs": [
+    {
+      "name": "neutral",
+      "path": "public/assets/art/characters/menagerie-keeper/default/neutral.png",
+      "media_type": "image/png",
+      "bytes": 495224,
+      "sha256": "0cfbd01ded98e0e6fbad3248d955126ffe2214a3754a8fb04db5e4aecb9da2a7",
+      "rgba_sha256": "1f80e26dc780de6b49055cd950cf891d08e121847c1348d3ad0425e157452f33",
+      "dimensions": {
+        "width": 896,
+        "height": 1200
+      },
+      "crop": {
+        "x": 0,
+        "y": 0,
+        "width": 1360,
+        "height": 3584
+      },
+      "source_content_bounds": {
+        "x": 64,
+        "y": 114,
+        "width": 1221,
+        "height": 3394
+      },
+      "scaled_dimensions": {
+        "width": 407,
+        "height": 1132
+      },
+      "placement": {
+        "x": 245,
+        "y": 1,
+        "width": 407,
+        "height": 1132,
+        "center_x": 448,
+        "ground_y": 1132
+      },
+      "flood": {
+        "background_pixels": 2329513,
+        "non_background_pixels": 2544727,
+        "background_fraction": 0.47792332753413863
+      },
+      "components": {
+        "found": 4,
+        "dominant_pixels": 2472443,
+        "kept": 1,
+        "removed": 3,
+        "selected_pixels": 2472443,
+        "details": [
+          {
+            "pixels": 27409,
+            "distance_from_dominant": 128,
+            "kept": false
+          },
+          {
+            "pixels": 2101,
+            "distance_from_dominant": 68,
+            "kept": false
+          },
+          {
+            "pixels": 33889,
+            "distance_from_dominant": 33,
+            "kept": false
+          }
+        ]
+      },
+      "alpha": {
+        "transparent_pixels": 2401797,
+        "soft_pixels": 4937,
+        "opaque_pixels": 2467506
+      },
+      "edge_artifacts_repaired": 0
+    },
+    {
+      "name": "blink",
+      "path": "public/assets/art/characters/menagerie-keeper/default/blink.png",
+      "media_type": "image/png",
+      "bytes": 493339,
+      "sha256": "10fe1977ab46f01e516ba2b505b5522f620af2c2bf2982104d1d5f62dcca9a1a",
+      "rgba_sha256": "2127fb8a48ee12934d6a81bbade3baf8d2c9b4a85c8fb34ea700610a83591083",
+      "dimensions": {
+        "width": 896,
+        "height": 1200
+      },
+      "crop": {
+        "x": 1040,
+        "y": 0,
+        "width": 1520,
+        "height": 3584
+      },
+      "source_content_bounds": {
+        "x": 198,
+        "y": 114,
+        "width": 1218,
+        "height": 3394
+      },
+      "scaled_dimensions": {
+        "width": 406,
+        "height": 1132
+      },
+      "placement": {
+        "x": 245,
+        "y": 1,
+        "width": 406,
+        "height": 1132,
+        "center_x": 448,
+        "ground_y": 1132
+      },
+      "flood": {
+        "background_pixels": 2686056,
+        "non_background_pixels": 2761624,
+        "background_fraction": 0.4930642034774436
+      },
+      "components": {
+        "found": 5,
+        "dominant_pixels": 2467878,
+        "kept": 1,
+        "removed": 4,
+        "selected_pixels": 2467878,
+        "details": [
+          {
+            "pixels": 109031,
+            "distance_from_dominant": 34,
+            "kept": false
+          },
+          {
+            "pixels": 95680,
+            "distance_from_dominant": 68,
+            "kept": false
+          },
+          {
+            "pixels": 68028,
+            "distance_from_dominant": 33,
+            "kept": false
+          },
+          {
+            "pixels": 11602,
+            "distance_from_dominant": 251,
+            "kept": false
+          }
+        ]
+      },
+      "alpha": {
+        "transparent_pixels": 2979802,
+        "soft_pixels": 5001,
+        "opaque_pixels": 2462877
+      },
+      "edge_artifacts_repaired": 0
+    },
+    {
+      "name": "talk-a",
+      "path": "public/assets/art/characters/menagerie-keeper/default/talk-a.png",
+      "media_type": "image/png",
+      "bytes": 490854,
+      "sha256": "db28de7da7a3c187ec1c60fd800f04f2f840e2fd97607e1b8dbde6893f76ab46",
+      "rgba_sha256": "e7cf6c278ec4b3781c831b22ace841a369bf9c0d469fc1c5b031429aa22034c6",
+      "dimensions": {
+        "width": 896,
+        "height": 1200
+      },
+      "crop": {
+        "x": 2240,
+        "y": 0,
+        "width": 1520,
+        "height": 3584
+      },
+      "source_content_bounds": {
+        "x": 172,
+        "y": 114,
+        "width": 1214,
+        "height": 3395
+      },
+      "scaled_dimensions": {
+        "width": 405,
+        "height": 1132
+      },
+      "placement": {
+        "x": 246,
+        "y": 1,
+        "width": 405,
+        "height": 1132,
+        "center_x": 448,
+        "ground_y": 1132
+      },
+      "flood": {
+        "background_pixels": 2673552,
+        "non_background_pixels": 2774128,
+        "background_fraction": 0.4907689144736842
+      },
+      "components": {
+        "found": 6,
+        "dominant_pixels": 2459835,
+        "kept": 1,
+        "removed": 5,
+        "selected_pixels": 2459835,
+        "details": [
+          {
+            "pixels": 169801,
+            "distance_from_dominant": 33,
+            "kept": false
+          },
+          {
+            "pixels": 78672,
+            "distance_from_dominant": 67,
+            "kept": false
+          },
+          {
+            "pixels": 46730,
+            "distance_from_dominant": 34,
+            "kept": false
+          },
+          {
+            "pixels": 7981,
+            "distance_from_dominant": 251,
+            "kept": false
+          },
+          {
+            "pixels": 1481,
+            "distance_from_dominant": 247,
+            "kept": false
+          }
+        ]
+      },
+      "alpha": {
+        "transparent_pixels": 2987845,
+        "soft_pixels": 4961,
+        "opaque_pixels": 2454874
+      },
+      "edge_artifacts_repaired": 0
+    },
+    {
+      "name": "talk-b",
+      "path": "public/assets/art/characters/menagerie-keeper/default/talk-b.png",
+      "media_type": "image/png",
+      "bytes": 489135,
+      "sha256": "16a86cf252f1b54a34050c7f917df5b9af58f006b07953ec50c86980cca37aed",
+      "rgba_sha256": "2b45b4b5343c6040e1278b1857afbc8ae3da6748b8dfa623a2f95fb3a1eb4b4e",
+      "dimensions": {
+        "width": 896,
+        "height": 1200
+      },
+      "crop": {
+        "x": 3440,
+        "y": 0,
+        "width": 1360,
+        "height": 3584
+      },
+      "source_content_bounds": {
+        "x": 140,
+        "y": 114,
+        "width": 1215,
+        "height": 3394
+      },
+      "scaled_dimensions": {
+        "width": 405,
+        "height": 1132
+      },
+      "placement": {
+        "x": 246,
+        "y": 1,
+        "width": 405,
+        "height": 1132,
+        "center_x": 448,
+        "ground_y": 1132
+      },
+      "flood": {
+        "background_pixels": 2307917,
+        "non_background_pixels": 2566323,
+        "background_fraction": 0.47349268809086137
+      },
+      "components": {
+        "found": 6,
+        "dominant_pixels": 2466820,
+        "kept": 1,
+        "removed": 5,
+        "selected_pixels": 2466820,
+        "details": [
+          {
+            "pixels": 88,
+            "distance_from_dominant": 174,
+            "kept": false
+          },
+          {
+            "pixels": 715,
+            "distance_from_dominant": 163,
+            "kept": false
+          },
+          {
+            "pixels": 57093,
+            "distance_from_dominant": 66,
+            "kept": false
+          },
+          {
+            "pixels": 28495,
+            "distance_from_dominant": 33,
+            "kept": false
+          },
+          {
+            "pixels": 4349,
+            "distance_from_dominant": 247,
+            "kept": false
+          }
+        ]
+      },
+      "alpha": {
+        "transparent_pixels": 2407420,
+        "soft_pixels": 5072,
+        "opaque_pixels": 2461748
+      },
+      "edge_artifacts_repaired": 0
+    }
+  ],
+  "provenance_path": "art/characters/menagerie-keeper/batch/core-v1.slice-provenance.json"
+}

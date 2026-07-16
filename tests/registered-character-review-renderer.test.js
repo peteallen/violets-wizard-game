@@ -20,6 +20,7 @@ const EXPECTED_SCENES = Object.freeze([
   'hagrid-sprite-review',
   'wandmaker-sprite-review',
   'madam-malkin-sprite-review',
+  'menagerie-keeper-sprite-review',
   'violet-expression-review',
 ]);
 
@@ -64,7 +65,7 @@ function drawingContext() {
 }
 
 describe('registered character review scenes', () => {
-  it('publishes the eight preserved exact scene IDs as immutable descriptors', () => {
+  it('publishes the nine preserved exact scene IDs as immutable descriptors', () => {
     expect(productionCharacterReviewCatalog.sceneIds).toEqual(EXPECTED_SCENES);
     expect(Object.isFrozen(productionCharacterReviewCatalog.sceneIds)).toBe(true);
     expect(Object.isFrozen(productionCharacterReviewDescriptors)).toBe(true);

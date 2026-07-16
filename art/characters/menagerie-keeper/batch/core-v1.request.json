@@ -1,0 +1,25 @@
+{
+  "schema_version": 1,
+  "prompt": {
+    "path": "art/characters/menagerie-keeper/batch/core-v1.prompt.md",
+    "section": "Prompt"
+  },
+  "references": [
+    {
+      "path": "art/characters/menagerie-keeper/canonical/identity-v1-production-reference.png",
+      "role": "exact downscaled copy of the keeper identity sheet, preserving her face, braid, palette, outfit, proportions, and emotional read while keeping the embedded request payload reliable"
+    },
+    {
+      "path": "art/guides/ch1-room-style-triptych.png",
+      "role": "painterly room-style texture, upper-left key-light, and violet-blue shadow guidance only"
+    }
+  ],
+  "generation": {
+    "aspect_ratio": "4:3",
+    "resolution": "4K"
+  },
+  "output": {
+    "image": "art/characters/menagerie-keeper/batch/core-v1.png",
+    "provenance": "art/characters/menagerie-keeper/batch/core-v1.metadata.json"
+  }
+}

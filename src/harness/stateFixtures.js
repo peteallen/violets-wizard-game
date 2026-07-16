@@ -524,6 +524,25 @@ registry
       },
     }),
   ))
+  .register('menagerie-keeper-sprite-review', characterReviewFixture(
+    'menagerie-keeper-sprite-review',
+    'The Menagerie Keeper’s production full-frame neutral, blink, and two speaking mouth shapes.',
+  ))
+  .register('menagerie-keeper-live-review', createFixture(
+    'The generated Menagerie Keeper welcoming Violet in normal animal-shop gameplay.',
+    { chapter: 1, scene: 'ch1.petShopping' },
+    createSave({
+      scene: 'ch1.petShopping',
+      room: 'ch1.menagerie',
+      spawn: 'menagerie.entry',
+      questFlags: {
+        ...throughWandFlags,
+        'ch1.trimChosen': true,
+      },
+      wandId: 'violet-first-wand',
+      robeTrim: 'purple',
+    }),
+  ))
   .register('violet-expression-review', characterReviewFixture(
     'violet-expression-review',
     'The owner-approved aligned Violet shown in every accepted neutral and facial-expression state, as both portraits and grounded full figures.',
