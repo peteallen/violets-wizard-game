@@ -1002,9 +1002,13 @@ export class Game {
   }
 
   hintTargetPosition(targetId) {
-    const targets = this.semanticTargets();
-    const mapTarget = this.world.objective?.mapStar?.hotspot;
-    const target = targets.find((candidate) => candidate.id === targetId)
+    const state = this.world.snapshot();
+    const targets = this.semanticTargets(state);
+    const thread = state.affordances?.thread;
+    const resolvedTargetId = thread?.worldTargetId ?? thread?.targetId ?? null;
+    const mapTarget = state.objective?.mapStar?.hotspot;
+    const target = targets.find((candidate) => candidate.id === resolvedTargetId)
+      ?? targets.find((candidate) => candidate.id === targetId)
       ?? targets.find((candidate) => candidate.id === mapTarget)
       ?? targets.find((candidate) => candidate.id === 'hud.quest');
     if (!target) return null;
@@ -1770,21 +1774,21 @@ export class Game {
     context.restore();
   }
 
-  semanticTargets() {
+  semanticTargets(stateOverride = null) {
     const debugTargets = this.shouldShowDebugReset()
       ? [{ id: 'debug.reset', x: UI_RECTS.debugReset.x + UI_RECTS.debugReset.width / 2, y: UI_RECTS.debugReset.y + UI_RECTS.debugReset.height / 2 }]
       : [];
     if (this.screen === 'title') return [{ id: 'foundation.start', x: 640, y: 460 }, ...debugTargets];
     if (!this.world) return debugTargets;
     if (this.resumeRecap) {
-      const state = this.lastRenderState ?? this.world.snapshot();
+      const state = stateOverride ?? this.lastRenderState ?? this.world.snapshot();
       const layout = dialogueScrollLayout(dialogueSceneContext(state, this.resumeRecap));
       return [
         semanticRect('resume.continue', layout.advanceRect),
         semanticRect('dialogue.replay', layout.replayRect),
       ];
     }
-    const state = this.lastRenderState ?? this.world.snapshot();
+    const state = stateOverride ?? this.lastRenderState ?? this.world.snapshot();
     const targets = state.targets.map((target) => ({
       id: target.id,
       x: (target.hitArea.x ?? 0) - state.cameraX + (target.hitArea.shape === 'rect' ? target.hitArea.width / 2 : 0),

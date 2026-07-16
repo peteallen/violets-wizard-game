@@ -130,13 +130,13 @@ describe('D31 golden-thread lifecycle', () => {
 
     const mapTeaching = createWorld({ flags: progression.street, room: 'ch1.diagonStreet' });
     expect(threadTarget(mapTeaching)).toMatchObject({
-      targetId: 'street.ollivandersDoor',
-      worldTargetId: 'street.ollivandersDoor',
+      targetId: 'hud.satchel',
+      worldTargetId: null,
       mapTargetId: 'street.ollivandersDoor',
-      channel: 'world',
+      channel: 'hud',
     });
     expect(mapTeaching.snapshot().targets.find(({ id }) => id === 'street.ollivandersDoor')?.salience)
-      .toMatchObject({ tier: 'thread', visible: 'thread' });
+      .toMatchObject({ tier: 'discoverable' });
 
     const shopping = createWorld({
       flags: { ...progression.street, 'ch1.mapUsed': true },
@@ -238,10 +238,10 @@ describe('D31 golden-thread lifecycle', () => {
       quiet: false,
       worldSuppressed: true,
       thread: {
-        targetId: 'street.ollivandersDoor',
-        worldTargetId: 'street.ollivandersDoor',
+        targetId: 'hud.satchel',
+        worldTargetId: null,
         mapTargetId: 'street.ollivandersDoor',
-        channel: 'world',
+        channel: 'hud',
       },
     });
     expect(snapshot.targets.every((target) => target.salience.visible === 'none')).toBe(true);

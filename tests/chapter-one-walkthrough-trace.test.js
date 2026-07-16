@@ -132,7 +132,7 @@ const EXPECTED_WALKTHROUGH_TRACE = [
       scene: 'ch1.diagonArrival',
       room: 'ch1.diagonStreet',
       objective: 'Find your wand!',
-      thread: 'street.ollivandersDoor',
+      thread: 'hud.satchel',
     },
     progress: {
       flags: ['ch1.diagonReached', 'ch1.satchelReceived', 'ch1.wallOpened'],
@@ -431,8 +431,8 @@ function createTraceRecorder(world, save) {
         scene: snapshot.sceneId,
         room: snapshot.roomId,
         objective: snapshot.objective?.caption ?? null,
-        ...(snapshot.affordances.thread?.worldTargetId
-          ? { thread: snapshot.affordances.thread.worldTargetId }
+        ...(snapshot.affordances.thread?.worldTargetId ?? snapshot.affordances.thread?.targetId
+          ? { thread: snapshot.affordances.thread.worldTargetId ?? snapshot.affordances.thread.targetId }
           : {}),
         ...(snapshot.dialogue
           ? { dialogue: `${snapshot.dialogue.scriptId}:${snapshot.dialogue.nodeId}:${snapshot.dialogue.type}` }

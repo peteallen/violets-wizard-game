@@ -3,7 +3,9 @@ import { PALETTE, WORLD } from '../config.js';
 const TAU = Math.PI * 2;
 const VISUAL_PROFILES = Object.freeze({
   owl: Object.freeze([0.78, 1.1, 0, 'owl']),
-  letter: Object.freeze([0.95, 0.56, 0, 'letter']),
+  // The delivered envelope rests well above its generous touch circle. Keep
+  // the visible thread on the paper itself instead of outlining empty floor.
+  letter: Object.freeze([0.85, 0.52, -0.325, 'letter']),
   door: Object.freeze([0.52, 1, 0, 'door']),
   sparkle: Object.freeze([0.86, 0.86, 0, 'circle']),
   // Ollivanders' tappable objects are the three painted wand cases. The hit
@@ -11,7 +13,10 @@ const VISUAL_PROFILES = Object.freeze({
   // each long, shallow case instead of drawing a tiny wand-shaped bow tie in
   // the empty space above the display.
   wand: Object.freeze([0.98, 0.34, 0, 'wand-case']),
-  robes: Object.freeze([0.72, 0.72, 0.08, 'robes']),
+  // Madam Malkin's objective is the low, wide fitting stool, not a hanging
+  // robe silhouette. The touch target remains generous while the shimmer
+  // follows the upholstered seat.
+  robes: Object.freeze([0.98, 0.55, 0, 'circle']),
   look: Object.freeze([0.9, 0.34, 0, 'circle']),
   'frog-card': Object.freeze([0.46, 0.58, 0, 'letter']),
 });

@@ -27,7 +27,7 @@ export const courtyardRoom = freezePureData({
     {
       id: 'courtyard.brickWall',
       kind: 'action',
-      hitArea: circle(760, 330, 180),
+      hitArea: circle(700, 330, 180),
       approach: { x: 650, y: 610, facing: 'right' },
       when: when({ noFlags: ['ch1.wallOpened'] }),
       presentation: { icon: 'sparkle', glow: 'objective' },

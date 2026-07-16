@@ -22,7 +22,7 @@ export const malkinsRoom = freezePureData({
   exits: [
     {
       id: 'malkins.exit',
-      hitArea: rect(220, 160, 180, 420),
+      hitArea: rect(260, 160, 180, 420),
       to: { room: 'ch1.diagonStreet', spawn: 'street.west' },
       icon: 'door',
       transition: 'ink',
@@ -37,7 +37,7 @@ export const malkinsRoom = freezePureData({
     {
       id: 'malkins.stool',
       kind: 'action',
-      hitArea: circle(690, 500, 85),
+      hitArea: circle(670, 555, 90),
       approach: { x: 670, y: 610, facing: 'right' },
       when: when({ noFlags: ['ch1.trimChosen'] }),
       presentation: { icon: 'robes', glow: 'objective' },

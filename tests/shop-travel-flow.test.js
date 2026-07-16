@@ -42,7 +42,12 @@ describe('direct Diagon Alley shop travel', () => {
 
     expect(world.flags['ch1.mapUsed']).not.toBe(true);
     expect(world.snapshot().targets.find(({ id }) => id === 'street.ollivandersDoor')?.salience)
-      .toMatchObject({ tier: 'thread', visible: 'thread' });
+      .toMatchObject({ tier: 'discoverable' });
+    expect(world.snapshot().affordances.thread).toMatchObject({
+      targetId: 'hud.satchel',
+      worldTargetId: null,
+      channel: 'hud',
+    });
     expect(world.snapshot().targets.some(({ id }) => id === 'street.guide')).toBe(false);
     expect(world.snapshot().occupants.find(({ npc }) => npc === 'npc.guide')?.x).toBe(470);
 
@@ -83,7 +88,7 @@ describe('direct Diagon Alley shop travel', () => {
 
   it.each([
     ['ch1.ollivanders', 'entry', 'ollivanders.exit', 75, 'left', 180],
-    ['ch1.malkins', 'entry', 'malkins.exit', 310, 'right', 180],
+    ['ch1.malkins', 'entry', 'malkins.exit', 350, 'right', 180],
     ['ch1.menagerie', 'entry', 'menagerie.exit', 85, 'left', 1100],
   ])('walks visibly through the authored exit from %s before returning outside', (
     room,

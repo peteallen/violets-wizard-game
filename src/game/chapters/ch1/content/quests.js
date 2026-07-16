@@ -64,9 +64,9 @@ const questGraph = {
       },
       doneWhen: when({ allFlags: ['ch1.mapUsed'] }),
       hints: {
-        lookTarget: 'street.ollivandersDoor',
+        lookTarget: 'hud.satchel',
         repeatVoice: 'voice/ch1/recap/useMap',
-        trailTarget: 'street.ollivandersDoor',
+        trailTarget: 'hud.satchel',
         assistActions: [{ type: 'ui.open', surface: 'satchel', tab: 'map' }],
       },
       onEnter: [],

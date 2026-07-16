@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 import { Game } from '../src/game/Game.js';
 import { chapter1 } from '../src/game/content/chapters/ch1.js';
+import { envelopeWorldBounds } from '../src/game/render/LetterRenderer.js';
 import {
   WorldAffordanceRenderer,
   worldAffordanceState,
@@ -114,6 +115,50 @@ describe('world interaction salience rendering', () => {
       expect(presentation.bounds.width / presentation.bounds.height).toBeGreaterThan(2.7);
       expect(presentation.bounds.width / presentation.bounds.height).toBeLessThan(3);
     }
+  });
+
+  it('keeps Chapter One object hints on their painted envelope, wall, stool, and doors', () => {
+    const thread = { tier: 'thread', visible: 'thread', intensity: 'hint', glint: null };
+    const presentationFor = (target) => worldAffordanceState({ ...target, salience: thread }, 1.25);
+
+    const letter = chapter1.rooms['ch1.bedroom'].hotspots.find(({ id }) => id === 'bedroom.letter');
+    const letterBounds = presentationFor(letter).bounds;
+    const envelopeBounds = envelopeWorldBounds();
+    expect(Math.abs(letterBounds.x - envelopeBounds.x)).toBeLessThan(2);
+    expect(Math.abs(letterBounds.y - envelopeBounds.y)).toBeLessThan(2);
+    expect(Math.abs(letterBounds.width - envelopeBounds.width)).toBeLessThan(2);
+    expect(Math.abs(letterBounds.height - envelopeBounds.height)).toBeLessThan(2);
+
+    const wall = chapter1.rooms['ch1.courtyard'].hotspots.find(({ id }) => id === 'courtyard.brickWall');
+    expect(wall.hitArea).toMatchObject({ x: 700, y: 330, radius: 180 });
+    expect(presentationFor(wall).bounds).toMatchObject({ shape: 'circle' });
+
+    const stool = chapter1.rooms['ch1.malkins'].hotspots.find(({ id }) => id === 'malkins.stool');
+    const stoolBounds = presentationFor(stool).bounds;
+    expect(stool.hitArea).toMatchObject({ x: 670, y: 555, radius: 90 });
+    expect(stoolBounds.shape).toBe('circle');
+    expect(stoolBounds.width).toBeCloseTo(176.4);
+    expect(stoolBounds.height).toBeCloseTo(99);
+    expect(stoolBounds.x + stoolBounds.width / 2).toBe(670);
+    expect(stoolBounds.y + stoolBounds.height / 2).toBe(555);
+
+    const bedroomExit = chapter1.rooms['ch1.bedroom'].hotspots
+      .find(({ id }) => id === 'bedroom.exit');
+    const malkinsExit = chapter1.rooms['ch1.malkins'].exits
+      .find(({ id }) => id === 'malkins.exit');
+    const exitPresentation = (exit) => presentationFor({
+      ...exit,
+      kind: 'exit',
+      presentation: { icon: exit.icon ?? exit.presentation?.icon, glow: 'objective' },
+    });
+    const bedroomDoorBounds = exitPresentation(bedroomExit).bounds;
+    expect(bedroomDoorBounds).toMatchObject({ shape: 'door', y: 120, height: 460 });
+    expect(bedroomDoorBounds.x).toBeCloseTo(40.8);
+    expect(bedroomDoorBounds.width).toBeCloseTo(88.4);
+    const malkinsDoorBounds = exitPresentation(malkinsExit).bounds;
+    expect(malkinsDoorBounds).toMatchObject({ shape: 'door', y: 160, height: 420 });
+    expect(malkinsDoorBounds.x).toBeCloseTo(303.2);
+    expect(malkinsDoorBounds.width).toBeCloseTo(93.6);
   });
 
   it('renders no advertisement for a quiet or spent target', () => {

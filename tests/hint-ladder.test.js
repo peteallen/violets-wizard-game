@@ -208,16 +208,18 @@ describe('World hint ladder', () => {
 describe('Game hint presentation', () => {
   function gameStub() {
     const game = Object.create(Game.prototype);
+    const objective = {
+      text: 'Tap the owl at the window.',
+      mapStar: null,
+    };
     const state = {
       cameraX: 100,
       player: { x: 500, y: 610 },
       pet: null,
+      objective,
     };
     game.world = {
-      objective: {
-        text: 'Tap the owl at the window.',
-        mapStar: null,
-      },
+      objective,
       snapshot: vi.fn(() => state),
     };
     game.lastRenderState = state;
@@ -278,5 +280,57 @@ describe('Game hint presentation', () => {
     ]);
 
     expect(game.hintTargetPosition('ollivanders.wand1')).toEqual({ x: 1240, y: 300 });
+  });
+
+  it('aims sparkle trails at the freshly resolved thread instead of a spent authored target', () => {
+    const game = gameStub();
+    const current = {
+      cameraX: 0,
+      player: { x: 500, y: 610 },
+      pet: null,
+      objective: { mapStar: { hotspot: 'street.malkinsDoor' } },
+      affordances: {
+        thread: {
+          targetId: 'malkins.stool',
+          worldTargetId: 'ollivanders.exit',
+          mapTargetId: 'street.malkinsDoor',
+          channel: 'world',
+        },
+      },
+    };
+    game.world.snapshot = vi.fn(() => current);
+    game.semanticTargets = vi.fn(() => [
+      { id: 'ollivanders.wand1', x: 535, y: 382 },
+      { id: 'ollivanders.exit', x: 75, y: 365 },
+      { id: 'hud.quest', x: 80, y: 80 },
+    ]);
+
+    expect(game.hintTargetPosition('ollivanders.wand1')).toEqual({ x: 75, y: 365 });
+    expect(game.semanticTargets).toHaveBeenCalledWith(current);
+  });
+
+  it('aims the map lesson at the satchel HUD thread', () => {
+    const game = gameStub();
+    game.world.snapshot = vi.fn(() => ({
+      cameraX: 0,
+      player: { x: 500, y: 610 },
+      pet: null,
+      objective: { mapStar: { hotspot: 'street.ollivandersDoor' } },
+      affordances: {
+        thread: {
+          targetId: 'hud.satchel',
+          worldTargetId: null,
+          mapTargetId: 'street.ollivandersDoor',
+          channel: 'hud',
+        },
+      },
+    }));
+    game.semanticTargets = vi.fn(() => [
+      { id: 'street.ollivandersDoor', x: 295, y: 455 },
+      { id: 'hud.satchel', x: 82, y: 638 },
+      { id: 'hud.quest', x: 80, y: 80 },
+    ]);
+
+    expect(game.hintTargetPosition('hud.satchel')).toEqual({ x: 82, y: 638 });
   });
 });
