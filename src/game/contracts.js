@@ -358,8 +358,9 @@ export function validateAction(value, path = 'action') {
       id(value.moment, `${path}.moment`);
       break;
     case 'chapter.complete':
-      exactObject(value, path, ['type', 'chapter']);
+      exactObject(value, path, ['type', 'chapter'], ['nextChapter']);
       chapterId(value.chapter, `${path}.chapter`);
+      if (value.nextChapter !== undefined) chapterId(value.nextChapter, `${path}.nextChapter`);
       break;
     case 'audio.command': {
       const { type: _type, ...payload } = value;

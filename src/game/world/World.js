@@ -1,4 +1,5 @@
 import { HINTS, OBJECTIVE, WORLD } from '../config.js';
+import { createCoreActionRegistry } from '../actions/index.js';
 import { conditionMatches, writePath } from '../core/conditions.js';
 import { clamp } from '../core/math.js';
 import { normalizeRobeTrim, robeTrimColor, robeTrimOption } from '../core/RobeTrims.js';
@@ -17,6 +18,7 @@ import {
   createGuideWalkCueSnapshot,
   resolveGuideWalkCue,
 } from './GuideWalkCue.js';
+import { resolveChapterSceneState } from './chapterSceneRuntime.js';
 import { resolveRoomVariant } from './roomVariant.js';
 
 const PET_HOME_DISTANCE = 65;
@@ -32,7 +34,14 @@ const PLAYER_ACTOR_ID = 'npc.violet';
 const PET_ACTOR_PREFIX = 'npc.pet.';
 
 export class World {
-  constructor({ chapters, save, seed, clock = () => '2000-01-01T00:00:00.000Z', onDirty = () => {} }) {
+  constructor({
+    chapters,
+    save,
+    seed,
+    clock = () => '2000-01-01T00:00:00.000Z',
+    onDirty = () => {},
+    actionRegistry = createCoreActionRegistry(),
+  }) {
     this.chapters = chapters;
     this.save = save;
     this.clock = clock;
@@ -60,6 +69,8 @@ export class World {
     this.dialogueSourceTarget = null;
     this.guideWalkCue = null;
     this.actorAnimations = new Map();
+    this.actionRegistry = actionRegistry;
+    this.actionHandlers = createWorldActionHandlers(this);
 
     const chapterId = save.resume?.chapter ?? 'ch1';
     this.chapter = chapters[chapterId] ?? chapters.ch1;
@@ -91,7 +102,21 @@ export class World {
   }
 
   get room() {
-    return this.chapter.rooms[this.roomId];
+    return this.sceneState.room ?? this.chapter.rooms[this.roomId];
+  }
+
+  get sceneState() {
+    const baseRoom = this.chapter.rooms[this.roomId];
+    return resolveChapterSceneState({
+      chapter: this.chapter,
+      roomId: this.roomId,
+      savedSceneId: this.currentSceneId,
+      save: this.save,
+      legacyRoomVariant: resolveRoomVariant(
+        baseRoom,
+        this.flags['ch1.petNamed'] ? 'dusk' : 'base',
+      ),
+    });
   }
 
   get flags() {
@@ -401,91 +426,10 @@ export class World {
   }
 
   runAction(action) {
-    switch (action.type) {
-      case 'flag.set':
-        this.setFlag(action.flag, action.value ?? true);
-        break;
-      case 'choice.record':
-        this.noteProgress();
-        this.save.progress.storyChoices[action.id] = action.value;
-        this.markDirty('choice');
-        break;
-      case 'character.set':
-        this.noteProgress();
-        if (action.field === 'pet.type') {
-          this.pendingPetType = action.value;
-          this.emit('state.changed', { paths: ['character.pet.type'], reason: 'pending-choice' });
-          break;
-        }
-        if (action.field === 'pet.name') {
-          this.save.character.pet = {
-            type: this.pendingPetType ?? this.save.character.pet?.type,
-            name: action.value,
-          };
-          this.pendingPetType = null;
-        } else {
-          writePath(this.save.character, action.field, action.value);
-        }
-        this.syncPlayerProfile();
-        this.markDirty('character');
-        break;
-      case 'pet.choose':
-        this.noteProgress();
-        this.save.character.pet = { type: action.pet, name: this.save.character.pet?.name ?? null };
-        this.markDirty('pet');
-        this.emit('selection.completed', { id: 'pet', value: action.pet });
-        break;
-      case 'pet.name':
-        this.save.character.pet = { type: this.save.character.pet?.type, name: action.name };
-        this.setFlag('ch1.petNamed', true);
-        break;
-      case 'dialogue.start':
-        if (this.dialogueSourceTarget?.script !== action.script) this.dialogueSourceTarget = null;
-        this.dialogue.open(action.script);
-        break;
-      case 'setPiece.play':
-        this.setPieces.start(action.id, action.params);
-        break;
-      case 'travel.request':
-        this.travel(action.room, action.spawn, action.transition);
-        break;
-      case 'collection.add':
-        this.addCollection(action.collection, action.id);
-        break;
-      case 'reward.grant':
-        this.grantReward(action);
-        break;
-      case 'ui.open':
-        this.overlay = { surface: action.surface, tab: action.tab ?? null };
-        if (action.surface === 'robe-picker') {
-          this.overlay.selectedTrim = normalizeRobeTrim(this.save.character.appearance?.robeTrim);
-        }
-        this.emit('ui.openRequested', this.overlay);
-        break;
-      case 'ui.close':
-        this.overlay = null;
-        this.emit('ui.closeRequested', { surface: action.surface });
-        break;
-      case 'selection.open':
-        this.selection = { id: action.id, title: action.title, subtitle: action.subtitle, options: action.options };
-        this.emit('selection.opened', { id: action.id });
-        break;
-      case 'yearbook.capture':
-        this.emit('yearbook.captureRequested', { moment: action.moment, caption: action.caption ?? 'Magic!' });
-        break;
-      case 'chapter.complete':
-        this.completeChapter(action.chapter, action.nextChapter ?? 'ch2');
-        break;
-      case 'audio.command':
-      case 'particles.emit':
-      case 'camera.command':
-      case 'feedback.command':
-        this.emit(action.type, { ...action, type: undefined });
-        break;
-      default:
-        this.emit('action.unhandled', { action });
-        break;
-    }
+    return this.actionRegistry.execute(action, {
+      handlers: this.actionHandlers,
+      world: this,
+    });
   }
 
   chooseSelection(optionId) {
@@ -902,8 +846,7 @@ export class World {
   }
 
   syncScene(force = false) {
-    const scenes = Object.values(this.chapter.scenes ?? {});
-    const candidate = scenes.find((scene) => scene.room === this.roomId && conditionMatches(scene.when, this.save));
+    const candidate = this.sceneState.scene;
     if (!candidate || (!force && candidate.id === this.currentSceneId)) return;
     this.currentSceneId = candidate.id;
     this.save.resume = {
@@ -970,10 +913,7 @@ export class World {
       sceneId: this.currentSceneId,
       roomId: this.roomId,
       keyLight: this.room.background?.keyLight ?? 'left',
-      roomVariant: resolveRoomVariant(
-        this.room,
-        this.flags['ch1.petNamed'] ? 'dusk' : 'base',
-      ),
+      roomVariant: this.sceneState.roomVariant,
       cameraX: this.cameraX,
       player: { ...this.player },
       actorAnimations,
@@ -1010,6 +950,75 @@ export class World {
     if (this.flags['ch1.trimChosen']) unlocked.push('ch1.menagerie');
     return unlocked;
   }
+}
+
+function createWorldActionHandlers(world) {
+  return Object.freeze({
+    'flag.set': (action) => world.setFlag(action.flag, action.value),
+    'choice.record': (action) => {
+      world.noteProgress();
+      world.save.progress.storyChoices[action.id] = action.value;
+      world.markDirty('choice');
+    },
+    'character.set': (action) => {
+      world.noteProgress();
+      if (action.field === 'pet.type') {
+        world.pendingPetType = action.value;
+        world.emit('state.changed', { paths: ['character.pet.type'], reason: 'pending-choice' });
+        return;
+      }
+      if (action.field === 'pet.name') {
+        world.save.character.pet = {
+          type: world.pendingPetType ?? world.save.character.pet?.type,
+          name: action.value,
+        };
+        world.pendingPetType = null;
+      } else {
+        writePath(world.save.character, action.field, action.value);
+      }
+      world.syncPlayerProfile();
+      world.markDirty('character');
+    },
+    'dialogue.start': (action) => {
+      if (world.dialogueSourceTarget?.script !== action.script) world.dialogueSourceTarget = null;
+      world.dialogue.open(action.script);
+    },
+    'setPiece.play': (action) => world.setPieces.start(action.id),
+    'travel.request': (action) => world.travel(action.room, action.spawn, action.transition),
+    'learning.start': (action) => world.emit('learning.started', { beat: action.id }),
+    'spell.learn': (action) => {
+      if (world.save.spellbook.known.includes(action.spell)) return;
+      world.noteProgress();
+      world.save.spellbook.known.push(action.spell);
+      world.save.spellbook.stats[action.spell] = { casts: 0, masteryTier: 0 };
+      world.markDirty('spell-learned', true);
+      world.emit('state.changed', { paths: ['spellbook.known', `spellbook.stats.${action.spell}`], reason: 'spell-learned' });
+    },
+    'collection.add': (action) => world.addCollection(action.collection, action.id),
+    'reward.grant': (action) => world.grantReward(action),
+    'ui.open': (action) => {
+      world.overlay = { surface: action.surface, tab: action.tab ?? null };
+      if (action.surface === 'robe-picker') {
+        world.overlay.selectedTrim = normalizeRobeTrim(world.save.character.appearance?.robeTrim);
+      }
+      world.emit('ui.openRequested', world.overlay);
+    },
+    'yearbook.capture': (action) => {
+      world.emit('yearbook.captureRequested', { moment: action.moment, caption: 'Magic!' });
+    },
+    'chapter.complete': (action) => {
+      world.completeChapter(action.chapter, action.nextChapter ?? followingChapterId(action.chapter));
+    },
+    'audio.command': (action) => world.emit(action.type, { ...action, type: undefined }),
+  });
+}
+
+function followingChapterId(chapterId) {
+  const chapterNumber = Number(chapterId.slice(2));
+  if (!Number.isSafeInteger(chapterNumber) || chapterNumber < 1) {
+    throw new TypeError(`Cannot derive the chapter after ${String(chapterId)}.`);
+  }
+  return `ch${chapterNumber + 1}`;
 }
 
 function requireNpcDefinition(chapter, actorId) {
