@@ -4,7 +4,7 @@ The story arc: book 1 as eight playable chapters, each sized for one to three of
 
 Every chapter ends with an illustrated **chapter card** (like a picture-book page turn) and a triumphant sting, and unlocks its replay in the parent panel. Autosave means she can stop mid-chapter at any scene boundary. **Between chapters, owl post arrives from home** — a voiced letter from Mum and Dad that recaps her progress diegetically and marks the year turning (see GAME_DESIGN.md's richness layer). The seasons advance with the chapters: autumn gold (3–4), Halloween (5), deep winter and Christmas (6), spring (7), summer (8) — map and key rooms carry seasonal variants.
 
-**Recognition rule:** every major beat should be something she'll recognize from the first book or first film — the game's job is to let her *step into* scenes she already loves, with her in the middle of them.
+**Recognition rule:** every major beat should be something she'll recognize from the first book or first film — the game's job is to let her *step into* scenes she already loves, with her in the middle of them. Familiar characters and landmarks provide orientation rather than a reenactment: they may recur around an original through-line, but Violet drives the story and its decisive actions.
 
 ---
 
@@ -36,15 +36,15 @@ Every chapter ends with an illustrated **chapter card** (like a picture-book pag
 
 **Goal:** friends and belonging. Lowest-mechanics chapter — it's theater, and that's fine this early.
 
-**Beats:** run through the barrier at King's Cross (tap the wall, comic hesitation, whoosh) → Hogwarts Express compartment: meet **Harry, Ron, and Hermione** as friendly classmates (and the trolley: pick a sweet — Bertie Bott's roulette with silly reaction faces) → first sight of the castle across the lake at night (pure vista beat, hold it) → the Great Hall → **the Sorting Hat conversation**: the Hat (theatrical, ancient, kind) talks *to her*, asks what she cares about via 2–3 icon choices, and Sorts her. House theming (scarf, common room, banner colors) persists forever.
+**Beats:** run through the barrier at King's Cross (tap the wall, comic hesitation, whoosh) → Hogwarts Express compartment: meet **Harry, Ron, and Hermione** as friendly classmates who recur around Violet's adventure rather than replaying their original scenes (and the trolley: pick a sweet — Bertie Bott's roulette with silly reaction faces) → first sight of the castle across the lake at night (pure vista beat, hold it) → the Great Hall → **the Sorting Hat conversation**: the Hat (theatrical, ancient, kind) talks *to her*, asks what she cares about via 2–3 icon choices, and recognizes her as a Gryffindor. Her answers personalize the Hat's reasoning rather than changing the outcome. Gryffindor theming (scarf, common room, banner colors) persists forever.
 
-> **OPEN QUESTION (see DECISIONS.md):** does the Hat genuinely honor her choice, is she destined for a particular house, or does dad pre-set it? Design supports all three; the scene script needs the answer.
+> **LOCKED (D68):** Violet is a Gryffindor. Chapter Two builds the Gryffindor result and common room; other house variants are not part of its initial production scope.
 
 **Quests:** main only. 2 frog cards (train compartment, Great Hall). First house points awarded at the feast.
 
 **Mechanics proven:** icon dialogue choices, house theming system, multi-scene chapter flow.
 
-**Asset list:** 6 rooms (King's Cross, barrier, compartment, lake vista, Great Hall, common room ×4 house variants — build her house first, others when needed); voices: conductor, trolley witch, Harry, Ron, Hermione, Sorting Hat, McGonagall-ish professor, Dumbledore-ish headmaster; music: train rhythm, lake-vista wonder swell, Sorting tension-comedy, feast warmth.
+**Asset list:** 6 rooms (King's Cross, barrier, compartment, lake vista, Great Hall, Gryffindor common room); voices: conductor, trolley witch, Harry, Ron, Hermione, Sorting Hat, McGonagall-ish professor, Dumbledore-ish headmaster; music: train rhythm, lake-vista wonder swell, Sorting tension-comedy, feast warmth. Other house-room variants are deferred until deliberately needed.
 
 ---
 
