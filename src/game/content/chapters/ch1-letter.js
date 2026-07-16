@@ -1,6 +1,6 @@
 export const chapter1LetterLines = Object.freeze([
   'Dear Violet,',
-  'you are invited to Hogwarts School',
+  'You are invited to Hogwarts School',
   'of Witchcraft and Wizardry.',
   'Your place is waiting.',
   'Bring your brightest curiosity.',

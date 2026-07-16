@@ -12,7 +12,7 @@ export const chapter1SetPieceDefinitions = {
   'sp.letter': {
     id: 'sp.letter',
     tier: 'T2',
-    duration: 4.8,
+    duration: 2.25,
     clock: 'world',
     blocksInput: true,
     particleBudget: 'standard',
@@ -21,7 +21,7 @@ export const chapter1SetPieceDefinitions = {
     reducedMotion: 'reduced.letterDeliveryFade',
     params: { specification: 'SP-01' },
     timeline: { tracks: [sfxCue(0.25, 'sfx/ch1/owlFlap'), sfxCue(0.95, 'sfx/ch1/paperSlide')] },
-    verification: { keyframes: [0, 2, 3.2, 4.8], checklist: storybookChecklist('Violet is legible on the envelope.', 'Delivery ends on the canonical resting-envelope pose.', 'No painting edge is exposed.') },
+    verification: { keyframes: [0, 1.16, 2.25], checklist: storybookChecklist('Violet is legible on the envelope.', 'Control returns as soon as the letter reaches the canonical resting-envelope pose.', 'No painting edge is exposed.') },
     onComplete: [],
   },
   'sp.letterOpen': {

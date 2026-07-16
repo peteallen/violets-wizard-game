@@ -5,7 +5,11 @@ import {
 
 export class WorldPropRenderer {
   draw(context, state, time, { reducedMotion = false } = {}) {
-    if (state?.setPiece || state?.dialogue?.scriptId === 'ch1.letter.read') return;
+    if (
+      state?.setPiece
+      || state?.overlay?.surface === 'letter-reading'
+      || state?.dialogue?.scriptId === 'ch1.letter.read'
+    ) return;
     const letter = state?.targets?.find((target) => target.id === 'bedroom.letter');
     if (!letter?.hitArea) return;
     drawDeliveredEnvelope(context, {

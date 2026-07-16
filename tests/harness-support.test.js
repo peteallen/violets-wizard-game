@@ -189,7 +189,7 @@ describe('action fixtures', () => {
       'letter.owl',
       'letter.envelope',
     ]);
-    expect(getActionFixture('ch1-start').actions.map((action) => action.frame)).toEqual([30, 480]);
+    expect(getActionFixture('ch1-start').actions.map((action) => action.frame)).toEqual([30, 250]);
     expect(getActionFixture('parent-panel').actions.at(-1)).toEqual({
       frame: 60,
       type: 'hold',

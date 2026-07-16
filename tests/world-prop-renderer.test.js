@@ -59,7 +59,7 @@ describe('world prop renderer', () => {
     expect(first.depth).toBe(0);
   });
 
-  it('shows the envelope after delivery, but not over its set piece or reading dialogue', () => {
+  it('shows the envelope after delivery, but not over its set piece or reading surface', () => {
     const renderer = new WorldPropRenderer();
     const delivered = recordingContext();
     renderer.draw(delivered, deliveredState, 2);
@@ -68,6 +68,13 @@ describe('world prop renderer', () => {
     const duringDelivery = recordingContext();
     renderer.draw(duringDelivery, { ...deliveredState, setPiece: { requestedId: 'sp.letter' } }, 2);
     expect(duringDelivery.calls).toEqual([]);
+
+    const readingSurface = recordingContext();
+    renderer.draw(readingSurface, {
+      ...deliveredState,
+      overlay: { surface: 'letter-reading' },
+    }, 2);
+    expect(readingSurface.calls).toEqual([]);
 
     const whileReading = recordingContext();
     renderer.draw(whileReading, {

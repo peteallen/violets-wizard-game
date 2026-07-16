@@ -52,10 +52,10 @@ registry
     'Hold the integrated storybook title and its returning-player envelope for deterministic visual review.',
   ))
   .register('ch1-start', createFixture(
-    'Open the Chapter 1 letter and hold its player-paced reading surface.',
+    'Open the Chapter 1 letter as soon as its delivery settles and hold its player-paced reading surface.',
     [
       { frame: 30, type: 'tap', target: 'letter.owl' },
-      { frame: 480, type: 'tap', target: 'letter.envelope' },
+      { frame: 250, type: 'tap', target: 'letter.envelope' },
     ],
   ))
   .register('ch1-follow-hagrid-review', createFixture(

@@ -975,7 +975,7 @@ export class Game {
       case 'ui.openRequested':
         if (event.payload.surface === 'chapter-replay') this.beginReplay();
         else if (event.payload.surface === 'letter-reading') {
-          this.updateStatus('Dear Violet, you are invited to Hogwarts School of Witchcraft and Wizardry. Your place is waiting. Choose Hear the letter to listen, or Let’s go to continue.');
+          this.updateStatus('Dear Violet, You are invited to Hogwarts School of Witchcraft and Wizardry. Your place is waiting. Choose Hear the letter to listen, or Let’s go to continue.');
         }
         break;
       case 'chapter.completed':
