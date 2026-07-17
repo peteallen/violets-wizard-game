@@ -1,31 +1,70 @@
 # Build plan — current execution
 
-The engine, Chapter One, deployment, and review infrastructure already exist,
-and all ten production character identities now render through their own lazy
-packages. The active job is the scale-ready character, chapter, scene, and
-presentation refactor: remove the retired compatibility graph, extract Chapter
-One into room and scene modules, make the version-2 content/action/save
-contracts truthful, and then split the game shell and presentation monoliths.
-No additional cast or chapter content is added while those boundaries move.
+The engine, deployment pipeline, review harness, and Chapter One production
+rebuild are deployed. Chapter Two is also playable from the King's Cross
+barrier through the Gryffindor common room. The active job is its approved Phase
+2 fidelity and reliability pass: keep that complete route playable while making
+its characters, interactions, transitions, feast, ending, and resume behavior
+feel as deliberate as Chapter One and the wider game.
 
-## Current priority
+This plan describes the active destination, not shipped Phase 2 behavior. A
+target counts as delivered only after its self-contained increment has passed
+the full build, received both required visual captures when applicable, and
+been pushed to `main`.
 
-Finish the exact-identity character cleanup first, including package-owned
-review descriptors, dead renderer deletion, both required capture sizes, and a
-green full build. Then decompose Chapter One without changing its exported
-behavior, activate content contract version 2, introduce the exact action
-registry and save-schema migration, and only then split the game shell, render
-pipeline, UI surfaces, and reusable illustration families. The final pass makes
-chapter presentation and asset ownership lazy, unifies the harness descriptor,
-empties the architecture allowlist, and removes the shared-chunk warning.
+## Completion boundary
 
-## Per-character loop for future cast additions
+Phase 2 is complete when a new playthrough and every supported Chapter Two save
+reach the same intended scene, dialogue beat, rewards, and player position;
+when the six Chapter Two environments and their cast pass the Storybook Standard
+at both review sizes; and when Violet controls the chapter's optional friendship
+beats and quiet transitions rather than being hurried by timers. The finish also
+includes owl post from Mum and Dad, a truthful illustrated Chapter Three preview,
+reduced-motion review, and an iPad playthrough from the deployed URL.
 
-The existing cast completed this loop before the scale refactor began. Reuse it
-when a later chapter genuinely introduces another character; it is not the
-current execution queue.
+The boundary stays narrow. Gryffindor remains the only sorting outcome. This
+pass does not add Chapter Three gameplay, alternate house rooms, a friendship
+meter, or a broad rewrite of the renderer merely because Chapter Two needs a
+focused presentation seam.
 
-1. Inspect the current renderer and Chapter One content and list only the world,
+## Delivery order
+
+1. Capture the current six registered Chapter Two scenes as the visual baseline.
+   Then fix the Headmaster/card overlap, make the barrier transition and reload
+   agree on Violet's platform position, commit chapter completion atomically,
+   and migrate saves that can otherwise strand her between scenes.
+2. Make the Chapter Two version-2 dialogue, quest, and action descriptions fail
+   clearly when malformed. Introduce save schema version 3 with durable dialogue
+   cursor and reward-receipt meaning, preserving every supported older save
+   through explicit migrations and tests.
+3. Add only the reusable presentation seams this chapter proves it needs:
+   scene-owned player poses, speaking without losing a seated pose, named actor
+   attachments and head anchors, scene-level music overrides, generic chapter
+   previews, and an explicit `owlPost.open` action.
+4. Upgrade one complete character package at a time in this order: conductor;
+   Sorting Hat; Harry, Ron, and Hermione; trolley witch; deputy head and
+   Headmaster; portrait guardian; then Violet's supplemental Chapter Two
+   actions. Each package is reviewed in its actual room and dialogue before the
+   next package begins.
+5. Deliver the story as independently green slices: barrier and platform; train
+   friendships and distinct sweets; the eight-second lake reveal with a
+   player-held continuation; head-anchored Sorting Hat and the feast; password
+   ritual and lingerable common room; then owl post, Chapter Two end card, and
+   the truthful Chapter Three preview. Mum and Dad use generated placeholder
+   voices behind stable replacement keys so later family recordings do not
+   change authored dialogue or saves.
+6. Run the complete Chapter Two walkthrough and every save migration under
+   normal and reduced motion. Capture every affected registered scene at
+   1280×720 and 2560×1440, inspect the assembled chapter against its illusion
+   checklist, run `npm run build`, and finish with the deployed iPad playthrough.
+
+## Per-character loop for the Chapter Two cast
+
+Chapter One established this package workflow. Phase 2 reuses it for the active
+Chapter Two cast in the order above, with one complete playable character as the
+shipping increment.
+
+1. Inspect the current renderer and Chapter Two content and list only the world,
    portrait, direction, expression, outfit, locomotion, prop, and story-action
    states normal gameplay actually requests. Do not invent poses for future
    chapters.
@@ -36,7 +75,8 @@ current execution queue.
    or provider fallback and no automatic retry. Violet starts from the locked
    V8 source at
    `art/characters/violet/canonical/casual-approved.png` and that neutral identity
-   is never regenerated.
+   is never regenerated; Chapter Two adds only the supplemental actions its
+   scenes actually request.
 3. Inspect every batch sheet against the Storybook Standard and name the panels
    proposed for shipping. Resolve visible defects that affect that subset or
    its extraction; record defects in unused figures without letting them block
@@ -76,13 +116,14 @@ bundle must all pass before a push. CI repeats that gate and controls Pages
 deployment, but local green is required so every push is expected to deploy.
 
 When appending a decision, re-read the tail of
-[DECISIONS.md](DECISIONS.md) immediately and take the next free number. D57 and
-D58 are the active character-production decisions; do not reintroduce the
-per-frame mask, isolated-pose, perfect-grid, or art-folder-first milestones they
-superseded.
+[DECISIONS.md](DECISIONS.md) immediately and take the next free number. Follow
+the latest logged production decisions; do not reintroduce per-frame approval
+queues, isolated-pose milestones, or other gates that separate a character from
+its assembled result in the game.
 
-## After the refactor
+## After Phase 2
 
-Pete tests each green checkpoint on GitHub Pages. Player-visible findings can
-trigger a focused correction, but later chapter content and speculative
-character inventory wait until the scale refactor meets its acceptance suite.
+Pete tests each green checkpoint on GitHub Pages while the pass is active. Once
+the polished Chapter Two route is green, visually reviewed, and played on the
+iPad, its findings can shape the Chapter Three detail pass. Spellbook gameplay,
+new classes, and speculative future character inventory wait until then.

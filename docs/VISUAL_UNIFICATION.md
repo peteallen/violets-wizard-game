@@ -2,13 +2,20 @@
 
 ## Why
 
-Pete's review of the deployed Chapter 1 (2026-07-13), confirmed by screen-by-screen inspection: the game renders **three fidelity tiers on every screen** — production-grade painted rooms, clipart-grade character puppets, wireframe-grade UI chrome — plus a fourth visual language of debug-looking affordances (dashed rings, tiny diamonds) and pervasive helper text that a non-reading six-year-old can't use. Individually defensible; together they read as amateur and undercut rooms that are genuinely beautiful. Separately, a batch of catalogued clarity bugs makes the game feel arbitrary ("things don't make sense").
+Pete's review of the deployed Chapter One build on 2026-07-13 found **three
+fidelity tiers on every screen**: production-grade painted rooms,
+clipart-grade character puppets, and wireframe-grade interface chrome, plus a
+fourth visual language of debug-looking affordances and too much helper text for
+a six-year-old who is still learning to read. That review launched this pass;
+it is historical evidence, not a description of the current Chapter One build.
 
-This document records the full unification backlog. The active stop point is
-narrower: finish and deploy the complete Chapter One cast, let Pete test it in
-normal gameplay, and then decide which remaining visual issue comes next. No UI,
-title, affordance, or clarity workstream runs in parallel merely because it is
-listed here.
+Chapter One's rebuilt storybook cast, clearer travel, and painted satchel are
+now deployed. Chapter Two is also playable end to end. The active application
+of this standard is the approved Chapter Two Phase 2 fidelity and reliability
+pass, which is underway but not yet complete. The detailed workstreams below
+remain the visual contract and design record; their original sequencing should
+not be mistaken for the current execution queue, which lives in
+[BUILD_PLAN.md](BUILD_PLAN.md).
 
 **Evidence base:** `output/playwright/blind-public-2-*.png` (full deployed playthrough), the six-dimension progress review (2026-07-13), and the illusion-checklist gap it exposed — geometric checklists pass screens that fail taste.
 
@@ -28,10 +35,11 @@ These seven become a mandatory **Storybook Standard section in every illusion ch
 
 ## Workstream 1 — Characters (the biggest lever)
 
-The puppets are the largest quality gap and Violet is on nearly every screen.
-VU-00 establishes the Storybook Standard and its countable checks; the room
-paintings and existing reference material remain the visual target. Character
-production no longer waits on a second set of style-only reference sheets.
+The puppets were the largest quality gap in the original Chapter One review,
+and Violet remains on nearly every screen. VU-00 established the Storybook
+Standard and its countable checks; the room paintings and existing reference
+material remain the visual target. Character production no longer waits on a
+second set of style-only reference sheets.
 
 VU-01 and VU-02 follow [CHARACTER_PIPELINE.md](CHARACTER_PIPELINE.md). Each
 character is generated with `google/gemini-3.1-flash-image` through
@@ -50,13 +58,22 @@ limbs and hands, clothing with material and fold detail, room-consistent light,
 a stable floor-space contact shadow, and softly varying outlines. These are
 judged across the proposed shipping subset and the assembled game character, not expanded
 into a separate generation-and-review loop for every body part. Puppet and
-portrait share one face construction at two useful detail tiers. The order is
-Violet, Hagrid, the Wandmaker, Madam Malkin, the Menagerie keeper, the narrator
-portrait, the post owl, the cat, the pet owl, and the toad.
+portrait share one face construction at two useful detail tiers. The Chapter
+One order — Violet, Hagrid, the Wandmaker, Madam Malkin, the Menagerie keeper,
+the narrator portrait, the post owl, the cat, the pet owl, and the toad — is
+complete and deployed. Phase 2 now applies the same complete-character loop to
+the conductor, Sorting Hat, Harry, Ron, Hermione, trolley witch, deputy head,
+Headmaster, portrait guardian, and Violet's Chapter Two supplemental actions.
+Those Chapter Two upgrades are targets until their individual green increments
+land.
 
-## Deferred workstream 2 — Affordances: one language, a salience hierarchy, and a lifecycle (VU-03)
+## Workstream 2 — Affordances: one language, a salience hierarchy, and a lifecycle (VU-03)
 
 Pete's playtest feedback (2026-07-13) sharpened this workstream: the dashed rings aren't just ugly — they're *confusing*. They appear everywhere at equal strength (five at once in Diagon Alley), they don't distinguish "your next step" from "optional fun," and they sometimes persist after the interaction is spent. That's three distinct defects: a style problem, a missing **salience hierarchy**, and a missing **affordance lifecycle**. All three are VU-03.
+
+The Chapter One implementation is deployed. Chapter Two Phase 2 preserves this
+same attention budget and lifecycle while adding new friend, feast, password,
+and page-turn interactions.
 
 ### The language (style)
 
@@ -86,29 +103,50 @@ Affordance state derives from quest/flag state — mechanically, not by hand-aut
 
 The map objective is an actual glowing star on the destination — always present for the current objective (fixes the "tap the golden star" / no-star contradiction), and it's the same golden-thread visual language.
 
-## Deferred workstream 3 — Diegetic UI (VU-04, VU-05)
+## Workstream 3 — Diegetic UI (VU-04, VU-05)
 
 - **Dialogue panel rebuild (VU-04)**: the full-width cream slab becomes a **parchment scroll banner** — bottom ~22% of the screen, deckled edges, slight hand-placed rotation, portrait in a small gilt frame, caption chip integrated. **Hard layout rule: the active speaker's puppet is never occluded** — the panel narrows or shifts opposite the speaker. Warm-dark parchment variant for night rooms so the panel stops fighting moody paintings.
 - **Satchel & map rebuild (VU-05)**: the flowchart-in-a-book becomes an **illustrated map** — a generated parchment map painting of Diagon Alley (stylized vignette composition; the pipeline's first UI painting) with locations as small painted vignettes, the objective star glowing, dotted ink path drawn as quill strokes. Tabs become leather bookmarks; the software gear becomes a **brass keyhole** (voiced "Ask a grown-up!" on tap); locked locations get soft fog, not gray boxes with X's. Icon audit across the game: every icon pictorial and diegetic (wand, robe, paw — never hearts/X's/gears).
 
-The deterministic parchment map and generated control props are now integrated into the live satchel. Painted Map and Cards bookmarks own top navigation; the grown-up keyhole and Start fresh luggage tag sit on the bottom book edge; close is the only X. Four textless painted destination panels form a left-to-right journey, while code-rendered names are centered inside each panel’s deliberate blank parchment band. Here, completed-stop checks, and the written Next flag make current state and intended travel explicit without baking progress into the art. Chapters Two and Three have no authored travel map, so their registered review scenes open directly to a single centered Cards bookmark instead of showing a misleading Chapter One Map page. Generated source art and prompts live under `art/ui/satchel`; only keyed WebP props ship.
+The dialogue composition and deterministic parchment satchel are now deployed.
+Painted Map and Cards bookmarks own top navigation; the grown-up keyhole and
+Start fresh luggage tag sit on the bottom book edge; close is the only X. Four
+textless painted destination panels form a left-to-right journey, while
+code-rendered names sit inside each panel's deliberate blank parchment band.
+Here, completed-stop checks, and the written Next flag make current state and
+intended travel explicit without baking progress into the art. Chapters Two and
+Three have no authored travel map, so their registered review scenes open
+directly to a single centered Cards bookmark instead of showing a misleading
+Chapter One Map page. Generated source art and prompts live under
+`art/ui/satchel`; only keyed WebP props ship. Phase 2 keeps this deployed surface
+and makes only the scene-specific composition changes Chapter Two needs.
 
-## Deferred workstream 4 — Text purge (VU-07)
+## Workstream 4 — Text rule (VU-07)
 
 **Rule (tightens GAME_DESIGN; exceptions per D36):** during play, on-screen text is caption chips (≤3 words) and proper nouns on title/chapter cards — plus two deliberate exceptions: **readable story objects** (the letter's parchment, spellbook incantations, rune tiles, potion labels — reading them *is* the content per the learning layer, and their written words must match any narration verbatim) and **short action labels on primary controls** (≤3 easy caption-vocabulary words: "Hear the letter", "Again", the update prompt's "Reload"/"Later"). Everything else — helper sentences, subtitles, state labels — dies; voice + icons carry all instruction. The parent panel is exempt (it's *for* adults).
 
-Kill list from the current build: "Tap the page to continue" (the pulsing arrow already exists — first-time voice hint covers it), "A map that remembers where Violet needs to go," "Tap to travel," "Violet goes here," "Still hidden," "Hold for grown-ups," "Best with sound on" clutter, the title's subtitle sentence and envelope eyebrow text. Each removal that loses information gains a voice line (small VU voice-gen batch rides the existing pipeline + QA loop).
+The original kill list included "Tap the page to continue," "A map that
+remembers where Violet needs to go," "Tap to travel," "Violet goes here,"
+"Still hidden," "Hold for grown-ups," "Best with sound on," the title subtitle,
+and the envelope eyebrow. It remains here as a regression checklist rather than
+a claim that all of this clutter is present in the current build. Any removal
+that loses information gains a voice line through the existing generation and
+quality-assurance pipeline.
 
-## Deferred workstream 5 — Title v3 (VU-06)
+## Workstream 5 — Title (VU-06)
 
-The in-flight redesign is a real step up (keep: Almendra masthead, composition, owl placement) but it's typography-forward. v3 goes **illustration-forward**: a painted hero night scene — the castle across the lake with warm windows (generated once, and it *is* the Chapter 2 lake-vista painting, so the asset does double duty) — Violet-and-owl vignette, masthead, and **one glowing envelope to tap**. Text: title + button label, nothing else. Absorbs and supersedes the uncommitted title work; the owl blink fix lands here.
+The deterministic castle, reflective lake, mist, shore, Violet, and owl
+composition is deployed with the Almendra masthead and one envelope action. The
+earlier idea of sharing a newly generated title painting with the Chapter Two
+lake vista did not become part of the Chapter One delivery and is not part of
+the active Phase 2 scope; Chapter Two keeps its current lake painting while
+receiving dedicated end-card and Chapter Three preview art.
 
-The deterministic code-only castle, reflective lake, mist, shore, Violet, and owl composition is now integrated into the live title with the Almendra masthead and one envelope action. The shared generated painted lake-vista asset is deferred until the post-cast priority decision; it is not part of the current character deliverable.
+## Workstream 6 — Chapter One clarity record (VU-08)
 
-## Deferred workstream 6 — Clarity bug batch (VU-08)
-
-The deferred "doesn't make sense" list remains recorded here for the post-cast
-priority decision:
+The original "doesn't make sense" list remains recorded here as acceptance
+history. It is not the Chapter Two Phase 2 queue, and an item should not be
+treated as currently broken without checking the deployed behavior:
 
 1. **Empty walk-taps no longer count as puzzle failures** — the hint ladder's failure rungs scope to interactions with the active puzzle; idle-time rungs (pet glance, voice repeat) remain time-based. Five happy taps must never auto-complete the letter.
 2. **The written letter text = the narrated text, exactly**, original wording only — and "We await your owl." is removed (near-verbatim book fragment; hard IP line).
@@ -128,18 +166,25 @@ priority decision:
 ## Active order and stopping point
 
 ```
-VU-01 Violet full sheet + normal-game integration + deploy
-  → VU-02 one complete cast member + deploy, repeated through Chapter One
-  → Pete tests the live cast
-  → choose the next workstream from player-visible findings
+Chapter One storybook cast, travel, and satchel deployed
+  → capture the playable Chapter Two baseline
+  → repair Chapter Two save, completion, and contract seams
+  → deliver one complete Chapter Two character or story slice at a time
+  → dual-resolution, reduced-motion, build, and deployed iPad review
 ```
 
-VU-01 starts from the locked Violet V8 identity and does not wait for more
-reference art. The deferred workstreams above preserve useful product direction,
-but they do not authorize parallel implementation before the cast test.
+The locked Violet V8 identity remains the source for any Chapter Two supplemental
+actions and is not regenerated. The Chapter Two pass follows the detailed order
+in [BUILD_PLAN.md](BUILD_PLAN.md); nothing in this visual record authorizes
+Chapter Three gameplay or speculative character inventory.
 
 Every VU work package follows the standing loop (VERIFICATION.md): implement → capture → self-review against the upgraded checklist → merge when green. For character work, the increment is one complete playable character rather than one isolated sprite. Commit and push **every green increment** (D33) so the GitHub Pages build is always current; Pete tests there continuously and feedback arrives as conversation.
 
 ## Non-goals
 
-No new chapters, mechanics, spells, or rooms. No changes to the sim/engine architecture beyond the clarity fixes. The room paintings themselves are untouched — they're the standard everything else is rising to.
+No Chapter Three gameplay, alternate house outcomes, friendship meter, or broad
+renderer-monolith rewrite. The six current Chapter Two room paintings remain the
+standard everything else rises to; Phase 2 adds only the approved feast variant,
+Chapter Two end card, and Chapter Three preview art. Focused simulation, save,
+contract, and presentation changes are allowed where Chapter Two's reliability
+and assembled scenes require them.

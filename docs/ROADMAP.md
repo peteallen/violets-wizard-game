@@ -13,10 +13,30 @@ World/Game split running (fixed-timestep); rooms, tap-walk, hotspots, dialogue (
 ### M2 — Chapter 1 full production ⭐ first Violet playtest
 Painted rooms, animated characters, real voice (narrator, Guide, Wandmaker + QA loop), music cues, SFX, the letter-opening moment polished to perfection, pet choice + follow. **Gate: Violet plays Chapter 1. This is the real test of every UX assumption — tap-to-walk comprehension, dialogue pacing, caption reading, hint ladder timing. Everything downstream gets tuned by what we watch her do.**
 
-> **Status 2026-07-14:** production landed but Pete's review found a three-tier fidelity mismatch (rooms ≫ puppets ≫ UI) and a clarity-bug batch. The active part of the **Visual Unification Pass** ([VISUAL_UNIFICATION.md](VISUAL_UNIFICATION.md)) is now the Chapter One cast. It locks the approved Violet V8 identity, generates one coherent multi-view and core-action sheet set per character from only the states normal gameplay requests, reviews the named proposed shipping subset across those batches, slices the selected panels, connects the complete character to the real game, and deploys it before moving to the next cast member. Pete tests after the cast is live and then chooses the next priority; the other visual workstreams remain deferred until that decision. Per D32 there are no human approval gates: agents review and ship green increments, and Pete's feedback comes from playing the GitHub Pages build. "Gates" in this file are milestone checkpoints and feedback moments, never approval queues.
+> **Status 2026-07-16:** Chapter One is deployed end to end with its rebuilt
+> storybook character cast, clearer Hagrid-led travel, and painted satchel. That
+> work is no longer the active production queue. Per D32 there are no human
+> approval gates: agents inspect the registered captures, ship each green
+> increment, and Pete's feedback comes from playing the GitHub Pages build.
+> "Gates" in this file are milestone checkpoints and feedback moments, never
+> approval queues.
 
-### M3 — Chapters 2–3
-Sorting into Gryffindor, Gryffindor theming, icon choices; spellbook + casting + first incantation assemblies (learning layer debut — watch her reaction to letter tiles *closely*; this is the "did we ruin it?" checkpoint, and the parent dial exists if we did), quest chains, side quests, frog card album. **Gate: Violet playtest #2.**
+### M3 — Chapter 2 polish, then Chapter 3
+
+Chapter Two is already playable on `main`: Violet reaches Platform Nine and
+Three-Quarters, rides the train, crosses the lake, is sorted into Gryffindor,
+and reaches her common room. Its approved Phase 2 fidelity and reliability pass
+is the active milestone and is not yet complete. The pass first makes live play,
+reload, and chapter completion agree; then it strengthens the Chapter Two cast,
+train friendships, lake reveal, feast, password ritual, common-room page turn,
+owl post, and truthful Chapter Three preview. It preserves Gryffindor as the only
+outcome and does not add Chapter Three gameplay.
+
+After that pass, Chapter Three introduces the spellbook, casting, and the first
+incantation assemblies. That learning-layer debut remains the moment to watch
+Violet's reaction to letter tiles closely; the parent dial exists if they make
+the adventure feel like homework. **Gate: Violet playtest #2 on the polished
+Chapter Two route before Chapter Three production expands.**
 
 ### M4 — Chapters 4–5
 Minigame framework + broom flight; Alohomora optional doors; encounter framework v1 with the troll; Reparo & points celebrations. **Gate: does the troll fight land as exciting-not-scary? Violet playtest #3.**

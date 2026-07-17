@@ -2,7 +2,14 @@
 
 A private, non-commercial fan game for Violet (6): she goes to Hogwarts as a first-year, learns spells class by class, and at the end of the year she duels Voldemort and wins.
 
-**Status: Chapter One is playable end to end, with an intentional Chapter Two preview.** The current game is published at [peteallen.github.io/violets-wizard-game](https://peteallen.github.io/violets-wizard-game/). The documentation remains the product source of truth; read it in this order:
+**Status: Chapters One and Two are playable end to end.** Chapter One's rebuilt
+storybook cast and painted satchel are deployed. Chapter Two's approved Phase 2
+fidelity and reliability pass is now active, but that pass is not yet complete;
+the playable chapter remains the baseline while its presentation, story detail,
+and save behavior are brought up to the standard of Chapter One and the wider
+game. The current game is published at
+[peteallen.github.io/violets-wizard-game](https://peteallen.github.io/violets-wizard-game/).
+The documentation remains the product source of truth; read it in this order:
 
 | Doc | What it holds |
 |---|---|
@@ -13,9 +20,9 @@ A private, non-commercial fan game for Violet (6): she goes to Hogwarts as a fir
 | [docs/AUDIO_DIRECTION.md](docs/AUDIO_DIRECTION.md) | Voice cast, music themes, SFX identity, generation + QA pipeline |
 | [docs/SET_PIECES.md](docs/SET_PIECES.md) | The technique toolbox + exact spec for every magical moment (how the Diagon Alley wall actually opens) |
 | [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) | Tech stack, module layout, data contracts, performance playbook + device-reality rules, testing, deploy |
-| [docs/VERIFICATION.md](docs/VERIFICATION.md) | How AI agents prove visual work looks right: deterministic harness, keyframe review, goldens, human gate |
-| [docs/BUILD_PLAN.md](docs/BUILD_PLAN.md) | Work packages with contracts and acceptance criteria — ready for engineers to fan out |
-| [docs/VISUAL_UNIFICATION.md](docs/VISUAL_UNIFICATION.md) | The active pass: one storybook fidelity tier for characters, UI, and affordances + the clarity-bug batch |
+| [docs/VERIFICATION.md](docs/VERIFICATION.md) | How agents prove visual work looks right through deterministic harness scenes, dual-resolution captures, and author self-review |
+| [docs/BUILD_PLAN.md](docs/BUILD_PLAN.md) | The active Chapter Two Phase 2 delivery order, contracts, and acceptance criteria |
+| [docs/VISUAL_UNIFICATION.md](docs/VISUAL_UNIFICATION.md) | The shared storybook fidelity standard and how the completed Chapter One work now guides Chapter Two |
 | [docs/DECISIONS.md](docs/DECISIONS.md) | Running decision log — every choice, its reasoning, and open questions |
 | [docs/ROADMAP.md](docs/ROADMAP.md) | Build order, milestones, and Violet playtest checkpoints |
 

@@ -1,6 +1,11 @@
 # Chapters
 
-The story arc: book 1 as eight playable chapters, each sized for one to three of Violet's 20–30 minute sessions. Chapter 1 is specified in full detail (it's built first); later chapters are specified at the beat level and get a detail pass — informed by watching her play — before their build begins.
+The story arc: book 1 as eight playable chapters, each sized for one to three of
+Violet's 20–30 minute sessions. Chapters One and Two are playable. Chapter Two
+is now in an active Phase 2 fidelity and reliability pass; the targets below are
+the approved destination for that pass, not a claim that the polish has already
+landed. Chapters Three through Eight remain at the beat level and get their own
+detail pass, informed by watching her play, before production begins.
 
 Every chapter ends with an illustrated **chapter card** (like a picture-book page turn) and a triumphant sting, and unlocks its replay in the parent panel. Autosave means she can stop mid-chapter at any scene boundary. **Between chapters, owl post arrives from home** — a voiced letter from Mum and Dad that recaps her progress diegetically and marks the year turning (see GAME_DESIGN.md's richness layer). The seasons advance with the chapters: autumn gold (3–4), Halloween (5), deep winter and Christmas (6), spring (7), summer (8) — map and key rooms carry seasonal variants.
 
@@ -9,6 +14,10 @@ Every chapter ends with an illustrated **chapter card** (like a picture-book pag
 ---
 
 ## Chapter 1 — The Letter & Diagon Alley
+
+> **Status 2026-07-16:** playable end to end on the deployed build, including
+> the rebuilt storybook cast, Hagrid's clearer travel beats, and the painted
+> satchel.
 
 **Goal:** teach every core interaction (tap-walk, talk, inspect, map travel) inside the most wish-fulfilling sequence in the source: *you're a witch, Violet.* No spells yet — wonder first, mechanics minimal.
 
@@ -34,17 +43,63 @@ Every chapter ends with an illustrated **chapter card** (like a picture-book pag
 
 ## Chapter 2 — Platform 9¾ & The Sorting
 
+> **Status 2026-07-16:** the complete route is playable on `main`. The approved
+> Phase 2 pass described below is active but not yet complete.
+
 **Goal:** friends and belonging. Lowest-mechanics chapter — it's theater, and that's fine this early.
 
-**Beats:** run through the barrier at King's Cross (tap the wall, comic hesitation, whoosh) → Hogwarts Express compartment: meet **Harry, Ron, and Hermione** as friendly classmates who recur around Violet's adventure rather than replaying their original scenes (and the trolley: pick a sweet — Bertie Bott's roulette with silly reaction faces) → first sight of the castle across the lake at night (pure vista beat, hold it) → the Great Hall → **the Sorting Hat conversation**: the Hat (theatrical, ancient, kind) talks *to her*, asks what she cares about via 2–3 icon choices, and recognizes her as a Gryffindor. Her answers personalize the Hat's reasoning rather than changing the outcome. Gryffindor theming (scarf, common room, banner colors) persists forever.
+**Phase 2 target beats:** run through the barrier at King's Cross after a comic
+hesitation and land on the platform while the whoosh transition is fully opaque.
+On the Hogwarts Express, Harry, Ron, and Hermione become independently tappable
+friends rather than a single group prompt. Violet chooses what she wants to talk
+about — **Castle**, **Magic**, or **Friends** — and each classmate answers in a
+distinct voice. The trolley offers Beans, a Chocolate Frog, and a Cauldron Cake
+with different reactions; Beans branch again into berry, pepper, or soap.
+
+The first sight of the castle across the lake holds for eight unhurried seconds
+before Violet chooses when to continue. In the Great Hall, the Sorting Hat sits
+on her head and speaks while she remains visibly seated. Its existing three by
+three answer matrix stays intact: icon choices personalize the Hat's explanation
+but always recognize her as a Gryffindor. The result becomes a real feast with a
+warm music cue, food on the tables, optional friend taps, and a clear ten-point
+celebration before the hidden frog card can be collected without covering the
+Headmaster or his dialogue.
+
+At the portrait door, Violet makes a three-icon password from Dragon, Star, and
+Frog. All six permutations are valid, and **Keep it** or **Again** lets her own
+the ritual without a wrong-answer state. The common room then belongs to her:
+it waits instead of advancing by itself, and Violet turns the page by tapping
+the illuminated page corner. Owl post from home closes the chapter before a
+dedicated Chapter Three preview.
 
 > **LOCKED (D68):** Violet is a Gryffindor. Chapter Two builds the Gryffindor result and common room; other house variants are not part of its initial production scope.
 
+The owl-post letter is voiced with generated Mum and Dad placeholders held
+behind stable replacement keys. Its exact text is:
+
+> Dear Violet, We heard you made it to Hogwarts and found your new house. We are
+> proud of you for trying something brave, and glad you found good friends beside
+> you. Love, Mum and Dad.
+
+The dedicated Chapter Three preview narrates exactly:
+
+> Next time, Violet opens her spellbook, makes light, and sends a feather
+> floating.
+
 **Quests:** main only. 2 frog cards (train compartment, Great Hall). First house points awarded at the feast.
 
-**Mechanics proven:** icon dialogue choices, house theming system, multi-scene chapter flow.
+**Current foundation proves:** icon dialogue choices, the fixed Gryffindor house
+theme, and a multi-scene chapter flow. Phase 2 adds reliable resume/completion
+semantics and the player-held continuations above without changing the outcome.
 
-**Asset list:** 6 rooms (King's Cross, barrier, compartment, lake vista, Great Hall, Gryffindor common room); voices: conductor, trolley witch, Harry, Ron, Hermione, Sorting Hat, McGonagall-ish professor, Dumbledore-ish headmaster; music: train rhythm, lake-vista wonder swell, Sorting tension-comedy, feast warmth. Other house-room variants are deferred until deliberately needed.
+**Asset target:** keep the six current room paintings (King's Cross, barrier,
+compartment, lake vista, Great Hall, and Gryffindor common room), add a food-laden
+feast variant, and create dedicated Chapter Two end-card and Chapter Three
+preview art. Voices cover the conductor, trolley witch, Harry, Ron, Hermione,
+Sorting Hat, deputy head, Headmaster, portrait guardian, and generated Mum and
+Dad placeholders. Music covers train rhythm, the lake-vista wonder swell,
+Sorting tension-comedy, and feast warmth. Other house-room variants remain out
+of scope until deliberately needed.
 
 ---
 
