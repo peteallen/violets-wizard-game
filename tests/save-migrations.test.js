@@ -124,6 +124,33 @@ describe('save schema migrations', () => {
       .toEqual([[1, 2], [2, 3]]);
   });
 
+  it('repairs a current-version save at a retired resume point without changing durable progress', () => {
+    const save = createSaveV3({
+      now: '2026-07-17T12:00:00.000Z',
+      appVersion: 'current-resume-repair-test',
+      worldSeed: 42,
+    });
+    save.progress.highestUnlockedChapter = 2;
+    save.progress.questFlags['ch1.ticketReceived'] = true;
+    save.collections.cards.push('morgana');
+    save.resume = {
+      ...LEGACY_CHAPTER_TWO_PREVIEW,
+      spawn: 'start',
+      dialogue: { script: 'ch2.dialogue.retired', node: 'line' },
+    };
+    const before = structuredClone(save);
+
+    const migrated = migrateSave(save, migrationOptions({ checkpointRedirects: [] }));
+
+    expect(migrated.resume).toEqual({ ...CHAPTER_TWO_OPENING, dialogue: null });
+    expect(migrated.progress).toEqual(before.progress);
+    expect(migrated.character).toEqual(before.character);
+    expect(migrated.spellbook).toEqual(before.spellbook);
+    expect(migrated.collections).toEqual(before.collections);
+    expect(migrated.learning).toEqual(before.learning);
+    expect(save).toEqual(before);
+  });
+
   it('migrates version one through version three without changing existing durable state', () => {
     for (const fixtureId of ['freshChapterOne', 'midChapterOne', 'completedChapterOne']) {
       const fixture = LEGACY_SAVE_FIXTURES[fixtureId];
