@@ -87,7 +87,6 @@ export const UI_REVIEW_SCENES = Object.freeze([
   'ui-satchel-cards-review',
   'ui-satchel-ch2-cards-review',
   'ui-satchel-ch3-cards-review',
-  'ui-chapter-card-review',
 ]);
 
 export const UI_RECTS = Object.freeze({
@@ -516,11 +515,9 @@ export function objectiveOverlayLayout() {
 
 export function chapterCardLayout() {
   return Object.freeze({
-    panel: Object.freeze({ x: 156, y: 82, width: 968, height: 550 }),
-    ticket: Object.freeze({ x: 218, y: 136, width: 844, height: 320 }),
-    illustration: Object.freeze({ x: 246, y: 168, width: 260, height: 250 }),
-    title: Object.freeze({ x: 520, y: 184, width: 492, height: 224 }),
-    action: Object.freeze({ x: 425, y: 506, width: 430, height: 91 }),
+    plaque: Object.freeze({ x: 60, y: 24, width: 720, height: 306 }),
+    title: Object.freeze({ x: 152, y: 92, width: 536, height: 128 }),
+    action: Object.freeze({ x: 72, y: 592, width: 360, height: 96 }),
   });
 }
 
@@ -776,11 +773,6 @@ export class UIRenderer {
       ], {
         map: scene === 'ui-satchel-cards-review' ? chapter1Map : null,
       });
-    } else {
-      this.drawChapterCard(context, {
-        title: 'Platform Nine and Three-Quarters',
-        buttonLabel: 'Continue',
-      }, time, { reducedMotion });
     }
     return true;
   }
@@ -1279,31 +1271,48 @@ export class UIRenderer {
       context.fillStyle = storyGradient(context);
       context.fillRect(0, 0, WORLD.width, WORLD.height);
     } else {
-      context.fillStyle = 'rgba(20,17,38,0.36)';
+      context.fillStyle = 'rgba(20,17,38,0.12)';
       context.fillRect(0, 0, WORLD.width, WORLD.height);
     }
     const layout = chapterCardLayout();
-    const animationTime = reducedMotion ? 0 : time;
-    drawDeckledParchment(context, layout.panel, { fill: '#efe0bd', ornament: false });
-    drawPlatformTicket(context, layout.ticket, layout.illustration, animationTime, { reducedMotion });
+    const plaqueImage = this.imageFor('ui/story/chapter-one-plaque-v2');
+    if (
+      plaqueImage?.complete
+      && plaqueImage.naturalWidth > 0
+      && plaqueImage.naturalHeight > 0
+    ) {
+      context.drawImage(
+        plaqueImage,
+        layout.plaque.x,
+        layout.plaque.y,
+        layout.plaque.width,
+        layout.plaque.height,
+      );
+    } else {
+      drawDeckledParchment(context, layout.plaque, {
+        fill: '#e7d09d',
+        edge: '#6e4b68',
+        ornament: false,
+      });
+    }
     context.fillStyle = '#382a24';
-    context.font = '700 56px "Andika", "Trebuchet MS", sans-serif';
+    context.font = '700 50px "Almendra", Georgia, serif';
     wrapText(
       context,
       childFacingUiText(card?.title ?? 'Platform Nine and Three-Quarters', 'proper-name'),
       layout.title.x,
-      layout.title.y + 68,
+      layout.title.y + 54,
       layout.title.width,
-      64,
-      3,
+      52,
+      2,
       'center',
     );
     if (card?.buttonLabel !== null) {
-      drawChapterAction(
-        context,
-        childFacingUiText(card?.buttonLabel ?? 'Continue', 'action'),
-        layout.action,
-      );
+      drawParchmentAction(context, layout.action, {
+        label: childFacingUiText(card?.buttonLabel ?? 'Continue', 'action'),
+        icon: vectorControlIcon('quill'),
+        image: this.imageFor('ui/story/action-note-v2'),
+      });
     }
     return layout;
   }

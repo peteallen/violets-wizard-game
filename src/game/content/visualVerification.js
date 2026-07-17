@@ -183,7 +183,8 @@ const REVIEW_SCENE_ILLUSION_CHECKS = Object.freeze({
     'Exactly one detailed brass quest compass, one live three-word-or-shorter caption, and one wax close seal remain mutually separate on the painted leather-backed parchment, with zero decorative owl filler.',
   ],
   'ui-chapter-card-review': [
-    'One chapter painting, one title, and one 88px-or-larger action remain readable and mutually non-overlapping, with zero decorative owl filler.',
+    'The real Chapter One platform painting keeps its locomotive face, steam, center gold ticket, luggage, and platform depth visible around exactly one textless railway plaque with one live two-line title and one separate live 88px-or-larger Continue note.',
+    'The composition contains zero giant covering parchment, duplicate drawn ticket or arch, decorative owl filler, subtitle, Chapter Two ceremony cloth, or Chapter Two completion text.',
   ],
   'ch1-follow-hagrid-review': [
     'Hagrid visibly walks out through the bedroom doorway after his introduction, leaves no stationary second Hagrid interaction behind, and the sparkle footprints point from Violet to that door.',

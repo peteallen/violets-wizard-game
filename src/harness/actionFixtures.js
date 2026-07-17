@@ -270,7 +270,7 @@ registry
     [{ frame: 30, type: 'tap', target: 'hud.quest' }],
   ))
   .register('ui-chapter-card-review', createFixture(
-    'Hold the illustrated Chapter One completion page.',
+    'Hold the real Chapter One platform painting with its compact plaque and Continue note.',
   ))
   .seal();
 

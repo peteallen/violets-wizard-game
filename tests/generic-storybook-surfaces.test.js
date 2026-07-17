@@ -128,7 +128,7 @@ describe('remaining generic Storybook UI surfaces', () => {
     expect(new Set(context.texts)).toEqual(new Set(['Find your wand!']));
   });
 
-  it('composes Chapter One as a platform ticket with a separate generous action', () => {
+  it('keeps the Chapter One fallback compact, deterministic, and separate from its action', () => {
     const renderer = new UIRenderer({ characterRenderer: { draw: () => {} } });
     const first = recordingContext();
     const replayed = recordingContext();
@@ -157,14 +157,46 @@ describe('remaining generic Storybook UI surfaces', () => {
     ]);
     expect(first.texts.join(' ')).toContain('Platform Nine and Three-Quarters');
     expect(first.texts).toContain('Continue');
+    expect(first.calls.some(([name]) => name === 'drawImage')).toBe(false);
 
     const layout = chapterCardLayout();
+    expect(layout.plaque).toEqual({ x: 60, y: 24, width: 720, height: 306 });
+    expect(layout.title).toEqual({ x: 152, y: 92, width: 536, height: 128 });
+    expect(layout.action).toEqual({ x: 72, y: 592, width: 360, height: 96 });
     expect(layout.action.width).toBeGreaterThanOrEqual(88);
     expect(layout.action.height).toBeGreaterThanOrEqual(88);
-    expect(overlaps(layout.action, layout.ticket)).toBe(false);
+    expect(overlaps(layout.action, layout.plaque)).toBe(false);
     expect(overlaps(layout.action, layout.title)).toBe(false);
-    expect(overlaps(layout.illustration, layout.title)).toBe(false);
+    expect(layout.plaque.x + layout.plaque.width).toBeLessThanOrEqual(800);
+    expect(layout.action.x + layout.action.width).toBeLessThanOrEqual(450);
     expect(first.calls.some(([name]) => name === 'lineTo')).toBe(false);
-    expectOrganicFiniteSurface(first, 70);
+    expectOrganicFiniteSurface(first, 20);
+  });
+
+  it('layers the decoded railway plaque and action note over live code-owned text', () => {
+    vi.stubGlobal('Image', class TestImage {});
+    const renderer = new UIRenderer({ characterRenderer: { draw: () => {} } });
+    const plaque = { complete: true, naturalWidth: 1600, naturalHeight: 680 };
+    const actionNote = { complete: true, naturalWidth: 1200, naturalHeight: 400 };
+    renderer.images.set('ui/story/chapter-one-plaque-v2', plaque);
+    renderer.images.set('ui/story/action-note-v2', actionNote);
+    const context = recordingContext();
+    const card = { title: 'Platform Nine and Three-Quarters', buttonLabel: 'Continue' };
+
+    const layout = renderer.drawChapterCard(context, card, 19, {
+      paintedBackground: true,
+      reducedMotion: true,
+    });
+
+    expect(context.calls.filter(([name]) => name === 'drawImage')).toEqual([
+      ['drawImage', plaque, 60, 24, 720, 306],
+      ['drawImage', actionNote, 0, 0, 240, 400, 72, 592, 57.6, 96],
+      ['drawImage', actionNote, 240, 0, 720, 400, 129.6, 592, 244.8, 96],
+      ['drawImage', actionNote, 960, 0, 240, 400, 374.4, 592, 57.6, 96],
+    ]);
+    expect(context.texts.join(' ')).toContain('Platform Nine and Three-Quarters');
+    expect(context.texts).toContain('Continue');
+    expect(overlaps(layout.title, layout.action)).toBe(false);
+    expect(context.depth).toBe(0);
   });
 });

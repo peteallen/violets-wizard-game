@@ -112,6 +112,10 @@ but it may not invent a new visual meaning for a material or reuse a familiar
 object for an unrelated action. Nothing on screen should look like software
 chrome wearing a parchment color.
 
+The implementation and upgrade status of every player-facing family is kept in
+[UI_ASSET_INVENTORY.md](UI_ASSET_INVENTORY.md); that inventory does not weaken
+the material and state rules below.
+
 ### Material semantics
 
 **Blackberry leather means containers and navigation.** It forms the satchel,

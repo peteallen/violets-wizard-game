@@ -819,9 +819,25 @@ registry
     }),
     ['character.violet', 'character.hagrid'],
   ))
-  .register('ui-chapter-card-review', characterReviewFixture(
-    'ui-chapter-card-review',
-    'The illustrated Chapter One completion page and invitation action.',
+  .register('ui-chapter-card-review', createFixture(
+    'The real Chapter One platform painting with its compact railway plaque and separate Continue note.',
+    { chapter: 1, scene: 'ch1.chapterCard' },
+    createSave({
+      scene: 'ch1.chapterCard',
+      room: 'ch1.chapterCardRoom',
+      spawn: 'start',
+      questFlags: {
+        ...throughWandFlags,
+        'ch1.trimChosen': true,
+        'ch1.petChosen': true,
+        'ch1.petNamed': true,
+        'ch1.shoppingComplete': true,
+        'ch1.ticketReceived': true,
+      },
+      wandId: 'violet-first-wand',
+      robeTrim: 'purple',
+      pet: { type: 'owl', name: 'Moonbeam' },
+    }),
   ))
   .seal();
 

@@ -241,6 +241,25 @@ describe('action fixtures', () => {
     expect(getActionFixture('ui-letter-reading-review').actions).toEqual([
       { frame: 30, type: 'tap', target: 'letter.envelope' },
     ]);
+    expect(getStateFixture('ui-chapter-card-review')).toMatchObject({
+      entry: { chapter: 1, scene: 'ch1.chapterCard' },
+      save: {
+        resume: {
+          chapter: 'ch1',
+          scene: 'ch1.chapterCard',
+          room: 'ch1.chapterCardRoom',
+          spawn: 'start',
+        },
+        progress: {
+          questFlags: {
+            'ch1.ticketReceived': true,
+          },
+        },
+      },
+    });
+    expect(getStateFixture('ui-chapter-card-review').save.progress.questFlags)
+      .not.toHaveProperty('ch1.chapterCardSeen');
+    expect(getActionFixture('ui-chapter-card-review').actions).toEqual([]);
   });
 
   it('rejects coordinate-like targets and non-monotonic scripts', () => {
