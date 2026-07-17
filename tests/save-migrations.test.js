@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
+  createSaveV3,
   validateSaveV1,
   validateSaveV2,
   validateSaveV3,
@@ -58,6 +59,22 @@ const CHAPTER_TWO_COMPLETION_REDIRECT = Object.freeze({
   to: CHAPTER_THREE_START,
 });
 
+const CHAPTER_ONE_CARD = Object.freeze({
+  chapter: 'ch1',
+  scene: 'ch1.chapterCard',
+  room: 'ch1.chapterCardRoom',
+  spawn: 'start',
+});
+
+const CHAPTER_ONE_TICKET_CHECKPOINT_REDIRECT = Object.freeze({
+  when: Object.freeze({
+    chapter: 'ch1',
+    allFlags: Object.freeze(['ch1.ticketReceived']),
+    noFlags: Object.freeze(['ch1.complete']),
+  }),
+  to: CHAPTER_ONE_CARD,
+});
+
 function validateVersion(save, version) {
   if (version === 1) validateSaveV1(save);
   else if (version === 2) validateSaveV2(save);
@@ -69,6 +86,7 @@ function migrationOptions(overrides = {}) {
   return {
     resumeRedirects: [CHAPTER_TWO_REDIRECT],
     completionRedirects: [CHAPTER_TWO_COMPLETION_REDIRECT],
+    checkpointRedirects: [CHAPTER_ONE_TICKET_CHECKPOINT_REDIRECT],
     validateVersion,
     ...overrides,
   };
@@ -139,6 +157,29 @@ describe('save schema migrations', () => {
       expect(JSON.stringify(migrated.progress[field])).toBe(JSON.stringify(save.progress[field]));
     }
     expect(save).toEqual(before);
+  });
+
+  it('repairs a current save whose ticket checkpoint is stranded in Diagon Alley', () => {
+    const save = createSaveV3({ now: '2026-07-17T04:00:00.000Z', worldSeed: 42 });
+    save.progress.questFlags['ch1.ticketReceived'] = true;
+    save.resume = {
+      chapter: 'ch1',
+      scene: 'ch1.ticket',
+      room: 'ch1.diagonStreet',
+      spawn: 'east',
+      dialogue: null,
+    };
+    const before = structuredClone(save);
+
+    const repaired = migrateSave(save, migrationOptions());
+
+    expect(repaired.resume).toEqual({ ...CHAPTER_ONE_CARD, dialogue: null });
+    expect(repaired.progress).toEqual(save.progress);
+    expect(save).toEqual(before);
+
+    repaired.progress.questFlags['ch1.complete'] = true;
+    repaired.resume = { ...before.resume };
+    expect(migrateSave(repaired, migrationOptions()).resume).toEqual(before.resume);
   });
 
   it('keeps the version-one same-chapter preview repair before adding v3 dialogue state', () => {

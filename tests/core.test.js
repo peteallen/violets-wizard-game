@@ -3,7 +3,7 @@ import { clamp, easeInOutCubic, pointInCircle } from '../src/game/core/math.js';
 import { SeededRandom } from '../src/game/core/rng.js';
 import { SoundEngine } from '../src/game/core/SoundEngine.js';
 import { Game, roomStateDuringSetPiece, roomTransitionState } from '../src/game/Game.js';
-import { UI_RECTS } from '../src/game/render/UIRenderer.js';
+import { UI_RECTS, chapterCardLayout } from '../src/game/render/UIRenderer.js';
 
 afterEach(() => {
   vi.useRealTimers();
@@ -1104,6 +1104,50 @@ describe('room transition choreography', () => {
 });
 
 describe('Game dialogue controls', () => {
+  it('makes the visible Chapter One Continue button skip the page-turn wait', () => {
+    const state = {
+      roomId: 'ch1.chapterCardRoom',
+      setPiece: {
+        id: 'sp.chapterCard',
+        requestedId: 'sp.chapterCard',
+        descriptor: { params: { specification: 'chapter-card' } },
+      },
+      dialogue: null,
+      overlay: null,
+      targets: [],
+      hasSatchel: true,
+      hasWand: true,
+    };
+    const game = Object.create(Game.prototype);
+    game.shouldShowDebugReset = () => false;
+    game.shouldShowReplayExit = () => false;
+    game.sound = { unlock: vi.fn(() => Promise.resolve()), playSfx: vi.fn() };
+    game.replayMode = false;
+    game.screen = 'playing';
+    game.resumeRecap = null;
+    game.lastRenderState = state;
+    game.world = {
+      chapter: { id: 'ch1' },
+      snapshot: vi.fn(() => state),
+      setPieces: { skip: vi.fn() },
+    };
+    game.processWorldEvents = vi.fn();
+
+    expect(game.semanticTargets()).toContainEqual(expect.objectContaining({
+      id: 'chapter.card.continue',
+    }));
+
+    const action = chapterCardLayout().action;
+    game.handleTap({
+      x: action.x + action.width / 2,
+      y: action.y + action.height / 2,
+    });
+
+    expect(game.world.setPieces.skip).toHaveBeenCalledOnce();
+    expect(game.processWorldEvents).toHaveBeenCalledOnce();
+    expect(game.sound.playSfx).toHaveBeenCalledWith('sfx/ui/page', 'tap');
+  });
+
   it('replays the current voiced line without advancing the story', () => {
     const game = Object.create(Game.prototype);
     game.shouldShowDebugReset = () => false;

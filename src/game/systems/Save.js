@@ -476,9 +476,14 @@ function saveMigrationOptions(source = {}) {
   if (!Array.isArray(completionRedirects)) {
     throw new TypeError('Save migration completion redirects must be an array.');
   }
+  const checkpointRedirects = source.checkpointRedirects ?? [];
+  if (!Array.isArray(checkpointRedirects)) {
+    throw new TypeError('Save migration checkpoint redirects must be an array.');
+  }
   return Object.freeze({
     resumeRedirects: Object.freeze(structuredClone(resumeRedirects)),
     completionRedirects: Object.freeze(structuredClone(completionRedirects)),
+    checkpointRedirects: Object.freeze(structuredClone(checkpointRedirects)),
     validateVersion(value, version) {
       if (version === LEGACY_SAVE_SCHEMA_VERSION) validateSaveV1(value);
       else if (version === SAVE_SCHEMA_V2_VERSION) validateSaveV2(value);
@@ -535,7 +540,9 @@ export class Save {
     try {
       const parsed = parseSave(raw);
       const save = this.prepare(parsed);
-      if (parsed.schemaVersion !== save.schemaVersion) {
+      const schemaChanged = parsed.schemaVersion !== save.schemaVersion;
+      const contentChanged = JSON.stringify(parsed) !== JSON.stringify(save);
+      if (contentChanged) {
         try {
           this.storage.setItem(this.backupKey, raw);
           this.storage.setItem(this.key, serializeSave(save));
@@ -544,9 +551,9 @@ export class Save {
         }
         return {
           ok: true,
-          status: 'migrated',
+          status: schemaChanged ? 'migrated' : 'repaired',
           save,
-          fromSchemaVersion: parsed.schemaVersion,
+          ...(schemaChanged ? { fromSchemaVersion: parsed.schemaVersion } : {}),
           backupStatus: 'backed-up',
         };
       }

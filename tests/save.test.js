@@ -261,6 +261,50 @@ describe('safe storage adapter', () => {
     expect(parseSave(storage.getItem(SAVE_STORAGE_KEY))).toEqual(result.save);
   });
 
+  it('backs up and repairs a current Chapter One ticket save stranded in Diagon Alley', () => {
+    const storage = new MemoryStorage();
+    const stranded = createSaveV3({
+      now: FIRST_TIME,
+      appVersion: 'abc1234',
+      worldSeed: 42,
+    });
+    stranded.progress.questFlags['ch1.ticketReceived'] = true;
+    stranded.resume = {
+      chapter: 'ch1',
+      scene: 'ch1.ticket',
+      room: 'ch1.diagonStreet',
+      spawn: 'east',
+      dialogue: null,
+    };
+    const raw = serializeSave(stranded);
+    storage.setItem(SAVE_STORAGE_KEY, raw);
+    const saves = new Save({
+      storage,
+      clock: () => SECOND_TIME,
+      migrationOptions: saveMigrationOptions,
+    });
+
+    const result = saves.load();
+
+    expect(result).toMatchObject({
+      ok: true,
+      status: 'repaired',
+      backupStatus: 'backed-up',
+      save: {
+        schemaVersion: 3,
+        resume: {
+          chapter: 'ch1',
+          scene: 'ch1.chapterCard',
+          room: 'ch1.chapterCardRoom',
+          spawn: 'start',
+          dialogue: null,
+        },
+      },
+    });
+    expect(storage.getItem(SAVE_BACKUP_KEY)).toBe(raw);
+    expect(parseSave(storage.getItem(SAVE_STORAGE_KEY))).toEqual(result.save);
+  });
+
   it('writes with an injected timestamp and loads without touching wall-clock APIs', () => {
     const storage = new MemoryStorage();
     const saves = new Save({ storage, clock: () => SECOND_TIME });

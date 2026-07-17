@@ -27,6 +27,7 @@ import { SetPieceRenderer } from './render/SetPieceRenderer.js';
 import {
   UIRenderer,
   UI_RECTS,
+  chapterCardLayout,
   dialogueSceneContext,
   dialogueScrollLayout,
   pointInUiRect,
@@ -508,6 +509,15 @@ export class Game {
     }
 
     if (state.setPiece) {
+      if (
+        isSkippableChapterCardSetPiece(state)
+        && pointInUiRect(point, chapterCardLayout().action)
+      ) {
+        this.sound.playSfx('sfx/ui/page', 'tap');
+        this.world.setPieces.skip();
+        this.processWorldEvents();
+        return;
+      }
       this.sound.playSfx('sfx/ui/tap', 'tap');
       return;
     }
@@ -1922,6 +1932,9 @@ export class Game {
       x: (target.hitArea.x ?? 0) - state.cameraX + (target.hitArea.shape === 'rect' ? target.hitArea.width / 2 : 0),
       y: (target.hitArea.y ?? 0) + (target.hitArea.shape === 'rect' ? target.hitArea.height / 2 : 0),
     }));
+    if (isSkippableChapterCardSetPiece(state)) {
+      targets.push(semanticRect('chapter.card.continue', chapterCardLayout().action));
+    }
     targets.push({ id: 'hud.quest', x: 80, y: 80 });
     if (state.hasSatchel) targets.push({ id: 'hud.satchel', x: 82, y: 638 });
     if (state.hasWand) targets.push({ id: 'hud.wand', x: 1198, y: 638 });
@@ -2546,6 +2559,10 @@ function replaceObjectContents(target, source) {
   for (const key of Object.keys(target)) delete target[key];
   Object.assign(target, structuredClone(source));
   return target;
+}
+
+function isSkippableChapterCardSetPiece(state) {
+  return state?.setPiece?.descriptor?.params?.specification === 'chapter-card';
 }
 
 function hasMeaningfulProgress(save) {

@@ -125,6 +125,45 @@ function validateCompletionRedirects(value) {
   return value;
 }
 
+function validateCheckpointRedirect(value, path) {
+  exactObject(value, path, ['when', 'to']);
+  exactObject(value.when, `${path}.when`, ['chapter', 'allFlags', 'noFlags']);
+  exactObject(value.to, `${path}.to`, ['chapter', 'scene', 'room', 'spawn']);
+
+  const chapterId = chapter(value.when.chapter, `${path}.when.chapter`);
+  const seenFlags = new Set();
+  for (const field of ['allFlags', 'noFlags']) {
+    if (!Array.isArray(value.when[field])) fail(`${path}.when.${field}`, 'must be an array');
+    value.when[field].forEach((flag, index) => {
+      chapterReference(flag, chapterId, `${path}.when.${field}[${index}]`);
+      if (seenFlags.has(flag)) {
+        fail(`${path}.when.${field}[${index}]`, 'must be unique across checkpoint conditions');
+      }
+      seenFlags.add(flag);
+    });
+  }
+
+  if (value.to.chapter !== chapterId) fail(`${path}.to.chapter`, `must be ${chapterId}`);
+  chapterReference(value.to.scene, chapterId, `${path}.to.scene`);
+  chapterReference(value.to.room, chapterId, `${path}.to.room`);
+  reference(value.to.spawn, `${path}.to.spawn`);
+  return value;
+}
+
+function validateCheckpointRedirects(value) {
+  if (!Array.isArray(value)) {
+    fail(
+      'migrateSave.options.checkpointRedirects',
+      'must be an array of progress-aware same-chapter redirects',
+    );
+  }
+  value.forEach((redirect, index) => validateCheckpointRedirect(
+    redirect,
+    `migrateSave.options.checkpointRedirects[${index}]`,
+  ));
+  return value;
+}
+
 function matchingResumeRedirect(resume, redirects) {
   const matches = redirects.filter(({ from }) => resume.chapter === from.chapter
     && (resume.scene === from.scene || resume.room === from.room));
@@ -145,6 +184,20 @@ function matchingCompletionRedirect(value, redirects) {
     fail(
       'migrateSave.options.completionRedirects',
       'contains more than one redirect for this completed resume point',
+    );
+  }
+  return matches[0] ?? null;
+}
+
+function matchingCheckpointRedirect(value, redirects) {
+  const flags = value.progress.questFlags;
+  const matches = redirects.filter(({ when }) => value.resume.chapter === when.chapter
+    && when.allFlags.every((flag) => flags[flag] === true)
+    && when.noFlags.every((flag) => flags[flag] !== true));
+  if (matches.length > 1) {
+    fail(
+      'migrateSave.options.checkpointRedirects',
+      'contains more than one redirect for this progress checkpoint',
     );
   }
   return matches[0] ?? null;
@@ -276,6 +329,7 @@ function schemaVersionOf(value) {
 export function migrateSave(value, options = {}) {
   let version = schemaVersionOf(value);
   let current = cloneSave(value);
+  const checkpointRedirects = validateCheckpointRedirects(options.checkpointRedirects ?? []);
 
   if (version > CURRENT_SAVE_SCHEMA_VERSION) {
     fail(
@@ -298,6 +352,11 @@ export function migrateSave(value, options = {}) {
     version = nextVersion;
   }
 
+  validateSaveV3MigrationFields(current);
+  const checkpointRedirect = matchingCheckpointRedirect(current, checkpointRedirects);
+  if (checkpointRedirect) {
+    current.resume = { ...checkpointRedirect.to, dialogue: null };
+  }
   validateSaveV3MigrationFields(current);
   runInjectedValidator(current, version, options.validateVersion);
   return current;

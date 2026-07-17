@@ -17,7 +17,9 @@ Every chapter ends with an illustrated **chapter card** (like a picture-book pag
 
 > **Status 2026-07-16:** playable end to end on the deployed build, including
 > the rebuilt storybook cast, Hagrid's clearer travel beats, and the painted
-> satchel.
+> satchel. A ticketed save stranded in Diagon Alley now resumes at the chapter
+> card without losing progress, and its visible Continue button skips the
+> decorative page-turn wait immediately.
 
 **Goal:** teach every core interaction (tap-walk, talk, inspect, map travel) inside the most wish-fulfilling sequence in the source: *you're a witch, Violet.* No spells yet — wonder first, mechanics minimal.
 
