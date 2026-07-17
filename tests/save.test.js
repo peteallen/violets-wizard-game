@@ -2,15 +2,21 @@ import { describe, expect, it } from 'vitest';
 import { saveMigrationOptions } from '../src/game/chapters/saveMigrations.js';
 import {
   SAVE_BACKUP_KEY,
+  SAVE_SCHEMA_VERSION,
   SAVE_STORAGE_KEY,
   Save,
   SaveValidationError,
+  createSave,
   createSaveV1,
   createSaveV2,
+  createSaveV3,
   parseSave,
   setFlag,
   serializeSave,
+  validateSave,
   validateSaveV1,
+  validateSaveV2,
+  validateSaveV3,
 } from '../src/game/systems/Save.js';
 
 const FIRST_TIME = '2026-07-12T18:00:00.000Z';
@@ -94,8 +100,67 @@ describe('save schema v1', () => {
   });
 });
 
+describe('versioned save schemas', () => {
+  it('keeps the v1 and v2 factories exact while making v3 current', () => {
+    const options = { now: FIRST_TIME, appVersion: 'abc1234', worldSeed: 42 };
+    const v1 = createSaveV1(options);
+    const v2 = createSaveV2(options);
+    const v3 = createSaveV3(options);
+
+    expect(SAVE_SCHEMA_VERSION).toBe(3);
+    expect(v1.schemaVersion).toBe(1);
+    expect(v2.schemaVersion).toBe(2);
+    expect(v3.schemaVersion).toBe(3);
+    expect(Object.hasOwn(v1.resume, 'dialogue')).toBe(false);
+    expect(Object.hasOwn(v2.resume, 'dialogue')).toBe(false);
+    expect(v3.resume.dialogue).toBeNull();
+    expect(createSave(options)).toEqual(v3);
+
+    expect(validateSaveV1(v1)).toBe(v1);
+    expect(validateSaveV2(v2)).toBe(v2);
+    expect(validateSaveV3(v3)).toBe(v3);
+    expect(() => validateSaveV2(v3)).toThrow(/schemaVersion.*must be 2/);
+    expect(() => validateSaveV3(v2)).toThrow(/schemaVersion.*must be 3/);
+  });
+
+  it('parses and serializes each supported version without silently upgrading it', () => {
+    const options = { now: FIRST_TIME, appVersion: 'abc1234', worldSeed: 42 };
+    for (const save of [createSaveV1(options), createSaveV2(options), createSaveV3(options)]) {
+      const serialized = serializeSave(save);
+      expect(parseSave(serialized)).toEqual(save);
+      expect(validateSave(save)).toBe(save);
+    }
+
+    expect(() => parseSave(JSON.stringify({ schemaVersion: 4 })))
+      .toThrow(/schemaVersion.*must be 1, 2, or 3/);
+  });
+
+  it('requires v3 dialogue state to be null or an exact script-and-node checkpoint', () => {
+    const save = createSaveV3({ now: FIRST_TIME });
+    save.resume.dialogue = { script: 'ch1.letter.read', node: 'opening' };
+    expect(validateSaveV3(save)).toBe(save);
+    expect(parseSave(serializeSave(save))).toEqual(save);
+
+    const missing = createSaveV3({ now: FIRST_TIME });
+    delete missing.resume.dialogue;
+    expect(() => validateSaveV3(missing)).toThrow(/resume.dialogue.*required/);
+
+    const extra = createSaveV3({ now: FIRST_TIME });
+    extra.resume.dialogue = { script: 'ch1.letter.read', node: 'opening', replay: true };
+    expect(() => validateSaveV3(extra)).toThrow(/dialogue.replay.*not part/);
+
+    const blankNode = createSaveV3({ now: FIRST_TIME });
+    blankNode.resume.dialogue = { script: 'ch1.letter.read', node: ' ' };
+    expect(() => validateSaveV3(blankNode)).toThrow(/dialogue.node.*non-empty string/);
+
+    const v2WithDialogue = createSaveV2({ now: FIRST_TIME });
+    v2WithDialogue.resume.dialogue = null;
+    expect(() => validateSaveV2(v2WithDialogue)).toThrow(/resume.dialogue.*not part/);
+  });
+});
+
 describe('safe storage adapter', () => {
-  it('backs up and redirects a legacy Chapter Two preview before storing schema v2', () => {
+  it('backs up and redirects a legacy Chapter Two preview before storing schema v3', () => {
     const storage = new MemoryStorage();
     const legacy = saveFixture();
     legacy.resume = {
@@ -122,17 +187,77 @@ describe('safe storage adapter', () => {
       fromSchemaVersion: 1,
       backupStatus: 'backed-up',
       save: {
-        schemaVersion: 2,
+        schemaVersion: 3,
         resume: {
           chapter: 'ch2',
           scene: 'ch2.scene.kingsCross',
           room: 'ch2.kingsCross',
           spawn: 'start',
+          dialogue: null,
         },
       },
     });
     expect(storage.getItem(SAVE_BACKUP_KEY)).toBe(raw);
     expect(parseSave(storage.getItem(SAVE_BACKUP_KEY))).toEqual(legacy);
+    expect(parseSave(storage.getItem(SAVE_STORAGE_KEY))).toEqual(result.save);
+  });
+
+  it('backs up exact raw v2 bytes and repairs a completed Chapter Two end save', () => {
+    const storage = new MemoryStorage();
+    const legacy = createSaveV2({
+      now: FIRST_TIME,
+      appVersion: 'abc1234',
+      worldSeed: 42,
+    });
+    legacy.resume = {
+      chapter: 'ch2',
+      scene: 'ch2.scene.chapterCard',
+      room: 'ch2.chapterCardRoom',
+      spawn: 'start',
+    };
+    legacy.progress.highestUnlockedChapter = 3;
+    legacy.progress.completedChapters = ['ch1', 'ch2'];
+    legacy.progress.questFlags['ch2.complete'] = true;
+    legacy.progress.rewardReceipts = ['ch2.reward.firstHousePoints'];
+    legacy.progress.storyReceipts = ['ch2.story.chapterEnd'];
+    legacy.progress.questReceipts = ['ch2.quest.belonging'];
+    legacy.progress.checkpointReceipts = ['ch2.checkpoint.chapterEnd'];
+    const raw = ` \n${JSON.stringify(legacy, null, 2)}\n`;
+    storage.setItem(SAVE_STORAGE_KEY, raw);
+    const saves = new Save({
+      storage,
+      clock: () => SECOND_TIME,
+      migrationOptions: saveMigrationOptions,
+    });
+
+    const result = saves.load();
+
+    expect(result).toMatchObject({
+      ok: true,
+      status: 'migrated',
+      fromSchemaVersion: 2,
+      backupStatus: 'backed-up',
+      save: {
+        schemaVersion: 3,
+        resume: {
+          chapter: 'ch3',
+          scene: 'ch3.scene.preview',
+          room: 'ch3.previewRoom',
+          spawn: 'start',
+          dialogue: null,
+        },
+      },
+    });
+    expect(storage.getItem(SAVE_BACKUP_KEY)).toBe(raw);
+    for (const field of [
+      'rewardReceipts',
+      'storyReceipts',
+      'questReceipts',
+      'checkpointReceipts',
+    ]) {
+      expect(JSON.stringify(result.save.progress[field]))
+        .toBe(JSON.stringify(legacy.progress[field]));
+    }
     expect(parseSave(storage.getItem(SAVE_STORAGE_KEY))).toEqual(result.save);
   });
 
@@ -157,7 +282,7 @@ describe('safe storage adapter', () => {
     expect(result).toMatchObject({
       ok: true,
       status: 'recovered-backup',
-      save: createSaveV2({ now: FIRST_TIME, appVersion: 'abc1234', worldSeed: 42 }),
+      save: createSaveV3({ now: FIRST_TIME, appVersion: 'abc1234', worldSeed: 42 }),
     });
     expect(storage.getItem(SAVE_STORAGE_KEY)).toBe('{broken');
   });
@@ -191,7 +316,7 @@ describe('safe storage adapter', () => {
     storage.failNextWrite = true;
     expect(saves.flush()).toMatchObject({ ok: false, status: 'storage-error' });
     expect(saves.pending).toEqual({
-      ...createSaveV2({ now: FIRST_TIME, appVersion: 'abc1234', worldSeed: 42 }),
+      ...createSaveV3({ now: FIRST_TIME, appVersion: 'abc1234', worldSeed: 42 }),
       updatedAt: SECOND_TIME,
     });
     expect(saves.flush()).toMatchObject({ ok: true, status: 'saved' });

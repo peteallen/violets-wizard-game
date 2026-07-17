@@ -32,6 +32,12 @@ train friendships, lake reveal, feast, password ritual, common-room page turn,
 owl post, and truthful Chapter Three preview. It preserves Gryffindor as the only
 outcome and does not add Chapter Three gameplay.
 
+The first reliability checkpoint is complete: the barrier handoff and reload
+agree, Great Hall pointer targets no longer overlap, chapter completion is one
+durable transaction, and v3 migration repairs completed Chapter Two saves that
+were stranded on its card. Contract/receipt hardening and presentation polish
+remain active.
+
 After that pass, Chapter Three introduces the spellbook, casting, and the first
 incantation assemblies. That learning-layer debut remains the moment to watch
 Violet's reaction to letter tiles closely; the parent dial exists if they make

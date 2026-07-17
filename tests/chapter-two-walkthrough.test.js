@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { chapter2V2 } from '../src/game/chapters/ch2/content-v2/index.js';
+import { chapter3 } from '../src/game/chapters/ch3/content.js';
 import { createSaveV1 } from '../src/game/systems/Save.js';
 import { World } from '../src/game/world/World.js';
 
@@ -58,7 +59,7 @@ function settleUntil(world, predicate, visitScene, maximumSeconds = 12) {
 function runChapterTwoWalkthrough() {
   const save = createChapterTwoSave();
   const world = new World({
-    chapters: { ch2: chapter2V2 },
+    chapters: { ch2: chapter2V2, ch3: chapter3 },
     save,
     seed: 42,
     clock: () => NOW,
@@ -410,12 +411,13 @@ describe('Chapter Two headless walkthrough', () => {
       'ch2.scene.feast',
       'ch2.scene.commonRoomArrival',
       'ch2.scene.chapterCard',
+      'ch3.scene.preview',
     ]);
     expect(first.world).toEqual({
-      chapter: 'ch2',
-      scene: 'ch2.scene.chapterCard',
-      room: 'ch2.chapterCardRoom',
-      dialogueActive: false,
+      chapter: 'ch3',
+      scene: 'ch3.scene.preview',
+      room: 'ch3.previewRoom',
+      dialogueActive: true,
       setPieceActive: false,
     });
     expect(first.openingSnapshot).toEqual({

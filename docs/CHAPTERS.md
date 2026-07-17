@@ -44,7 +44,11 @@ Every chapter ends with an illustrated **chapter card** (like a picture-book pag
 ## Chapter 2 — Platform 9¾ & The Sorting
 
 > **Status 2026-07-16:** the complete route is playable on `main`. The approved
-> Phase 2 pass described below is active but not yet complete.
+> Phase 2 pass described below is active but not yet complete. Its first
+> reliability checkpoint is deployed: the Great Hall targets are unambiguous,
+> the barrier's live and reloaded platform positions agree, chapter completion
+> is atomic, and save schema v3 repairs older completed saves stranded on the
+> Chapter Two card.
 
 **Goal:** friends and belonging. Lowest-mechanics chapter — it's theater, and that's fine this early.
 

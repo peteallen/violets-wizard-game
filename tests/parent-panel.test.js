@@ -255,6 +255,7 @@ describe('chapter replay isolation', () => {
       scene: 'ch2.scene.kingsCross',
       room: 'ch2.kingsCross',
       spawn: 'start',
+      dialogue: null,
     });
     expect(game.saveData.character).toMatchObject({
       name: 'Violet',

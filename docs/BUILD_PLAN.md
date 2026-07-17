@@ -33,10 +33,16 @@ focused presentation seam.
    Then fix the Headmaster/card overlap, make the barrier transition and reload
    agree on Violet's platform position, commit chapter completion atomically,
    and migrate saves that can otherwise strand her between scenes.
+   **Delivered:** the baseline, pointer separation, opaque platform handoff,
+   live/reload spawn parity, atomic completion, and stranded-card migration are
+   now on `main` with normal and reduced-motion coverage.
 2. Make the Chapter Two version-2 dialogue, quest, and action descriptions fail
    clearly when malformed. Introduce save schema version 3 with durable dialogue
    cursor and reward-receipt meaning, preserving every supported older save
    through explicit migrations and tests.
+   **In progress:** the exact v3 envelope and v1→v2→v3 migrations are delivered;
+   dialogue cursor/receipt runtime semantics and the remaining package-context
+   validation are the next reliability slice.
 3. Add only the reusable presentation seams this chapter proves it needs:
    scene-owned player poses, speaking without losing a seated pose, named actor
    attachments and head anchors, scene-level music overrides, generic chapter

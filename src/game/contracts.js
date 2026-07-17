@@ -358,9 +358,10 @@ export function validateAction(value, path = 'action') {
       id(value.moment, `${path}.moment`);
       break;
     case 'chapter.complete':
-      exactObject(value, path, ['type', 'chapter'], ['nextChapter']);
+      exactObject(value, path, ['type', 'chapter', 'nextChapter']);
       chapterId(value.chapter, `${path}.chapter`);
-      if (value.nextChapter !== undefined) chapterId(value.nextChapter, `${path}.nextChapter`);
+      chapterId(value.nextChapter, `${path}.nextChapter`);
+      if (value.nextChapter === value.chapter) fail(`${path}.nextChapter`, 'must differ from chapter');
       break;
     case 'audio.command': {
       const { type: _type, ...payload } = value;
@@ -374,7 +375,12 @@ export function validateAction(value, path = 'action') {
 }
 
 function validateActions(value, path, options = {}) {
-  return array(value, path, validateAction, options);
+  const actions = array(value, path, validateAction, options);
+  const completionIndex = actions.findIndex((action) => action.type === 'chapter.complete');
+  if (completionIndex >= 0 && completionIndex !== actions.length - 1) {
+    fail(`${path}[${completionIndex}]`, 'chapter.complete must be the terminal action');
+  }
+  return actions;
 }
 
 export function validateHitArea(value, path = 'hitArea') {
@@ -580,6 +586,10 @@ function validateDialogueChoice(value, path) {
   ref(value.icon, `${path}.icon`);
   caption(value.caption, `${path}.caption`, 2);
   validateActions(value.actions, `${path}.actions`);
+  const completionIndex = value.actions.findIndex((action) => action.type === 'chapter.complete');
+  if (completionIndex >= 0) {
+    fail(`${path}.actions[${completionIndex}]`, 'chapter.complete is only valid in an end node');
+  }
   localId(value.next, `${path}.next`);
   if (value.characterId !== undefined) characterId(value.characterId, `${path}.characterId`);
   if (value.characterScale !== undefined) {
@@ -616,6 +626,9 @@ function validateDialogueNode(value, path) {
     case 'action':
       exactObject(value, path, ['type', 'actions', 'next']);
       validateActions(value.actions, `${path}.actions`, { min: 1 });
+      if (value.actions.some((action) => action.type === 'chapter.complete')) {
+        fail(`${path}.actions`, 'chapter.complete is only valid in an end node');
+      }
       localId(value.next, `${path}.next`);
       break;
     case 'end':

@@ -374,10 +374,7 @@ export const chapter2DialogueDefinitions = Object.freeze([
       }),
       finish: {
         type: 'end',
-        actions: [
-          flagSet('ch2.chapterCardSeen'),
-          chapterComplete('ch2', 'ch3'),
-        ],
+        actions: [chapterComplete('ch2', 'ch3')],
       },
     },
   },

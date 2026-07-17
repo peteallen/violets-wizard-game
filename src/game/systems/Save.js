@@ -6,6 +6,8 @@ import {
 
 export const LEGACY_SAVE_SCHEMA_VERSION = 1;
 export const SAVE_SCHEMA_VERSION = CURRENT_SAVE_SCHEMA_VERSION;
+const SAVE_SCHEMA_V2_VERSION = 2;
+const SAVE_SCHEMA_V3_VERSION = 3;
 export const SAVE_STORAGE_KEY = 'violets-wizard-save-v1';
 export const SAVE_BACKUP_KEY = 'violets-wizard-save-v1-backup';
 export const YEARBOOK_MAX_ENTRIES = 24;
@@ -132,12 +134,25 @@ function cloneJson(value) {
   return JSON.parse(JSON.stringify(value));
 }
 
-function validateResume(value, path) {
-  exactObject(value, path, ['chapter', 'scene', 'room', 'spawn']);
+function validateResumePosition(value, path) {
   chapterId(value.chapter, `${path}.chapter`);
   reference(value.scene, `${path}.scene`);
   reference(value.room, `${path}.room`);
   reference(value.spawn, `${path}.spawn`);
+}
+
+function validateResumeV1V2(value, path) {
+  exactObject(value, path, ['chapter', 'scene', 'room', 'spawn']);
+  validateResumePosition(value, path);
+}
+
+function validateResumeV3(value, path) {
+  exactObject(value, path, ['chapter', 'scene', 'room', 'spawn', 'dialogue']);
+  validateResumePosition(value, path);
+  if (value.dialogue === null) return;
+  exactObject(value.dialogue, `${path}.dialogue`, ['script', 'node']);
+  reference(value.dialogue.script, `${path}.dialogue.script`);
+  reference(value.dialogue.node, `${path}.dialogue.node`);
 }
 
 function validateEncounterCheckpoint(value, path) {
@@ -279,7 +294,11 @@ function validateSettings(value, path) {
   oneOf(value.learning, ['off', 'gentle', 'stretchy'], `${path}.learning`);
 }
 
-function validateSaveVersion(value, schemaVersion, { receipts = false, path = 'save' } = {}) {
+function validateSaveVersion(
+  value,
+  schemaVersion,
+  { receipts = false, resumeValidator = validateResumeV1V2, path = 'save' } = {},
+) {
   exactObject(value, path, [
     'schemaVersion', 'createdAt', 'updatedAt', 'appVersion', 'worldSeed',
     'resume', 'progress', 'character', 'spellbook', 'collections',
@@ -291,7 +310,7 @@ function validateSaveVersion(value, schemaVersion, { receipts = false, path = 's
   if (Date.parse(value.updatedAt) < Date.parse(value.createdAt)) fail(`${path}.updatedAt`, 'must not precede createdAt');
   string(value.appVersion, `${path}.appVersion`, { max: 120 });
   number(value.worldSeed, `${path}.worldSeed`, { min: 0, max: 0xffffffff, integer: true });
-  validateResume(value.resume, `${path}.resume`);
+  resumeValidator(value.resume, `${path}.resume`);
   validateProgress(value.progress, `${path}.progress`, { receipts });
   const currentChapterNumber = Number(value.resume.chapter.slice(2));
   if (currentChapterNumber > value.progress.highestUnlockedChapter) {
@@ -311,13 +330,25 @@ export function validateSaveV1(value, path = 'save') {
 }
 
 export function validateSaveV2(value, path = 'save') {
-  return validateSaveVersion(value, SAVE_SCHEMA_VERSION, { receipts: true, path });
+  return validateSaveVersion(value, SAVE_SCHEMA_V2_VERSION, { receipts: true, path });
+}
+
+export function validateSaveV3(value, path = 'save') {
+  return validateSaveVersion(value, SAVE_SCHEMA_V3_VERSION, {
+    receipts: true,
+    resumeValidator: validateResumeV3,
+    path,
+  });
 }
 
 export function validateSave(value, path = 'save') {
   if (value?.schemaVersion === LEGACY_SAVE_SCHEMA_VERSION) return validateSaveV1(value, path);
-  if (value?.schemaVersion === SAVE_SCHEMA_VERSION) return validateSaveV2(value, path);
-  fail(`${path}.schemaVersion`, `must be ${LEGACY_SAVE_SCHEMA_VERSION} or ${SAVE_SCHEMA_VERSION}`);
+  if (value?.schemaVersion === SAVE_SCHEMA_V2_VERSION) return validateSaveV2(value, path);
+  if (value?.schemaVersion === SAVE_SCHEMA_V3_VERSION) return validateSaveV3(value, path);
+  fail(
+    `${path}.schemaVersion`,
+    `must be ${LEGACY_SAVE_SCHEMA_VERSION}, ${SAVE_SCHEMA_V2_VERSION}, or ${SAVE_SCHEMA_V3_VERSION}`,
+  );
 }
 
 export function createSaveV1({ now, appVersion = 'development', worldSeed = 1, name = 'Violet' } = {}) {
@@ -381,13 +412,21 @@ export function createSaveV1({ now, appVersion = 'development', worldSeed = 1, n
 
 export function createSaveV2(options = {}) {
   const save = createSaveV1(options);
-  save.schemaVersion = SAVE_SCHEMA_VERSION;
+  save.schemaVersion = SAVE_SCHEMA_V2_VERSION;
   for (const field of SAVE_V2_RECEIPT_FIELDS) save.progress[field] = [];
   validateSaveV2(save);
   return save;
 }
 
-export const createSave = createSaveV2;
+export function createSaveV3(options = {}) {
+  const save = createSaveV2(options);
+  save.schemaVersion = SAVE_SCHEMA_V3_VERSION;
+  save.resume.dialogue = null;
+  validateSaveV3(save);
+  return save;
+}
+
+export const createSave = createSaveV3;
 
 export function setFlag(save, flag, value = true) {
   validateSave(save);
@@ -433,11 +472,17 @@ function saveMigrationOptions(source = {}) {
   if (!Array.isArray(resumeRedirects)) {
     throw new TypeError('Save migration resume redirects must be an array.');
   }
+  const completionRedirects = source.completionRedirects ?? [];
+  if (!Array.isArray(completionRedirects)) {
+    throw new TypeError('Save migration completion redirects must be an array.');
+  }
   return Object.freeze({
     resumeRedirects: Object.freeze(structuredClone(resumeRedirects)),
+    completionRedirects: Object.freeze(structuredClone(completionRedirects)),
     validateVersion(value, version) {
       if (version === LEGACY_SAVE_SCHEMA_VERSION) validateSaveV1(value);
-      else if (version === SAVE_SCHEMA_VERSION) validateSaveV2(value);
+      else if (version === SAVE_SCHEMA_V2_VERSION) validateSaveV2(value);
+      else if (version === SAVE_SCHEMA_V3_VERSION) validateSaveV3(value);
       else fail('save.schemaVersion', `has unsupported schema version ${version}`);
     },
   });
@@ -540,7 +585,7 @@ export class Save {
     const updatedAt = this.clock();
     isoDate(updatedAt, 'Save.clock()');
     const nextSave = cloneJson({ ...prepared, updatedAt });
-    validateSaveV2(nextSave);
+    validateSaveV3(nextSave);
     const serialized = serializeSave(nextSave);
 
     if (this.timer !== null) {

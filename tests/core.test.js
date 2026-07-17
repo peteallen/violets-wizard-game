@@ -590,11 +590,26 @@ describe('set-piece room variant handoff', () => {
 });
 
 describe('Game chapter handoff', () => {
+  it('does not let the completed chapter close event silence the next chapter opening', () => {
+    const game = Object.create(Game.prototype);
+    game.world = {
+      dialogue: { active: true, scriptId: 'ch3.dialogue.preview' },
+    };
+    game.sound = { stopVoice: vi.fn() };
+
+    game.handleWorldEvent({
+      type: 'dialogue.closed',
+      payload: { script: 'ch2.dialogue.chapterEnd', reason: 'completed' },
+    });
+
+    expect(game.sound.stopVoice).not.toHaveBeenCalled();
+  });
+
   it('does not initialize a chapter twice when the authored travel already changed it', () => {
     const game = Object.create(Game.prototype);
     game.world = {
       chapter: { id: 'ch2' },
-      changeChapter: vi.fn(),
+      adoptPersistedResume: vi.fn(),
     };
     game.processWorldEvents = vi.fn();
 
@@ -603,8 +618,46 @@ describe('Game chapter handoff', () => {
       payload: { chapter: 'ch1', nextChapter: 'ch2' },
     });
 
-    expect(game.world.changeChapter).not.toHaveBeenCalled();
+    expect(game.world.adoptPersistedResume).not.toHaveBeenCalled();
     expect(game.processWorldEvents).not.toHaveBeenCalled();
+  });
+
+  it('adopts the already-persisted chapter resume without requesting another save', () => {
+    const game = Object.create(Game.prototype);
+    game.world = {
+      chapter: { id: 'ch1' },
+      adoptPersistedResume: vi.fn(),
+    };
+    game.processWorldEvents = vi.fn();
+
+    game.handleWorldEvent({
+      type: 'chapter.completed',
+      payload: { chapter: 'ch1', nextChapter: 'ch2' },
+    });
+
+    expect(game.world.adoptPersistedResume).toHaveBeenCalledWith('ch2');
+    expect(game.processWorldEvents).toHaveBeenCalledOnce();
+  });
+
+  it('replaces a rejected completion candidate in the pending slot with the playable save', () => {
+    const game = Object.create(Game.prototype);
+    const playable = { schemaVersion: 3, progress: { checkpoint: 'chapter-card' } };
+    const candidate = { schemaVersion: 3, progress: { checkpoint: 'next-chapter' } };
+    game.replayMode = false;
+    game.saveManager = {
+      write: vi.fn(() => ({ ok: false, status: 'storage-error', save: null })),
+      queue: vi.fn(() => ({ ok: true, status: 'queued', save: playable })),
+    };
+    game.updateStatus = vi.fn();
+
+    const result = game.persistSave(candidate, true, { rollbackSave: playable });
+
+    expect(result).toMatchObject({ ok: false, status: 'storage-error' });
+    expect(game.saveManager.write).toHaveBeenCalledWith(candidate);
+    expect(game.saveManager.queue).toHaveBeenCalledWith(playable);
+    expect(game.updateStatus).toHaveBeenCalledWith(
+      'Your adventure is safe for now, but this device could not save the latest moment.',
+    );
   });
 });
 

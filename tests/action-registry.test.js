@@ -44,7 +44,7 @@ const CURRENT_ACTIONS = Object.freeze({
   },
   'ui.open': { type: 'ui.open', surface: 'satchel', tab: 'map' },
   'yearbook.capture': { type: 'yearbook.capture', moment: 'ch1.arrival' },
-  'chapter.complete': { type: 'chapter.complete', chapter: 'ch1' },
+  'chapter.complete': { type: 'chapter.complete', chapter: 'ch1', nextChapter: 'ch2' },
   'audio.command': { type: 'audio.command', command: 'sfx', key: 'sfx/ch1/arrival' },
 });
 
@@ -82,6 +82,7 @@ describe('ActionRegistry registration boundary', () => {
     expect(() => defineAction({ type: 'test.action', validate: vi.fn() })).toThrow(/execution hook/);
     expect(() => defineAction({ ...testDefinition(), alias: 'record' })).toThrow(/not supported/);
     expect(() => defineAction({ ...testDefinition(), type: 'record' })).toThrow(/namespaced/);
+    expect(() => defineAction({ ...testDefinition(), terminal: 'yes' })).toThrow(/terminal.*boolean/);
   });
 });
 
@@ -123,6 +124,8 @@ describe('current game action definitions', () => {
     expect(registry.sealed).toBe(true);
     expect(Object.isFrozen(CORE_ACTION_TYPES)).toBe(true);
     expect(registry.entries().every(Object.isFrozen)).toBe(true);
+    expect(registry.isTerminal('chapter.complete')).toBe(true);
+    expect(registry.isTerminal('travel.request')).toBe(false);
   });
 
   it('validates and executes every current type through exact injected handlers', () => {

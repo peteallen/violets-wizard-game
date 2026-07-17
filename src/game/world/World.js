@@ -44,7 +44,7 @@ export class World {
     save,
     seed,
     clock = () => '2000-01-01T00:00:00.000Z',
-    onDirty = () => {},
+    onDirty = ({ save: nextSave }) => ({ ok: true, status: 'memory-only', save: nextSave }),
     actionRegistry = createCoreActionRegistry(),
   }) {
     this.chapters = chapters;
@@ -74,6 +74,7 @@ export class World {
     this.dialogueSourceTarget = null;
     this.guideWalkCue = null;
     this.actorAnimations = new Map();
+    this.persistenceSuppression = 0;
     this.actionRegistry = actionRegistry;
     this.actionHandlers = createWorldActionHandlers(this);
 
@@ -408,12 +409,16 @@ export class World {
   runActions(actions = []) {
     for (let index = 0; index < actions.length; index += 1) {
       const action = actions[index];
-      this.runAction(action);
+      const result = this.runAction(action);
+      if (this.actionRegistry.isTerminal(action.type)) {
+        return result?.ok === false ? false : 'terminal';
+      }
       if (action.type === 'setPiece.play' && this.setPieces.active) {
         this.afterSetPieceActions.push(...actions.slice(index + 1));
-        return;
+        return true;
       }
     }
+    return true;
   }
 
   runAction(action) {
@@ -527,7 +532,12 @@ export class World {
     this.player.targetScale = 1;
     this.player.facing = spawn?.facing ?? 'right';
     this.cameraX = 0;
-    this.save.resume = { chapter: this.chapter.id, scene: room.scene ?? roomId, room: roomId, spawn: spawnId };
+    this.save.resume = resumeForSave(this.save, {
+      chapter: this.chapter.id,
+      scene: room.scene ?? roomId,
+      room: roomId,
+      spawn: spawnId,
+    });
     this.markDirty('scene-change', true);
     this.emit('room.transitionRequested', { from, to: roomId, spawn: spawnId, effect: transition });
     this.emit('room.entered', { room: roomId, spawn: spawnId });
@@ -535,7 +545,10 @@ export class World {
     this.updateAffordanceActivations();
   }
 
-  changeChapter(chapterId, roomId = null, spawnId = null) {
+  changeChapter(chapterId, roomId = null, spawnId = null, {
+    persist = true,
+    sceneId = null,
+  } = {}) {
     const chapter = this.chapters[chapterId];
     if (!chapter) throw new Error(`Unknown chapter ${chapterId}.`);
     this.noteProgress();
@@ -557,28 +570,111 @@ export class World {
     this.player.targetScale = 1;
     this.player.facing = spawn?.facing ?? 'right';
     this.cameraX = 0;
-    this.currentSceneId = chapter.start.scene;
-    this.save.resume = { chapter: chapter.id, scene: this.currentSceneId, room: this.roomId, spawn: selectedSpawn };
-    this.markDirty('chapter-change', true);
+    this.currentSceneId = sceneId ?? chapter.start.scene;
+    this.save.resume = resumeForSave(this.save, {
+      chapter: chapter.id,
+      scene: this.currentSceneId,
+      room: this.roomId,
+      spawn: selectedSpawn,
+    });
+    if (persist) this.markDirty('chapter-change', true);
     this.emit('room.transitionRequested', { from, to: this.roomId, spawn: selectedSpawn, effect: 'ink' });
     this.emit('room.entered', { room: this.roomId, spawn: selectedSpawn });
-    this.syncScene(true);
+    if (persist) this.syncScene(true, { persist: true });
+    else {
+      this.persistenceSuppression += 1;
+      try {
+        this.syncScene(true, { persist: false });
+      } finally {
+        this.persistenceSuppression -= 1;
+      }
+    }
     this.updateAffordanceActivations();
   }
 
+  adoptPersistedResume(chapterId) {
+    const resume = this.save.resume;
+    if (resume?.chapter !== chapterId) {
+      throw new Error(`Persisted resume belongs to ${resume?.chapter ?? 'no chapter'}, not ${chapterId}.`);
+    }
+    this.changeChapter(chapterId, resume.room, resume.spawn, {
+      persist: false,
+      sceneId: resume.scene,
+    });
+  }
+
   completeChapter(chapterId, nextChapter) {
+    if (chapterId !== this.chapter.id) {
+      throw new Error(`Cannot complete ${chapterId} while ${this.chapter.id} is active.`);
+    }
+    if (nextChapter === chapterId) throw new Error('The next chapter must differ from the completed chapter.');
+    const destination = this.chapters[nextChapter];
+    if (!destination) throw new Error(`Unknown next chapter ${nextChapter}.`);
+    const destinationRoom = destination.rooms?.[destination.start?.room];
+    if (!destinationRoom || !resolveSpawn(destinationRoom, destination.start.spawn)) {
+      throw new Error(`Next chapter ${nextChapter} has no valid start resume point.`);
+    }
+    if (!Number.isSafeInteger(destination.number) || destination.number < 1) {
+      throw new Error(`Next chapter ${nextChapter} has no valid chapter number.`);
+    }
+
+    const previous = structuredClone(this.save);
+    const candidate = structuredClone(this.save);
+    if (!candidate.progress.completedChapters.includes(chapterId)) {
+      candidate.progress.completedChapters.push(chapterId);
+    }
+    candidate.progress.highestUnlockedChapter = Math.max(
+      candidate.progress.highestUnlockedChapter,
+      destination.number,
+    );
+    candidate.progress.questFlags[`${chapterId}.chapterCardSeen`] = true;
+    candidate.progress.questFlags[`${chapterId}.complete`] = true;
+    candidate.resume = resumeForSave(candidate, {
+      chapter: destination.id,
+      scene: destination.start.scene,
+      room: destination.start.room,
+      spawn: destination.start.spawn,
+    });
+    candidate.updatedAt = this.clock();
+
+    const persisted = this.onDirty({
+      reason: 'chapter-complete',
+      flush: true,
+      save: candidate,
+      rollbackSave: previous,
+    });
+    this.emit('save.flushRequested', { reason: 'chapter-complete' });
+    if (persisted?.ok === false) {
+      this.emit('chapter.completionFailed', { chapter: chapterId, nextChapter });
+      return persisted;
+    }
+
+    replaceObjectContents(this.save, persisted?.save ?? candidate);
     this.noteProgress();
-    if (!this.save.progress.completedChapters.includes(chapterId)) this.save.progress.completedChapters.push(chapterId);
-    this.save.progress.highestUnlockedChapter = Math.max(this.save.progress.highestUnlockedChapter, Number(nextChapter.replace('ch', '')) || 2);
-    this.setFlag(`${chapterId}.complete`, true);
-    this.markDirty('chapter-complete', true);
+    this.emit('state.changed', {
+      paths: [
+        'progress.completedChapters',
+        'progress.highestUnlockedChapter',
+        `progress.questFlags.${chapterId}.chapterCardSeen`,
+        `progress.questFlags.${chapterId}.complete`,
+        'resume',
+      ],
+      reason: 'chapter-complete',
+    });
     this.emit('chapter.completed', { chapter: chapterId, nextChapter });
+    this.adoptPersistedResume(nextChapter);
+    return { ok: true, status: persisted?.status ?? 'memory-only', save: this.save };
   }
 
   markDirty(reason, flush = false) {
+    if (this.persistenceSuppression > 0) {
+      this.emit('save.persistenceSuppressed', { reason });
+      return { ok: true, status: 'suppressed', save: this.save };
+    }
     this.save.updatedAt = this.clock();
-    this.onDirty({ reason, flush, save: this.save });
+    const result = this.onDirty({ reason, flush, save: this.save });
     this.emit(flush ? 'save.flushRequested' : 'save.dirty', { reason });
+    return result;
   }
 
   noteMeaningfulInput() {
@@ -837,18 +933,18 @@ export class World {
     });
   }
 
-  syncScene(force = false) {
+  syncScene(force = false, { persist = true } = {}) {
     const candidate = this.sceneState.scene;
     if (!candidate || (!force && candidate.id === this.currentSceneId)) return;
     this.currentSceneId = candidate.id;
-    this.save.resume = {
+    this.save.resume = resumeForSave(this.save, {
       chapter: this.chapter.id,
       scene: candidate.id,
       room: this.roomId,
       spawn: candidate.resumeAt?.spawn ?? candidate.spawn,
-    };
+    });
     this.runActions(candidate.onEnter ?? []);
-    this.markDirty('scene', true);
+    if (persist) this.markDirty('scene', true);
   }
 
   snapshot() {
@@ -1001,19 +1097,9 @@ function createWorldActionHandlers(world) {
     'yearbook.capture': (action) => {
       world.emit('yearbook.captureRequested', { moment: action.moment, caption: 'Magic!' });
     },
-    'chapter.complete': (action) => {
-      world.completeChapter(action.chapter, action.nextChapter ?? followingChapterId(action.chapter));
-    },
+    'chapter.complete': (action) => world.completeChapter(action.chapter, action.nextChapter),
     'audio.command': (action) => world.emit(action.type, { ...action, type: undefined }),
   });
-}
-
-function followingChapterId(chapterId) {
-  const chapterNumber = Number(chapterId.slice(2));
-  if (!Number.isSafeInteger(chapterNumber) || chapterNumber < 1) {
-    throw new TypeError(`Cannot derive the chapter after ${String(chapterId)}.`);
-  }
-  return `ch${chapterNumber + 1}`;
 }
 
 function requireNpcDefinition(chapter, actorId) {
@@ -1273,4 +1359,17 @@ function resolveSpawn(room, spawnId) {
     if (match) return match[1];
   }
   return Object.values(spawns)[0] ?? null;
+}
+
+function resumeForSave(save, resume) {
+  return save?.schemaVersion >= 3
+    ? { ...resume, dialogue: null }
+    : { ...resume };
+}
+
+function replaceObjectContents(target, source) {
+  const replacement = structuredClone(source);
+  for (const key of Object.keys(target)) delete target[key];
+  Object.assign(target, replacement);
+  return target;
 }

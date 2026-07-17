@@ -5,7 +5,7 @@ import { chapter2DialogueDefinitions } from './dialogues.js';
 import { chapter2QuestDefinition } from './quests.js';
 import { chapter2RecapDefinitions } from './recaps.js';
 import { chapter2RoomDefinitions } from './rooms.js';
-import { chapter2SceneDefinitions } from './scenes.js';
+import { chapter2SceneDefinitions, chapterCardScene } from './scenes.js';
 import { chapter2SetPieceDefinitions } from './setPieces.js';
 
 export const chapter2V2 = defineChapter({
@@ -63,6 +63,11 @@ export const chapter2V2Flags = Object.freeze([
 
 export const chapter2V2Status = 'playable';
 export const chapter2NextChapterId = 'ch3';
+export const chapter2EndMarker = Object.freeze({
+  chapter: chapter2V2.id,
+  scene: chapterCardScene.id,
+  room: chapterCardScene.room,
+});
 export const chapter2ResumeRedirects = Object.freeze([
   Object.freeze({
     from: Object.freeze({

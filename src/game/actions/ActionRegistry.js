@@ -58,7 +58,7 @@ function emptyReferences() {
 
 export function defineAction(source) {
   if (!isPlainObject(source)) throw new TypeError('Action definition must be a plain object.');
-  const allowedKeys = new Set(['type', 'validate', 'references', 'execute']);
+  const allowedKeys = new Set(['type', 'terminal', 'validate', 'references', 'execute']);
   for (const key of Object.keys(source)) {
     if (!allowedKeys.has(key)) throw new TypeError(`Action definition.${key} is not supported.`);
   }
@@ -72,8 +72,12 @@ export function defineAction(source) {
   if (typeof source.execute !== 'function') {
     throw new TypeError(`Action definition "${type}" requires an execution hook.`);
   }
+  if (source.terminal !== undefined && typeof source.terminal !== 'boolean') {
+    throw new TypeError(`Action definition "${type}" terminal must be a boolean when provided.`);
+  }
   return Object.freeze({
     type,
+    terminal: source.terminal ?? false,
     validate: source.validate,
     references: source.references ?? emptyReferences,
     execute: source.execute,
@@ -155,6 +159,10 @@ export class ActionRegistry {
 
   entries() {
     return Object.freeze([...this.#definitions.values()]);
+  }
+
+  isTerminal(type) {
+    return Boolean(this.require(type).terminal);
   }
 
   validate(action, path = 'action') {

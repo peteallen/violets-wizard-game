@@ -35,7 +35,7 @@ import {
 import { WorldAffordanceRenderer } from './render/WorldAffordanceRenderer.js';
 import { WorldPropRenderer } from './render/WorldPropRenderer.js';
 import { resolveProductionRoomMusic } from './presentation/productionRoomVariantOverlays.js';
-import { Save, YEARBOOK_MAX_BYTES, createSaveV2 } from './systems/Save.js';
+import { Save, YEARBOOK_MAX_BYTES, createSave } from './systems/Save.js';
 import { World } from './world/World.js';
 
 const FIXED_HARNESS_TIME = '2000-01-01T00:00:00.000Z';
@@ -115,7 +115,7 @@ export class Game {
     this.loadStatus = loaded;
     this.saveData = loaded.ok && loaded.save
       ? loaded.save
-      : createSaveV2({ now: this.clock(), appVersion: import.meta.env.VITE_BUILD_SHA ?? 'development', worldSeed: 12072026 });
+      : createSave({ now: this.clock(), appVersion: import.meta.env.VITE_BUILD_SHA ?? 'development', worldSeed: 12072026 });
     this.hasStoredSave = Boolean(loaded.ok && loaded.save && hasMeaningfulProgress(this.saveData));
     this.motionQuery = matchMedia('(prefers-reduced-motion: reduce)');
     this.reducedMotion = options.reducedMotion
@@ -218,9 +218,9 @@ export class Game {
       save,
       seed: save.worldSeed,
       clock: this.clock,
-      onDirty: ({ flush, save: nextSave }) => {
+      onDirty: ({ flush, save: nextSave, rollbackSave = null }) => {
         if (preserveSave && initializing) return { ok: true, status: 'preserved', save: nextSave };
-        return this.persistSave(nextSave, flush);
+        return this.persistSave(nextSave, flush, { rollbackSave });
       },
     });
     initializing = false;
@@ -971,7 +971,9 @@ export class Game {
         break;
       }
       case 'dialogue.closed':
-        this.sound.stopVoice();
+        if (!this.world.dialogue.active || this.world.dialogue.scriptId === event.payload.script) {
+          this.sound.stopVoice();
+        }
         break;
       case 'hint.lookRequested':
         this.emitHintPath(event.payload.target, { steps: 3, particlesPerStep: 2 });
@@ -1042,7 +1044,7 @@ export class Game {
         break;
       case 'chapter.completed':
         if (this.world.chapter.id !== event.payload.nextChapter) {
-          this.world.changeChapter(event.payload.nextChapter);
+          this.world.adoptPersistedResume(event.payload.nextChapter);
           this.processWorldEvents();
         }
         break;
@@ -1398,10 +1400,15 @@ export class Game {
     this.parentGateProgress = 0;
   }
 
-  persistSave(save, flush = false) {
+  persistSave(save, flush = false, { rollbackSave = null } = {}) {
     if (this.replayMode) return { ok: true, status: 'replay-not-saved', save };
     const result = flush ? this.saveManager.write(save) : this.saveManager.queue(save);
-    if (!result.ok) this.updateStatus('Your adventure is safe for now, but this device could not save the latest moment.');
+    if (!result.ok) {
+      if (rollbackSave && typeof this.saveManager.queue === 'function') {
+        this.saveManager.queue(rollbackSave);
+      }
+      this.updateStatus('Your adventure is safe for now, but this device could not save the latest moment.');
+    }
     return result;
   }
 
@@ -1478,7 +1485,7 @@ export class Game {
       return cleared;
     }
 
-    const fresh = createSaveV2({
+    const fresh = createSave({
       now: this.clock(),
       appVersion: import.meta.env.VITE_BUILD_SHA ?? 'development',
       worldSeed: 12072026,
@@ -1567,7 +1574,7 @@ export class Game {
       return result;
     }
 
-    const fresh = createSaveV2({
+    const fresh = createSave({
       now: this.clock(),
       appVersion: import.meta.env.VITE_BUILD_SHA ?? 'development',
       worldSeed: 12072026,
@@ -2635,7 +2642,7 @@ export function mergeReplayCollections(canonical, replay) {
 }
 
 function createReplaySave(canonicalSave, chapter, now) {
-  const replay = createSaveV2({
+  const replay = createSave({
     now,
     appVersion: canonicalSave.appVersion,
     worldSeed: canonicalSave.worldSeed,
@@ -2668,6 +2675,7 @@ function createReplaySave(canonicalSave, chapter, now) {
       scene: chapter.start.scene,
       room: chapter.start.room,
       spawn: chapter.start.spawn,
+      dialogue: null,
     };
   }
   return replay;

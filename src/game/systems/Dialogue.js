@@ -39,6 +39,7 @@ export class Dialogue {
     if (!this.active) return null;
     const node = this.node;
     if (!node) return this.close('invalid-node');
+    const checkpoint = { nodeId: this.nodeId, history: [...this.history] };
 
     if (node.type === 'line') {
       this.history.push(this.nodeId);
@@ -46,15 +47,25 @@ export class Dialogue {
     } else if (node.type === 'choice') {
       const choice = node.choices.find((candidate) => candidate.id === choiceId);
       if (!choice) return this.presentation();
-      this.runActions(choice.actions ?? []);
+      const actionResult = this.runActions(choice.actions ?? []);
+      if (actionResult === false) {
+        this.restoreCheckpoint(checkpoint);
+        return this.presentation();
+      }
+      if (actionResult === 'terminal') return this.close('completed');
       this.history.push(this.nodeId);
       this.nodeId = choice.next;
     } else if (node.type === 'end') {
-      this.runActions(node.actions ?? []);
+      if (this.runActions(node.actions ?? []) === false) return this.presentation();
       return this.close('completed');
     }
 
-    this.resolveAutomaticNodes();
+    const resolution = this.resolveAutomaticNodes();
+    if (resolution === false) {
+      this.restoreCheckpoint(checkpoint);
+      return this.presentation();
+    }
+    if (resolution === 'terminal') return null;
     if (!this.active) return null;
     this.emitNodeChanged();
     return this.presentation();
@@ -76,7 +87,12 @@ export class Dialogue {
         return;
       }
       if (node.type === 'action') {
-        this.runActions(node.actions ?? []);
+        const actionResult = this.runActions(node.actions ?? []);
+        if (actionResult === false) return false;
+        if (actionResult === 'terminal') {
+          this.close('completed');
+          return 'terminal';
+        }
         this.nodeId = node.next;
         continue;
       }
@@ -86,12 +102,18 @@ export class Dialogue {
         continue;
       }
       if (node.type === 'end') {
-        this.runActions(node.actions ?? []);
+        if (this.runActions(node.actions ?? []) === false) return false;
         this.close('completed');
       }
-      return;
+      return true;
     }
     if (guard >= 100) throw new Error(`Dialogue ${this.scriptId} exceeded the automatic-node guard.`);
+    return true;
+  }
+
+  restoreCheckpoint(checkpoint) {
+    this.nodeId = checkpoint.nodeId;
+    this.history = [...checkpoint.history];
   }
 
   emitNodeChanged() {

@@ -27,6 +27,30 @@ describe('Dialogue', () => {
     expect(dialogue.active).toBe(false);
     expect(runActions).toHaveBeenCalledTimes(2);
   });
+
+  it('halts old-script control flow after a terminal action succeeds', () => {
+    const dialogue = new Dialogue({
+      save,
+      runActions: () => 'terminal',
+      scripts: {
+        ending: {
+          start: 'complete',
+          nodes: {
+            complete: {
+              type: 'action',
+              actions: [{ type: 'chapter.complete', chapter: 'ch1', nextChapter: 'ch2' }],
+              next: 'mustNotRun',
+            },
+            mustNotRun: { type: 'line', text: 'Wrong chapter', next: null },
+          },
+        },
+      },
+    });
+
+    expect(dialogue.open('ending')).toBeNull();
+    expect(dialogue.active).toBe(false);
+    expect(dialogue.nodeId).toBeNull();
+  });
 });
 
 describe('Quests', () => {

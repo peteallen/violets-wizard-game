@@ -1,4 +1,8 @@
-export const CURRENT_SAVE_SCHEMA_VERSION = 2;
+export const CURRENT_SAVE_SCHEMA_VERSION = 3;
+
+const SAVE_SCHEMA_V1 = 1;
+const SAVE_SCHEMA_V2 = 2;
+const SAVE_SCHEMA_V3 = 3;
 
 const CHAPTER_ID = /^ch[1-9][0-9]*$/;
 const CHAPTER_RECEIPT_ID = /^ch[1-9][0-9]*\.[A-Za-z0-9][A-Za-z0-9.-]*$/;
@@ -88,11 +92,60 @@ function validateResumeRedirects(value) {
   return value;
 }
 
+function validateCompletionRedirect(value, path) {
+  exactObject(value, path, ['from', 'to']);
+  exactObject(value.from, `${path}.from`, ['chapter', 'scene', 'room']);
+  exactObject(value.to, `${path}.to`, ['chapter', 'scene', 'room', 'spawn']);
+
+  const fromChapter = chapter(value.from.chapter, `${path}.from.chapter`);
+  chapterReference(value.from.scene, fromChapter, `${path}.from.scene`);
+  chapterReference(value.from.room, fromChapter, `${path}.from.room`);
+
+  const toChapter = chapter(value.to.chapter, `${path}.to.chapter`);
+  if (toChapter === fromChapter) {
+    fail(`${path}.to.chapter`, 'must target a different chapter');
+  }
+  chapterReference(value.to.scene, toChapter, `${path}.to.scene`);
+  chapterReference(value.to.room, toChapter, `${path}.to.room`);
+  reference(value.to.spawn, `${path}.to.spawn`);
+  return value;
+}
+
+function validateCompletionRedirects(value) {
+  if (!Array.isArray(value)) {
+    fail(
+      'migrateSave.options.completionRedirects',
+      'must be an array of cross-chapter completion redirects',
+    );
+  }
+  value.forEach((redirect, index) => validateCompletionRedirect(
+    redirect,
+    `migrateSave.options.completionRedirects[${index}]`,
+  ));
+  return value;
+}
+
 function matchingResumeRedirect(resume, redirects) {
   const matches = redirects.filter(({ from }) => resume.chapter === from.chapter
     && (resume.scene === from.scene || resume.room === from.room));
   if (matches.length > 1) {
     fail('migrateSave.options.resumeRedirects', 'contains more than one redirect for this resume point');
+  }
+  return matches[0] ?? null;
+}
+
+function matchingCompletionRedirect(value, redirects) {
+  const completedChapters = Array.isArray(value.progress.completedChapters)
+    ? value.progress.completedChapters
+    : [];
+  const matches = redirects.filter(({ from }) => completedChapters.includes(from.chapter)
+    && value.resume.chapter === from.chapter
+    && (value.resume.scene === from.scene || value.resume.room === from.room));
+  if (matches.length > 1) {
+    fail(
+      'migrateSave.options.completionRedirects',
+      'contains more than one redirect for this completed resume point',
+    );
   }
   return matches[0] ?? null;
 }
@@ -120,10 +173,25 @@ function validateMigrationEnvelope(value, version, path = 'save') {
 }
 
 export function validateSaveV2MigrationFields(value, path = 'save') {
-  validateMigrationEnvelope(value, CURRENT_SAVE_SCHEMA_VERSION, path);
+  validateMigrationEnvelope(value, SAVE_SCHEMA_V2, path);
   for (const field of SAVE_V2_RECEIPT_FIELDS) {
     if (!Object.hasOwn(value.progress, field)) fail(`${path}.progress.${field}`, 'is required');
     validateReceiptArray(value.progress[field], `${path}.progress.${field}`);
+  }
+  return value;
+}
+
+export function validateSaveV3MigrationFields(value, path = 'save') {
+  validateMigrationEnvelope(value, SAVE_SCHEMA_V3, path);
+  for (const field of SAVE_V2_RECEIPT_FIELDS) {
+    if (!Object.hasOwn(value.progress, field)) fail(`${path}.progress.${field}`, 'is required');
+    validateReceiptArray(value.progress[field], `${path}.progress.${field}`);
+  }
+  if (!Object.hasOwn(value.resume, 'dialogue')) fail(`${path}.resume.dialogue`, 'is required');
+  if (value.resume.dialogue !== null) {
+    exactObject(value.resume.dialogue, `${path}.resume.dialogue`, ['script', 'node']);
+    reference(value.resume.dialogue.script, `${path}.resume.dialogue.script`);
+    reference(value.resume.dialogue.node, `${path}.resume.dialogue.node`);
   }
   return value;
 }
@@ -142,12 +210,20 @@ export function resumeMatchesRedirect(resume, redirect) {
     && (resume.scene === redirect.from.scene || resume.room === redirect.from.room);
 }
 
+export function resumeMatchesCompletionRedirect(value, redirect) {
+  validateCompletionRedirect(redirect, 'completionRedirect');
+  return Array.isArray(value?.progress?.completedChapters)
+    && value.progress.completedChapters.includes(redirect.from.chapter)
+    && value?.resume?.chapter === redirect.from.chapter
+    && (value.resume.scene === redirect.from.scene || value.resume.room === redirect.from.room);
+}
+
 export function migrateSaveV1ToV2(value, options = {}) {
-  validateMigrationEnvelope(value, 1);
-  runInjectedValidator(value, 1, options.validateVersion);
-  const redirects = validateResumeRedirects(options.resumeRedirects);
+  validateMigrationEnvelope(value, SAVE_SCHEMA_V1);
+  runInjectedValidator(value, SAVE_SCHEMA_V1, options.validateVersion);
+  const redirects = validateResumeRedirects(options.resumeRedirects ?? []);
   const next = cloneSave(value);
-  next.schemaVersion = 2;
+  next.schemaVersion = SAVE_SCHEMA_V2;
   next.progress.storyReceipts = [];
   next.progress.questReceipts = [];
   next.progress.checkpointReceipts = [];
@@ -156,15 +232,36 @@ export function migrateSaveV1ToV2(value, options = {}) {
   if (redirect) next.resume = { ...redirect.to };
 
   validateSaveV2MigrationFields(next);
-  runInjectedValidator(next, 2, options.validateVersion);
+  runInjectedValidator(next, SAVE_SCHEMA_V2, options.validateVersion);
+  return next;
+}
+
+export function migrateSaveV2ToV3(value, options = {}) {
+  validateMigrationEnvelope(value, SAVE_SCHEMA_V2);
+  runInjectedValidator(value, SAVE_SCHEMA_V2, options.validateVersion);
+  const redirects = validateCompletionRedirects(options.completionRedirects ?? []);
+  const next = cloneSave(value);
+  next.schemaVersion = SAVE_SCHEMA_V3;
+  next.resume.dialogue = null;
+
+  const redirect = matchingCompletionRedirect(next, redirects);
+  if (redirect) next.resume = { ...redirect.to, dialogue: null };
+
+  validateSaveV3MigrationFields(next);
+  runInjectedValidator(next, SAVE_SCHEMA_V3, options.validateVersion);
   return next;
 }
 
 export const SAVE_MIGRATIONS = Object.freeze([
   Object.freeze({
-    fromVersion: 1,
-    toVersion: 2,
+    fromVersion: SAVE_SCHEMA_V1,
+    toVersion: SAVE_SCHEMA_V2,
     migrate: migrateSaveV1ToV2,
+  }),
+  Object.freeze({
+    fromVersion: SAVE_SCHEMA_V2,
+    toVersion: SAVE_SCHEMA_V3,
+    migrate: migrateSaveV2ToV3,
   }),
 ]);
 
@@ -201,7 +298,7 @@ export function migrateSave(value, options = {}) {
     version = nextVersion;
   }
 
-  validateSaveV2MigrationFields(current);
+  validateSaveV3MigrationFields(current);
   runInjectedValidator(current, version, options.validateVersion);
   return current;
 }

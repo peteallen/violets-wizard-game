@@ -17,6 +17,7 @@ const REFERENCE_HOOKS = Object.freeze({
 function definitionFor(type) {
   return defineAction({
     type,
+    terminal: type === 'chapter.complete',
     validate(action, path) {
       validateAction(action, path);
     },
