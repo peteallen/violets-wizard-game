@@ -282,7 +282,11 @@ export class Game {
         return;
       }
       this.particles.emit('sparkle', WORLD.width / 2, WORLD.height / 2, 28);
-      this.updateStatus('Violet’s letter is waiting by the window.');
+      this.updateStatus(this.hasStoredSave
+        ? this.world?.dialoguePresentation?.text
+          ?? this.world?.objective?.text
+          ?? 'Continue Violet’s adventure.'
+        : 'Violet’s letter is waiting by the window.');
     } catch (error) {
       if (this.isCurrentSessionTransition(generation)) {
         this.roomRenderer?.logger?.warn?.('The adventure character scope could not be activated.', error);
@@ -626,8 +630,18 @@ export class Game {
 
   beginResumeRecap(recap) {
     this.resumeRecap = recap;
+    this.recordResumeRecapReceipt(recap);
     this.sound.speak(recap.voice, recap.text);
     this.updateStatus(recap.text);
+  }
+
+  recordResumeRecapReceipt(recap) {
+    const receipt = resumeRecapReceiptId(this.saveData?.resume?.chapter, recap);
+    const receipts = this.saveData?.progress?.storyReceipts;
+    if (!receipt || !Array.isArray(receipts) || receipts.includes(receipt)) return false;
+    receipts.push(receipt);
+    this.persistSave(this.saveData, true);
+    return true;
   }
 
   dismissResumeRecap() {
@@ -2588,7 +2602,8 @@ export function selectChapter1ResumeRecap(save, recaps = chapter1ResumeRecaps) {
   if (flags['ch1.trimChosen']) step = 'choosePet';
   if (flags['ch1.petNamed']) step = 'returnToGuide';
   if (flags['ch1.ticketReceived'] || flags['ch1.complete']) return null;
-  return recaps.find((recap) => recap.step === step) ?? null;
+  const recap = recaps.find((candidate) => candidate.step === step) ?? null;
+  return resumeRecapWasPresented(save, save.resume.chapter, recap) ? null : recap;
 }
 
 export function selectResumeRecap(
@@ -2616,7 +2631,21 @@ export function selectResumeRecap(
     selected = recap;
     selectedIndex = recapIndex;
   }
-  return selected;
+  return resumeRecapWasPresented(save, chapterId, selected) ? null : selected;
+}
+
+function resumeRecapReceiptId(chapterId, recap) {
+  if (typeof chapterId !== 'string' || !recap) return null;
+  if (typeof recap.id === 'string' && recap.id.startsWith(`${chapterId}.`)) return recap.id;
+  if (typeof recap.step === 'string' && recap.step.length > 0) {
+    return `${chapterId}.recap.${recap.step}`;
+  }
+  return null;
+}
+
+function resumeRecapWasPresented(save, chapterId, recap) {
+  const receipt = resumeRecapReceiptId(chapterId, recap);
+  return Boolean(receipt && save?.progress?.storyReceipts?.includes(receipt));
 }
 
 function activeQuestStep(chapter, save) {

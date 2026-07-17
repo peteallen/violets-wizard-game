@@ -3,7 +3,7 @@ import { Game, selectChapter1ResumeRecap, selectResumeRecap } from '../src/game/
 import { chapter1ResumeRecaps } from '../src/game/content/chapters/ch1.js';
 import { chapter2RecapDefinitions } from '../src/game/chapters/ch2/content-v2/recaps.js';
 import { dialogueScrollLayout } from '../src/game/render/UIRenderer.js';
-import { createSaveV1 } from '../src/game/systems/Save.js';
+import { createSave, createSaveV1 } from '../src/game/systems/Save.js';
 
 const NOW = '2026-07-12T18:00:00.000Z';
 
@@ -32,6 +32,7 @@ function adventureStub(save, hasStoredSave = true) {
   };
   game.createWorld = vi.fn();
   game.updateStatus = vi.fn();
+  game.persistSave = vi.fn(() => ({ ok: true, status: 'saved', save }));
   return game;
 }
 
@@ -176,5 +177,49 @@ describe('chapter-owned resume recaps', () => {
 
     save.progress.completedChapters.push('ch2');
     expect(selectResumeRecap(save)).toBeNull();
+  });
+
+  it('presents each recap milestone once instead of replaying a stale recap on every resume', async () => {
+    const save = createSave({ now: NOW, worldSeed: 42 });
+    save.progress.completedChapters = ['ch1'];
+    save.progress.highestUnlockedChapter = 2;
+    for (const flag of [
+      'ch1.complete',
+      'ch2.barrierCrossed',
+      'ch2.boardedTrain',
+      'ch2.friendsMet',
+      'ch2.sweetReactionSeen',
+      'ch2.trainComplete',
+      'ch2.lakeSeen',
+      'ch2.greatHallEntered',
+    ]) save.progress.questFlags[flag] = true;
+    save.resume = {
+      chapter: 'ch2',
+      scene: 'ch2.scene.sorting',
+      room: 'ch2.greatHall',
+      spawn: 'sorting',
+      dialogue: null,
+    };
+
+    const firstResume = adventureStub(save);
+    await firstResume.startAdventure();
+
+    expect(firstResume.resumeRecap).toEqual(chapter2RecapDefinitions[0]);
+    expect(firstResume.sound.speak).toHaveBeenCalledWith(
+      chapter2RecapDefinitions[0].voice,
+      chapter2RecapDefinitions[0].text,
+    );
+    expect(save.progress.storyReceipts).toEqual(['ch2.recap.train']);
+    expect(firstResume.persistSave).toHaveBeenCalledWith(save, true);
+
+    const repeatedResume = adventureStub(save);
+    await repeatedResume.startAdventure();
+
+    expect(repeatedResume.resumeRecap).toBeNull();
+    expect(repeatedResume.sound.speak).not.toHaveBeenCalled();
+    expect(repeatedResume.updateStatus).toHaveBeenCalledWith('Continue Violet’s adventure.');
+
+    save.progress.questFlags['ch2.sortedGryffindor'] = true;
+    expect(selectResumeRecap(save)).toEqual(chapter2RecapDefinitions[1]);
   });
 });
