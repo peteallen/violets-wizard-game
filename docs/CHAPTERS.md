@@ -111,13 +111,16 @@ of scope until deliberately needed.
 
 ## Chapter 3 — First Classes
 
+> Full scene flow, dialogue beats, frustration tuning, and educational-minigame
+> behavior: [CHAPTER_3.md](CHAPTER_3.md).
+
 **Goal:** the spellbook arrives. The RPG begins.
 
-**Beats:** Charms class — Professor Flitwick teaches **Lumos** first: the game's first **incantation assembly** (five friendly letters, L-U-M-O-S, tiles sounding out as they land, wand brightening with each — see GAME_DESIGN.md's learning layer). Then **Wingardium Leviosa** (the feather scene she knows by heart), assembled as chanted *syllable* tiles since the word is enormous — "WIN · GAR · DIUM… LEVI · O · SA" — her feather lifts on the completed chant, always succeeding, with maximum sparkle → **the lost toad**: a tearful classmate (Neville-shaped) has lost Trevor; she explores three night corridors using Lumos to light dark alcoves, finds Trevor, returns him. First side quest appears (a ghost asks for help finding his lost book — Reparo foreshadowing).
+**Beats:** her first spellbook arrives as owl post → Charms class — Professor Flitwick teaches **Lumos** first: the game's first **incantation assembly** (five friendly letters, L-U-M-O-S, matching rune slots, tiles sounding out as they land, wand brightening with each — see GAME_DESIGN.md's learning layer). Then **Wingardium Leviosa** (the feather scene she knows by heart), performed as chanted *syllable* tiles since the word is enormous — "WIN · GAR · DIUM… LEVI · O · SA" — her feather lifts a little with every syllable and sails on the completed chant, always succeeding, with maximum sparkle → **the lost toad**: a tearful classmate (Neville-shaped) has lost Trevor; she explores three night corridors using Lumos to reveal a trail, finds Trevor, returns him. First side quest appears (a ghost asks for help finding his lost book — Reparo foreshadowing).
 
 **Mechanics proven:** spellbook UI, casting flow, spell-gated world interactions (dark alcoves need Lumos), quest chain with multiple rooms, hint ladder in real use.
 
-**Asset list:** 4 rooms (Charms classroom, 3 night corridors); voices: Flitwick-ish (bright, squeaky), Neville-ish kid, ghost; music: classroom brightness, night-corridor hush (cozy, not scary); SFX: Lumos bloom, Leviosa harp gliss, toad croaks, class ambience.
+**Asset list:** common-room autumn variant plus 4 new rooms (Charms classroom, 3 night corridors); props: spellbook parcel, lantern, feather, Trevor, torn ghost book; voices: narrator/home letter, Flitwick-ish (bright, squeaky), Neville-ish kid, ghost, Violet's short spell/exclamation lines; music: classroom brightness, night-corridor hush (cozy, not scary); SFX: rune notes and comic fizzles, Lumos bloom, Leviosa harp gliss, toad croaks, class ambience.
 
 ---
 

@@ -65,6 +65,8 @@ Guidance is diegetic and layered so she is never lost but never feels handheld:
 
 **Hint escalation (automatic, invisible):** ~20 seconds idle → her pet looks toward the objective; ~45 seconds → a companion NPC repeats the objective line; three failed attempts at a puzzle → a sparkle trail drifts toward the answer; further failures → the target glows outright and a single tap completes it. The game quietly closes the gap; she always experiences "I figured it out."
 
+**Short-form minigame exception:** classroom assemblies and other compact learning interactions use a much faster 3/6/9-second ladder: indicate the next action, dim irrelevant choices, then make the next relevant tap complete the step. These interactions are too small to survive 20 seconds of uncertainty. See [CHAPTER_3.md](CHAPTER_3.md) for the first tuned instance.
+
 **Resume recap:** the first time Violet returns after reaching a new recap milestone, a short voiced recap plays ("Last time, you found Trevor! Professor Flitwick is waiting.") before dropping her at the start of the current scene. That milestone is remembered, so repeated reloads resume quietly with the current objective instead of replaying stale narration. Stopping is always safe; resuming is always oriented.
 
 ## Encounters and duels
