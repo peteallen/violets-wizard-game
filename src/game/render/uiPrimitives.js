@@ -18,6 +18,7 @@ const CONTROL_GRAIN = Object.freeze([
   [0.43, 0.78, 0.16, 0.014], [0.56, 0.19, 0.18, -0.015], [0.67, 0.54, 0.2, 0.012],
   [0.79, 0.31, 0.13, -0.013], [0.84, 0.73, 0.1, 0.011],
 ]);
+const ACTION_NOTE_CAP_TO_HEIGHT = 0.6;
 
 export function traceRoundedRect(context, x, y, width, height, radius) {
   const r = Math.max(0, Math.min(radius, width / 2, height / 2));
@@ -326,35 +327,40 @@ export function drawParchmentAction(context, rect, {
   disabled = false,
   danger = false,
   compact = false,
+  image = null,
 } = {}) {
   const { x, y, width, height } = rect;
   context.save();
   context.globalAlpha = disabled ? 0.48 : 1;
 
-  context.fillStyle = 'rgba(47,30,31,0.38)';
-  traceClippedCard(context, x + 5, y + 8, width, height);
-  context.fill();
+  if (isReadyActionNoteImage(image)) {
+    drawActionNoteThreeSlice(context, image, rect);
+  } else {
+    context.fillStyle = 'rgba(47,30,31,0.38)';
+    traceClippedCard(context, x + 5, y + 8, width, height);
+    context.fill();
 
-  context.fillStyle = selected ? '#f2dfae' : '#ead9b7';
-  traceClippedCard(context, x, y, width, height);
-  context.fill();
+    context.fillStyle = selected ? '#f2dfae' : '#ead9b7';
+    traceClippedCard(context, x, y, width, height);
+    context.fill();
 
-  context.save();
-  traceClippedCard(context, x + 3, y + 3, width - 6, height - 6);
-  context.clip();
-  drawControlPaperLight(context, rect, selected);
-  drawControlPaperShade(context, rect);
-  drawControlGrain(context, rect, selected ? 'rgba(116,77,40,0.16)' : 'rgba(111,75,43,0.13)');
-  context.restore();
+    context.save();
+    traceClippedCard(context, x + 3, y + 3, width - 6, height - 6);
+    context.clip();
+    drawControlPaperLight(context, rect, selected);
+    drawControlPaperShade(context, rect);
+    drawControlGrain(context, rect, selected ? 'rgba(116,77,40,0.16)' : 'rgba(111,75,43,0.13)');
+    context.restore();
 
-  context.strokeStyle = selected ? PALETTE.interactive : '#8a6b44';
-  context.lineWidth = selected ? 6 : 4.2;
-  traceClippedCard(context, x, y, width, height);
-  context.stroke();
-  context.strokeStyle = selected ? 'rgba(255,242,193,0.62)' : 'rgba(121,82,45,0.38)';
-  context.lineWidth = 1.5;
-  traceClippedCard(context, x + 9, y + 8, width - 18, height - 16);
-  context.stroke();
+    context.strokeStyle = selected ? PALETTE.interactive : '#8a6b44';
+    context.lineWidth = selected ? 6 : 4.2;
+    traceClippedCard(context, x, y, width, height);
+    context.stroke();
+    context.strokeStyle = selected ? 'rgba(255,242,193,0.62)' : 'rgba(121,82,45,0.38)';
+    context.lineWidth = 1.5;
+    traceClippedCard(context, x + 9, y + 8, width - 18, height - 16);
+    context.stroke();
+  }
 
   const sealX = x + (compact ? 44 : 56);
   const sealY = y + height / 2;
@@ -370,6 +376,61 @@ export function drawParchmentAction(context, rect, {
     fitText(context, detail, x + 104, y + height / 2 + 27, width - 130);
   }
   context.restore();
+}
+
+function isReadyActionNoteImage(image) {
+  return Boolean(
+    image?.complete
+    && image.naturalWidth > 0
+    && image.naturalHeight > 0
+  );
+}
+
+function drawActionNoteThreeSlice(context, image, rect) {
+  const sourceCapWidth = Math.min(
+    image.naturalHeight * ACTION_NOTE_CAP_TO_HEIGHT,
+    image.naturalWidth / 2,
+  );
+  const destinationCapWidth = Math.min(
+    sourceCapWidth * rect.height / image.naturalHeight,
+    rect.width / 2,
+  );
+  const sourceMiddleWidth = image.naturalWidth - sourceCapWidth * 2;
+  const destinationMiddleWidth = rect.width - destinationCapWidth * 2;
+
+  context.drawImage(
+    image,
+    0,
+    0,
+    sourceCapWidth,
+    image.naturalHeight,
+    rect.x,
+    rect.y,
+    destinationCapWidth,
+    rect.height,
+  );
+  context.drawImage(
+    image,
+    sourceCapWidth,
+    0,
+    sourceMiddleWidth,
+    image.naturalHeight,
+    rect.x + destinationCapWidth,
+    rect.y,
+    destinationMiddleWidth,
+    rect.height,
+  );
+  context.drawImage(
+    image,
+    image.naturalWidth - sourceCapWidth,
+    0,
+    sourceCapWidth,
+    image.naturalHeight,
+    rect.x + rect.width - destinationCapWidth,
+    rect.y,
+    destinationCapWidth,
+    rect.height,
+  );
 }
 
 export function drawStepper(context, { label, valueLabel, minusRect, plusRect }) {

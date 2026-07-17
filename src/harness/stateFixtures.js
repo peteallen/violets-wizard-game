@@ -750,9 +750,15 @@ registry
       pet: { type: 'owl', name: 'Moonbeam' },
     }),
   ))
-  .register('ui-letter-reading-review', characterReviewFixture(
-    'ui-letter-reading-review',
-    'The fully opened Hogwarts invitation held until Violet chooses to hear it read aloud.',
+  .register('ui-letter-reading-review', createFixture(
+    'The real Chapter One bedroom with Violet beside the opened invitation and both painted reading actions.',
+    { chapter: 1, scene: 'ch1.letter' },
+    createSave({
+      scene: 'ch1.letter',
+      room: 'ch1.bedroom',
+      spawn: 'bedroom.letter',
+      questFlags: { 'ch1.owlTapped': true },
+    }),
   ))
   .register('ui-robe-picker-review', createFixture(
     'The real dressing-mirror robe picker with a full-body Violet preview, all twelve trims, and Gold selected but not yet committed.',

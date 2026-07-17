@@ -71,12 +71,16 @@ const SATCHEL_IMAGE_KEYS = Object.freeze([
 const CHOICE_IMAGE_KEYS = Object.freeze([
   'ui/story/choice-tag-v2',
 ]);
+const STORY_SURFACE_IMAGE_KEYS = Object.freeze([
+  'ui/story/action-note-v2',
+  'ui/story/robe-folio-v2',
+  'ui/story/chapter-one-plaque-v2',
+]);
 
 export const UI_REVIEW_SCENES = Object.freeze([
   'ui-dialogue-review',
   'ui-dialogue-night-review',
   'ui-dialogue-center-review',
-  'ui-letter-reading-review',
   'ui-robe-picker-review',
   'ui-satchel-map-early-review',
   'ui-satchel-map-review',
@@ -93,7 +97,7 @@ export const UI_RECTS = Object.freeze({
   dialogueReplay: { x: 998, y: 522, width: 88, height: 88 },
   letterHear: { x: 60, y: 594, width: 280, height: 96 },
   letterContinue: { x: 360, y: 594, width: 280, height: 96 },
-  robeConfirm: { x: 742, y: 548, width: 338, height: 102 },
+  robeConfirm: { x: 754, y: 500, width: 338, height: 102 },
   debugReset: { x: 510, y: 18, width: 260, height: 88 },
   satchelMapTab: { x: 112, y: 112, width: 250, height: 94 },
   satchelCardsTab: { x: 378, y: 112, width: 250, height: 94 },
@@ -456,9 +460,9 @@ function centeredDialoguePlacement(y, speakerCenter) {
 
 export function robePickerLayout(selectedTrim = 'purple') {
   const selected = normalizeRobeTrim(selectedTrim);
-  const preview = Object.freeze({ x: 96, y: 84, width: 438, height: 548 });
+  const preview = Object.freeze({ x: 159, y: 84, width: 438, height: 570 });
   const previewGlass = Object.freeze(dressingMirrorGlassRect(preview));
-  const previewCharacter = Object.freeze({ x: 315, y: 528, scale: 1.6 });
+  const previewCharacter = Object.freeze({ x: 378, y: 548, scale: 1.6 });
   const previewFigure = Object.freeze({
     x: previewCharacter.x + ROBE_PREVIEW_VIOLET_LOCAL_BOUNDS.x * previewCharacter.scale,
     y: previewCharacter.y + ROBE_PREVIEW_VIOLET_LOCAL_BOUNDS.y * previewCharacter.scale,
@@ -466,16 +470,16 @@ export function robePickerLayout(selectedTrim = 'purple') {
     height: ROBE_PREVIEW_VIOLET_LOCAL_BOUNDS.height * previewCharacter.scale,
   });
   const swatches = ROBE_TRIMS.map((trim, index) => {
-    const column = index % 6;
-    const row = Math.floor(index / 6);
+    const column = index % 4;
+    const row = Math.floor(index / 4);
     return Object.freeze({
       ...trim,
       selected: trim.id === selected,
       rect: Object.freeze({
-        x: 602 + column * 100,
-        y: 190 + row * 148,
+        x: 723 + column * 104,
+        y: 156 + row * 114,
         width: 88,
-        height: 116,
+        height: 108,
       }),
     });
   });
@@ -622,9 +626,7 @@ export class UIRenderer {
       ? nightDialogueGradient(context)
       : storyGradient(context);
     context.fillRect(0, 0, WORLD.width, WORLD.height);
-    if (scene === 'ui-letter-reading-review') {
-      this.drawLetterReading(context);
-    } else if (scene === 'ui-dialogue-review') {
+    if (scene === 'ui-dialogue-review') {
       const dialogue = {
         type: 'line', speaker: 'npc.guide', speakerLabel: 'Hagrid',
         portraitCharacterId: 'character.hagrid', portraitPose: 'talk',
@@ -873,6 +875,7 @@ export class UIRenderer {
 
   drawLetterReading(context) {
     const layout = letterReadingLayout();
+    const actionNoteImage = this.imageFor('ui/story/action-note-v2');
     context.fillStyle = 'rgba(20,17,38,0.66)';
     context.fillRect(0, 0, WORLD.width, WORLD.height);
     drawReadableInvitation(context, layout.invitationPose);
@@ -880,11 +883,13 @@ export class UIRenderer {
       label: childFacingUiText('Hear the letter', 'action'),
       icon: vectorControlIcon('speaker'),
       selected: true,
+      image: actionNoteImage,
     });
     drawParchmentAction(context, layout.continue, {
       label: childFacingUiText('Let’s go!', 'action'),
       icon: vectorControlIcon('check'),
       selected: true,
+      image: actionNoteImage,
     });
     return layout;
   }
@@ -892,14 +897,24 @@ export class UIRenderer {
   drawRobePicker(context, state, time = 0, reducedMotion = false) {
     const layout = robePickerLayout(state?.overlay?.selectedTrim);
     const animationTime = reducedMotion ? 0 : time;
+    const folioImage = this.imageFor('ui/story/robe-folio-v2');
+    const paintedFolio = Boolean(
+      folioImage?.complete
+      && folioImage.naturalWidth > 0
+      && folioImage.naturalHeight > 0
+    );
     context.fillStyle = 'rgba(20,17,38,0.78)';
     context.fillRect(0, 0, WORLD.width, WORLD.height);
-    drawDeckledParchment(context, { x: 48, y: 28, width: 1184, height: 664 }, {
-      fill: '#e5d0a6',
-      edge: '#7b5536',
-      ornament: false,
-    });
-    drawDressingMirror(context, layout.preview, animationTime, reducedMotion);
+    if (paintedFolio) {
+      context.drawImage(folioImage, 0, 0, WORLD.width, WORLD.height);
+    } else {
+      drawDeckledParchment(context, { x: 48, y: 28, width: 1184, height: 664 }, {
+        fill: '#e5d0a6',
+        edge: '#7b5536',
+        ornament: false,
+      });
+      drawDressingMirror(context, layout.preview, animationTime, reducedMotion);
+    }
     this.characterRenderer.draw(context, {
       characterId: 'character.violet',
       surface: 'world',
@@ -914,7 +929,7 @@ export class UIRenderer {
     context.fillStyle = '#382a24';
     context.textAlign = 'center';
     context.font = '700 38px "Andika", "Trebuchet MS", sans-serif';
-    context.fillText(childFacingUiText('Choose a colour', 'caption'), 888, 124);
+    context.fillText(childFacingUiText('Choose a colour', 'caption'), 923, 141);
 
     for (let index = 0; index < layout.swatches.length; index += 1) {
       drawFabricSwatch(context, layout.swatches[index], index);
@@ -923,6 +938,7 @@ export class UIRenderer {
       label: childFacingUiText('That one!', 'action'),
       icon: vectorControlIcon('check'),
       selected: true,
+      image: this.imageFor('ui/story/action-note-v2'),
     });
     return layout;
   }
@@ -1159,12 +1175,14 @@ export class UIRenderer {
     hud = true,
     satchel = true,
     choices = satchel,
+    story = true,
   } = {}) {
     const keys = new Set([
       ...(title ? TITLE_IMAGE_KEYS : []),
       ...(hud ? HUD_IMAGE_KEYS : []),
       ...(satchel ? SATCHEL_IMAGE_KEYS : []),
       ...(choices ? CHOICE_IMAGE_KEYS : []),
+      ...(story ? STORY_SURFACE_IMAGE_KEYS : []),
     ]);
     await Promise.all([...keys].map(async (key) => {
       const image = this.imageFor(key);

@@ -226,6 +226,21 @@ describe('action fixtures', () => {
     expect(getActionFixture('ui-objective-review').actions).toEqual([
       { frame: 30, type: 'tap', target: 'hud.quest' },
     ]);
+    expect(getStateFixture('ui-letter-reading-review')).toMatchObject({
+      entry: { chapter: 1, scene: 'ch1.letter' },
+      save: {
+        resume: {
+          chapter: 'ch1',
+          scene: 'ch1.letter',
+          room: 'ch1.bedroom',
+          spawn: 'bedroom.letter',
+        },
+        progress: { questFlags: { 'ch1.owlTapped': true } },
+      },
+    });
+    expect(getActionFixture('ui-letter-reading-review').actions).toEqual([
+      { frame: 30, type: 'tap', target: 'letter.envelope' },
+    ]);
   });
 
   it('rejects coordinate-like targets and non-monotonic scripts', () => {

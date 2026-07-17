@@ -141,7 +141,7 @@ const REVIEW_SCENE_ILLUSION_CHECKS = Object.freeze({
   ],
   'ui-robe-picker-review': [
     'Violet’s real full-body robe puppet remains visible from hair to shoes inside the dressing mirror, with the selected trim applied to the preview.',
-    'Exactly twelve named swatches appear as distinct, non-overlapping targets that are each at least 88×88.',
+    'Exactly twelve named swatches appear in a four-column, three-row tailoring grid as distinct, non-overlapping targets that are each at least 88×88.',
     'The selected swatch remains readable independently of its hue through one dark outer outline, one light inner outline, and one check marker.',
     'The mirror, twelve swatch targets, and 88px-or-larger confirmation control remain mutually non-overlapping.',
   ],

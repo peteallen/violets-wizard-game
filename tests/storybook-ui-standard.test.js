@@ -19,7 +19,7 @@ function recordingContext() {
   let depth = 0;
   const methods = new Set([
     'arc', 'arcTo', 'beginPath', 'bezierCurveTo', 'clip', 'closePath', 'ellipse', 'fill',
-    'fillRect', 'fillText', 'lineTo', 'moveTo', 'quadraticCurveTo', 'rect', 'restore',
+    'drawImage', 'fillRect', 'fillText', 'lineTo', 'moveTo', 'quadraticCurveTo', 'rect', 'restore',
     'rotate', 'roundRect', 'save', 'scale', 'setLineDash', 'stroke', 'strokeRect',
     'translate',
   ]);
@@ -226,5 +226,67 @@ describe('shared Storybook Standard paper surfaces', () => {
       'rgba(255,244,210,0.42)',
       'rgba(93,58,39,0.18)',
     ]));
+  });
+
+  it('three-slices a decoded painted action note while preserving both end caps', () => {
+    const narrow = recordingContext();
+    const wide = recordingContext();
+    const image = { complete: true, naturalWidth: 1200, naturalHeight: 400 };
+    const narrowRect = { x: 60, y: 594, width: 280, height: 96 };
+    const wideRect = { x: 120, y: 180, width: 430, height: 96 };
+
+    drawParchmentAction(narrow, narrowRect, { label: 'Hear the letter', image });
+    drawParchmentAction(wide, wideRect, { label: 'Hear the letter', image });
+
+    const narrowSlices = narrow.calls.filter(([name]) => name === 'drawImage');
+    const wideSlices = wide.calls.filter(([name]) => name === 'drawImage');
+    expect(narrowSlices).toHaveLength(3);
+    expect(wideSlices).toHaveLength(3);
+    expect(narrowSlices).toEqual([
+      ['drawImage', image, 0, 0, 240, 400, 60, 594, 57.6, 96],
+      ['drawImage', image, 240, 0, 720, 400, 117.6, 594, 164.8, 96],
+      ['drawImage', image, 960, 0, 240, 400, 282.4, 594, 57.6, 96],
+    ]);
+    expect(wideSlices[0].slice(1, 6)).toEqual(narrowSlices[0].slice(1, 6));
+    expect(wideSlices[2].slice(1, 6)).toEqual(narrowSlices[2].slice(1, 6));
+    expect(wideSlices[0].slice(-2)).toEqual(narrowSlices[0].slice(-2));
+    expect(wideSlices[2].slice(-2)).toEqual(narrowSlices[2].slice(-2));
+    expect(wideSlices[1][8] - narrowSlices[1][8]).toBe(wideRect.width - narrowRect.width);
+  });
+
+  it('keeps live action semantics above painted notes and uses the exact vector fallback until decode', () => {
+    const painted = recordingContext();
+    const fallback = recordingContext();
+    const vector = recordingContext();
+    const rect = { x: 120, y: 180, width: 430, height: 118 };
+    const iconCalls = [];
+    const icon = (...args) => iconCalls.push(args);
+    const options = {
+      label: 'Start over',
+      detail: 'Keeps sound settings',
+      icon,
+      disabled: true,
+      danger: true,
+      compact: true,
+    };
+
+    drawParchmentAction(painted, rect, {
+      ...options,
+      image: { complete: true, naturalWidth: 1200, naturalHeight: 400 },
+    });
+    drawParchmentAction(fallback, rect, {
+      ...options,
+      image: { complete: false, naturalWidth: 1200, naturalHeight: 400 },
+    });
+    drawParchmentAction(vector, rect, options);
+
+    expect(painted.assignments).toContainEqual(['globalAlpha', 0.48]);
+    expect(assignedStyles(painted, 'fillStyle')).toContain('#4d2430');
+    expect(painted.calls).toContainEqual(['fillText', 'Start over', 202, 236]);
+    expect(painted.calls).toContainEqual(['fillText', 'Keeps sound settings', 224, 266]);
+    expect(iconCalls).toHaveLength(3);
+    expect(fallback.calls).toEqual(vector.calls);
+    expect(fallback.assignments).toEqual(vector.assignments);
+    expect(fallback.calls.some(([name]) => name === 'drawImage')).toBe(false);
   });
 });

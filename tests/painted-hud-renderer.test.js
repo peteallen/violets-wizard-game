@@ -230,6 +230,9 @@ describe('painted HUD art', () => {
       'ui/hud/wands/violet-first-wand',
       'ui/satchel/spread-v2',
       'cards/jocunda-sykes/portrait',
+      'ui/story/action-note-v2',
+      'ui/story/robe-folio-v2',
+      'ui/story/chapter-one-plaque-v2',
     ]));
     expect(decoded).toHaveLength(resolvedKeys.length);
     expect(decoded).toContain('/resolved/ui/hud/quest-compass-base');
@@ -239,7 +242,12 @@ describe('painted HUD art', () => {
       resolveAsset: hudOnlyResolve,
       characterRenderer: { draw: vi.fn() },
     });
-    await hudOnlyRenderer.preloadUiImages({ title: false, hud: true, satchel: false });
+    await hudOnlyRenderer.preloadUiImages({
+      title: false,
+      hud: true,
+      satchel: false,
+      story: false,
+    });
     expect(hudOnlyResolve.mock.calls.map(([key]) => key)).toEqual([
       'ui/objective/reminder-v2',
       'ui/hud/satchel-closed',

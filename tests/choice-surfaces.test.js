@@ -118,6 +118,7 @@ describe('illustrated choice and selection surfaces', () => {
       hud: false,
       satchel: false,
       choices: true,
+      story: false,
     });
     expect(renderer.drawChoices(context, choices, 12, true)).toEqual(dialogueChoiceLayout(3));
     expect(choices.map(({ __rect }) => __rect)).toEqual(dialogueChoiceLayout(3));

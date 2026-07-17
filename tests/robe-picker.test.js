@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { Game } from '../src/game/Game.js';
 import { chapter1 } from '../src/game/content/chapters/ch1.js';
 import { contentRegistry } from '../src/game/content/index.js';
@@ -40,7 +40,7 @@ function recordingContext() {
   let depth = 0;
   const methods = new Set([
     'arc', 'beginPath', 'bezierCurveTo', 'clip', 'closePath', 'ellipse', 'fill',
-    'fillRect', 'lineTo', 'moveTo', 'quadraticCurveTo', 'restore', 'rotate', 'save',
+    'drawImage', 'fillRect', 'lineTo', 'moveTo', 'quadraticCurveTo', 'restore', 'rotate', 'save',
     'scale', 'stroke', 'translate',
   ]);
   const target = {
@@ -103,6 +103,8 @@ function createRobeWorld(existingTrim = 'rose') {
 }
 
 describe('touch-first robe picker', () => {
+  afterEach(() => vi.unstubAllGlobals());
+
   it('offers twelve named, visually distinct trims while preserving the legacy save strings', () => {
     expect(ROBE_TRIMS).toHaveLength(12);
     expect(new Set(ROBE_TRIMS.map(({ id }) => id)).size).toBe(12);
@@ -204,6 +206,44 @@ describe('touch-first robe picker', () => {
       'That one!',
     ]));
     expect(context.calls.filter(([name]) => name === 'bezierCurveTo').length).toBeGreaterThan(120);
+    expect(context.depth).toBe(0);
+  });
+
+  it('layers the decoded tailoring folio and three-sliced action note under live content', () => {
+    vi.stubGlobal('Image', class TestImage {});
+    const characterRenderer = { draw: vi.fn() };
+    const renderer = new UIRenderer({ characterRenderer });
+    const folio = { complete: true, naturalWidth: 2560, naturalHeight: 1440 };
+    const actionNote = { complete: true, naturalWidth: 1200, naturalHeight: 400 };
+    renderer.images.set('ui/story/robe-folio-v2', folio);
+    renderer.images.set('ui/story/action-note-v2', actionNote);
+    const context = recordingContext();
+
+    const layout = renderer.drawRobePicker(context, {
+      overlay: { surface: 'robe-picker', selectedTrim: 'gold' },
+    }, 8.4, true);
+
+    const imageCalls = context.calls.filter(([name]) => name === 'drawImage');
+    expect(imageCalls[0]).toEqual(['drawImage', folio, 0, 0, 1280, 720]);
+    expect(imageCalls.slice(1)).toHaveLength(3);
+    expect(imageCalls.slice(1).every(([, image]) => image === actionNote)).toBe(true);
+    expect(characterRenderer.draw).toHaveBeenCalledWith(
+      context,
+      expect.objectContaining({
+        characterId: 'character.violet',
+        ...layout.previewCharacter,
+        robeTrim: '#d4a944',
+      }),
+      0,
+    );
+    expect(new Set(context.texts)).toEqual(new Set([
+      'Choose a colour',
+      ...ROBE_TRIMS.map(({ label }) => label),
+      'That one!',
+    ]));
+    expect([...new Set(layout.swatches.map(({ rect }) => rect.x))]).toEqual([723, 827, 931, 1035]);
+    expect([...new Set(layout.swatches.map(({ rect }) => rect.y))]).toEqual([156, 270, 384]);
+    expect(layout.confirm).toEqual({ x: 754, y: 500, width: 338, height: 102 });
     expect(context.depth).toBe(0);
   });
 
