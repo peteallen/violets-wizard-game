@@ -103,10 +103,65 @@ Affordance state derives from quest/flag state — mechanically, not by hand-aut
 
 The map objective is an actual glowing star on the destination — always present for the current objective (fixes the "tap the golden star" / no-star contradiction), and it's the same golden-thread visual language.
 
-## Workstream 3 — Diegetic UI (VU-04, VU-05)
+## Workstream 3 — Violet's Field Kit (VU-04, VU-05)
 
-- **Dialogue panel rebuild (VU-04)**: the full-width cream slab becomes a **parchment scroll banner** — bottom ~22% of the screen, deckled edges, slight hand-placed rotation, portrait in a small gilt frame, caption chip integrated. **Hard layout rule: the active speaker's puppet is never occluded** — the panel narrows or shifts opposite the speaker. Warm-dark parchment variant for night rooms so the panel stops fighting moody paintings.
+- **Dialogue panel rebuild (VU-04)**: the full-width cream slab becomes one
+  **unrotated asymmetric deckled parchment**, never a rolled scroll. The
+  portrait attaches half outside the edge nearest the live speaker, the short
+  caption prints directly on the parchment, and the separate full-size
+  **Again** and advance controls occupy the opposite edge. **Hard layout rule:
+  the active speaker's puppet is never occluded** — the whole component shifts
+  opposite the speaker. A warm-dark parchment variant belongs in night rooms
+  without changing this anatomy. There is no hand-placed rotation, nested
+  caption box, or floating scroll curl.
 - **Satchel & map rebuild (VU-05)**: the flowchart-in-a-book becomes an **illustrated map** — a generated parchment map painting of Diagon Alley (stylized vignette composition; the pipeline's first UI painting) with locations as small painted vignettes, the objective star glowing, dotted ink path drawn as quill strokes. Tabs become leather bookmarks; the software gear becomes a **brass keyhole** (voiced "Ask a grown-up!" on tap); locked locations get soft fog, not gray boxes with X's. Icon audit across the game: every icon pictorial and diegetic (wand, robe, paw — never hearts/X's/gears).
+
+This pass names the shared interface language **Violet's Field Kit**. Blackberry
+leather means containers and navigation; parchment means story, labels, and
+choices; aged brass means mechanisms, frames, and grown-up utilities; wax means
+closure and confirmation; woven cloth means ceremony and house identity; and
+muted burgundy leather means serious or destructive utility. Enchanted gold is
+reserved for the current objective or the instant of activation. Ordinary
+selection uses a plum inset or stitching, so a selected tab cannot compete with
+the golden thread.
+
+The mapping works in both directions: the same meaning always receives the same
+object, and a familiar object never changes jobs between screens. Close is the
+same wax X everywhere and never means **Start over**. Optional narration is the
+same speaker control everywhere it is offered. The objective is the same
+compass whether Violet asks for a reminder or follows it toward a destination.
+Bookmarks navigate, state stamps report, and decoration remains inert.
+
+A shared component consists of a painted physical shell, one semantic mark, a
+calm aperture for live content, a separate live state layer, a grounded shadow
+or mount, and one forgiving input target of at least 88×88 virtual pixels. The
+runtime owns **all text, state, portraits, and routes**; generated art owns only
+stable material, silhouette, texture, and ornament. Place names, captions,
+progress, availability, selection, completion, objective markers, portraits,
+and paths therefore remain live layers driven by the same state that handles
+input and saving. A painted prop is not allowed to carry a plausible but stale
+version of any of them.
+
+Every interactive field-kit object uses the named states **rest, pressed,
+selected, unavailable, focus, busy, success, error, and destructive**. Pressed
+settles and compresses the contact shadow. Selected uses plum inset or
+stitching, not enchanted gold. Unavailable becomes physically closed, fogged,
+folded, tied, or pocketed instead of merely grey. Busy blocks repeat activation
+while keeping the mechanism legible; success resolves into the new live state;
+error shows a warm, recoverable correction; and destructive uses guarded muted
+burgundy leather plus confirmation. Focus is an explicit accessibility
+exception: a honey-and-violet focus-visible indicator may be clean, geometric,
+and non-diegetic, and is not replaced by an objective shimmer. Reduced motion
+preserves every state distinction and changes movement into direct settled
+poses or fades.
+
+In a gameplay room, the Field Kit supports a theater-stage composition rather
+than placing a second interface composition over it. Persistent tools stay at
+the corners; dialogue, choices, reminders, and state objects use edge space or
+mount to the room or described prop. They protect Violet, the active speaker,
+the current objective, and the usable route. Only a physical object Violet has
+opened, such as the satchel, a readable letter, or the grown-up panel, may
+temporarily own the full frame.
 
 The dialogue composition and deterministic parchment satchel are now deployed.
 Painted Map and Cards bookmarks own top navigation; the grown-up keyhole and
@@ -127,7 +182,25 @@ and makes only the scene-specific composition changes Chapter Two needs.
 
 ## Workstream 4 — Text rule (VU-07)
 
-**Rule (tightens GAME_DESIGN; exceptions per D36):** during play, on-screen text is caption chips (≤3 words) and proper nouns on title/chapter cards — plus two deliberate exceptions: **readable story objects** (the letter's parchment, spellbook incantations, rune tiles, potion labels — reading them *is* the content per the learning layer, and their written words must match any narration verbatim) and **short action labels on primary controls** (≤3 easy caption-vocabulary words: "Hear the letter", "Again", the update prompt's "Reload"/"Later"). Everything else — helper sentences, subtitles, state labels — dies; voice + icons carry all instruction. The parent panel is exempt (it's *for* adults).
+**Rule (tightens GAME_DESIGN; exceptions per D36):** during play, on-screen
+text is caption chips (≤3 words) and proper nouns on title/chapter cards, plus
+three deliberate exceptions. **Readable story objects** include the letter's
+parchment, spellbook incantations, rune tiles, and potion labels; reading them
+is the content, and their written words match any narration verbatim. **Short
+action labels on primary controls** use no more than three easy
+caption-vocabulary words, such as "Hear the letter", "Again", and the update
+prompt's "Reload" or "Later". **Single-word live state marks** such as "Here"
+and "Next" are allowed when they directly distinguish places or choices and an
+icon alone would be ambiguous. Explanatory helper sentences, subtitles, and
+redundant state prose still die; voice, objects, and icons carry the
+instruction. The parent panel is exempt because it is for adults.
+
+Every allowed word remains runtime text in a reserved aperture; no generated
+painting or prop bakes in copy. The same rule applies to live portraits, routes,
+selection, availability, and progress. Removing prose must never remove
+meaning: optional narration uses the one shared speaker control, while a state
+that matters without audio receives the shortest permitted runtime mark or a
+clear material state.
 
 The original kill list included "Tap the page to continue," "A map that
 remembers where Violet needs to go," "Tap to travel," "Violet goes here,"

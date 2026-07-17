@@ -18,7 +18,7 @@ function recordingContext() {
   let depth = 0;
   const methods = new Set([
     'arc', 'beginPath', 'bezierCurveTo', 'clip', 'closePath', 'ellipse', 'fill',
-    'fillRect', 'fillText', 'lineTo', 'moveTo', 'quadraticCurveTo', 'rect', 'restore',
+    'drawImage', 'fillRect', 'fillText', 'lineTo', 'moveTo', 'quadraticCurveTo', 'rect', 'restore',
     'rotate', 'roundRect', 'save', 'scale', 'setLineDash', 'stroke', 'strokeRect',
     'strokeText', 'translate',
   ]);
@@ -81,16 +81,16 @@ function overlaps(first, second) {
     && first.y + first.height > second.y;
 }
 
-describe('code-only storybook title illustration', () => {
+describe('painted storybook title illustration with a deterministic fallback', () => {
   it('publishes a deterministic frozen scene with clear masthead and envelope regions', () => {
     const first = createStorybookTitlePresentation(3.75);
     const replayed = createStorybookTitlePresentation(3.75);
 
-    expect(STORYBOOK_TITLE_RENDERER_STATUS).toBe('code-only-integrated');
-    expect(STORYBOOK_TITLE_PAINTED_ASSET_STATUS).toBe('paused-for-pete-review');
+    expect(STORYBOOK_TITLE_RENDERER_STATUS).toBe('painted-backdrop-integrated');
+    expect(STORYBOOK_TITLE_PAINTED_ASSET_STATUS).toBe('shipping');
     expect(first).toEqual(replayed);
-    expect(first.kind).toBe('code-only-integrated');
-    expect(first.paintedAssetStatus).toBe('paused-for-pete-review');
+    expect(first.kind).toBe('painted-backdrop-integrated');
+    expect(first.paintedAssetStatus).toBe('shipping');
     expect(Object.isFrozen(first)).toBe(true);
     expect(Object.isFrozen(first.stars)).toBe(true);
     expect(first.stars.every(Object.isFrozen)).toBe(true);
@@ -219,6 +219,26 @@ describe('code-only storybook title illustration', () => {
       .some(([, value]) => pureExtremes.has(String(value).toLowerCase()))).toBe(false);
   });
 
+  it('uses the painted backdrop when it is decoded while retaining live Violet and owl layers', () => {
+    const actorCalls = [];
+    const context = recordingContext();
+    const backgroundImage = { complete: true, naturalWidth: 2560, naturalHeight: 1440 };
+    const renderer = new StorybookTitleRenderer({
+      characterRenderer: {
+        draw: (_context, character) => actorCalls.push(character.characterId),
+      },
+    });
+
+    renderer.draw(context, 2.75, { backgroundImage });
+
+    expect(context.calls.filter(([name]) => name === 'drawImage')).toEqual([
+      ['drawImage', backgroundImage, 0, 0, 1280, 720],
+    ]);
+    expect(context.calls.some(([name]) => name === 'fill')).toBe(false);
+    expect(actorCalls).toEqual(['character.violet', 'character.post-owl']);
+    expect(context.depth).toBe(0);
+  });
+
   it('requires the generic character boundary instead of silently constructing a concrete renderer', () => {
     expect(() => new StorybookTitleRenderer()).toThrow(/injected character renderer/);
     expect(() => drawStorybookTitlePresentation(
@@ -259,8 +279,8 @@ describe('code-only storybook title illustration', () => {
     expect(renderer.drawTitle(replayed, 0, false, true)).toBe(presentation);
 
     expect(titleDraws).toEqual([
-      { time: 0, options: { reducedMotion: true } },
-      { time: 0, options: { reducedMotion: true } },
+      { time: 0, options: { backgroundImage: null, reducedMotion: true } },
+      { time: 0, options: { backgroundImage: null, reducedMotion: true } },
     ]);
     expect(first.calls).toEqual(replayed.calls);
     expect(first.assignments).toEqual(replayed.assignments);
@@ -307,6 +327,9 @@ describe('code-only storybook title illustration', () => {
       'at Hogwarts',
       'Return to Hogwarts',
     ]);
-    expect(titleDraws.at(-1)).toEqual({ time: 0, options: { reducedMotion: true } });
+    expect(titleDraws.at(-1)).toEqual({
+      time: 0,
+      options: { backgroundImage: null, reducedMotion: true },
+    });
   });
 });

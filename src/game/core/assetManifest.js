@@ -20,6 +20,7 @@ const IMAGE_PATHS = Object.freeze({
 });
 
 const UI_IMAGE_PATHS = Object.freeze({
+  'ui/title/backdrop-v2': 'assets/art/ui/title/title-backdrop-v2.webp',
   'ui/title/return-envelope-v2': 'assets/art/ui/title/return-envelope-v2.webp',
   'ui/satchel/spread-v2': 'assets/art/ui/satchel/spread-v2.webp',
   'ui/satchel/card-frame-v2': 'assets/art/ui/satchel/card-frame-v2.webp',

@@ -1,0 +1,34 @@
+{
+  "schema_version": 1,
+  "kind": "codex-built-in-ui-image-generation",
+  "slug": "violets-field-kit-v1",
+  "generated_at": "2026-07-17",
+  "request_spec": "art/ui/field-kit-v1.request.json",
+  "prompt": "art/ui/field-kit-v1.prompts.md",
+  "processing": "art/ui/process-field-kit-v1.mjs",
+  "workflow": {
+    "name": "Codex built-in image generation",
+    "tool": "image_gen.imagegen",
+    "model_identifier": null,
+    "seed": null
+  },
+  "artifacts": [
+    {
+      "id": "exec-f3cc4a37-0e1f-42e2-b0ae-f4c85584cf76",
+      "source": {
+        "path": "art/ui/title/source/title-backdrop-v2.png",
+        "width": 1672,
+        "height": 941,
+        "bytes": 2879309,
+        "sha256": "91c04545ef3ac0b94911ef036368b29ec4eb553a76637ac16a164e2779629f84"
+      },
+      "shipping": {
+        "path": "public/assets/art/ui/title/title-backdrop-v2.webp",
+        "width": 2560,
+        "height": 1440,
+        "bytes": 666688,
+        "sha256": "b56d7f03c8cba9e20b7295f74d74cf159e05ad3ab9c5bdea84e33f82bd12fc4d"
+      }
+    }
+  ]
+}

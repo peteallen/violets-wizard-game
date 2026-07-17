@@ -28,6 +28,53 @@ before visual work and remain non-negotiable:
 - Every SET_PIECES.md id, every AM system, every UI surface, every room, and every production character registers a harness scene. Registration makes work inspectable; it is not a substitute for connecting the feature to normal gameplay. A character that exists only in the harness is unfinished.
 - The URL-param path doubles as the human scrubber: dad can open `harness.html?scene=brick-wall&t=1.4` in a normal browser and eyeball any exact instant.
 
+### State and inverse coverage
+
+A visual fixture proves a state contract, not merely that a component can draw.
+The shared Violet's Field Kit matrix covers the named interaction vocabulary:
+**rest, pressed, selected, unavailable, focus, busy, success, error, and
+destructive**. Pressed must visibly settle and compress its shadow; selected
+must use plum inset or stitching rather than gold; unavailable must become
+closed, fogged, folded, tied, or pocketed rather than simply grey; and focus
+must show the honey-and-violet focus-visible treatment. Busy, success, error,
+and destructive fixtures must remain distinguishable from selection and from
+the enchanted-gold objective state. Reduced-motion fixtures prove the same
+meaning without depending on travel, overshoot, flashing, or looping motion.
+
+Production surfaces then register the states they can actually enter and the
+meaningful **inverse** of each one. An earned portrait is paired with an
+unearned closed pocket; a selected bookmark with an unselected sibling; an
+available action with its unavailable physical state; a current destination
+with a non-current destination; an objective or activation shimmer with the
+same object when it must not shimmer; and a room overlay with the stage before
+that overlay appears. The purpose of an inverse fixture is to prove that
+forbidden information and emphasis are absent, not just that the positive state
+looks attractive.
+
+Coverage uses the smallest pairwise matrix that exercises every material,
+named state, live-content boundary, and inverse rule; it does not require a
+meaningless cross-product of every label and room. Each fixture is constructed
+through the normal runtime state and production renderer. It may not inject a
+special drawing-only flag that normal play cannot reach. Text, state, portraits,
+and routes remain live in the fixture, while the painted shell remains
+unchanged, so the capture proves the same boundary the player uses.
+
+Room-stage fixtures include the unobstructed room and every materially
+different overlay placement. Dialogue coverage includes speakers on both sides
+and both ordinary and warm-dark parchment contexts, proving that the unrotated
+asymmetric card moves opposite the speaker without covering Violet, the active
+speaker, the objective, or the usable route. Full-screen field-kit surfaces
+prove that closing them returns to the same room stage. These compositions are
+captured at 1280×720 and 2560×1440, not certified from the 640×360 iteration
+preview.
+
+Focus is reviewed as an accessibility state, not as decoration. The explicit
+honey-and-violet indicator may be clean, geometric, and non-diegetic; it is an
+intentional exception to the no-abstract-ring, hand-wobbled-shape, and room-
+palette rules. Browser inspection confirms it appears for visible keyboard or
+assistive focus, remains legible over every material it can surround, and does
+not become a persistent pointer or touch halo.
+
 ## Capture stack (VERIFIED on this machine)
 
 - **Playwright pinned to exactly `1.58.2`** — the matching `chromium-1208` + headless shell are already in `~/Library/Caches/ms-playwright`, so installation downloads **zero bytes** of browser. The pin is exact (no caret): a Playwright bump changes the Chromium revision, downloads ~200MB, *and* invalidates all goldens via antialiasing drift — treat any bump as a deliberate golden-regeneration event.
@@ -49,8 +96,8 @@ before visual work and remain non-negotiable:
 ## The agent review loop (per visual change)
 
 1. **Implement** the set piece per its SET_PIECES.md spec.
-2. **Capture**: `snap.mjs` at the spec's keyframe times (chosen to hit anticipation / impact / settle). Multi-seed spot-check (`--seed 1,42,1337`) to catch seed-dependent bugs.
-3. **Self-review**: Read the PNGs against the set piece's illusion checklist. Checklists are **geometric and countable** ("no tile crosses another into visual mush at t=1.4", "name legible at 640×360", "particle count 20–40") — never vibes; keyframe judgment of subtle motion is the weakest link, so the checklist carries the burden. Generate the `flipbook.mjs` GIF and read the contact strip for motion sanity. Iterate until the author pass is clean, then ship only after the full local gate is green (**`npm run build`**: tests, content lint, asset/voice/audio checks, production bundle — not `npm test` alone). CI re-runs the same battery and gates deployment, so a red push can't reach Pages — but the local gate exists so pushes *deploy*, not merely survive.
+2. **Capture**: `snap.mjs` at the spec's keyframe times (chosen to hit anticipation / impact / settle). Multi-seed spot-check (`--seed 1,42,1337`) to catch seed-dependent bugs. For interface work, capture the relevant named states, their meaningful inverses, reduced motion, focus-visible where applicable, and the room with and without the composition-changing overlay at both required sizes.
+3. **Self-review**: Read the PNGs against the set piece's illusion checklist. Checklists are **geometric and countable** ("no tile crosses another into visual mush at t=1.4", "name legible at 640×360", "particle count 20–40") — never vibes; keyframe judgment of subtle motion is the weakest link, so the checklist carries the burden. For field-kit work, also confirm that the painted asset contains no baked text, state, portrait, or route; the live state has the correct object and material meaning; the inverse omits the forbidden marker or emphasis; and the focus indicator remains visible without being mistaken for enchanted gold. Generate the `flipbook.mjs` GIF and read the contact strip for motion sanity. Iterate until the author pass is clean, then ship only after the full local gate is green (**`npm run build`**: tests, content lint, asset/voice/audio checks, production bundle — not `npm test` alone). CI re-runs the same battery and gates deployment, so a red push can't reach Pages — but the local gate exists so pushes *deploy*, not merely survive.
 
 There is no approval queue, no PENDING.md, no blessing step, and no golden gate (D32 retired them). If a change is genuinely taste-risky — a new character design, a signature moment's feel — say so plainly in your report so Pete knows to look at it in the deployed game; that's a heads-up, not a blocking request.
 
@@ -67,6 +114,13 @@ character-frame milestones.
 Every chapter set-piece checklist and every registered player-facing harness fixture ends with the same ordered seven-item Storybook Standard section. The canonical wording and the review-scene checklist registry live in `src/game/content/visualVerification.js`; chapter content uses its helper instead of copying the wording. The state-fixture registry is authoritative for harness coverage, and the test gate reconciles it with the matching action fixtures before requiring exactly one canonical checklist for every visible fixture. A genuinely internal fixture may be excluded only through the explicit non-player exclusion registry with a written reason, so a newly registered room, transition, character, UI, or grown-up surface cannot silently bypass review.
 
 The seven countable checks cover palette harmony with zero pure-black or pure-white artwork colors; soft dark-brown contours with at least two visible line weights; at least two tones plus a highlight facing the authored room key; one warm room-matched light direction and a lit-side character rim; visible grain or material marks on every player-facing surface; zero perfect rectangles, circles, or ruler-straight edges on those surfaces; and zero elements that separate from the room or reference family under a thumbnail/squint comparison. These checks make omissions and obvious mismatches countable, but they do not turn palette harmony or family resemblance into pixel-computable facts; the agent still judges those two comparisons from review frames.
+
+The focus-visible indicator is not artwork and does not count as a
+player-facing material surface for the palette, contour, texture, or perfect-
+geometry checks. Its deliberate honey-and-violet accessibility treatment is
+therefore not a Storybook Standard failure. Omitting it, hiding it under a
+painted shell, or replacing it with the enchanted-gold objective shimmer is a
+verification failure of its own.
 
 ## What this machinery does NOT cover (and what does)
 

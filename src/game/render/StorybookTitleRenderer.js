@@ -4,11 +4,11 @@ const ARTBOARD = Object.freeze({ x: 0, y: 0, width: WORLD.width, height: WORLD.h
 const TAU = Math.PI * 2;
 const OUTLINE = '#3a2d22';
 
-// The deterministic VU-06 composition is integrated into the live title. The
-// shared painted lake-vista asset remains paused for Pete's review, so this
-// status describes the code-only title rather than claiming that painting.
-export const STORYBOOK_TITLE_RENDERER_STATUS = 'code-only-integrated';
-export const STORYBOOK_TITLE_PAINTED_ASSET_STATUS = 'paused-for-pete-review';
+// The deterministic VU-06 composition remains the loading fallback and owns
+// all live characters and safe areas. The production title now paints the
+// room-tier lake-and-castle backdrop before those live layers.
+export const STORYBOOK_TITLE_RENDERER_STATUS = 'painted-backdrop-integrated';
+export const STORYBOOK_TITLE_PAINTED_ASSET_STATUS = 'shipping';
 
 export const STORYBOOK_TITLE_MAJOR_REGIONS = Object.freeze([
   region('sky', '#191a35', '#111126', '#354767'),
@@ -53,8 +53,10 @@ export class StorybookTitleRenderer {
   }
 
   draw(context, time = 0, options = {}) {
-    const presentation = createStorybookTitlePresentation(time, options);
+    const { backgroundImage = null, ...presentationOptions } = options;
+    const presentation = createStorybookTitlePresentation(time, presentationOptions);
     drawStorybookTitlePresentation(context, presentation, {
+      backgroundImage,
       characterRenderer: this.characterRenderer,
     });
     return presentation;
@@ -138,7 +140,7 @@ export function createStorybookTitlePresentation(
 export function drawStorybookTitlePresentation(
   context,
   presentation,
-  { characterRenderer } = {},
+  { backgroundImage = null, characterRenderer } = {},
 ) {
   if (!presentation || presentation.kind !== STORYBOOK_TITLE_RENDERER_STATUS) {
     throw new TypeError('drawStorybookTitlePresentation requires a storybook title presentation.');
@@ -151,20 +153,28 @@ export function drawStorybookTitlePresentation(
   context.translate(presentation.frame.x, presentation.frame.y);
   context.scale(scaleX, scaleY);
 
-  drawLayeredSky(context);
-  drawStars(context, presentation.stars);
-  drawMoon(context, presentation.moon);
-  drawDistantHills(context);
-  drawLayeredLake(context, presentation.waterShift);
-  drawReflections(context, presentation.waterShift);
-  drawCastle(context);
-  drawMist(context, presentation.mistOffsets);
-  drawForegroundShore(context);
-  drawHeroPerch(context);
+  if (isReadyImage(backgroundImage)) {
+    context.drawImage(backgroundImage, 0, 0, WORLD.width, WORLD.height);
+  } else {
+    drawLayeredSky(context);
+    drawStars(context, presentation.stars);
+    drawMoon(context, presentation.moon);
+    drawDistantHills(context);
+    drawLayeredLake(context, presentation.waterShift);
+    drawReflections(context, presentation.waterShift);
+    drawCastle(context);
+    drawMist(context, presentation.mistOffsets);
+    drawForegroundShore(context);
+    drawHeroPerch(context);
+  }
 
   renderer.draw(context, presentation.hero.violet, presentation.sceneTime);
   renderer.draw(context, presentation.hero.owl, presentation.sceneTime);
   context.restore();
+}
+
+function isReadyImage(image) {
+  return Boolean(image?.complete && image.naturalWidth > 0 && image.naturalHeight > 0);
 }
 
 function requireCharacterRenderer(characterRenderer) {

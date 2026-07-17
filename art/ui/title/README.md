@@ -1,5 +1,11 @@
 # Title owl-post prop
 
+`source/title-backdrop-v2.png` is the room-tier painted castle-and-lake title
+background introduced by Violet's Field Kit v1. It contains no characters,
+words, or controls; the runtime retains the title, envelope, Violet, and owl.
+Its prompt, built-in generation receipt, hashes, and deterministic WebP
+processing live in `../field-kit-v1.*` and `../process-field-kit-v1.mjs`.
+
 `return-envelope-v2-chroma.png` is the untouched built-in image-generation
 source for the returning-player title action. The runtime draws the action text;
 the painting intentionally contains no words.

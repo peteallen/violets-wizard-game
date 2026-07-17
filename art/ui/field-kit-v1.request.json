@@ -1,0 +1,20 @@
+{
+  "schema_version": 1,
+  "kind": "codex-built-in-ui-image-generation-request",
+  "slug": "violets-field-kit-v1",
+  "generated_at": "2026-07-17",
+  "workflow": {
+    "name": "Codex built-in image generation",
+    "tool": "image_gen.imagegen",
+    "model_identifier": null,
+    "seed": null
+  },
+  "assets": [
+    {
+      "id": "title-backdrop-v2",
+      "prompt_section": "Painted title backdrop",
+      "source": "art/ui/title/source/title-backdrop-v2.png",
+      "shipping": "public/assets/art/ui/title/title-backdrop-v2.webp"
+    }
+  ]
+}

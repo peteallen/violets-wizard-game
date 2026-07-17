@@ -39,6 +39,7 @@ export { isAllowedChildFacingUiText } from '../content/playerVisibleCopy.js';
 const STORY_GRADIENTS = new WeakMap();
 const NIGHT_DIALOGUE_GRADIENTS = new WeakMap();
 const SATCHEL_IMAGE_KEYS = Object.freeze([
+  'ui/title/backdrop-v2',
   'ui/title/return-envelope-v2',
   'ui/satchel/spread-v2',
   'ui/satchel/card-frame-v2',
@@ -1229,7 +1230,10 @@ export class UIRenderer {
 
   drawTitle(context, time, hasSave, reducedMotion = false) {
     const animationTime = reducedMotion ? 0 : time;
-    const presentation = this.titleRenderer.draw(context, animationTime, { reducedMotion });
+    const presentation = this.titleRenderer.draw(context, animationTime, {
+      backgroundImage: this.imageFor('ui/title/backdrop-v2'),
+      reducedMotion,
+    });
     const layout = titleForegroundLayout(presentation);
     drawTitleMasthead(context, layout.masthead);
     drawInvitationButton(context, childFacingUiText(

@@ -41,6 +41,31 @@ Rules learned from the sibling pipelines:
 - Every prompt, seed, raw output, and accepted final is committed under `art/` with a regeneration script — rooms must be reproducible and re-editable months later (house pattern).
 - Generate 3–4 candidates per room, pick one, log the choice. Style drift between chapters gets caught by eyeballing the full room contact sheet (`art/contact-sheet.html`, a build artifact).
 
+### The room is a stage
+
+Every gameplay room is composed as the stage of the current story beat, not as
+wallpaper behind an interface. The painting establishes one readable focal
+group, a calm walkable floor band, clear entrances and exits, and enough
+negative space for the cast to act without silhouettes tangling together. The
+authored key light and the room's strongest contrast lead the eye to the story;
+the interface may support that hierarchy but may not establish a competing
+center of attention.
+
+Characters, moving props, affordances, effects, and interface remain separate
+layers over that stage. Persistent controls stay at the corners. A dialogue
+card, choice, objective reminder, or short-lived state object occupies available
+edge space and protects the active speaker's face and body, Violet, the current
+objective, and the route she needs to use. The dialogue card therefore chooses
+its side from live actor placement and sits opposite the on-screen speaker. A
+small overlay should appear mounted to a room surface or attached to the thing
+it describes; it must not turn the painted room into a generic modal backdrop.
+
+A full-screen surface is reserved for a physical object Violet has deliberately
+opened, such as her satchel, a readable letter, or the grown-up panel. Returning
+from it restores the same stage. At both required review sizes, the room must
+still read clearly with the interface removed, and the interface must leave the
+same protected story areas unobscured when it is present.
+
 ## Characters: painted full-frame animation
 
 Characters are generated as coherent multi-view and core-action sheets, sliced
@@ -78,22 +103,152 @@ The character and room layers are stitched together by a shared treatment:
 
 **Portraits** (dialogue frames) use the same identity and face construction as the world frames, at the detail needed by the dialogue card. Generate and map only the speaking and expression states the current dialogue requests, framed in ornate gilt like castle paintings.
 
-## UI: parchment, wax, and brass
+## UI: Violet's Field Kit
 
-Uncluttered but highly stylized — the HUD should look like objects from the world, not chrome:
+The shared interface language is **Violet's Field Kit**: a small collection of
+storybook school, travel, and magical objects that feel as if they belong to
+her. It is uncluttered but richly made. A new surface may introduce a new prop,
+but it may not invent a new visual meaning for a material or reuse a familiar
+object for an unrelated action. Nothing on screen should look like software
+chrome wearing a parchment color.
 
-- **Materials:** parchment cards with deckled edges, wax-seal buttons, brass/gold filigree trim, quill-drawn icons with ink texture.
-- **The wand button** is her actual wand in a brass holster; **the satchel** is a leather school bag; **the quest star** is a small enchanted compass-star. Nothing on screen looks like software.
-- Diegetic HUD objects appear only after Violet receives them in the story: the opening bedroom shows the quest compass, not an empty wand sheath or an as-yet-unowned satchel.
-- **Spell cards** in the fan: parchment with the quill-drawn spell icon, the one-word name in a friendly rounded hand, and the spell's signature color as the wax seal.
-- **Incantation ribbons & rune-tiles** (the learning layer): floating parchment ribbon with letter slots; letter tiles as small stone runes with gold-leaf letters that flip and chime into place; completed words ignite in the spell's color.
-- **Caption chips:** cream parchment chip, large friendly rounded lettering (high contrast, ~44px virtual minimum), max three words, bottom-center above the HUD line.
+### Material semantics
 
-Satchel controls, destination panels, the static open-folio background, and card holders follow the same generated-prop pipeline as other raster UI. Chroma-keyed props are generated textless on flat `#00ff00`; full-screen backgrounds are generated without controls, text, or state. Untouched sources, exact prompt records, and deterministic processing live under `art/ui`; only processed WebP derivatives ship under `public/assets/art/ui`. Generated art reserves explicit calm label or portrait rectangles; the runtime draws every word, portrait, route, and state marker in those rectangles. A new or changed satchel layout is inspected in the browser and captured at both required sizes across the early Chapter One map, late Chapter One map, Chapter One cards, Chapter Two cards-only, and Chapter Three cards-only scenes.
-- **Dialogue card:** one unrotated asymmetric deckled parchment, never a rolled scroll. The speaking portrait is physically attached half outside the edge nearest the on-screen speaker; the short caption is printed directly on the parchment; **Again** and advance are separate full-size wax/brass controls on the opposite edge. No nested caption box and no floating “bookend” curls.
-- **Chapter preview:** preserve the painted hero image between a compact upper title plaque and one bottom action shelf. Preview actions never cover the title or focal painting, and decorative character/animal icons appear only when they communicate an action — never as corner filler.
-- **Type:** one bundled open-license rounded storybook face (candidates: Baloo 2, Quicksand, or Andika — pick during Ch. 1 build; Andika is designed for early readers) — self-hosted, no CDN. Display flourishes get a second decorative face used *only* at title/chapter cards.
-- **Motion language:** everything eases (no linear tweens); UI enters with a soft overshoot (`easeOutBack`); nothing flashes hard; reduced-motion swaps overshoots for fades.
+**Blackberry leather means containers and navigation.** It forms the satchel,
+folio, page furniture, and bookmarks that hold content or move between sibling
+views. **Parchment means story, labels, and choices.** It carries words, readable
+objects, choice cards, and calm caption fields. **Aged brass means mechanisms,
+frames, and grown-up utilities.** It belongs to working hinges, holsters,
+portrait mounts, advance controls, and the grown-up keyhole. **Wax means closure
+and confirmation.** A seal closes, continues, accepts, or confirms; it does not
+silently become page navigation.
+
+**Woven cloth means ceremony and house identity.** Ribbons, banners, scarves,
+and ceremonial markers use cloth rather than borrowing ordinary control
+materials. **Muted burgundy leather means serious or destructive utility.** It
+sets a guarded action such as starting over apart from ordinary navigation
+without turning the whole interface alarming. **Enchanted gold means only the
+current objective or the instant of activation.** Brass highlights, honey
+paper, and ordinary trim may stay warm, but the magical gold shimmer is never a
+generic selected, decorative, or unavailable state.
+
+### One meaning, one object
+
+The same meaning uses the same object family wherever it appears, and one
+object family does not change jobs to fit a convenient space. A bookmark moves
+between sibling pages; parchment presents story, a label, or a choice; a wax
+control closes or confirms; and a brass mechanism operates a tool. The sole
+close action is always the same wax **X**, and that X never means **Start over**.
+Optional narration always uses the same speaker control. The current objective
+always comes from the same enchanted compass, whether Violet is asking what to
+do or the map is showing where to go. A state stamp, check, flag, or star reports
+state and is not a second hidden button. Decorative flourishes never accept
+input, and interactive objects never masquerade as corner decoration.
+
+### Component anatomy and the live boundary
+
+Every field-kit component has one physical shell with a readable material and
+silhouette, one semantic mark that explains its job without prose, a calm
+aperture for any live label, portrait, or content, a separate live state layer,
+and a contact shadow or mounting detail that anchors it. Its forgiving input
+area may extend beyond the painted silhouette, but remains at least 88×88
+virtual pixels and never overlaps a neighboring action. A component owns one
+action; attached controls such as **Again** and advance remain visibly and
+mechanically separate. Nested caption boxes, fake buttons, and ornamental hit
+targets are not component anatomy.
+
+Generated art owns stable material, silhouette, texture, and non-changing
+ornament. The runtime owns **all text, state, portraits, and routes**. It draws
+those live layers into deliberate blank or transparent apertures, using the
+same state that handles input and saving. No generated asset bakes in a place
+name, caption, current destination, completion mark, availability, selection,
+progress, portrait, or path. This boundary lets the shell be repainted without
+changing behavior and prevents a beautiful prop from lying about Violet's live
+state.
+
+### Named interaction states
+
+The complete visual vocabulary is **rest, pressed, selected, unavailable,
+focus, busy, success, error, and destructive**. These names describe different
+meanings and must not be substituted for one another. Objective guidance is a
+separate salience layer, so an ordinary selected control never borrows its
+enchanted gold.
+
+**Rest** shows the object's normal material and grounded shadow. **Pressed**
+settles the object toward its surface and compresses its contact shadow; it
+gives immediate feedback without requiring an animation. **Selected** is a
+persistent current choice or page and uses a plum inset, stitch, or equivalent
+material change, never enchanted gold. **Unavailable** changes the physical
+story of the object: it is closed, fogged, folded, tied, or pocketed rather than
+merely greyed out, and it cannot shimmer or accept activation.
+
+**Focus** is the explicit accessibility exception. Keyboard or assistive focus
+uses a high-contrast honey-and-violet indicator that may be cleaner and more
+geometric than the surrounding illustration. It is exempt from the bans on
+abstract rings, perfect geometry, and non-material outlines because finding the
+active control matters more than preserving the illusion. It appears only when
+focus is meant to be visible, layers additively over rest or selected, and is
+never replaced by enchanted gold.
+
+**Busy** keeps the object recognizable while a visible mechanism, fold, or
+progress treatment explains that input is temporarily being handled; repeated
+activation is blocked. **Success** gives a brief, material acknowledgement such
+as a settled seal, check, or stitch and then yields to the new live state.
+**Error** uses a warm ink or burgundy correction with a clear recovery path,
+never a harsh red flash or a false success mark. **Destructive** uses muted
+burgundy leather and an explicit confirmation step. It never borrows the close
+X, selected plum, or enchanted objective gold.
+
+Pressed feedback remains immediate under reduced motion: the component may
+step directly to its settled pose and back, while entrances and state changes
+use fades instead of overshoot or travel. Focus, unavailable, busy, success,
+error, and destructive meaning may never depend on motion alone.
+
+### Recurring field-kit components
+
+The wand control is Violet's actual wand in a brass holster, the satchel is her
+blackberry-leather school bag, and the quest control is her enchanted compass.
+Diegetic HUD objects appear only after Violet receives them in the story: the
+opening bedroom shows the quest compass, not an empty wand sheath or an
+as-yet-unowned satchel.
+
+Spell cards are parchment with a quill-drawn spell icon, a runtime one-word
+name in a friendly rounded hand, and the spell's signature color at the wax
+seal. Incantation ribbons and rune tiles form the learning layer: a parchment
+ribbon holds the live letter slots, while stone runes with gold-leaf runtime
+letters flip and chime into place and the completed word ignites in the spell's
+signature color. Caption chips are cream parchment with large, high-contrast
+rounded lettering, approximately 44 virtual pixels minimum and no more than
+three words, placed bottom-center above the HUD line.
+
+Satchel controls, destination panels, the static open-folio background, and
+card holders follow the same generated-prop pipeline as other raster UI.
+Chroma-keyed props are generated textless on flat `#00ff00`; full-screen
+backgrounds are generated without controls, text, or state. Untouched sources,
+exact prompt records, and deterministic processing live under `art/ui`; only
+processed WebP derivatives ship under `public/assets/art/ui`. Generated art
+reserves explicit calm label or portrait apertures. A new or changed satchel
+layout is inspected in the browser and captured at both required sizes across
+the early Chapter One map, late Chapter One map, Chapter One cards, Chapter Two
+cards-only, and Chapter Three cards-only scenes.
+
+The dialogue card is one **unrotated asymmetric deckled parchment**, never a
+rolled scroll. The speaking portrait is physically attached half outside the
+edge nearest the on-screen speaker; the short runtime caption is printed
+directly on the parchment; **Again** and advance are separate full-size
+wax/brass controls on the opposite edge. The whole component shifts to the side
+opposite the live speaker. There is no nested caption box, hand-placed rotation,
+or floating “bookend” curl. A warm-dark parchment variant belongs in night
+rooms without changing this anatomy.
+
+Chapter previews preserve the painted hero image between a compact upper title
+plaque and one bottom action shelf. Preview actions never cover the title or
+focal painting, and decorative character or animal icons appear only when they
+communicate an action, never as corner filler. Type uses one bundled
+open-license rounded storybook face, self-hosted with no CDN; display flourishes
+use a second decorative face only on title and chapter cards. Everything eases
+rather than moving linearly, interface entrances use a soft overshoot, nothing
+flashes hard, and reduced motion replaces overshoot with a fade.
 
 ## Effects
 
