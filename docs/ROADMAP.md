@@ -36,7 +36,9 @@ The first reliability checkpoint is complete: the barrier handoff and reload
 agree, Great Hall pointer targets no longer overlap, chapter completion is one
 durable transaction, and v3 migration repairs completed Chapter Two saves that
 were stranded on its card. Contract/receipt hardening and presentation polish
-remain active.
+remain active; authored dialogue, quests, durable writes, cards, yearbook
+moments, and chapter destinations now fail during package linking rather than
+during Violet's playthrough.
 
 After that pass, Chapter Three introduces the spellbook, casting, and the first
 incantation assemblies. That learning-layer debut remains the moment to watch

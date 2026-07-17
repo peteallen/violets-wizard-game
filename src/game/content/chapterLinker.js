@@ -57,7 +57,9 @@ export function linkChapterPackage(chapter, registries = {}) {
   const maps = isPlainObject(chapter?.maps) ? chapter.maps : {};
   const declaredAssets = isPlainObject(chapter?.assets) ? chapter.assets : {};
   const dependencies = new Set(array(chapter?.characterDependencies));
+  const yearbookMoments = new Set(array(chapter?.yearbookMoments));
   const actualAssets = registries.assets ?? declaredAssets;
+  const chapterRegistry = registries.chapters ?? registries.chapterCatalog;
 
   const roomExists = (roomId, path) => {
     if (typeof roomId === 'string' && Object.hasOwn(rooms, roomId)) return true;
@@ -94,6 +96,16 @@ export function linkChapterPackage(chapter, registries = {}) {
   const assetExists = (assetKey, path) => {
     if (typeof assetKey === 'string' && registryHas(actualAssets, assetKey)) return true;
     addIssue('unresolved-asset', path, assetKey, `Asset ${String(assetKey)} is not registered.`);
+    return false;
+  };
+  const cardExists = (cardId, path) => {
+    if (typeof cardId === 'string' && registryHas(registries.cards, cardId)) return true;
+    addIssue('unresolved-card', path, cardId, `Card ${String(cardId)} is not registered.`);
+    return false;
+  };
+  const chapterExists = (chapterId, path) => {
+    if (typeof chapterId === 'string' && registryHas(chapterRegistry, chapterId)) return true;
+    addIssue('unresolved-chapter', path, chapterId, `Chapter ${String(chapterId)} is not registered.`);
     return false;
   };
   const characterExists = (characterId, path) => {
@@ -134,18 +146,25 @@ export function linkChapterPackage(chapter, registries = {}) {
       addIssue('unresolved-action', `${path}.type`, action?.type, 'Action must have a registered type.');
       return;
     }
-    if (!registryHas(registries.actions, action.type)) {
+    const actionRegistered = registryHas(registries.actions, action.type);
+    if (!actionRegistered) {
       addIssue('unresolved-action', `${path}.type`, action.type, `Action type ${action.type} is not registered.`);
+      return;
     }
     if (action.type === 'dialogue.start') dialogueExists(action.script, `${path}.script`);
     if (action.type === 'setPiece.play') setPieceExists(action.id, `${path}.id`);
     if (action.type === 'travel.request') spawnExists(action.room, action.spawn, `${path}.spawn`);
 
     const actionDefinition = registryEntry(registries.actions, action.type);
-    if (typeof actionDefinition?.references === 'function') {
+    const referenceProvider = typeof registries.actions?.references === 'function'
+      ? () => registries.actions.references(action, path)
+      : typeof actionDefinition?.references === 'function'
+        ? () => actionDefinition.references(action)
+        : null;
+    if (referenceProvider) {
       let references;
       try {
-        references = actionDefinition.references(action) ?? [];
+        references = referenceProvider() ?? [];
       } catch (error) {
         addIssue('action-link-error', path, action.type, error instanceof Error ? error.message : String(error));
         references = [];
@@ -159,6 +178,31 @@ export function linkChapterPackage(chapter, registries = {}) {
         else if (reference.kind === 'setPiece') setPieceExists(reference.id, referencePath);
         else if (reference.kind === 'asset') assetExists(reference.id, referencePath);
         else if (reference.kind === 'character') characterExists(reference.id, referencePath);
+        else if (reference.kind === 'card') cardExists(reference.id, referencePath);
+        else if (reference.kind === 'durableWrite' && !reference.id.startsWith(`${chapter.id}.`)) {
+          addIssue(
+            'foreign-durable-write',
+            referencePath,
+            reference.id,
+            `Durable write ${reference.id} must belong to ${chapter.id}.`,
+          );
+        } else if (reference.kind === 'chapterOwner' && reference.id !== chapter.id) {
+          addIssue(
+            'chapter-owner-mismatch',
+            referencePath,
+            reference.id,
+            `Chapter completion owner ${reference.id} must match ${chapter.id}.`,
+          );
+        } else if (reference.kind === 'chapterDestination') {
+          chapterExists(reference.id, referencePath);
+        } else if (reference.kind === 'yearbookMoment' && !yearbookMoments.has(reference.id)) {
+          addIssue(
+            'undeclared-yearbook-moment',
+            referencePath,
+            reference.id,
+            `Yearbook moment ${reference.id} is not declared by ${chapter.id}.`,
+          );
+        }
       });
     }
   };

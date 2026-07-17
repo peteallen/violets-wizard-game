@@ -665,6 +665,18 @@ export function validateDialogue(value, path = 'dialogue') {
       if (!Object.hasOwn(value.nodes, target)) fail(`${path}.nodes.${nodeId}`, `references missing node ${target}`);
     }
   }
+
+  const reachable = new Set();
+  const pending = [value.start];
+  while (pending.length > 0) {
+    const nodeId = pending.pop();
+    if (reachable.has(nodeId)) continue;
+    reachable.add(nodeId);
+    pending.push(...dialogueTargets(value.nodes[nodeId]));
+  }
+  for (const nodeId of Object.keys(value.nodes)) {
+    if (!reachable.has(nodeId)) fail(`${path}.nodes.${nodeId}`, 'is unreachable from start');
+  }
   return value;
 }
 
@@ -718,7 +730,7 @@ export function validateQuest(value, path = 'quest') {
   const visiting = new Set();
   const visited = new Set();
   const walk = (stepId) => {
-    if (visiting.has(stepId)) fail(`${path}.steps.${stepId}.next`, 'creates a cycle in a v1 quest');
+    if (visiting.has(stepId)) fail(`${path}.steps.${stepId}.next`, 'creates a cycle in a quest');
     if (visited.has(stepId)) return;
     const step = value.steps[stepId];
     if (!step) fail(`${path}.steps`, `references missing step ${stepId}`);
@@ -960,7 +972,6 @@ function validateSceneLayerV2(value, path) {
     });
   }
   stringArray(value.ambientSetPieces, `${path}.ambientSetPieces`, { unique: true });
-  validatePackageActionsV2(value, path);
   return value;
 }
 
@@ -1184,20 +1195,59 @@ function validateAssetRecordV2(value, path) {
   }
 }
 
-function validatePackageActionsV2(value, path, visited = new WeakSet()) {
+function validatePackageActionOwnershipV2(action, path, chapterId, yearbookMoments) {
+  const durableWrite = action.type === 'flag.set'
+    ? ['flag', action.flag]
+    : action.type === 'choice.record'
+      ? ['id', action.id]
+      : action.type === 'reward.grant'
+        ? ['receipt', action.receipt]
+        : null;
+  if (durableWrite && !durableWrite[1].startsWith(`${chapterId}.`)) {
+    fail(`${path}.${durableWrite[0]}`, `durable write must belong to ${chapterId}`);
+  }
+  if (action.type === 'yearbook.capture' && !yearbookMoments.has(action.moment)) {
+    fail(`${path}.moment`, `must be declared in ${chapterId}.yearbookMoments`);
+  }
+  if (action.type === 'chapter.complete' && action.chapter !== chapterId) {
+    fail(`${path}.chapter`, `must match package owner ${chapterId}`);
+  }
+}
+
+function validatePackageActionsV2(
+  value,
+  path,
+  chapterId,
+  yearbookMoments,
+  visited = new WeakSet(),
+) {
   if (value === null || typeof value !== 'object') return;
   if (visited.has(value)) return;
   visited.add(value);
   if (Array.isArray(value)) {
-    value.forEach((entry, index) => validatePackageActionsV2(entry, `${path}[${index}]`, visited));
+    value.forEach((entry, index) => validatePackageActionsV2(
+      entry,
+      `${path}[${index}]`,
+      chapterId,
+      yearbookMoments,
+      visited,
+    ));
     return;
   }
   for (const [key, entry] of Object.entries(value)) {
     const entryPath = `${path}.${key}`;
     if (PACKAGE_ACTION_ARRAY_KEYS.has(key) && Array.isArray(entry)) {
       validateActions(entry, entryPath);
+      entry.forEach((action, index) => {
+        validatePackageActionOwnershipV2(
+          action,
+          `${entryPath}[${index}]`,
+          chapterId,
+          yearbookMoments,
+        );
+      });
     } else {
-      validatePackageActionsV2(entry, entryPath, visited);
+      validatePackageActionsV2(entry, entryPath, chapterId, yearbookMoments, visited);
     }
   }
 }
@@ -1206,7 +1256,6 @@ function validatePackageEntryV2(value, path) {
   object(value, path);
   id(value.id, `${path}.id`);
   jsonValue(value, path);
-  validatePackageActionsV2(value, path);
   return value;
 }
 
@@ -1301,8 +1350,8 @@ export function validateChapterV2(value, path = 'chapter') {
   validateIdMap(value.scenes, `${path}.scenes`, validateSceneV2);
   validateIdMap(value.rooms, `${path}.rooms`, validatePackageRoomV2);
   validateIdMap(value.npcs, `${path}.npcs`, validatePackageEntryV2);
-  validateIdMap(value.dialogues, `${path}.dialogues`, validatePackageEntryV2);
-  validateIdMap(value.quests, `${path}.quests`, validatePackageEntryV2);
+  validateIdMap(value.dialogues, `${path}.dialogues`, validateDialogue);
+  validateIdMap(value.quests, `${path}.quests`, validateQuest);
   validateIdMap(value.learningBeats, `${path}.learningBeats`, validatePackageEntryV2);
   validateIdMap(value.setPieces, `${path}.setPieces`, validatePackageEntryV2);
   validateIdMap(value.encounters, `${path}.encounters`, validatePackageEntryV2);
@@ -1317,6 +1366,7 @@ export function validateChapterV2(value, path = 'chapter') {
       fail(`${path}.yearbookMoments[${index}]`, `must belong to ${value.id}`);
     }
   });
+  validatePackageActionsV2(value, path, value.id, new Set(value.yearbookMoments));
   validateIdMap(value.maps, `${path}.maps`, validatePackageMapV2);
   array(value.recaps, `${path}.recaps`, validateRecapV2);
   record(value.assets, `${path}.assets`, (asset, assetPath, key) => {

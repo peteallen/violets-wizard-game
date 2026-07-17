@@ -152,6 +152,12 @@ describe('current game action definitions', () => {
   it('exposes chapter-link references without performing execution', () => {
     const registry = createCoreActionRegistry();
 
+    expect(registry.references(CURRENT_ACTIONS['flag.set'])).toEqual([
+      { kind: 'durableWrite', id: 'ch1.arrived', path: 'flag' },
+    ]);
+    expect(registry.references(CURRENT_ACTIONS['choice.record'])).toEqual([
+      { kind: 'durableWrite', id: 'ch1.path', path: 'id' },
+    ]);
     expect(registry.references(CURRENT_ACTIONS['dialogue.start'])).toEqual([
       { kind: 'dialogue', id: 'ch1.welcome', path: 'script' },
     ]);
@@ -161,10 +167,28 @@ describe('current game action definitions', () => {
     expect(registry.references(CURRENT_ACTIONS['travel.request'])).toEqual([
       { kind: 'room', id: 'ch1.greatHall', path: 'room' },
     ]);
+    expect(registry.references(CURRENT_ACTIONS['collection.add'])).toEqual([
+      { kind: 'card', id: 'dumbledore', path: 'id' },
+    ]);
+    expect(registry.references(CURRENT_ACTIONS['reward.grant'])).toEqual([
+      { kind: 'durableWrite', id: 'ch1.arrival.reward', path: 'receipt' },
+      { kind: 'card', id: 'dumbledore', path: 'cards[0]' },
+    ]);
+    expect(registry.references(CURRENT_ACTIONS['yearbook.capture'])).toEqual([
+      { kind: 'yearbookMoment', id: 'ch1.arrival', path: 'moment' },
+    ]);
+    expect(registry.references(CURRENT_ACTIONS['chapter.complete'])).toEqual([
+      { kind: 'chapterOwner', id: 'ch1', path: 'chapter' },
+      { kind: 'chapterDestination', id: 'ch2', path: 'nextChapter' },
+    ]);
     expect(registry.references(CURRENT_ACTIONS['audio.command'])).toEqual([
       { kind: 'asset', id: 'sfx/ch1/arrival', path: 'key' },
     ]);
-    expect(registry.references(CURRENT_ACTIONS['flag.set'])).toEqual([]);
+    expect(registry.references({
+      type: 'collection.add',
+      collection: 'treasures',
+      id: 'trainTicket',
+    })).toEqual([]);
   });
 
   it('fails explicitly when a current action lacks its injected handler', () => {

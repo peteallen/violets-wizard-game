@@ -12,16 +12,9 @@ import {
   ChapterCompositionError,
   defineChapter,
 } from '../src/game/content/chapterComposer.js';
+import { createCoreActionRegistry } from '../src/game/actions/index.js';
 import { linkChapterPackage } from '../src/game/content/chapterLinker.js';
 import { validateChapterV2 } from '../src/game/contracts.js';
-
-const actionTypes = new Set([
-  'dialogue.start',
-  'flag.set',
-  'reward.grant',
-  'setPiece.play',
-  'travel.request',
-]);
 
 function chapterTwelveDefinition() {
   const greatHall = defineRoom({
@@ -112,6 +105,8 @@ function chapterTwelveDefinition() {
         dialogues: [{
           id: 'ch12.dialogue.welcome',
           start: 'welcome',
+          resumePolicy: 'restart-current-node',
+          replayable: false,
           nodes: {
             welcome: {
               type: 'line',
@@ -119,6 +114,7 @@ function chapterTwelveDefinition() {
               voice: 'voice/ch12/professor/welcome',
               text: 'Welcome back, Violet.',
               caption: 'Welcome back!',
+              phoneticText: null,
               next: 'finish',
             },
             finish: {
@@ -129,6 +125,9 @@ function chapterTwelveDefinition() {
         }],
         quests: [{
           id: 'ch12.quest.arrival',
+          kind: 'main',
+          offerScript: 'ch12.dialogue.welcome',
+          startWhen: { allFlags: ['ch11.complete'] },
           startStep: 'meetProfessor',
           steps: {
             meetProfessor: {
@@ -136,7 +135,16 @@ function chapterTwelveDefinition() {
               objective: {
                 speaker: 'ch12.npc.professor',
                 voice: 'voice/ch12/objective/meetProfessor',
+                text: 'Meet the professor beneath the returning stars.',
+                caption: 'Meet the professor!',
                 mapStar: { room: 'ch12.greatHall', hotspot: 'ch12.greatHall.professor' },
+              },
+              doneWhen: { allFlags: ['ch12.metProfessor'] },
+              hints: {
+                lookTarget: 'ch12.greatHall.professor',
+                repeatVoice: 'voice/ch12/objective/meetProfessor',
+                trailTarget: 'ch12.greatHall.professor',
+                assistActions: [],
               },
               onEnter: [],
               onComplete: [{
@@ -146,6 +154,7 @@ function chapterTwelveDefinition() {
                 cards: [],
                 treasures: [],
               }],
+              next: null,
             },
           },
           onComplete: [],
@@ -219,9 +228,11 @@ function chapterTwelveDefinition() {
 
 function linkRegistries(chapter) {
   return {
-    actions: actionTypes,
+    actions: createCoreActionRegistry(),
     assets: new Set(Object.keys(chapter.assets)),
     characters: new Set(['character.violet', 'character.professor']),
+    cards: new Set(),
+    chapters: new Set(['ch12']),
     setPieceRenderers: new Set(['setPiece.candleDrift', 'setPiece.starWelcome']),
   };
 }
@@ -360,6 +371,76 @@ describe('aggregate chapter content linking', () => {
     );
     expect(Object.isFrozen(result)).toBe(true);
     expect(Object.isFrozen(result.issues)).toBe(true);
+  });
+
+  it('reports package ownership and catalog failures at exact action fields', () => {
+    const chapter = structuredClone(defineChapter(chapterTwelveDefinition()));
+    chapter.scenes['ch12.scene.arrival'].when = { allFlags: ['ch11.complete'] };
+    chapter.scenes['ch12.scene.arrival'].onEnter = [
+      { type: 'flag.set', flag: 'ch11.foreignFlag', value: true },
+      { type: 'choice.record', id: 'ch11.foreignChoice', value: 'chosen' },
+      { type: 'collection.add', collection: 'cards', id: 'missing-collection-card' },
+      {
+        type: 'reward.grant',
+        receipt: 'ch11.foreignReward',
+        points: 0,
+        cards: ['missing-reward-card'],
+        treasures: [],
+      },
+      { type: 'yearbook.capture', moment: 'ch12.yearbook.undeclared' },
+      { type: 'chapter.complete', chapter: 'ch11', nextChapter: 'ch99' },
+    ];
+
+    expect(linkChapterPackage(chapter, linkRegistries(chapter)).issues).toEqual([
+      {
+        code: 'foreign-durable-write',
+        path: 'chapter.scenes.ch12.scene.arrival.onEnter[0].flag',
+        reference: 'ch11.foreignFlag',
+        message: 'Durable write ch11.foreignFlag must belong to ch12.',
+      },
+      {
+        code: 'foreign-durable-write',
+        path: 'chapter.scenes.ch12.scene.arrival.onEnter[1].id',
+        reference: 'ch11.foreignChoice',
+        message: 'Durable write ch11.foreignChoice must belong to ch12.',
+      },
+      {
+        code: 'unresolved-card',
+        path: 'chapter.scenes.ch12.scene.arrival.onEnter[2].id',
+        reference: 'missing-collection-card',
+        message: 'Card missing-collection-card is not registered.',
+      },
+      {
+        code: 'unresolved-card',
+        path: 'chapter.scenes.ch12.scene.arrival.onEnter[3].cards[0]',
+        reference: 'missing-reward-card',
+        message: 'Card missing-reward-card is not registered.',
+      },
+      {
+        code: 'foreign-durable-write',
+        path: 'chapter.scenes.ch12.scene.arrival.onEnter[3].receipt',
+        reference: 'ch11.foreignReward',
+        message: 'Durable write ch11.foreignReward must belong to ch12.',
+      },
+      {
+        code: 'undeclared-yearbook-moment',
+        path: 'chapter.scenes.ch12.scene.arrival.onEnter[4].moment',
+        reference: 'ch12.yearbook.undeclared',
+        message: 'Yearbook moment ch12.yearbook.undeclared is not declared by ch12.',
+      },
+      {
+        code: 'chapter-owner-mismatch',
+        path: 'chapter.scenes.ch12.scene.arrival.onEnter[5].chapter',
+        reference: 'ch11',
+        message: 'Chapter completion owner ch11 must match ch12.',
+      },
+      {
+        code: 'unresolved-chapter',
+        path: 'chapter.scenes.ch12.scene.arrival.onEnter[5].nextChapter',
+        reference: 'ch99',
+        message: 'Chapter ch99 is not registered.',
+      },
+    ]);
   });
 
   it('links character previews embedded in authored dialogue choices', () => {

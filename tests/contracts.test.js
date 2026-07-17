@@ -328,7 +328,27 @@ describe('content contracts', () => {
   it('rejects cyclic quest graphs', () => {
     const chapter = chapterFixture();
     chapter.quests['ch1.shopping'].steps.visitShop.next = 'visitShop';
-    expect(() => validateChapter(chapter)).toThrow(/creates a cycle/);
+    expect(() => validateChapter(chapter)).toThrow(/creates a cycle in a quest/);
+  });
+
+  it('rejects unreachable dialogue nodes without rejecting a reachable choice loop', () => {
+    const chapter = chapterFixture();
+    const dialogue = chapter.dialogues['ch1.guide.hello'];
+    dialogue.nodes.hello.next = 'choose';
+    dialogue.nodes.choose = {
+      type: 'choice',
+      choices: [
+        { id: 'again', icon: 'again', caption: 'Again?', actions: [], next: 'hello' },
+        { id: 'finish', icon: 'finish', caption: 'Finish', actions: [], next: 'finish' },
+      ],
+    };
+
+    expect(validateChapter(chapter)).toBe(chapter);
+
+    dialogue.nodes.orphan = { type: 'end', actions: [] };
+    expect(() => validateChapter(chapter)).toThrow(
+      /dialogues\.ch1\.guide\.hello\.nodes\.orphan: is unreachable from start/,
+    );
   });
 });
 
@@ -369,6 +389,12 @@ describe('chapter v2 content contract', () => {
         type: 'flag.set', flag: 'ch1.done',
       }];
     }],
+    ['dialogues that bypass the full contract', (chapter) => {
+      delete chapter.dialogues['ch1.guide.hello'].resumePolicy;
+    }],
+    ['quests that bypass the full contract', (chapter) => {
+      delete chapter.quests['ch1.shopping'].kind;
+    }],
     ['foreign yearbook ids', (chapter) => {
       chapter.yearbookMoments = ['ch2.foreign'];
     }],
@@ -381,6 +407,44 @@ describe('chapter v2 content contract', () => {
     const chapter = chapterV2Fixture();
     mutate(chapter);
     expect(() => validateChapter(chapter)).toThrow(ContractValidationError);
+  });
+
+  it.each([
+    ['foreign flag writes', {
+      type: 'flag.set', flag: 'ch2.foreign', value: true,
+    }, /actions\[0\]\.flag: durable write must belong to ch1/],
+    ['foreign choice writes', {
+      type: 'choice.record', id: 'ch2.foreign', value: 'choice',
+    }, /actions\[0\]\.id: durable write must belong to ch1/],
+    ['foreign reward receipts', {
+      type: 'reward.grant', receipt: 'ch2.foreign', points: 0, cards: [], treasures: [],
+    }, /actions\[0\]\.receipt: durable write must belong to ch1/],
+    ['undeclared yearbook moments', {
+      type: 'yearbook.capture', moment: 'ch1.yearbook.undeclared',
+    }, /actions\[0\]\.moment: must be declared in ch1\.yearbookMoments/],
+    ['a mismatched chapter completion owner', {
+      type: 'chapter.complete', chapter: 'ch2', nextChapter: 'ch3',
+    }, /actions\[0\]\.chapter: must match package owner ch1/],
+  ])('rejects %s in nested Chapter v2 action batches', (_label, action, message) => {
+    const chapter = chapterV2Fixture();
+    chapter.dialogues['ch1.guide.hello'].nodes.finish.actions = [action];
+    expect(() => validateChapterV2(chapter)).toThrow(message);
+  });
+
+  it('allows foreign condition reads while accepting declared moments and owned durable writes', () => {
+    const chapter = chapterV2Fixture();
+    chapter.quests['ch1.shopping'].startWhen = { allFlags: ['ch2.complete'] };
+    chapter.dialogues['ch1.guide.hello'].nodes.finish.actions = [
+      { type: 'flag.set', flag: 'ch1.done', value: true },
+      { type: 'choice.record', id: 'ch1.choice', value: 'ready' },
+      {
+        type: 'reward.grant', receipt: 'ch1.reward.done', points: 0, cards: [], treasures: [],
+      },
+      { type: 'yearbook.capture', moment: 'ch1.wandChosen' },
+      { type: 'chapter.complete', chapter: 'ch1', nextChapter: 'ch2' },
+    ];
+
+    expect(validateChapterV2(chapter)).toBe(chapter);
   });
 
   it.each([

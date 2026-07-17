@@ -1,12 +1,17 @@
 import { describe, expect, it } from 'vitest';
+import { createCoreActionRegistry } from '../src/game/actions/index.js';
+import { productionCharacterCatalog } from '../src/game/characters/index.js';
 import {
   chapter2ContentPackageV2,
   chapter2NextChapterId,
   chapter2V2,
 } from '../src/game/chapters/ch2/content-v2/index.js';
+import { chapterCatalog } from '../src/game/chapters/catalog.js';
 import { chapter2SceneOrder } from '../src/game/chapters/ch2/content-v2/scenes.js';
 import { chapter2SetPieceRendererIds } from '../src/game/chapters/ch2/content-v2/setPieces.js';
 import { linkChapterPackage } from '../src/game/content/chapterLinker.js';
+import { cardsById } from '../src/game/content/cards.js';
+import { assetManifest } from '../src/game/core/assetManifest.js';
 import {
   validateChapterV2,
   validateDialogue,
@@ -15,23 +20,13 @@ import {
   validateRoom,
 } from '../src/game/contracts.js';
 
-const actionTypes = new Set([
-  'chapter.complete',
-  'character.set',
-  'choice.record',
-  'dialogue.start',
-  'flag.set',
-  'reward.grant',
-  'setPiece.play',
-  'travel.request',
-  'yearbook.capture',
-]);
-
-function linkRegistries(chapter) {
+function productionLinkRegistries() {
   return {
-    actions: actionTypes,
-    assets: new Set(Object.keys(chapter.assets)),
-    characters: new Set(chapter.characterDependencies),
+    actions: createCoreActionRegistry(),
+    assets: assetManifest,
+    cards: cardsById,
+    chapters: chapterCatalog,
+    characters: productionCharacterCatalog.registry,
     setPieceRenderers: new Set(chapter2SetPieceRendererIds),
   };
 }
@@ -81,8 +76,9 @@ describe('Chapter Two native v2 grey-box package', () => {
     expect(chapter2ContentPackageV2.chapter).toBe(chapter2V2);
   });
 
-  it('links every room, spawn, dialogue, set piece, asset, and character dependency', () => {
-    expect(linkChapterPackage(chapter2V2, linkRegistries(chapter2V2))).toEqual({
+  it('links the production package through the real action, chapter, asset, character, and card registries', () => {
+    expect(chapterCatalog.getDescriptor('ch3')?.availability).toBe('placeholder');
+    expect(linkChapterPackage(chapter2V2, productionLinkRegistries())).toEqual({
       ok: true,
       issues: [],
     });
