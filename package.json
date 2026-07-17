@@ -20,6 +20,7 @@
     "build": "npm run test && npm run check:assets && npm run check:voice-qa && npm run check:audio && npm run build:app",
     "preview": "vite preview --host 0.0.0.0",
     "snap": "node scripts/snap.mjs",
+    "snap:dom": "node scripts/snap-dom.mjs",
     "flipbook": "node scripts/flipbook.mjs",
     "diff:goldens": "node scripts/diff.mjs",
     "assets:character-image": "node scripts/generate-character-image.mjs",
