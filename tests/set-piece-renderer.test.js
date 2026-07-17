@@ -478,6 +478,44 @@ describe('SetPieceRenderer dispatch', () => {
     expect(new Set(drawings).size).toBe(3);
   });
 
+  it('builds the Sorting reveal from curved cloth instead of flat rectangular banners', () => {
+    const renderer = setPieceRenderer();
+    const context = recordingTicketContext();
+    const active = { time: 1.8, descriptor: { duration: 3.6 } };
+
+    renderer.drawChapterTwoSortingReveal(context, active, { reducedMotion: true });
+
+    expectOrganicSetPiece(context, 'Sorting reveal', { fullScreenFills: 2 });
+    expect(context.texts).toContain('GRYFFINDOR!');
+    expect(context.calls.filter(([method]) => method === 'bezierCurveTo').length)
+      .toBeGreaterThan(50);
+  });
+
+  it('mounts the common-room welcome on fabric and keeps the chapter card painting open', () => {
+    const renderer = setPieceRenderer();
+    const commonRoom = recordingTicketContext();
+    const chapterCard = recordingTicketContext();
+    const active = { time: 2, descriptor: { duration: 2 } };
+
+    renderer.drawChapterTwoCommonRoomArrival(commonRoom, active, { reducedMotion: true });
+    renderer.drawChapterTwoChapterCard(chapterCard, active, { reducedMotion: true });
+
+    expectOrganicSetPiece(commonRoom, 'common-room welcome', { fullScreenFills: 1 });
+    expect(commonRoom.texts).toEqual(['WELCOME HOME, VIOLET']);
+    expect(commonRoom.calls.filter(([method]) => method === 'bezierCurveTo').length)
+      .toBeGreaterThan(25);
+
+    expectOrganicSetPiece(chapterCard, 'Chapter Two card', { fullScreenFills: 1 });
+    expect(chapterCard.texts).toEqual([
+      'CHAPTER TWO COMPLETE',
+      'Welcome to Gryffindor',
+      'Next: Violet’s first classes',
+    ]);
+    expect(chapterCard.calls).toContainEqual(['translate', 640, 138]);
+    expect(chapterCard.calls).toContainEqual(['translate', 640, 650]);
+    expect(chapterCard.calls).not.toContainEqual(['translate', 640, 340]);
+  });
+
   it('renders the preview ticket as layered railway ephemera without a generic owl or dashed geometry', () => {
     const renderer = setPieceRenderer();
     const first = recordingTicketContext();

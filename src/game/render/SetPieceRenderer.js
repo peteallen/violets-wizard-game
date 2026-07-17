@@ -502,12 +502,13 @@ export class SetPieceRenderer {
     context.fillStyle = `rgba(30,24,49,${0.08 + state.anticipation * 0.12})`;
     context.fillRect(0, 0, WORLD.width, WORLD.height);
     context.lineCap = 'round';
+    const trailAlpha = state.rush * (1 - state.hold);
     for (let index = 0; index < 9; index += 1) {
       const spread = (index - 4) * 62;
       const drift = reducedMotion ? 0 : Math.sin(active.time * 7 + index) * 12;
       context.strokeStyle = index % 2 === 0
-        ? `rgba(250,220,143,${0.08 + state.rush * 0.32})`
-        : `rgba(213,191,235,${0.07 + state.rush * 0.24})`;
+        ? `rgba(250,220,143,${trailAlpha * 0.4})`
+        : `rgba(213,191,235,${trailAlpha * 0.31})`;
       context.lineWidth = 4 + (index % 3) * 2;
       context.beginPath();
       context.moveTo(playerX - 70 - state.rush * 190, playerY - 170 + spread * 0.28);
@@ -649,12 +650,7 @@ export class SetPieceRenderer {
     context.save();
     context.translate(640, 104 - (1 - ceremony.announcement) * 120);
     context.scale(ceremony.announcement, ceremony.announcement);
-    context.fillStyle = '#7b2433';
-    context.strokeStyle = '#efc766';
-    context.lineWidth = 7;
-    paintedRibbonPath(context, -310, -50, 620, 100);
-    context.fill();
-    context.stroke();
+    drawSortingAnnouncementCloth(context);
     context.fillStyle = '#fff1bd';
     context.textAlign = 'center';
     context.font = '700 58px "Almendra", "Georgia", serif';
@@ -681,10 +677,6 @@ export class SetPieceRenderer {
     context.fillStyle = `rgba(125,46,29,${state.enter * 0.1})`;
     context.fillRect(0, 0, WORLD.width, WORLD.height);
     drawCommonRoomWelcomeGarland(context, state.enter, glow);
-    context.fillStyle = `rgba(255,239,177,${state.enter})`;
-    context.textAlign = 'center';
-    context.font = '700 48px "Almendra", "Georgia", serif';
-    context.fillText('WELCOME HOME, VIOLET', 640, 112);
     context.restore();
   }
 
@@ -692,35 +684,27 @@ export class SetPieceRenderer {
     const state = chapterTwoSetPieceState(active.time, active.descriptor?.duration, { reducedMotion });
     const settle = reducedMotion ? 1 : easeOutBack(clamp01(state.progress / 0.36));
     context.save();
-    context.fillStyle = `rgba(20,17,38,${0.2 + state.enter * 0.32})`;
+    context.fillStyle = `rgba(20,17,38,${0.08 + state.enter * 0.12})`;
     context.fillRect(0, 0, WORLD.width, WORLD.height);
-    context.translate(640, 340);
+    context.translate(640, 138);
     context.scale(settle, settle);
-    context.fillStyle = '#f0dfb3';
-    context.strokeStyle = '#8d5b3f';
-    context.lineWidth = 8;
-    paintedChapterPlaquePath(context);
-    context.fill();
-    drawChapterPlaqueGrain(context);
-    paintedChapterPlaquePath(context);
-    context.stroke();
-    context.strokeStyle = 'rgba(151,94,55,0.38)';
-    context.lineWidth = 3;
-    context.beginPath();
-    context.moveTo(-330, -92);
-    context.bezierCurveTo(-110, -104, 115, -82, 330, -94);
-    context.moveTo(-330, 98);
-    context.bezierCurveTo(-105, 84, 110, 106, 330, 92);
-    context.stroke();
-    context.fillStyle = '#6f2435';
+    drawChapterTitleHanging(context);
+    context.fillStyle = '#fff0bd';
     context.textAlign = 'center';
-    context.font = '700 28px "Andika", "Trebuchet MS", sans-serif';
-    context.fillText('CHAPTER TWO COMPLETE', 0, -80);
-    context.font = '700 64px "Almendra", "Georgia", serif';
-    context.fillText('Welcome to Gryffindor', 0, 8);
-    context.fillStyle = '#6b5138';
-    context.font = '700 26px "Andika", "Trebuchet MS", sans-serif';
-    context.fillText('Next: Violet’s first classes', 0, 72);
+    context.font = '700 23px "Andika", "Trebuchet MS", sans-serif';
+    context.fillText('CHAPTER TWO COMPLETE', 0, -20);
+    context.font = '700 48px "Almendra", "Georgia", serif';
+    context.fillText('Welcome to Gryffindor', 0, 34);
+    context.restore();
+
+    context.save();
+    context.translate(640, 650);
+    context.scale(settle, settle);
+    drawChapterNextScroll(context);
+    context.fillStyle = '#5e3d31';
+    context.textAlign = 'center';
+    context.font = '700 24px "Andika", "Trebuchet MS", sans-serif';
+    context.fillText('Next: Violet’s first classes', 0, 8);
     context.restore();
   }
 
@@ -1192,6 +1176,42 @@ function drawSortingHatPulse(context, ceremony) {
   }
 }
 
+function drawSortingAnnouncementCloth(context) {
+  context.save();
+  context.fillStyle = 'rgba(42,22,31,0.28)';
+  traceSortingAnnouncementCloth(context, 9, 10);
+  context.fill();
+  context.fillStyle = '#7b2433';
+  context.strokeStyle = '#efc766';
+  context.lineWidth = 7;
+  traceSortingAnnouncementCloth(context);
+  context.fill();
+  context.stroke();
+
+  context.strokeStyle = 'rgba(255,231,153,0.25)';
+  context.lineWidth = 3;
+  context.lineCap = 'round';
+  context.beginPath();
+  context.moveTo(-252, -25);
+  context.bezierCurveTo(-118, -37, 116, -18, 252, -28);
+  context.moveTo(-250, 30);
+  context.bezierCurveTo(-104, 18, 108, 39, 250, 26);
+  context.stroke();
+  context.restore();
+}
+
+function traceSortingAnnouncementCloth(context, offsetX = 0, offsetY = 0) {
+  context.beginPath();
+  context.moveTo(-306 + offsetX, -39 + offsetY);
+  context.bezierCurveTo(-188 + offsetX, -57 + offsetY, 164 + offsetX, -47 + offsetY, 306 + offsetX, -37 + offsetY);
+  context.bezierCurveTo(290 + offsetX, -20 + offsetY, 280 + offsetX, -4 + offsetY, 267 + offsetX, 2 + offsetY);
+  context.bezierCurveTo(283 + offsetX, 14 + offsetY, 293 + offsetX, 29 + offsetY, 303 + offsetX, 41 + offsetY);
+  context.bezierCurveTo(168 + offsetX, 56 + offsetY, -173 + offsetX, 49 + offsetY, -304 + offsetX, 38 + offsetY);
+  context.bezierCurveTo(-290 + offsetX, 22 + offsetY, -278 + offsetX, 9 + offsetY, -265 + offsetX, 0 + offsetY);
+  context.bezierCurveTo(-283 + offsetX, -10 + offsetY, -294 + offsetX, -26 + offsetY, -306 + offsetX, -39 + offsetY);
+  context.closePath();
+}
+
 function drawSortingWashInk(context, wash) {
   if (wash <= 0.1) return;
   context.save();
@@ -1285,7 +1305,60 @@ function drawCommonRoomWelcomeGarland(context, enter, glow) {
     context.fill();
     context.restore();
   }
+  drawCommonRoomWelcomeCloth(context, clamp01(enter));
   context.restore();
+}
+
+function drawCommonRoomWelcomeCloth(context, alpha) {
+  context.save();
+  context.globalAlpha = alpha;
+
+  context.strokeStyle = '#ddb65b';
+  context.lineWidth = 5;
+  context.lineCap = 'round';
+  context.beginPath();
+  context.moveTo(516, 150);
+  context.bezierCurveTo(528, 164, 538, 176, 548, 188);
+  context.moveTo(764, 150);
+  context.bezierCurveTo(752, 164, 742, 176, 732, 188);
+  context.stroke();
+
+  context.fillStyle = 'rgba(39,20,25,0.3)';
+  traceCommonRoomWelcomeCloth(context, 8, 10);
+  context.fill();
+  context.fillStyle = '#86283a';
+  context.strokeStyle = '#e5bd5c';
+  context.lineWidth = 6;
+  traceCommonRoomWelcomeCloth(context);
+  context.fill();
+  context.stroke();
+
+  context.strokeStyle = 'rgba(255,232,157,0.28)';
+  context.lineWidth = 3;
+  context.beginPath();
+  context.moveTo(406, 82);
+  context.bezierCurveTo(512, 70, 743, 87, 870, 76);
+  context.moveTo(412, 143);
+  context.bezierCurveTo(535, 131, 743, 151, 866, 139);
+  context.stroke();
+
+  context.fillStyle = '#fff0bd';
+  context.textAlign = 'center';
+  context.font = '700 42px "Almendra", "Georgia", serif';
+  context.fillText('WELCOME HOME, VIOLET', 640, 126);
+  context.restore();
+}
+
+function traceCommonRoomWelcomeCloth(context, offsetX = 0, offsetY = 0) {
+  context.beginPath();
+  context.moveTo(388 + offsetX, 66 + offsetY);
+  context.bezierCurveTo(488 + offsetX, 51 + offsetY, 756 + offsetX, 70 + offsetY, 892 + offsetX, 60 + offsetY);
+  context.bezierCurveTo(878 + offsetX, 78 + offsetY, 869 + offsetX, 91 + offsetY, 855 + offsetX, 101 + offsetY);
+  context.bezierCurveTo(873 + offsetX, 114 + offsetY, 881 + offsetX, 132 + offsetY, 892 + offsetX, 151 + offsetY);
+  context.bezierCurveTo(756 + offsetX, 166 + offsetY, 505 + offsetX, 146 + offsetY, 387 + offsetX, 158 + offsetY);
+  context.bezierCurveTo(401 + offsetX, 140 + offsetY, 410 + offsetX, 124 + offsetY, 424 + offsetX, 113 + offsetY);
+  context.bezierCurveTo(408 + offsetX, 101 + offsetY, 400 + offsetX, 83 + offsetY, 388 + offsetX, 66 + offsetY);
+  context.closePath();
 }
 
 function traceCommonRoomGarland(context) {
@@ -1296,20 +1369,84 @@ function traceCommonRoomGarland(context) {
   context.bezierCurveTo(852, 193, 946, 148, 1032, 205);
 }
 
-function drawChapterPlaqueGrain(context) {
+function drawChapterTitleHanging(context) {
   context.save();
-  paintedChapterPlaquePath(context);
-  context.clip();
-  context.strokeStyle = 'rgba(116,75,49,0.08)';
-  context.lineWidth = 2;
-  for (let index = 0; index < 11; index += 1) {
-    const y = -124 + index * 25;
+  context.strokeStyle = 'rgba(42,24,26,0.48)';
+  context.lineWidth = 8;
+  context.lineCap = 'round';
+  context.beginPath();
+  context.moveTo(-252, -82);
+  context.bezierCurveTo(-156, -109, 154, -105, 252, -80);
+  context.stroke();
+  context.strokeStyle = '#d8ac4c';
+  context.lineWidth = 4;
+  context.beginPath();
+  context.moveTo(-248, -86);
+  context.bezierCurveTo(-145, -113, 150, -108, 248, -84);
+  context.stroke();
+
+  context.fillStyle = 'rgba(36,18,24,0.32)';
+  traceChapterTitleCloth(context, 8, 10);
+  context.fill();
+  context.fillStyle = '#7d2637';
+  context.strokeStyle = '#d9ad4d';
+  context.lineWidth = 6;
+  traceChapterTitleCloth(context);
+  context.fill();
+  context.stroke();
+
+  context.strokeStyle = 'rgba(255,231,159,0.21)';
+  context.lineWidth = 2.5;
+  for (let index = 0; index < 5; index += 1) {
+    const y = -51 + index * 27;
     context.beginPath();
-    context.moveTo(-365 + Math.sin(index * 1.9) * 10, y);
-    context.bezierCurveTo(-145, y + 5, 126, y - 4, 365 - Math.cos(index * 1.4) * 9, y + 2);
+    context.moveTo(-228 + Math.sin(index * 1.9) * 8, y);
+    context.bezierCurveTo(-105, y + 4, 106, y - 4, 228 - Math.cos(index * 1.4) * 7, y + 2);
     context.stroke();
   }
   context.restore();
+}
+
+function traceChapterTitleCloth(context, offsetX = 0, offsetY = 0) {
+  context.beginPath();
+  context.moveTo(-260 + offsetX, -67 + offsetY);
+  context.bezierCurveTo(-145 + offsetX, -83 + offsetY, 147 + offsetX, -76 + offsetY, 260 + offsetX, -62 + offsetY);
+  context.bezierCurveTo(252 + offsetX, -18 + offsetY, 267 + offsetX, 41 + offsetY, 253 + offsetX, 72 + offsetY);
+  context.bezierCurveTo(145 + offsetX, 88 + offsetY, -151 + offsetX, 82 + offsetY, -258 + offsetX, 68 + offsetY);
+  context.bezierCurveTo(-248 + offsetX, 31 + offsetY, -266 + offsetX, -24 + offsetY, -260 + offsetX, -67 + offsetY);
+  context.closePath();
+}
+
+function drawChapterNextScroll(context) {
+  context.fillStyle = 'rgba(37,21,25,0.3)';
+  traceChapterNextScroll(context, 7, 8);
+  context.fill();
+  context.fillStyle = '#edddb3';
+  context.strokeStyle = '#8b5a3d';
+  context.lineWidth = 5;
+  traceChapterNextScroll(context);
+  context.fill();
+  context.stroke();
+  context.strokeStyle = 'rgba(139,90,61,0.24)';
+  context.lineWidth = 2;
+  context.beginPath();
+  context.moveTo(-176, -17);
+  context.bezierCurveTo(-68, -25, 75, -12, 176, -20);
+  context.moveTo(-174, 24);
+  context.bezierCurveTo(-61, 15, 70, 29, 174, 20);
+  context.stroke();
+}
+
+function traceChapterNextScroll(context, offsetX = 0, offsetY = 0) {
+  context.beginPath();
+  context.moveTo(-212 + offsetX, -34 + offsetY);
+  context.bezierCurveTo(-112 + offsetX, -46 + offsetY, 115 + offsetX, -40 + offsetY, 212 + offsetX, -31 + offsetY);
+  context.bezierCurveTo(199 + offsetX, -18 + offsetY, 193 + offsetX, -6 + offsetY, 184 + offsetX, 0 + offsetY);
+  context.bezierCurveTo(196 + offsetX, 9 + offsetY, 202 + offsetX, 21 + offsetY, 211 + offsetX, 33 + offsetY);
+  context.bezierCurveTo(109 + offsetX, 43 + offsetY, -112 + offsetX, 39 + offsetY, -212 + offsetX, 31 + offsetY);
+  context.bezierCurveTo(-201 + offsetX, 18 + offsetY, -195 + offsetX, 7 + offsetY, -184 + offsetX, -1 + offsetY);
+  context.bezierCurveTo(-198 + offsetX, -9 + offsetY, -204 + offsetX, -22 + offsetY, -212 + offsetX, -34 + offsetY);
+  context.closePath();
 }
 
 function drawStorybookBean(context, x, y, rotation, color) {
@@ -1424,20 +1561,19 @@ function drawPaintedSpark(context, x, y, size, color) {
 function drawGryffindorBanner(context, x, y, width, height, direction) {
   context.save();
   context.translate(x, y);
+  context.rotate(direction * 0.008);
+  context.fillStyle = 'rgba(40,20,28,0.28)';
+  traceSortingHouseBanner(context, 9, 10, width, height, direction);
+  context.fill();
   context.fillStyle = '#7d2434';
   context.strokeStyle = '#e7bd5d';
   context.lineWidth = 8;
-  context.beginPath();
-  context.moveTo(0, 0);
-  context.bezierCurveTo(width * 0.32, 12, width * 0.68, -8, width, 0);
-  context.lineTo(width, height - 42);
-  context.bezierCurveTo(width * 0.72, height - 24, width * 0.62, height - 4, width / 2, height);
-  context.bezierCurveTo(width * 0.38, height - 4, width * 0.28, height - 24, 0, height - 42);
-  context.closePath();
+  traceSortingHouseBanner(context, 0, 0, width, height, direction);
   context.fill();
   context.stroke();
   context.strokeStyle = 'rgba(255,225,130,0.65)';
   context.lineWidth = 5;
+  context.lineCap = 'round';
   context.beginPath();
   context.moveTo(width * 0.25, 34);
   context.bezierCurveTo(width * 0.32, height * 0.35, width * 0.25, height * 0.7, width * 0.34, height - 70);
@@ -1451,24 +1587,50 @@ function drawGryffindorBanner(context, x, y, width, height, direction) {
   context.restore();
 }
 
-function paintedRibbonPath(context, x, y, width, height) {
+function traceSortingHouseBanner(context, offsetX, offsetY, width, height, direction) {
+  const sway = direction * Math.min(8, height * 0.025);
   context.beginPath();
-  context.moveTo(x, y + 16);
-  context.bezierCurveTo(x + width * 0.22, y - 5, x + width * 0.78, y + 8, x + width, y + 14);
-  context.lineTo(x + width - 25, y + height / 2);
-  context.lineTo(x + width, y + height - 14);
-  context.bezierCurveTo(x + width * 0.76, y + height + 5, x + width * 0.24, y + height - 6, x, y + height - 16);
-  context.lineTo(x + 25, y + height / 2);
-  context.closePath();
-}
-
-function paintedChapterPlaquePath(context) {
-  context.beginPath();
-  context.moveTo(-385, -142);
-  context.bezierCurveTo(-240, -165, 220, -154, 385, -138);
-  context.bezierCurveTo(405, -55, 395, 62, 378, 142);
-  context.bezierCurveTo(210, 158, -220, 166, -382, 140);
-  context.bezierCurveTo(-402, 48, -398, -58, -385, -142);
+  context.moveTo(offsetX, offsetY);
+  context.bezierCurveTo(
+    width * 0.32 + offsetX,
+    12 + offsetY,
+    width * 0.68 + offsetX,
+    -8 + offsetY,
+    width + offsetX,
+    offsetY,
+  );
+  context.bezierCurveTo(
+    width + 8 + sway + offsetX,
+    height * 0.28 + offsetY,
+    width - 6 + sway + offsetX,
+    height * 0.7 + offsetY,
+    width + offsetX,
+    height - 42 + offsetY,
+  );
+  context.bezierCurveTo(
+    width * 0.72 + offsetX,
+    height - 24 + offsetY,
+    width * 0.62 + offsetX,
+    height - 4 + offsetY,
+    width / 2 + offsetX,
+    height + offsetY,
+  );
+  context.bezierCurveTo(
+    width * 0.38 + offsetX,
+    height - 4 + offsetY,
+    width * 0.28 + offsetX,
+    height - 24 + offsetY,
+    offsetX,
+    height - 42 + offsetY,
+  );
+  context.bezierCurveTo(
+    -8 + sway + offsetX,
+    height * 0.7 + offsetY,
+    7 + sway + offsetX,
+    height * 0.26 + offsetY,
+    offsetX,
+    offsetY,
+  );
   context.closePath();
 }
 

@@ -98,7 +98,8 @@ export function worldAffordanceState(target, time, {
   const breath = reducedMotion ? 0.5 : 0.5 + Math.sin(time * 0.78 + phase * TAU) * 0.5;
   const strength = hinted ? 1 : pressed ? 0.78 : 0.9;
   const wandCase = bounds.shape === 'wand-case';
-  const moteCount = wandCase ? (hinted ? 7 : 4) : (hinted ? 6 : 4);
+  const figure = bounds.shape === 'figure';
+  const moteCount = wandCase ? (hinted ? 7 : 4) : figure ? (hinted ? 7 : 5) : (hinted ? 6 : 4);
   const rotation = phase * TAU + (reducedMotion ? 0 : time * (hinted ? 0.32 : 0.24));
   const orbitX = bounds.width * 0.52 + 8;
   const orbitY = bounds.height * 0.52 + 8;
@@ -111,20 +112,33 @@ export function worldAffordanceState(target, time, {
     Object.freeze({ x: 0.82, y: 0.22, shape: 'dash' }),
     Object.freeze({ x: 0.94, y: 0.51, shape: 'dust' }),
   ]);
+  const figureAnchors = Object.freeze([
+    Object.freeze({ x: 0.48, y: -0.02, shape: 'spark' }),
+    Object.freeze({ x: 0.06, y: 0.28, shape: 'dash' }),
+    Object.freeze({ x: 0.94, y: 0.36, shape: 'dust' }),
+    Object.freeze({ x: 0.12, y: 0.69, shape: 'spark' }),
+    Object.freeze({ x: 0.82, y: 0.76, shape: 'dash' }),
+    Object.freeze({ x: 0.32, y: 1.01, shape: 'dust' }),
+    Object.freeze({ x: 0.68, y: 1.01, shape: 'spark' }),
+  ]);
   const motes = Array.from({ length: moteCount }, (_, index) => {
     const angle = rotation + index * TAU / moteCount;
-    const anchor = caseAnchors[index];
+    const anchor = wandCase ? caseAnchors[index] : figure ? figureAnchors[index] : null;
     return Object.freeze({
       x: wandCase
         ? bounds.x + bounds.width * anchor.x + Math.cos(angle) * (reducedMotion ? 0 : 3.2)
+        : figure
+          ? bounds.x + bounds.width * anchor.x + Math.cos(angle) * (reducedMotion ? 0 : 2.4)
         : bounds.x + bounds.width / 2 + Math.cos(angle) * orbitX,
       y: wandCase
         ? bounds.y + bounds.height * anchor.y + Math.sin(angle * 1.3) * (reducedMotion ? 0 : 2.6)
+        : figure
+          ? bounds.y + bounds.height * anchor.y + Math.sin(angle * 1.2) * (reducedMotion ? 0 : 2)
         : bounds.y + bounds.height / 2 + Math.sin(angle) * orbitY,
       size: (hinted ? 6.8 : 5.5) + Math.sin(phase * 19 + index * 2.1) * 0.65,
       alpha: strength * (0.72 + Math.sin(angle * 1.7 + phase) * 0.12),
       angle,
-      shape: wandCase ? anchor.shape : 'spark',
+      shape: wandCase || figure ? anchor.shape : 'spark',
     });
   });
 
@@ -156,6 +170,10 @@ function drawGoldShimmer(context, presentation) {
     // and mixed gold-dust shapes make the object shimmer without enclosing it
     // in a ring or pointing at it with an arrow.
     drawWandCaseShimmer(context, presentation);
+  } else if (bounds.shape === 'figure') {
+    // Character objectives use only the small silhouette-anchored motes drawn
+    // below. A continuous contour, even a loose painted one, reads as a UI
+    // capsule around a person against the production room paintings.
   } else {
     // A single broad translucent contour keeps the brush mark outside the
     // authored target without washing gold across its face, coat, or details.
@@ -624,7 +642,11 @@ function boundsForHitArea(area, cameraX) {
 
 export function visualBoundsForTarget(target, hitBounds) {
   const icon = target.presentation?.icon;
-  if (target.kind === 'talk') {
+  // Chapter packages author dialogue hotspots as ordinary actions with a talk
+  // icon. Treat the player-facing intent as authoritative so those live
+  // characters receive figure-attached motes instead of the generic circular
+  // hotspot contour.
+  if (target.kind === 'talk' || icon === 'talk') {
     const identity = String(target.id ?? target.semanticId ?? '').toLowerCase();
     const profile = identity.includes('guide') ? GUIDE_VISUAL_PROFILE : FIGURE_VISUAL_PROFILE;
     return resizedBounds(hitBounds, ...profile);

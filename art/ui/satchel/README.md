@@ -1,5 +1,29 @@
 # Satchel button art
 
+## 2026-07-16 surface repaint
+
+Pete's live review found that the destination paintings and collectible
+portraits were being weakened by the flat code-drawn book, oversized tan tray,
+and placeholder-like card holders around them. `spread-v2.png` replaces only
+the satchel's static open-journal background. `card-frame-v2-chroma.png` and
+`card-pocket-v2-chroma.png` replace the earned and unearned card holders. The
+runtime still owns every word, portrait, route, marker, tab state, target, and
+save-dependent choice.
+
+The spread brief used the current satchel screen for layout only, the Chapter
+One room triptych for lighting, and the Diagon Alley destination panel for prop
+detail. It asked for a textless blackberry-leather travel folio with warm
+deckled pages, layered edges, brass corner hardware, a dimensional gutter, and
+calm interaction zones. It explicitly rejected the old tan tray and all baked
+controls or symbols.
+
+The two card-holder briefs used the destination panel as their production-style
+anchor. The earned frame reserves a chroma-key portrait window and a blank
+parchment name band; the unearned pocket is a welcoming closed leather sleeve
+with a feather clasp, not a lock. Both sources use a flat `#00ff00` field for
+local removal. `../process-v2.mjs` owns their repeatable processing alongside
+the title envelope.
+
 These five controls and four destination panels were generated with the built-in image-generation tool on
 2026-07-16, then keyed locally from a flat green background and resized to WebP
 for the game. The untouched chroma-key sources live in `source/`; only the

@@ -71,7 +71,7 @@ const REVIEW_SCENE_ILLUSION_CHECKS = Object.freeze({
   ],
   'sp-ch2-barrier-run-review': [
     'Violet’s hesitation, committed run, and disappearance through the brick barrier read as one continuous action from her real approach point, with no teleport or duplicate Violet.',
-    'The opaque storybook whoosh fully covers the ordinary-to-magical platform swap before the scarlet train and conductor appear, with zero blank frame, exposed painting edge, or mixed station variant.',
+    'The opaque storybook whoosh fully covers the ordinary-to-magical platform swap before the scarlet train and conductor appear, with zero blank frame, exposed painting edge, or mixed station variant; the conductor’s objective shimmer stays attached to his figure and never encloses him in a generic ring or capsule.',
   ],
   'sp-ch2-sweet-reaction-review': [
     'Violet’s chosen Every-Flavour Bean produces one playful, silent face-and-body reaction that remains readable beside the trolley and her seated friends without presenting failure or punishment.',
@@ -83,14 +83,14 @@ const REVIEW_SCENE_ILLUSION_CHECKS = Object.freeze({
   ],
   'sp-ch2-sorting-reveal-review': [
     'The reveal presents Gryffindor as Violet’s one canonical outcome, keeping Violet, the Sorting Hat, and the scarlet-and-gold house response simultaneously readable.',
-    'The yearbook-ready composition preserves Violet’s chosen robe trim while adding the Gryffindor identity, with no alternate-house color, duplicate character, or banner covering her face.',
+    'The yearbook-ready composition preserves Violet’s chosen robe trim while adding the Gryffindor identity through shaped, textured hanging cloth with zero flat fill strips, alternate-house color, duplicate character, or banner covering her face.',
   ],
   'sp-ch2-common-room-arrival-review': [
-    'The common room reads immediately as warm, safe, and specifically Gryffindor while Violet remains the center of Harry, Ron, and Hermione’s welcome composition.',
+    'The common room reads immediately as warm, safe, and specifically Gryffindor while Violet remains the center of Harry, Ron, and Hermione’s welcome composition and the welcome words belong to one visibly hung fabric object rather than floating over the painting.',
     'Violet’s Gryffindor identity, her chosen robe trim, her companion, and all three friends remain mutually readable with no furniture collision, clipped figure, or competing interaction glow.',
   ],
   'sp-ch2-chapter-card-review': [
-    'The Chapter Two completion page keeps the Gryffindor common-room painting, chapter title, and first-classes handoff readable as one intentional storybook composition.',
+    'The Chapter Two completion page keeps most of the Gryffindor common-room painting unobscured while its compact hanging chapter title and separate first-classes scroll remain readable as one intentional storybook composition.',
     'The page turn reveals zero blank or unpainted frame and contains no retired preview ticket, replay choice shelf, generic owl ornament, or false gameplay affordance.',
   ],
   'parent-panel': [

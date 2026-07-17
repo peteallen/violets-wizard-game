@@ -21,7 +21,7 @@ export const STORYBOOK_TITLE_MAJOR_REGIONS = Object.freeze([
 
 const TITLE_SAFE_AREAS = Object.freeze({
   masthead: Object.freeze({ x: 270, y: 52, width: 650, height: 244 }),
-  envelope: Object.freeze({ x: 430, y: 372, width: 420, height: 180 }),
+  envelope: Object.freeze({ x: 420, y: 340, width: 440, height: 244 }),
 });
 
 const STARS = Object.freeze([

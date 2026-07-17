@@ -1,0 +1,43 @@
+{
+  "schema_version": 1,
+  "slug": "ui-v2-title-and-satchel",
+  "prompt": {
+    "path": "art/ui/ui-v2.prompts.md",
+    "sections": [
+      "Returning title envelope",
+      "Satchel spread",
+      "Earned card frame",
+      "Unearned card pocket"
+    ]
+  },
+  "generation": {
+    "workflow": "Codex built-in image generation",
+    "tool": "image_gen.imagegen",
+    "model_identifier": null,
+    "seed": null,
+    "returned_model_or_seed_note": "The built-in workflow did not return a model identifier or seed."
+  },
+  "outputs": [
+    {
+      "id": "exec-1ea26a68-8b5f-42f4-9839-a5b1d4fb8d0e",
+      "source": "art/ui/title/return-envelope-v2-chroma.png",
+      "shipping": "public/assets/art/ui/title/return-envelope-v2.webp"
+    },
+    {
+      "id": "exec-104ecb38-4b11-4ed8-9b59-dbfdb21148a5",
+      "source": "art/ui/satchel/source/spread-v2.png",
+      "shipping": "public/assets/art/ui/satchel/spread-v2.webp"
+    },
+    {
+      "id": "exec-68f571f7-5812-49e9-b2a3-c83f16e3fed9",
+      "source": "art/ui/satchel/source/card-frame-v2-chroma.png",
+      "shipping": "public/assets/art/ui/satchel/card-frame-v2.webp"
+    },
+    {
+      "id": "exec-daf27b18-9294-4b79-8dfe-ee79cec5602f",
+      "source": "art/ui/satchel/source/card-pocket-v2-chroma.png",
+      "shipping": "public/assets/art/ui/satchel/card-pocket-v2.webp"
+    }
+  ],
+  "processing": "art/ui/process-v2.mjs"
+}

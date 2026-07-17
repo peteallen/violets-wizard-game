@@ -314,44 +314,49 @@ function drawGryffindorGreatHallBanner(context, x, direction) {
   context.lineCap = 'round';
   context.beginPath();
   context.moveTo(-13, top - 11);
-  context.lineTo(width + 13, top - 11);
+  context.bezierCurveTo(width * 0.24, top - 18, width * 0.76, top - 7, width + 13, top - 11);
   context.stroke();
 
   context.strokeStyle = '#d9ad43';
   context.lineWidth = 7;
   context.beginPath();
   context.moveTo(-14, top - 16);
-  context.lineTo(width + 14, top - 16);
+  context.bezierCurveTo(width * 0.22, top - 23, width * 0.78, top - 12, width + 14, top - 16);
   context.stroke();
 
   context.fillStyle = 'rgba(49,24,31,0.24)';
-  context.beginPath();
-  context.moveTo(8, top + 8);
-  context.lineTo(width + 10, top + 8);
-  context.lineTo(width + 10, bottom - 4);
-  context.lineTo(width / 2 + 10, bottom + 44);
-  context.lineTo(8, bottom - 4);
-  context.closePath();
+  traceGreatHallBannerCloth(context, 8, top + 8, width + 2, bottom + 12, direction, 10);
   context.fill();
 
   context.fillStyle = '#8f2638';
   context.strokeStyle = '#d9ad43';
   context.lineWidth = 7;
   context.lineJoin = 'round';
-  context.beginPath();
-  context.moveTo(0, top);
-  context.lineTo(width, top);
-  context.lineTo(width, bottom - 12);
-  context.lineTo(width / 2, bottom + 32);
-  context.lineTo(0, bottom - 12);
-  context.closePath();
+  traceGreatHallBannerCloth(context, 0, top, width, bottom, direction);
   context.fill();
   context.stroke();
 
-  context.fillStyle = '#d9ad43';
-  context.fillRect(8, top + 10, width - 16, 15);
-  context.fillRect(13, top + 41, 10, bottom - top - 85);
-  context.fillRect(width - 23, top + 41, 10, bottom - top - 85);
+  context.strokeStyle = '#d9ad43';
+  context.lineCap = 'round';
+  context.lineWidth = 10;
+  context.beginPath();
+  context.moveTo(12, top + 17);
+  context.bezierCurveTo(width * 0.3, top + 12, width * 0.72, top + 23, width - 12, top + 17);
+  context.moveTo(18, top + 48);
+  context.bezierCurveTo(11, top + 126, 23, bottom - 94, 18, bottom - 54);
+  context.moveTo(width - 18, top + 48);
+  context.bezierCurveTo(width - 10, top + 126, width - 24, bottom - 94, width - 18, bottom - 54);
+  context.stroke();
+
+  context.strokeStyle = 'rgba(255,239,174,0.2)';
+  context.lineWidth = 3;
+  for (let index = 0; index < 5; index += 1) {
+    const y = top + 38 + index * 51;
+    context.beginPath();
+    context.moveTo(28, y + Math.sin(index * 1.7) * 3);
+    context.bezierCurveTo(48, y - 5, 69, y + 6, 84, y - 1);
+    context.stroke();
+  }
 
   const shieldX = width / 2;
   const shieldY = top + 135;
@@ -382,10 +387,68 @@ function drawGryffindorGreatHallBanner(context, x, direction) {
   context.fillStyle = 'rgba(255,239,174,0.28)';
   context.beginPath();
   context.moveTo(28, top + 34);
-  context.lineTo(45, top + 34);
-  context.lineTo(38, bottom - 36);
-  context.lineTo(25, bottom - 54);
+  context.bezierCurveTo(34, top + 31, 42, top + 35, 45, top + 34);
+  context.bezierCurveTo(42, top + 132, 44, bottom - 94, 38, bottom - 36);
+  context.bezierCurveTo(33, bottom - 41, 28, bottom - 48, 25, bottom - 54);
+  context.bezierCurveTo(30, bottom - 132, 23, top + 112, 28, top + 34);
   context.closePath();
   context.fill();
   context.restore();
+}
+
+function traceGreatHallBannerCloth(
+  context,
+  left,
+  top,
+  width,
+  bottom,
+  direction,
+  shadowOffset = 0,
+) {
+  const right = left + width;
+  const point = bottom + 32;
+  const sway = direction * 4;
+  context.beginPath();
+  context.moveTo(left + 5, top + shadowOffset * 0.12);
+  context.bezierCurveTo(
+    left + width * 0.3,
+    top - 7,
+    left + width * 0.72,
+    top + 7,
+    right - 4,
+    top + 1,
+  );
+  context.bezierCurveTo(
+    right + 5 + sway,
+    top + 82,
+    right - 5 + sway,
+    bottom - 78,
+    right - 2,
+    bottom - 13,
+  );
+  context.bezierCurveTo(
+    right - width * 0.22,
+    bottom - 4,
+    left + width * 0.66,
+    bottom + 19,
+    left + width / 2,
+    point,
+  );
+  context.bezierCurveTo(
+    left + width * 0.34,
+    bottom + 17,
+    left + width * 0.22,
+    bottom - 5,
+    left + 2,
+    bottom - 13,
+  );
+  context.bezierCurveTo(
+    left - 5 + sway,
+    bottom - 82,
+    left + 4 + sway,
+    top + 78,
+    left + 5,
+    top + shadowOffset * 0.12,
+  );
+  context.closePath();
 }

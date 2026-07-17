@@ -1,0 +1,37 @@
+{
+  "schema_version": 1,
+  "kind": "codex-built-in-ui-image-generation",
+  "slug": "ui-v2-title-and-satchel",
+  "generated_at": "2026-07-16",
+  "request_spec": "art/ui/ui-v2.request.json",
+  "prompt": "art/ui/ui-v2.prompts.md",
+  "processing": "art/ui/process-v2.mjs",
+  "workflow": {
+    "name": "Codex built-in image generation",
+    "tool": "image_gen.imagegen",
+    "model_identifier": null,
+    "seed": null
+  },
+  "artifacts": [
+    {
+      "id": "exec-1ea26a68-8b5f-42f4-9839-a5b1d4fb8d0e",
+      "source": { "path": "art/ui/title/return-envelope-v2-chroma.png", "width": 1661, "height": 947, "bytes": 2401602, "sha256": "fe7e23b8a7df5aec33ce00acc4d74eaca2033ad3448ba9a75b75043ffd08bb76" },
+      "shipping": { "path": "public/assets/art/ui/title/return-envelope-v2.webp", "width": 900, "height": 500, "bytes": 89462, "sha256": "c1e0c5019443421d9dae9d2561bbded5e54ce1356a533e76801510e91eb83b3e" }
+    },
+    {
+      "id": "exec-104ecb38-4b11-4ed8-9b59-dbfdb21148a5",
+      "source": { "path": "art/ui/satchel/source/spread-v2.png", "width": 1643, "height": 957, "bytes": 2751733, "sha256": "c5217ab11def5062ff8bcd466da3448f239d6d1d9eaa3e2560bd33da7f5e1937" },
+      "shipping": { "path": "public/assets/art/ui/satchel/spread-v2.webp", "width": 2560, "height": 1440, "bytes": 541492, "sha256": "faa789006a353fd899b506df5f4461b7bca7de06366b9167f368e1e9c316b983" }
+    },
+    {
+      "id": "exec-68f571f7-5812-49e9-b2a3-c83f16e3fed9",
+      "source": { "path": "art/ui/satchel/source/card-frame-v2-chroma.png", "width": 1190, "height": 1322, "bytes": 2011654, "sha256": "67e284fac209d5f3145724d59b0bcce9037ce966a0955a31243f0f93d9c70856" },
+      "shipping": { "path": "public/assets/art/ui/satchel/card-frame-v2.webp", "width": 500, "height": 560, "bytes": 56658, "sha256": "2e4981b1e2d3e38282d274c9c9af5140b49a0998e79464b0557b1c9656bf04ed" }
+    },
+    {
+      "id": "exec-daf27b18-9294-4b79-8dfe-ee79cec5602f",
+      "source": { "path": "art/ui/satchel/source/card-pocket-v2-chroma.png", "width": 1174, "height": 1340, "bytes": 2866305, "sha256": "0ea246de895bf8b4a6e90146c7aabebb0b6bb595bd4c7f90a65993a639e8cce3" },
+      "shipping": { "path": "public/assets/art/ui/satchel/card-pocket-v2.webp", "width": 500, "height": 560, "bytes": 88722, "sha256": "36a7d0dcbbdf8e2b92ecf8bee8ddfc567f6142eeeba37a4f3d16615c25ff5322" }
+    }
+  ]
+}

@@ -120,11 +120,11 @@ describe('code-only storybook title illustration', () => {
     expect(overlaps(first.hero.bounds, first.safeAreas.envelope)).toBe(false);
     const action = titleForegroundLayout(first).action;
     expect(action).toMatchObject({
-      x: 448,
-      y: 396,
-      width: 384,
+      x: 420,
+      y: 340,
+      width: 440,
     });
-    expect(action.height).toBeCloseTo(126);
+    expect(action.height).toBeCloseTo(244);
     expect(collectNumbers(first).every(Number.isFinite)).toBe(true);
 
     expect(STORYBOOK_TITLE_MAJOR_REGIONS.map(({ id }) => id)).toEqual([
@@ -273,10 +273,10 @@ describe('code-only storybook title illustration', () => {
     expect(titleForegroundLayout(presentation)).toEqual({
       masthead: presentation.safeAreas.masthead,
       action: {
-        x: 211.78571428571428,
-        y: 313.06666666666666,
-        width: 251.42857142857142,
-        height: 68.6,
+        x: 200,
+        y: 300,
+        width: 275,
+        height: 98,
       },
     });
 
@@ -286,12 +286,17 @@ describe('code-only storybook title illustration', () => {
     expect(visibleText).toEqual(['Violet', 'at Hogwarts', 'Open Violet’s letter']);
     expect(first.calls).toContainEqual(['fillText', 'Violet', 262.5, 85.5]);
     expect(first.calls).toContainEqual(['fillText', 'at Hogwarts', 262.5, 123]);
-    expect(first.calls).toContainEqual([
-      'fillText',
-      'Open Violet’s letter',
-      356.8277777777777,
-      348.18333333333334,
-    ]);
+    const actionTextCall = first.calls.find(
+      ([name, value]) => name === 'fillText' && value === 'Open Violet’s letter',
+    );
+    expect(actionTextCall[2]).toBeGreaterThan(presentation.safeAreas.envelope.x);
+    expect(actionTextCall[2]).toBeLessThan(
+      presentation.safeAreas.envelope.x + presentation.safeAreas.envelope.width,
+    );
+    expect(actionTextCall[3]).toBeGreaterThan(presentation.safeAreas.envelope.y);
+    expect(actionTextCall[3]).toBeLessThan(
+      presentation.safeAreas.envelope.y + presentation.safeAreas.envelope.height,
+    );
 
     const storedSave = recordingContext();
     renderer.drawTitle(storedSave, 28, true, true);

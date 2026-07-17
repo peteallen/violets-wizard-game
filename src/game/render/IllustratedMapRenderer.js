@@ -36,6 +36,7 @@ export class IllustratedMapRenderer {
     );
     drawIllustratedMapPresentation(context, presentation, {
       imageFor: options.imageFor,
+      showParchmentField: options.showParchmentField,
     });
     return presentation;
   }
@@ -87,9 +88,15 @@ export function createIllustratedMapPresentation(
   });
 }
 
-export function drawIllustratedMapPresentation(context, presentation, { imageFor = null } = {}) {
+export function drawIllustratedMapPresentation(
+  context,
+  presentation,
+  { imageFor = null, showParchmentField = true } = {},
+) {
   context.save();
-  drawParchmentField(context, presentation.field, stablePhase(presentation.mapId));
+  if (showParchmentField) {
+    drawParchmentField(context, presentation.field, stablePhase(presentation.mapId));
+  }
   for (const route of presentation.routes) drawQuillRoute(context, route);
   if (presentation.objective) drawObjectiveRoute(context, presentation);
   for (const location of presentation.locations) {

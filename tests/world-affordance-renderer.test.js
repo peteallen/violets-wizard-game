@@ -70,6 +70,18 @@ function guideTarget(salience) {
   });
 }
 
+function figureTarget(salience) {
+  return Object.freeze({
+    id: 'platform.conductor',
+    // Chapter Two's real scene uses actionHotspot({ icon: 'talk' }); keep the
+    // fixture honest so a generic oval cannot return around the conductor.
+    kind: 'action',
+    hitArea: { shape: 'circle', x: 900, y: 500, radius: 112 },
+    presentation: { icon: 'talk', glow: 'objective' },
+    salience,
+  });
+}
+
 describe('world interaction salience rendering', () => {
   it('renders the one golden thread deterministically and only strengthens that thread for hints', () => {
     const normalTarget = wandTarget({ tier: 'thread', visible: 'thread', intensity: 'normal', glint: null });
@@ -337,6 +349,33 @@ describe('world interaction salience rendering', () => {
     ))).toBe(false);
     expect(context.calls.some(([name]) => name === 'setLineDash')).toBe(false);
     expect(context.effects).toEqual([]);
+    expect(context.depth).toBe(0);
+  });
+
+  it('attaches ordinary character shimmer to the figure instead of enclosing it in a capsule', () => {
+    const renderer = new WorldAffordanceRenderer();
+    const context = recordingContext();
+    const target = figureTarget({
+      tier: 'thread', visible: 'thread', intensity: 'normal', glint: null,
+    });
+    const presentation = worldAffordanceState(target, 2.5);
+
+    renderer.draw(context, {
+      cameraX: 0,
+      targets: [target],
+      affordances: { quiet: false, worldSuppressed: false },
+    }, 2.5);
+
+    expect(presentation.bounds.shape).toBe('figure');
+    expect(presentation.motes).toHaveLength(5);
+    expect(new Set(presentation.motes.map(({ shape }) => shape))).toEqual(new Set([
+      'dust', 'spark', 'dash',
+    ]));
+    expect(context.calls.filter(([name]) => name === 'stroke')).toHaveLength(0);
+    expect(context.calls.filter(([name]) => name === 'fill')).toHaveLength(15);
+    expect(context.calls.some(([name]) => (
+      name === 'arc' || name === 'ellipse' || name === 'rect' || name === 'roundRect'
+    ))).toBe(false);
     expect(context.depth).toBe(0);
   });
 

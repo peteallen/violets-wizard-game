@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 import {
   chapter2PresentationPackage,
+  drawGryffindorGreatHallBanners,
   drawSortingCeremonyAtmosphere,
   drawTrainCompartmentMotion,
   sortingCeremonyMotionState,
@@ -19,7 +20,7 @@ function recordingContext() {
   const assignments = [];
   const methods = new Set([
     'beginPath', 'bezierCurveTo', 'clip', 'closePath', 'fill', 'lineTo', 'moveTo',
-    'restore', 'rotate', 'save', 'scale', 'stroke', 'translate',
+    'fillRect', 'quadraticCurveTo', 'restore', 'rotate', 'save', 'scale', 'stroke', 'translate',
   ]);
   const target = { calls, assignments };
   return new Proxy(target, {
@@ -117,6 +118,18 @@ describe('Chapter Two deterministic set-piece motion', () => {
       hatPulse: 0,
       reducedMotion: true,
     });
+  });
+
+  it('hangs the persistent Gryffindor identity as shaped cloth without flat fill strips', () => {
+    const context = recordingContext();
+
+    drawGryffindorGreatHallBanners(context, { cameraX: 0 });
+
+    expect(context.calls.some(([method]) => method === 'fillRect')).toBe(false);
+    expect(context.calls.filter(([method]) => method === 'bezierCurveTo').length)
+      .toBeGreaterThan(30);
+    expect(context.calls.filter(([method]) => method === 'fill').length)
+      .toBeGreaterThanOrEqual(10);
   });
 
   it('lets candlelight answer the speaking Hat without moving in reduced motion', () => {

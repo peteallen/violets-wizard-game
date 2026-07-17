@@ -106,17 +106,17 @@ describe('visual verification checklists', () => {
     }
 
     expect(visualReviewChecklist('sp-ch2-barrier-run-review').join(' '))
-      .toMatch(/continuous action.*opaque storybook whoosh.*zero blank frame/s);
+      .toMatch(/continuous action.*opaque storybook whoosh.*conductor.*never encloses.*ring or capsule/s);
     expect(visualReviewChecklist('sp-ch2-sweet-reaction-review').join(' '))
       .toMatch(/Every-Flavour Bean.*silent face-and-body reaction/s);
     expect(visualReviewChecklist('sp-ch2-lake-vista-review').join(' '))
       .toMatch(/castle.*lake reflection.*zero blank frame/s);
     expect(visualReviewChecklist('sp-ch2-sorting-reveal-review').join(' '))
-      .toMatch(/Gryffindor.*one canonical outcome.*no alternate-house color/s);
+      .toMatch(/Gryffindor.*one canonical outcome.*shaped, textured hanging cloth.*zero flat fill strips/s);
     expect(visualReviewChecklist('sp-ch2-common-room-arrival-review').join(' '))
-      .toMatch(/specifically Gryffindor.*Harry, Ron, and Hermione/s);
+      .toMatch(/specifically Gryffindor.*Harry, Ron, and Hermione.*hung fabric object.*rather than floating/s);
     expect(visualReviewChecklist('sp-ch2-chapter-card-review').join(' '))
-      .toMatch(/first-classes handoff.*no retired preview ticket/s);
+      .toMatch(/most of the Gryffindor common-room painting unobscured.*compact hanging chapter title.*first-classes scroll.*no retired preview ticket/s);
 
     expect(visualReviewChecklist('ch2-placeholder')).toBeNull();
     expect(visualReviewChecklist('sp-ch2-ticket-review')).toBeNull();

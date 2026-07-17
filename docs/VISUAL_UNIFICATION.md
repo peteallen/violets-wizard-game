@@ -113,6 +113,10 @@ Painted Map and Cards bookmarks own top navigation; the grown-up keyhole and
 Start fresh luggage tag sit on the bottom book edge; close is the only X. Four
 textless painted destination panels form a left-to-right journey, while
 code-rendered names sit inside each panel's deliberate blank parchment band.
+The shared surface beneath them is now a painted blackberry-leather travel
+folio with dimensional deckled pages rather than a flat code-drawn book and tan
+map tray. Painted transparent-window frames hold earned live portraits and
+names; closed leather pockets hold unearned slots without implying failure.
 Here, completed-stop checks, and the written Next flag make current state and
 intended travel explicit without baking progress into the art. Chapters Two and
 Three have no authored travel map, so their registered review scenes open

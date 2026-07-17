@@ -71,6 +71,7 @@ function paintedOutputContext(scale = 1) {
     rotate: vi.fn(),
     beginPath: vi.fn(),
     moveTo: vi.fn(),
+    bezierCurveTo: vi.fn(),
     lineTo: vi.fn(),
     quadraticCurveTo: vi.fn(),
     closePath: vi.fn(),

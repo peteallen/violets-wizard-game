@@ -39,6 +39,10 @@ export { isAllowedChildFacingUiText } from '../content/playerVisibleCopy.js';
 const STORY_GRADIENTS = new WeakMap();
 const NIGHT_DIALOGUE_GRADIENTS = new WeakMap();
 const SATCHEL_IMAGE_KEYS = Object.freeze([
+  'ui/title/return-envelope-v2',
+  'ui/satchel/spread-v2',
+  'ui/satchel/card-frame-v2',
+  'ui/satchel/card-pocket-v2',
   'ui/satchel/map-tab',
   'ui/satchel/cards-tab',
   'ui/satchel/grown-ups',
@@ -482,12 +486,7 @@ export function titleForegroundLayout(presentation) {
   }
   return Object.freeze({
     masthead,
-    action: Object.freeze({
-      x: envelope.x + envelope.width * (18 / 420),
-      y: envelope.y + envelope.height * (24 / 180),
-      width: envelope.width * (384 / 420),
-      height: envelope.height * (126 / 180),
-    }),
+    action: Object.freeze({ ...envelope }),
   });
 }
 
@@ -961,15 +960,20 @@ export class UIRenderer {
     reducedMotion = false,
   } = {}) {
     const activeTab = state.overlay?.tab === 'cards' || !map ? 'cards' : 'map';
-    drawStorybookSpread(context, { x: 72, y: 32, width: 1136, height: 652 }, {
-      title: '',
-      cornerFlourishes: false,
-    });
+    const spreadImage = this.imageFor('ui/satchel/spread-v2');
+    const paintedSpread = Boolean(spreadImage?.complete && spreadImage.naturalWidth > 0);
+    if (paintedSpread) context.drawImage(spreadImage, 0, 0, WORLD.width, WORLD.height);
+    else {
+      drawStorybookSpread(context, { x: 72, y: 32, width: 1136, height: 652 }, {
+        title: '',
+        cornerFlourishes: false,
+      });
+    }
     drawSatchelOwnerMark(context);
 
     const content = activeTab === 'cards'
       ? this.drawCardAlbumContent(context, state, cardDefinitions)
-      : this.drawMapContent(context, state, time, { map, reducedMotion });
+      : this.drawMapContent(context, state, time, { map, reducedMotion, paintedSpread });
 
     drawSatchelPageHeading(
       context,
@@ -1022,11 +1026,13 @@ export class UIRenderer {
   drawMapContent(context, state, time = 0, {
     map = chapter1Map,
     reducedMotion = false,
+    paintedSpread = false,
   } = {}) {
     const mapState = buildMapState(map, state);
     return this.mapRenderer.draw(context, mapState, state, time, {
       reducedMotion,
       imageFor: (key) => this.imageFor(key),
+      showParchmentField: !paintedSpread,
     });
   }
 
@@ -1053,7 +1059,42 @@ export class UIRenderer {
   drawAlbumCard(context, entry) {
     const layout = albumCardLayout(entry);
     const phase = keepsakePhase(entry.id);
+    const frameImage = this.imageFor('ui/satchel/card-frame-v2');
+    const pocketImage = this.imageFor('ui/satchel/card-pocket-v2');
+    const paintedFrame = Boolean(frameImage?.complete && frameImage.naturalWidth > 0);
+    const paintedPocket = Boolean(pocketImage?.complete && pocketImage.naturalWidth > 0);
     context.save();
+    if (entry.earned && paintedFrame) {
+      const image = this.imageFor(entry.portraitAsset);
+      if (image?.complete && image.naturalWidth > 0) {
+        drawOrganicCoverImage(context, image, layout.portrait, phase);
+      } else drawDevelopingPhoto(context, layout.portrait, phase);
+      context.drawImage(
+        frameImage,
+        layout.card.x,
+        layout.card.y,
+        layout.card.width,
+        layout.card.height,
+      );
+      drawPaintedKeepsakeName(
+        context,
+        layout.nameplate,
+        childFacingUiText(entry.name, 'proper-name'),
+      );
+      context.restore();
+      return layout;
+    }
+    if (!entry.earned && paintedPocket) {
+      context.drawImage(
+        pocketImage,
+        layout.card.x,
+        layout.card.y,
+        layout.card.width,
+        layout.card.height,
+      );
+      context.restore();
+      return layout;
+    }
     drawKeepsakeCard(context, layout.card, entry.earned, phase);
     if (entry.earned) {
       drawKeepsakePhotoMount(context, layout.portrait, phase);
@@ -1197,6 +1238,7 @@ export class UIRenderer {
     ), layout.action, {
       largeSeal: true,
       time: animationTime,
+      image: this.imageFor('ui/title/return-envelope-v2'),
     });
     return presentation;
   }
@@ -1642,6 +1684,22 @@ function drawKeepsakeNameplate(context, rect, label, phase) {
   context.fillStyle = '#3a2d22';
   context.font = '700 29px "Andika", "Trebuchet MS", sans-serif';
   fitText(context, label, rect.x + rect.width / 2, rect.y + rect.height / 2 + 10, rect.width - 34);
+  context.restore();
+}
+
+function drawPaintedKeepsakeName(context, rect, label) {
+  context.save();
+  context.fillStyle = '#4b3026';
+  context.textAlign = 'center';
+  context.textBaseline = 'middle';
+  context.font = '700 25px "Andika", "Trebuchet MS", sans-serif';
+  fitText(
+    context,
+    label,
+    rect.x + rect.width / 2,
+    rect.y + rect.height / 2,
+    rect.width - 18,
+  );
   context.restore();
 }
 
@@ -3241,10 +3299,15 @@ function traceOrganicSpot(context, x, y, radiusX, radiusY, wobble = 0) {
   context.closePath();
 }
 
-function drawInvitationButton(context, label, rect, { largeSeal = false, time = 0 } = {}) {
+function drawInvitationButton(
+  context,
+  label,
+  rect,
+  { largeSeal = false, time = 0, image = null } = {},
+) {
   const { x, y, width, height } = rect;
   if (largeSeal) {
-    drawTitleLetter(context, label, rect, { time });
+    drawTitleLetter(context, label, rect, { time, image });
     return;
   }
   const sealRadius = largeSeal ? 47 : 34;
@@ -3333,7 +3396,11 @@ function drawDisplayTitle(context, text, x, y, size) {
   context.restore();
 }
 
-function drawTitleLetter(context, label, rect, { time = 0 } = {}) {
+function drawTitleLetter(context, label, rect, { time = 0, image = null } = {}) {
+  if (image?.complete && image.naturalWidth > 0) {
+    drawPaintedTitleEnvelope(context, label, rect, image, time);
+    return;
+  }
   const { x, y, width, height } = rect;
   const scale = Math.min(width / 384, height / 126);
   const pulse = 1 + Math.sin(time * 1.8) * 0.012;
@@ -3449,6 +3516,35 @@ function drawTitleLetter(context, label, rect, { time = 0 } = {}) {
     labelRect.width - 28 * scale,
   );
   drawTitleInvitationMotes(context, x, y, width, height, time, scale);
+  context.restore();
+}
+
+function drawPaintedTitleEnvelope(context, label, rect, image, time) {
+  const { x, y, width, height } = rect;
+  const pulse = 1 + Math.sin(time * 1.8) * 0.012;
+  const tilt = -0.018 + Math.sin(time * 0.72 + 0.8) * 0.003;
+  context.save();
+  context.translate(x + width / 2, y + height / 2);
+  context.rotate(tilt);
+  context.scale(pulse, pulse);
+  context.translate(-(x + width / 2), -(y + height / 2));
+  context.drawImage(image, x, y, width, height);
+
+  context.textAlign = 'center';
+  context.textBaseline = 'middle';
+  context.lineJoin = 'round';
+  context.font = '700 29px "Andika", "Trebuchet MS", sans-serif';
+  let size = 29;
+  while (size > 20 && context.measureText(label).width > width * 0.72) {
+    size -= 1;
+    context.font = `700 ${size}px "Andika", "Trebuchet MS", sans-serif`;
+  }
+  context.strokeStyle = 'rgba(255,240,194,0.78)';
+  context.lineWidth = 4.6;
+  context.strokeText(label, x + width / 2, y + height * 0.37);
+  context.fillStyle = '#4a3027';
+  context.fillText(label, x + width / 2, y + height * 0.37);
+  drawTitleInvitationMotes(context, x, y, width, height, time, Math.min(width / 440, height / 244));
   context.restore();
 }
 
