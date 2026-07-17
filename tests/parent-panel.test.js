@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { Game, worldViewportSourceRect } from '../src/game/Game.js';
 import { INPUT, WORLD } from '../src/game/config.js';
 import { UI_RECTS } from '../src/game/render/UIRenderer.js';
-import { createSaveV1 } from '../src/game/systems/Save.js';
+import { createSaveV1, createSaveV3 } from '../src/game/systems/Save.js';
 
 const NOW = '2026-07-12T20:00:00.000Z';
 
@@ -78,6 +78,20 @@ function parentGame(save = saveFixture()) {
     write: vi.fn((value) => ({ ok: true, status: 'saved', save: structuredClone(value) })),
     export: vi.fn((value) => JSON.stringify(value)),
   };
+  return game;
+}
+
+function preservedWorldGame(save) {
+  const game = Object.create(Game.prototype);
+  game.saveData = save;
+  game.clock = () => NOW;
+  game.selectSetPieceFallback = () => null;
+  game.reducedMotion = false;
+  game.persistSave = vi.fn((nextSave) => ({ ok: true, status: 'saved', save: nextSave }));
+  game.processWorldEvents = vi.fn();
+  game.updateMusic = vi.fn();
+  game.setPieceRenderer = { preloadBrickWall: vi.fn() };
+  game.preloadCurrentRoomSetPieceVariants = vi.fn();
   return game;
 }
 
@@ -169,6 +183,44 @@ describe('parent settings', () => {
 });
 
 describe('chapter replay isolation', () => {
+  it('keeps historical quest actions silent after restoring preserved save bytes', () => {
+    const save = createSaveV3({
+      now: NOW,
+      appVersion: 'parent-test',
+      worldSeed: 42,
+      name: 'Violet',
+    });
+    save.resume = {
+      chapter: 'ch1',
+      scene: 'ch1.ticket',
+      room: 'ch1.diagonStreet',
+      spawn: 'street.east',
+      dialogue: null,
+    };
+    Object.assign(save.progress.questFlags, {
+      'ch1.letterRead': true,
+      'ch1.wallOpened': true,
+      'ch1.satchelReceived': true,
+      'ch1.mapUsed': true,
+      'ch1.wandChosen': true,
+      'ch1.trimChosen': true,
+      'ch1.petNamed': true,
+    });
+    const preserved = structuredClone(save);
+    const game = preservedWorldGame(save);
+
+    game.createWorld(save, { preserveSave: true });
+
+    expect(save).toEqual(preserved);
+    expect(game.saveData).toBe(save);
+    expect(game.world.save).toBe(save);
+
+    game.world.update(WORLD.step);
+
+    expect(save.progress.questFlags['ch1.shoppingComplete']).toBeUndefined();
+    expect(save.progress.questReceipts).toEqual([]);
+  });
+
   it('starts fresh with only Violet’s name and parent settings, then restores the exact canonical save', async () => {
     const canonical = saveFixture({ complete: true });
     canonical.settings.volumes.music = 0.4;

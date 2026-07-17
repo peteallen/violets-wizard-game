@@ -215,7 +215,7 @@ const steps = [
       'Turn the chapter page and look ahead to your first classes.',
       'Turn the page!',
     ),
-    doneWhen: when({ allFlags: ['ch2.complete'] }),
+    doneWhen: when({ allFlags: ['ch2.chapterCardSeen'] }),
     hints: hints({
       repeatVoice: 'voice/ch2/objective/turnPage',
       assistActions: [setPiecePlay('ch2.setPiece.chapterCard')],

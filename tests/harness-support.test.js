@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import {
   ImmutableRegistry,
   cloneFixture,
@@ -28,6 +28,7 @@ import {
   WORLD_AFFORDANCE_REVIEW_SCENES,
   actionsThroughFrame,
   parseHarnessRequest,
+  prepareSetPieceReview,
   resolveHarnessScenario,
 } from '../src/harness/boot.js';
 import {
@@ -356,6 +357,27 @@ describe('registered harness scenarios', () => {
       character: { house: 'gryffindor' },
       progress: { questFlags: { 'ch2.commonRoomArrived': true } },
     });
+  });
+
+  it('prepares a set-piece review by discarding the prior performance through its controller', async () => {
+    const order = [];
+    const game = {
+      world: {
+        dialogue: { active: false, close: vi.fn() },
+        player: { x: 0, targetX: 0, facing: 'right', walking: false },
+        setPieces: {
+          reset: vi.fn(() => order.push('reset')),
+          start: vi.fn((id) => order.push(`start:${id}`)),
+        },
+      },
+      setPieceRenderer: { preloadBrickWall: vi.fn() },
+      processWorldEvents: vi.fn(() => order.push('events')),
+    };
+
+    await expect(prepareSetPieceReview(game, 'sp-letter-open-review')).resolves.toBe(true);
+
+    expect(order).toEqual(['reset', 'start:sp.letterOpen', 'events']);
+    expect(game.world.setPieces.reset).toHaveBeenCalledOnce();
   });
 
   it('registers normal and hint-escalated world-shimmer review scenes', () => {

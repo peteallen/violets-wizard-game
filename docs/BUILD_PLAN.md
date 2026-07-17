@@ -40,10 +40,12 @@ focused presentation seam.
    clearly when malformed. Introduce save schema version 3 with durable dialogue
    cursor and reward-receipt meaning, preserving every supported older save
    through explicit migrations and tests.
-   **In progress:** the exact v3 envelope, v1→v2→v3 migrations, full
-   dialogue and quest validation, durable-write ownership, and production
-   package linking are delivered. Dialogue, quest, and set-piece receipt runtime
-   semantics are the remaining reliability slice.
+   **Delivered:** the exact v3 envelope, v1→v2→v3 migrations, full dialogue and
+   quest validation, durable-write ownership, production package linking,
+   visible-page dialogue resume, atomic quest lifecycle actions, and logical
+   set-piece receipts are on `main`. Historical saves adopt reached quest steps
+   without replaying them; failed writes, reduced motion, fallback presentation,
+   skips, and chapter handoffs retain one retry-safe story outcome.
 3. Add only the reusable presentation seams this chapter proves it needs:
    scene-owned player poses, speaking without losing a seated pose, named actor
    attachments and head anchors, scene-level music overrides, generic chapter

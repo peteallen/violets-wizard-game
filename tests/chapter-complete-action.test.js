@@ -119,13 +119,17 @@ describe('chapter completion action', () => {
       onDirty: persist,
     });
     persist.mockReset();
-    persist
-      .mockReturnValueOnce({ ok: false, status: 'storage-error', save: null })
-      .mockImplementation(({ save: candidate }) => ({
+    let completionAttempts = 0;
+    persist.mockImplementation(({ reason, save: candidate }) => {
+      if (reason === 'chapter-complete' && completionAttempts++ === 0) {
+        return { ok: false, status: 'storage-error', save: null };
+      }
+      return {
         ok: true,
         status: 'saved',
         save: structuredClone(candidate),
-      }));
+      };
+    });
     world.dialogue.open('ch2.dialogue.chapterEnd');
     const before = structuredClone(save);
 
@@ -151,14 +155,14 @@ describe('chapter completion action', () => {
       scene: 'ch3.scene.preview',
       room: 'ch3.previewRoom',
       spawn: 'start',
-      dialogue: null,
+      dialogue: { script: 'ch3.dialogue.preview', node: 'nextTime' },
     });
-    expect(persist).toHaveBeenCalledTimes(2);
+    expect(persist.mock.calls.filter(([request]) => request.reason === 'chapter-complete')).toHaveLength(2);
     expect(world.drainEvents()).toContainEqual(expect.objectContaining({
       type: 'chapter.completed',
       payload: { chapter: 'ch2', nextChapter: 'ch3' },
     }));
-    expect(persist).toHaveBeenCalledTimes(2);
+    expect(persist.mock.calls.filter(([request]) => request.reason === 'chapter-complete')).toHaveLength(2);
     expect(world.chapter.id).toBe('ch3');
     expect(world.currentSceneId).toBe('ch3.scene.preview');
     expect(world.dialogue.scriptId).toBe('ch3.dialogue.preview');
@@ -170,6 +174,20 @@ describe('chapter completion action', () => {
     destination.scenes[destination.start.scene].onEnter = [
       { type: 'flag.set', flag: 'ch3.entered', value: true },
     ];
+    destination.quests = {
+      'ch3.quest.entry': {
+        id: 'ch3.quest.entry', startWhen: { allFlags: ['ch3.entered'] },
+        startStep: 'begin', onComplete: [],
+        steps: {
+          begin: {
+            objective: { caption: 'Begin Chapter Three' },
+            doneWhen: { allFlags: ['ch3.done'] },
+            onEnter: [{ type: 'flag.set', flag: 'ch3.questEntered', value: true }],
+            onComplete: [], next: null,
+          },
+        },
+      },
+    };
     const persist = vi.fn(({ save: candidate }) => ({
       ok: true,
       status: 'saved',
@@ -187,12 +205,79 @@ describe('chapter completion action', () => {
 
     world.advanceDialogue();
 
-    expect(persist).toHaveBeenCalledOnce();
-    expect(persist.mock.calls[0][0].save.progress.questFlags['ch3.entered']).toBeUndefined();
-    expect(world.flags['ch3.entered']).toBe(true);
+    const completionWrites = persist.mock.calls.filter(([request]) => request.reason === 'chapter-complete');
+    expect(completionWrites).toHaveLength(1);
+    expect(completionWrites[0][0].save.progress.questFlags['ch3.entered']).toBeUndefined();
+    expect(world.flags).toMatchObject({
+      'ch3.entered': true,
+      'ch3.questEntered': true,
+    });
+    expect(persist.mock.calls.map(([request]) => request.reason)).not.toContain('quest-transition');
     expect(world.drainEvents()).toContainEqual(expect.objectContaining({
       type: 'save.persistenceSuppressed',
       payload: { reason: 'flag' },
     }));
+  });
+
+  it('announces quest rewards settled inside the chapter-completion transaction', () => {
+    const save = chapterTwoEndingSave();
+    Object.assign(save.progress.questFlags, {
+      'ch2.barrierCrossed': true,
+      'ch2.boardedTrain': true,
+      'ch2.friendsMet': true,
+      'ch2.sweetReactionSeen': true,
+      'ch2.trainComplete': true,
+      'ch2.lakeSeen': true,
+      'ch2.greatHallEntered': true,
+      'ch2.sortedGryffindor': true,
+      'ch2.feastAwarded': true,
+      'ch2.feastComplete': true,
+    });
+    const source = structuredClone(chapter2V2);
+    const quest = source.quests['ch2.quest.belonging'];
+    quest.steps.turnPage.onComplete = [
+      { type: 'collection.add', collection: 'cards', id: 'card.ch2.final-page' },
+    ];
+    quest.onComplete = [{
+      type: 'reward.grant',
+      receipt: 'ch2.reward.chapter-finish',
+      cards: [],
+      treasures: ['treasure.ch2.welcome'],
+      points: 4,
+    }];
+    const world = new World({
+      chapters: { ch2: source, ch3: chapter3 }, save, seed: 42, clock: () => NOW,
+    });
+    world.drainEvents();
+
+    world.completeChapter('ch2', 'ch3');
+
+    expect(save.collections).toMatchObject({
+      cards: expect.arrayContaining(['card.ch2.final-page']),
+      treasures: expect.arrayContaining(['treasure.ch2.welcome']),
+      housePoints: 4,
+    });
+    const events = world.drainEvents();
+    expect(events).toContainEqual(expect.objectContaining({
+      type: 'state.changed',
+      payload: expect.objectContaining({
+        reason: 'chapter-complete',
+        paths: expect.arrayContaining([
+          'collections.cards',
+          'collections.treasures',
+          'collections.housePoints',
+        ]),
+      }),
+    }));
+    expect(events).toEqual(expect.arrayContaining([
+      expect.objectContaining({
+        type: 'reward.granted',
+        payload: { collection: 'cards', id: 'card.ch2.final-page' },
+      }),
+      expect.objectContaining({
+        type: 'reward.granted',
+        payload: { receipt: 'ch2.reward.chapter-finish' },
+      }),
+    ]));
   });
 });

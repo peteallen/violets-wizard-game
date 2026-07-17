@@ -166,7 +166,10 @@ export const chapter2SetPieceDefinitions = Object.freeze([
     assets: ['chapterCards/ch2/gryffindor-home', 'sfx/ch2/chapter-turn'],
     duration: 3.4,
     timeline: { tracks: [sfxCue(0, 'sfx/ch2/chapter-turn')] },
-    onComplete: [dialogueStart('ch2.dialogue.chapterEnd')],
+    onComplete: [
+      flagSet('ch2.chapterCardSeen'),
+      dialogueStart('ch2.dialogue.chapterEnd'),
+    ],
     checklist: [
       'The chapter title remains legible over the illustrated card.',
       'The page turn reveals no blank or unpainted frame.',

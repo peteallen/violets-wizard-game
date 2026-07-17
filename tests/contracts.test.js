@@ -368,6 +368,23 @@ describe('chapter v2 content contract', () => {
     expect(() => validateMap(chapter.maps['map.ch1.bedroom'])).toThrow(/contractVersion/);
   });
 
+  it('preserves the legacy quest contract while v2 owns durable lifecycle restrictions', () => {
+    const legacy = chapterFixture();
+    const quest = legacy.quests['ch1.shopping'];
+    const step = quest.steps.visitShop;
+    delete quest.steps.visitShop;
+    quest.startStep = 'visit_shop';
+    quest.steps.visit_shop = {
+      ...step,
+      id: 'visit_shop',
+      onEnter: [{ type: 'dialogue.start', script: 'ch1.guide.hello' }],
+      onComplete: [{ type: 'setPiece.play', id: 'ch1.letter' }],
+    };
+
+    expect(validateChapterV1(legacy)).toBe(legacy);
+    expect(validateChapter(legacy)).toBe(legacy);
+  });
+
   it.each([
     ['unknown package keys', (chapter) => { chapter.unreviewed = true; }],
     ['missing package collections', (chapter) => { delete chapter.recaps; }],
@@ -448,6 +465,53 @@ describe('chapter v2 content contract', () => {
   });
 
   it.each([
+    { type: 'dialogue.start', script: 'ch1.guide.hello' },
+    { type: 'setPiece.play', id: 'ch1.letter' },
+    { type: 'travel.request', room: 'ch1.bedroom', spawn: 'start' },
+    { type: 'ui.open', surface: 'satchel', tab: 'map' },
+    { type: 'yearbook.capture', moment: 'ch1.wandChosen' },
+    { type: 'chapter.complete', chapter: 'ch1', nextChapter: 'ch2' },
+  ])('rejects asynchronous or terminal quest lifecycle action $type', (action) => {
+    const chapter = chapterV2Fixture();
+    chapter.quests['ch1.shopping'].steps.visitShop.onComplete = [action];
+    expect(() => validateChapterV2(chapter)).toThrow(
+      /must be a synchronous durable action in a quest lifecycle batch/,
+    );
+  });
+
+  it('rejects quest step ids which cannot become valid durable receipt ids', () => {
+    const chapter = chapterV2Fixture();
+    const quest = chapter.quests['ch1.shopping'];
+    const step = quest.steps.visitShop;
+    delete quest.steps.visitShop;
+    quest.startStep = 'visit_shop';
+    quest.steps.visit_shop = { ...step, id: 'visit_shop' };
+
+    expect(() => validateChapterV2(chapter)).toThrow(
+      /must generate a chapter-namespaced save receipt without underscores/,
+    );
+  });
+
+  it('rejects valid-looking quest ids whose generated lifecycle receipt would exceed the save limit', () => {
+    const chapter = chapterV2Fixture();
+    const oldQuest = chapter.quests['ch1.shopping'];
+    const longQuestId = `ch1.${'q'.repeat(156)}`;
+    const longStepId = 's'.repeat(100);
+    delete chapter.quests['ch1.shopping'];
+    chapter.quests[longQuestId] = {
+      ...oldQuest,
+      id: longQuestId,
+      startStep: longStepId,
+      steps: {
+        [longStepId]: { ...oldQuest.steps.visitShop, id: longStepId },
+      },
+    };
+    chapter.scenes[chapter.start.scene].quest = longQuestId;
+
+    expect(() => validateChapterV2(chapter)).toThrow(/must be at most 240 characters/);
+  });
+
+  it.each([
     ['a scene omitted from sceneOrder', (chapter) => { addSecondV2Scene(chapter); chapter.sceneOrder.pop(); }],
     ['sceneOrder that differs from map order', (chapter) => { addSecondV2Scene(chapter); chapter.sceneOrder.reverse(); }],
     ['duplicate explicit scene order', (chapter) => { addSecondV2Scene(chapter, 10); }],
@@ -525,5 +589,61 @@ describe('World-to-Game event contract', () => {
       type: 'room.entered',
       payload: { room: 'ch1.bedroom', spwan: 'start' },
     })).toThrow(/spwan/);
+  });
+
+  it.each([
+    ['save.dirty', { reason: 'flag' }],
+    ['save.flushRequested', { reason: 'dialogue-completion' }],
+    ['save.flushRequested', { reason: 'action-batch-rollback' }],
+    ['save.persistenceSuppressed', { reason: 'flag' }],
+    ['save.persistenceSuppressed', { reason: 'quest-transition' }],
+    ['save.persistenceSuppressed', { reason: 'action-batch-rollback' }],
+    ['reward.granted', { receipt: 'ch2.reward.feast' }],
+    ['reward.granted', { collection: 'cards', id: 'card.ch2.final-page' }],
+    ['chapter.completionFailed', { chapter: 'ch2', nextChapter: 'ch3' }],
+  ])('accepts runtime %s payloads without losing their exact shape', (type, payload) => {
+    const event = { seq: 1, at: 0, type, payload };
+    expect(validateWorldEvent(event)).toBe(event);
+  });
+
+  it('rejects mixed or unknown reward payload variants', () => {
+    expect(() => validateWorldEvent({
+      seq: 1,
+      at: 0,
+      type: 'reward.granted',
+      payload: { receipt: 'ch2.reward.feast', collection: 'cards', id: 'dumbledore' },
+    })).toThrow(/collection/);
+    expect(() => validateWorldEvent({
+      seq: 1,
+      at: 0,
+      type: 'reward.granted',
+      payload: { collection: 'housePoints', id: 'ten' },
+    })).toThrow(/collection/);
+  });
+
+  it.each([
+    [{ chapter: 'ch2' }, /nextChapter/],
+    [{ chapter: 'ch2', nextChapter: 'chapter-three' }, /nextChapter/],
+    [{ chapter: 'ch2', nextChapter: 'ch3', reason: 'persistence' }, /reason/],
+  ])('keeps chapter completion failure payloads exact', (payload, error) => {
+    expect(() => validateWorldEvent({
+      seq: 1,
+      at: 0,
+      type: 'chapter.completionFailed',
+      payload,
+    })).toThrow(error);
+  });
+
+  it.each([
+    ['save.dirty', 'chapter-complete'],
+    ['save.flushRequested', 'flag'],
+    ['save.persistenceSuppressed', 'totally-made-up'],
+  ])('rejects %s reasons outside that event boundary', (type, reason) => {
+    expect(() => validateWorldEvent({
+      seq: 1,
+      at: 0,
+      type,
+      payload: { reason },
+    })).toThrow(/reason/);
   });
 });

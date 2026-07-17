@@ -15,6 +15,7 @@ export const WORLD_EVENT_TYPES = Object.freeze([
   'state.changed',
   'save.dirty',
   'save.flushRequested',
+  'save.persistenceSuppressed',
   'room.transitionRequested',
   'room.entered',
   'dialogue.opened',
@@ -42,6 +43,7 @@ export const WORLD_EVENT_TYPES = Object.freeze([
   'ui.openRequested',
   'ui.closeRequested',
   'yearbook.captureRequested',
+  'chapter.completionFailed',
   'chapter.completed',
 ]);
 
@@ -73,6 +75,56 @@ export const ACTION_TYPES = Object.freeze([
 const WORLD_EVENT_TYPE_SET = new Set(WORLD_EVENT_TYPES);
 const TIMELINE_CUE_EVENT_TYPE_SET = new Set(TIMELINE_CUE_EVENT_TYPES);
 const ACTION_TYPE_SET = new Set(ACTION_TYPES);
+const QUEST_LIFECYCLE_ACTION_TYPE_SET = new Set([
+  'flag.set',
+  'choice.record',
+  'spell.learn',
+  'collection.add',
+  'reward.grant',
+]);
+const SAVE_DIRTY_REASONS = Object.freeze([
+  'mutation',
+  'flag',
+  'collection',
+  'reward',
+  'affordance-spent',
+  'choice',
+  'character',
+]);
+const SAVE_FLUSH_REASONS = Object.freeze([
+  'scene-change',
+  'chapter-change',
+  'checkpoint',
+  'chapter-complete',
+  'dialogue-cursor',
+  'story-receipt',
+  'set-piece-receipt',
+  'quest-receipt',
+  'quest-transition',
+  'dialogue-completion',
+  'scene',
+  'spell-learned',
+  'action-batch-rollback',
+]);
+const SAVE_SUPPRESSION_REASONS = Object.freeze([
+  'flag',
+  'collection',
+  'reward',
+  'affordance-spent',
+  'choice',
+  'character',
+  'scene-change',
+  'chapter-change',
+  'dialogue-cursor',
+  'story-receipt',
+  'set-piece-receipt',
+  'quest-receipt',
+  'quest-transition',
+  'dialogue-completion',
+  'scene',
+  'spell-learned',
+  'action-batch-rollback',
+]);
 const PACKAGE_ACTION_ARRAY_KEYS = new Set([
   'actions',
   'assistActions',
@@ -701,18 +753,40 @@ function validateHints(value, path) {
   validateActions(value.assistActions, `${path}.assistActions`);
 }
 
-function validateQuestStep(value, path) {
+function validateQuestLifecycleActions(value, path) {
+  validateActions(value, path);
+  value.forEach((action, index) => {
+    if (!QUEST_LIFECYCLE_ACTION_TYPE_SET.has(action.type)) {
+      fail(
+        `${path}[${index}].type`,
+        'must be a synchronous durable action in a quest lifecycle batch',
+      );
+    }
+  });
+}
+
+function validateQuestLifecycleReceipt(receipt, path) {
+  string(receipt, path, { max: 240 });
+  if (!FLAG_ID.test(receipt)) {
+    fail(path, 'must generate a chapter-namespaced save receipt without underscores');
+  }
+}
+
+function validateQuestStep(value, path, { durableLifecycle = false } = {}) {
   exactObject(value, path, ['id', 'objective', 'doneWhen', 'hints', 'onEnter', 'onComplete', 'next']);
   localId(value.id, `${path}.id`);
   validateObjective(value.objective, `${path}.objective`);
   validateCondition(value.doneWhen, `${path}.doneWhen`);
   validateHints(value.hints, `${path}.hints`);
-  validateActions(value.onEnter, `${path}.onEnter`);
-  validateActions(value.onComplete, `${path}.onComplete`);
+  const validateLifecycleActions = durableLifecycle
+    ? validateQuestLifecycleActions
+    : validateActions;
+  validateLifecycleActions(value.onEnter, `${path}.onEnter`);
+  validateLifecycleActions(value.onComplete, `${path}.onComplete`);
   if (value.next !== null) localId(value.next, `${path}.next`);
 }
 
-export function validateQuest(value, path = 'quest') {
+export function validateQuest(value, path = 'quest', { durableLifecycle = false } = {}) {
   exactObject(value, path, ['id', 'kind', 'offerScript', 'startWhen', 'startStep', 'steps', 'onComplete']);
   id(value.id, `${path}.id`);
   oneOf(value.kind, ['main', 'side'], `${path}.kind`);
@@ -721,11 +795,29 @@ export function validateQuest(value, path = 'quest') {
   localId(value.startStep, `${path}.startStep`);
   record(value.steps, `${path}.steps`, (entry, entryPath, key) => {
     localId(key, `${entryPath} key`);
-    validateQuestStep(entry, entryPath);
+    validateQuestStep(entry, entryPath, { durableLifecycle });
     if (entry.id !== key) fail(`${entryPath}.id`, 'must match its map key');
   });
-  validateActions(value.onComplete, `${path}.onComplete`);
+  const validateLifecycleActions = durableLifecycle
+    ? validateQuestLifecycleActions
+    : validateActions;
+  validateLifecycleActions(value.onComplete, `${path}.onComplete`);
   if (!Object.hasOwn(value.steps, value.startStep)) fail(`${path}.startStep`, 'must reference a quest step');
+
+  if (durableLifecycle) {
+    validateQuestLifecycleReceipt(`${value.id}.quest.v1.adopted`, `${path}.id`);
+    validateQuestLifecycleReceipt(`${value.id}.quest.v1.completed`, `${path}.id`);
+    for (const stepId of Object.keys(value.steps)) {
+      validateQuestLifecycleReceipt(
+        `${value.id}.quest.v1.step.${stepId}.entered`,
+        `${path}.steps.${stepId}.id`,
+      );
+      validateQuestLifecycleReceipt(
+        `${value.id}.quest.v1.step.${stepId}.completed`,
+        `${path}.steps.${stepId}.id`,
+      );
+    }
+  }
 
   const visiting = new Set();
   const visited = new Set();
@@ -1351,7 +1443,9 @@ export function validateChapterV2(value, path = 'chapter') {
   validateIdMap(value.rooms, `${path}.rooms`, validatePackageRoomV2);
   validateIdMap(value.npcs, `${path}.npcs`, validatePackageEntryV2);
   validateIdMap(value.dialogues, `${path}.dialogues`, validateDialogue);
-  validateIdMap(value.quests, `${path}.quests`, validateQuest);
+  validateIdMap(value.quests, `${path}.quests`, (quest, questPath) => (
+    validateQuest(quest, questPath, { durableLifecycle: true })
+  ));
   validateIdMap(value.learningBeats, `${path}.learningBeats`, validatePackageEntryV2);
   validateIdMap(value.setPieces, `${path}.setPieces`, validatePackageEntryV2);
   validateIdMap(value.encounters, `${path}.encounters`, validatePackageEntryV2);
@@ -1555,11 +1649,15 @@ export function validateWorldEventPayload(type, value, path = 'event.payload') {
       break;
     case 'save.dirty':
       payloadObject(value, path, ['reason']);
-      oneOf(value.reason, ['mutation'], `${path}.reason`);
+      oneOf(value.reason, SAVE_DIRTY_REASONS, `${path}.reason`);
       break;
     case 'save.flushRequested':
       payloadObject(value, path, ['reason']);
-      oneOf(value.reason, ['scene-change', 'chapter-change', 'checkpoint'], `${path}.reason`);
+      oneOf(value.reason, SAVE_FLUSH_REASONS, `${path}.reason`);
+      break;
+    case 'save.persistenceSuppressed':
+      payloadObject(value, path, ['reason']);
+      oneOf(value.reason, SAVE_SUPPRESSION_REASONS, `${path}.reason`);
       break;
     case 'room.transitionRequested':
       payloadObject(value, path, ['from', 'to', 'spawn', 'effect']);
@@ -1612,8 +1710,14 @@ export function validateWorldEventPayload(type, value, path = 'event.payload') {
       oneOf(value.reason, ['input', 'progress', 'objective'], `${path}.reason`);
       break;
     case 'reward.granted':
-      payloadObject(value, path, ['receipt']);
-      id(value.receipt, `${path}.receipt`);
+      if (Object.hasOwn(value, 'receipt')) {
+        payloadObject(value, path, ['receipt']);
+        id(value.receipt, `${path}.receipt`);
+      } else {
+        payloadObject(value, path, ['collection', 'id']);
+        oneOf(value.collection, ['cards', 'treasures'], `${path}.collection`);
+        ref(value.id, `${path}.id`);
+      }
       break;
     case 'learning.started':
     case 'learning.completed':
@@ -1679,6 +1783,11 @@ export function validateWorldEventPayload(type, value, path = 'event.payload') {
       payloadObject(value, path, ['moment', 'caption']);
       id(value.moment, `${path}.moment`);
       caption(value.caption, `${path}.caption`, 3);
+      break;
+    case 'chapter.completionFailed':
+      payloadObject(value, path, ['chapter', 'nextChapter']);
+      chapterId(value.chapter, `${path}.chapter`);
+      chapterId(value.nextChapter, `${path}.nextChapter`);
       break;
     case 'chapter.completed':
       payloadObject(value, path, ['chapter', 'nextChapter']);

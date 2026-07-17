@@ -106,7 +106,7 @@ export const chapter1SetPieceDefinitions = {
       sfxCue(0, 'sfx/ch1/wandPaperWhirl'),
     ] },
     verification: { keyframes: [0, 0.8, 1.5, 2.2], checklist: storybookChecklist('Every paper settles before control returns.') },
-    onComplete: [],
+    onComplete: [flagSet('ch1.wandTry1'), dialogueStart('ch1.wandmaker.wrong1')],
   },
   'sp.wandChaos2': {
     id: 'sp.wandChaos2',
@@ -128,7 +128,7 @@ export const chapter1SetPieceDefinitions = {
       sfxCue(1.05, 'sfx/ch1/vaseShatter'),
     ] },
     verification: { keyframes: [0, 0.8, 1.6, 2.6], checklist: storybookChecklist('Vase shards stay inside the room.', 'Every prop settles before control returns.') },
-    onComplete: [],
+    onComplete: [flagSet('ch1.wandTry2'), dialogueStart('ch1.wandmaker.wrong2')],
   },
   'sp.wandChosen': {
     id: 'sp.wandChosen',
@@ -149,7 +149,12 @@ export const chapter1SetPieceDefinitions = {
       sfxCue(0, 'sfx/ch1/wandChosen'),
     ] },
     verification: { keyframes: [0, 1, 2, 3], checklist: storybookChecklist('The golden wash does not clip to white.', 'The chosen wand remains visible.') },
-    onComplete: [],
+    onComplete: [
+      { type: 'character.set', field: 'wandId', value: 'violet-first-wand' },
+      flagSet('ch1.wandChosen'),
+      { type: 'yearbook.capture', moment: 'ch1.wandChosen' },
+      dialogueStart('ch1.wandmaker.chosen'),
+    ],
   },
   'sp.chapterCard': {
     id: 'sp.chapterCard',

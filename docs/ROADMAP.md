@@ -32,13 +32,15 @@ train friendships, lake reveal, feast, password ritual, common-room page turn,
 owl post, and truthful Chapter Three preview. It preserves Gryffindor as the only
 outcome and does not add Chapter Three gameplay.
 
-The first reliability checkpoint is complete: the barrier handoff and reload
-agree, Great Hall pointer targets no longer overlap, chapter completion is one
-durable transaction, and v3 migration repairs completed Chapter Two saves that
-were stranded on its card. Contract/receipt hardening and presentation polish
-remain active; authored dialogue, quests, durable writes, cards, yearbook
-moments, and chapter destinations now fail during package linking rather than
-during Violet's playthrough.
+The reliability foundation is complete. The barrier handoff and reload agree,
+Great Hall pointer targets no longer overlap, chapter completion is one durable
+transaction, and v3 migration repairs completed Chapter Two saves that were
+stranded on its card. Authored dialogue, quests, durable writes, cards, yearbook
+moments, and chapter destinations now fail during package linking. At runtime,
+visible dialogue pages, non-replayable story beats, quest lifecycle actions,
+and logical set pieces resume idempotently across reloads, failed saves,
+reduced-motion variants, skips, and chapter handoffs. Presentation plumbing and
+the player-visible character, story, art, and audio pass remain active.
 
 After that pass, Chapter Three introduces the spellbook, casting, and the first
 incantation assemblies. That learning-layer debut remains the moment to watch

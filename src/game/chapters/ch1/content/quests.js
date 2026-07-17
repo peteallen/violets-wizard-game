@@ -2,7 +2,6 @@ import {
   dialogueStart,
   flagSet,
   noCondition,
-  setPiecePlay,
   uiOpen,
   when,
 } from './authoring.js';
@@ -130,7 +129,7 @@ const questGraph = {
       doneWhen: when({ allFlags: ['ch1.ticketReceived'] }),
       hints: { lookTarget: 'street.guideTicket', repeatVoice: 'voice/ch1/objective/returnToGuide', trailTarget: 'street.guideTicket', assistActions: [dialogueStart('ch1.guide.ticket')] },
       onEnter: [],
-      onComplete: [setPiecePlay('sp.chapterCard')],
+      onComplete: [],
       next: null,
     },
   ],

@@ -1,8 +1,6 @@
 import { freezePureData } from '../../../../content/chapterAuthoring.js';
 import {
   circle,
-  dialogueStart,
-  flagSet,
   noCondition,
   rect,
   roomSize,
@@ -48,7 +46,7 @@ export const ollivandersRoom = freezePureData({
       presentation: { icon: 'wand', glow: 'objective' },
       repeat: 'once',
       requiredSpell: null,
-      onInteract: [flagSet('ch1.wandTry1'), setPiecePlay('sp.wandChaos1'), dialogueStart('ch1.wandmaker.wrong1')],
+      onInteract: [setPiecePlay('sp.wandChaos1')],
     },
     {
       id: 'ollivanders.wand2',
@@ -59,7 +57,7 @@ export const ollivandersRoom = freezePureData({
       presentation: { icon: 'wand', glow: 'objective' },
       repeat: 'once',
       requiredSpell: null,
-      onInteract: [flagSet('ch1.wandTry2'), setPiecePlay('sp.wandChaos2'), dialogueStart('ch1.wandmaker.wrong2')],
+      onInteract: [setPiecePlay('sp.wandChaos2')],
     },
     {
       id: 'ollivanders.wand3',
@@ -70,13 +68,7 @@ export const ollivandersRoom = freezePureData({
       presentation: { icon: 'wand', glow: 'objective' },
       repeat: 'once',
       requiredSpell: null,
-      onInteract: [
-        { type: 'character.set', field: 'wandId', value: 'violet-first-wand' },
-        flagSet('ch1.wandChosen'),
-        setPiecePlay('sp.wandChosen'),
-        { type: 'yearbook.capture', moment: 'ch1.wandChosen' },
-        dialogueStart('ch1.wandmaker.chosen'),
-      ],
+      onInteract: [setPiecePlay('sp.wandChosen')],
     },
     {
       id: 'ollivanders.cardMorgana',

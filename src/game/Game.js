@@ -121,6 +121,12 @@ export class Game {
     this.motionQuery = matchMedia('(prefers-reduced-motion: reduce)');
     this.reducedMotion = options.reducedMotion
       ?? (this.motionQuery.matches || Boolean(this.saveData.settings.reducedMotion));
+    this.selectSetPieceFallback = options.selectSetPieceFallback ?? (({ descriptor }) => (
+      descriptor.fallback
+      && (descriptor.assets ?? []).some((assetKey) => !resolveAsset(assetKey))
+        ? true
+        : null
+    ));
 
     this.sound = new SoundEngine({
       resolveAsset,
@@ -219,13 +225,21 @@ export class Game {
       save,
       seed: save.worldSeed,
       clock: this.clock,
+      selectSetPieceFallback: this.selectSetPieceFallback,
       onDirty: ({ flush, save: nextSave, rollbackSave = null }) => {
         if (preserveSave && initializing) return { ok: true, status: 'preserved', save: nextSave };
         return this.persistSave(nextSave, flush, { rollbackSave });
       },
     });
     initializing = false;
-    if (preservedSave) replaceObjectContents(save, preservedSave);
+    if (preservedSave) {
+      replaceObjectContents(save, preservedSave);
+      // World initialization silently adopts historical quest progress. Once
+      // those temporary receipts are removed, rebuild the adoption marker from
+      // the restored save so the next update does not treat old steps as new.
+      this.world.quests.silentAdoptions = null;
+      this.world.quests.initialize();
+    }
     this.world.setPieces.reducedMotion = this.reducedMotion;
     this.screen = 'playing';
     this.processWorldEvents();

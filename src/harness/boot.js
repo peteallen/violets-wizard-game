@@ -191,7 +191,7 @@ export async function prepareSetPieceReview(game, scene) {
   if (!setPieceId || !game.world) return false;
   if (scene === 'sp-brick-wall-review') await game.setPieceRenderer.preloadBrickWall();
   if (game.world.dialogue.active) game.world.dialogue.close('harness-set-piece-review');
-  game.world.afterSetPieceActions.length = 0;
+  game.world.setPieces.reset();
   const stagedPlayer = {
     'sp-wand-vase-review': { x: 910, facing: 'right' },
     'sp-wand-chosen-review': { x: 1080, facing: 'right' },
@@ -206,7 +206,7 @@ export async function prepareSetPieceReview(game, scene) {
     game.world.player.facing = stagedPlayer.facing;
     game.world.player.walking = false;
   }
-  if (game.world.setPieces.active?.requestedId !== setPieceId) game.world.setPieces.start(setPieceId);
+  game.world.setPieces.start(setPieceId);
   game.processWorldEvents();
   return true;
 }

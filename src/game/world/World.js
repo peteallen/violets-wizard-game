@@ -46,6 +46,7 @@ export class World {
     clock = () => '2000-01-01T00:00:00.000Z',
     onDirty = ({ save: nextSave }) => ({ ok: true, status: 'memory-only', save: nextSave }),
     actionRegistry = createCoreActionRegistry(),
+    selectSetPieceFallback = () => null,
   }) {
     this.chapters = chapters;
     this.save = save;
@@ -63,7 +64,6 @@ export class World {
     this.hintTrailShown = false;
     this.hintAssistTriggered = false;
     this.pendingInteraction = null;
-    this.afterSetPieceActions = [];
     this.walkSpeed = 310;
     this.cameraX = 0;
     this.overlay = null;
@@ -75,9 +75,17 @@ export class World {
     this.guideWalkCue = null;
     this.actorAnimations = new Map();
     this.persistenceSuppression = 0;
+    this.deferredDialogueReceipts = new Map();
+    this.actionBatchTransaction = null;
+    this.sceneEntryPending = false;
+    this.pendingDialogueCursor = null;
     this.actionRegistry = actionRegistry;
+    this.selectSetPieceFallback = selectSetPieceFallback;
     this.actionHandlers = createWorldActionHandlers(this);
 
+    const savedDialogueCursor = save.schemaVersion >= 3 && save.resume?.dialogue
+      ? structuredClone(save.resume.dialogue)
+      : null;
     const chapterId = save.resume?.chapter ?? 'ch1';
     this.chapter = chapters[chapterId] ?? chapters.ch1;
     const roomId = save.resume?.room ?? this.chapter.start.room;
@@ -102,8 +110,9 @@ export class World {
 
     this.currentSceneId = save.resume?.scene ?? this.chapter.start.scene;
     this.bindSystems();
-    this.quests.update();
-    this.syncScene(true);
+    this.pendingDialogueCursor = savedDialogueCursor;
+    if (this.settleQuestLifecycle()) this.enterPendingScene();
+    else this.sceneEntryPending = true;
     this.startGuideWalkCue();
     this.updateAffordanceActivations();
   }
@@ -168,12 +177,12 @@ export class World {
   }
 
   get blocked() {
-    return this.dialogue.active || Boolean(this.setPieces.active) || Boolean(this.overlay) || Boolean(this.selection);
+    return this.dialogue.active || this.setPieces.blocked || Boolean(this.overlay) || Boolean(this.selection);
   }
 
   get affordanceRenderQuiet() {
     return this.dialogue.active
-      || Boolean(this.setPieces.active)
+      || this.setPieces.blocked
       || this.player.walking
       || Boolean(this.pendingInteraction);
   }
@@ -194,14 +203,8 @@ export class World {
 
   update(dt) {
     this.time += dt;
-    const hadSetPiece = Boolean(this.setPieces.active);
     this.setPieces.update(dt);
     this.expireActorAnimations();
-    if (hadSetPiece && !this.setPieces.active && this.afterSetPieceActions.length) {
-      const deferred = this.afterSetPieceActions;
-      this.afterSetPieceActions = [];
-      this.runActions(deferred);
-    }
 
     let pendingTarget = this.resolvePendingInteraction();
     if (this.pendingInteraction && (!pendingTarget || this.blocked)) {
@@ -237,14 +240,16 @@ export class World {
     const roomWidth = this.room.size?.width ?? WORLD.width;
     const desiredCamera = Math.max(0, Math.min(roomWidth - WORLD.width, this.player.x - WORLD.width / 2));
     this.cameraX += (desiredCamera - this.cameraX) * Math.min(1, dt * 6);
-    this.quests.update();
-    this.syncScene();
+    if (this.settleQuestLifecycle()) {
+      if (this.sceneEntryPending) this.enterPendingScene();
+      else this.syncScene();
+    }
     this.updateHintLadder(dt);
     this.updateAffordanceActivations();
   }
 
   tap(point) {
-    if (this.setPieces.active) return { kind: 'blocked', reason: 'set-piece' };
+    if (this.setPieces.blocked) return { kind: 'blocked', reason: 'set-piece' };
     if (this.dialogue.active) return { kind: 'dialogue' };
     const worldPoint = { x: point.x + this.cameraX, y: point.y };
     const target = this.targetAt(point);
@@ -394,30 +399,79 @@ export class World {
   }
 
   runTargetActions(target) {
-    const dialogueAction = target.actions?.find((action) => action.type === 'dialogue.start');
-    if (dialogueAction) {
-      this.dialogueSourceTarget = {
-        targetId: target.id,
-        script: dialogueAction.script,
-        repeat: target.repeat,
-        advertisementReceipt: target.advertisementReceipt,
-      };
-    }
-    this.runActions(target.actions);
+    return this.runActionTransaction(() => {
+      const dialogueAction = target.actions?.find((action) => action.type === 'dialogue.start');
+      if (dialogueAction) {
+        this.dialogueSourceTarget = {
+          targetId: target.id,
+          script: dialogueAction.script,
+          repeat: target.repeat,
+          advertisementReceipt: target.advertisementReceipt,
+        };
+      }
+      return this.runActions(target.actions);
+    });
   }
 
   runActions(actions = []) {
-    for (let index = 0; index < actions.length; index += 1) {
-      const action = actions[index];
-      const result = this.runAction(action);
-      if (this.actionRegistry.isTerminal(action.type)) {
-        return result?.ok === false ? false : 'terminal';
+    return this.runActionTransaction(() => {
+      for (let index = 0; index < actions.length; index += 1) {
+        const action = actions[index];
+        const result = this.runAction(action);
+        if (actionResultFailed(result)) return false;
+        if (this.actionRegistry.isTerminal(action.type)) {
+          return 'terminal';
+        }
+        if (action.type === 'setPiece.play') {
+          if (result === 'terminal') return result;
+          if (this.setPieces.active) {
+            this.setPieces.bindActionTail(actions.slice(index + 1));
+            return true;
+          }
+        }
       }
-      if (action.type === 'setPiece.play' && this.setPieces.active) {
-        this.afterSetPieceActions.push(...actions.slice(index + 1));
-        return true;
-      }
+      return true;
+    });
+  }
+
+  runActionTransaction(callback) {
+    const ownsTransaction = this.actionBatchTransaction === null;
+    if (ownsTransaction) {
+      this.actionBatchTransaction = createActionBatchTransaction(this);
     }
+
+    try {
+      const result = callback();
+      if (ownsTransaction && actionResultFailed(result)) {
+        this.rollbackActionBatch(this.actionBatchTransaction);
+      }
+      return result;
+    } catch (error) {
+      if (ownsTransaction) this.rollbackActionBatch(this.actionBatchTransaction);
+      throw error;
+    } finally {
+      if (ownsTransaction) this.actionBatchTransaction = null;
+    }
+  }
+
+  rollbackActionBatch(transaction) {
+    if (!transaction) return false;
+    replaceObjectContents(this.save, transaction.save);
+    restoreActionBatchRuntime(this, transaction);
+
+    const reason = 'action-batch-rollback';
+    if (this.persistenceSuppression > 0) {
+      this.emit('save.persistenceSuppressed', { reason });
+    } else {
+      this.onDirty({
+        reason,
+        flush: true,
+        save: this.save,
+        rollbackSave: transaction.save,
+      });
+      this.emit('save.flushRequested', { reason });
+    }
+    this.emit('state.changed', { paths: ['save'], reason });
     return true;
   }
 
@@ -432,18 +486,20 @@ export class World {
     if (!this.selection) return false;
     const option = this.selection.options.find((candidate) => candidate.id === optionId);
     if (!option) return false;
-    this.noteMeaningfulInput();
-    this.selection = null;
-    this.runActions(option.actions ?? []);
-    return true;
+    return this.runActionTransaction(() => {
+      this.noteMeaningfulInput();
+      this.selection = null;
+      return this.runActions(option.actions ?? []);
+    });
   }
 
   setPetName(name) {
     if (typeof name !== 'string' || name.trim().length === 0 || name.length > 80) return false;
     if (!this.pendingPetType && !this.save.character.pet?.type) return false;
-    this.noteMeaningfulInput();
-    this.runAction({ type: 'character.set', field: 'pet.name', value: name.trim() });
-    return true;
+    return this.runActionTransaction(() => {
+      this.noteMeaningfulInput();
+      return this.runActions([{ type: 'character.set', field: 'pet.name', value: name.trim() }]);
+    });
   }
 
   advanceDialogue(choiceId = null) {
@@ -451,8 +507,11 @@ export class World {
     if (this.dialogue.node?.type === 'choice' && !this.dialogue.node.choices.some((choice) => choice.id === choiceId)) {
       return this.dialogue.presentation();
     }
-    this.noteMeaningfulInput();
-    return this.dialogue.advance(choiceId);
+    const result = this.runActionTransaction(() => {
+      this.noteMeaningfulInput();
+      return this.dialogue.advance(choiceId);
+    });
+    return result === false ? this.dialogue.presentation() : result;
   }
 
   closeOverlay() {
@@ -473,123 +532,172 @@ export class World {
   confirmRobeTrim() {
     if (this.overlay?.surface !== 'robe-picker') return false;
     const selectedTrim = normalizeRobeTrim(this.overlay.selectedTrim);
-    this.runAction({ type: 'character.set', field: 'appearance.robeTrim', value: selectedTrim });
-    this.closeOverlay();
-    this.setFlag('ch1.trimChosen', true);
-    this.runAction({ type: 'dialogue.start', script: 'ch1.tailor.done' });
-    return true;
+    return this.runActionTransaction(() => {
+      if (actionResultFailed(this.runAction({
+        type: 'character.set', field: 'appearance.robeTrim', value: selectedTrim,
+      }))) return false;
+      this.closeOverlay();
+      if (!this.setFlag('ch1.trimChosen', true)) return false;
+      return !actionResultFailed(this.runAction({ type: 'dialogue.start', script: 'ch1.tailor.done' }));
+    });
+  }
+
+  settleQuestLifecycle(options = {}) {
+    if (!this.quests) return true;
+    this.quests.update(options);
+    return !['failed', 'blocked'].includes(this.quests.lastSettlementStatus);
   }
 
   setFlag(flag, value = true) {
-    if (this.flags[flag] === value) return;
+    if (this.flags[flag] === value) return true;
     this.noteProgress();
     this.flags[flag] = value;
-    this.markDirty('flag');
+    if (actionResultFailed(this.markDirty('flag'))) return false;
     this.emit('state.changed', { paths: [`progress.questFlags.${flag}`], reason: 'flag' });
-    this.syncScene();
+    if (this.settleQuestLifecycle()) return this.syncScene();
+    return this.quests.lastSettlementStatus === 'blocked';
   }
 
   addCollection(collection, id) {
     const target = this.save.collections[collection];
-    if (!Array.isArray(target) || target.includes(id)) return;
+    if (!Array.isArray(target) || target.includes(id)) return true;
     this.noteProgress();
     target.push(id);
-    this.markDirty('collection');
+    if (actionResultFailed(this.markDirty('collection'))) return false;
     this.emit('reward.granted', { collection, id });
+    return true;
   }
 
   grantReward(action) {
-    if (this.save.progress.rewardReceipts.includes(action.receipt)) return;
+    if (this.save.progress.rewardReceipts.includes(action.receipt)) return true;
     this.noteProgress();
     this.save.progress.rewardReceipts.push(action.receipt);
-    for (const card of action.cards ?? []) this.addCollection('cards', card);
-    for (const treasure of action.treasures ?? []) this.addCollection('treasures', treasure);
+    for (const card of action.cards ?? []) {
+      if (!this.addCollection('cards', card)) return false;
+    }
+    for (const treasure of action.treasures ?? []) {
+      if (!this.addCollection('treasures', treasure)) return false;
+    }
     this.save.collections.housePoints += action.points ?? 0;
-    this.markDirty('reward');
+    if (actionResultFailed(this.markDirty('reward'))) return false;
     this.emit('reward.granted', { receipt: action.receipt });
+    return true;
   }
 
   travel(roomId, spawnId, transition = 'ink') {
-    this.noteProgress();
-    this.cancelPendingInteraction();
-    this.guideWalkCue = null;
-    this.clearActorAnimations();
-    const requestedChapter = roomId.split('.')[0];
-    if (requestedChapter !== this.chapter.id && this.chapters[requestedChapter]) {
-      this.changeChapter(requestedChapter, roomId, spawnId);
-      return;
-    }
-    const room = this.chapter.rooms[roomId];
-    if (!room) throw new Error(`Unknown room ${roomId} in chapter ${this.chapter.id}.`);
-    const from = this.roomId;
-    const spawn = resolveSpawn(room, spawnId);
-    this.roomId = roomId;
-    this.player.x = spawn?.x ?? 160;
-    this.player.y = spawn?.y ?? 610;
-    this.player.targetX = this.player.x;
-    this.player.targetY = this.player.y;
-    this.player.scale = 1;
-    this.player.targetScale = 1;
-    this.player.facing = spawn?.facing ?? 'right';
-    this.cameraX = 0;
-    this.save.resume = resumeForSave(this.save, {
-      chapter: this.chapter.id,
-      scene: room.scene ?? roomId,
-      room: roomId,
-      spawn: spawnId,
+    return this.runActionTransaction(() => {
+      if (!this.settleQuestLifecycle({ ignoreBlock: true })) {
+        return { ok: false, status: 'quest-transition-failed' };
+      }
+      this.noteProgress();
+      this.cancelPendingInteraction();
+      this.guideWalkCue = null;
+      this.clearActorAnimations();
+      const completingSetPieceId = this.setPieces.completingId;
+      const deferredReceipts = this.addDeferredDialogueReceiptsForSetPiece(
+        completingSetPieceId,
+      );
+      const requestedChapter = roomId.split('.')[0];
+      if (requestedChapter !== this.chapter.id && this.chapters[requestedChapter]) {
+        const changed = this.changeChapter(requestedChapter, roomId, spawnId);
+        if (!actionResultFailed(changed) && deferredReceipts.length > 0) {
+          this.emit('state.changed', {
+            paths: ['progress.storyReceipts'],
+            reason: 'dialogue-completion',
+          });
+        }
+        return changed;
+      }
+      const room = this.chapter.rooms[roomId];
+      if (!room) throw new Error(`Unknown room ${roomId} in chapter ${this.chapter.id}.`);
+      const from = this.roomId;
+      const spawn = resolveSpawn(room, spawnId);
+      this.roomId = roomId;
+      this.player.x = spawn?.x ?? 160;
+      this.player.y = spawn?.y ?? 610;
+      this.player.targetX = this.player.x;
+      this.player.targetY = this.player.y;
+      this.player.scale = 1;
+      this.player.targetScale = 1;
+      this.player.facing = spawn?.facing ?? 'right';
+      this.cameraX = 0;
+      this.save.resume = resumeForSave(this.save, {
+        chapter: this.chapter.id,
+        scene: room.scene ?? roomId,
+        room: roomId,
+        spawn: spawnId,
+      });
+      if (actionResultFailed(this.markDirty('scene-change', true))) return false;
+      this.emit('room.transitionRequested', { from, to: roomId, spawn: spawnId, effect: transition });
+      this.emit('room.entered', { room: roomId, spawn: spawnId });
+      if (!this.syncScene(true)) return false;
+      if (deferredReceipts.length > 0) {
+        this.emit('state.changed', {
+          paths: ['progress.storyReceipts'],
+          reason: 'dialogue-completion',
+        });
+      }
+      this.updateAffordanceActivations();
+      return true;
     });
-    this.markDirty('scene-change', true);
-    this.emit('room.transitionRequested', { from, to: roomId, spawn: spawnId, effect: transition });
-    this.emit('room.entered', { room: roomId, spawn: spawnId });
-    this.syncScene(true);
-    this.updateAffordanceActivations();
   }
 
   changeChapter(chapterId, roomId = null, spawnId = null, {
     persist = true,
     sceneId = null,
   } = {}) {
-    const chapter = this.chapters[chapterId];
-    if (!chapter) throw new Error(`Unknown chapter ${chapterId}.`);
-    this.noteProgress();
-    this.cancelPendingInteraction();
-    this.guideWalkCue = null;
-    this.clearActorAnimations();
-    const from = this.roomId;
-    this.chapter = chapter;
-    this.bindSystems();
-    this.roomId = roomId && chapter.rooms[roomId] ? roomId : chapter.start.room;
-    const room = chapter.rooms[this.roomId];
-    const selectedSpawn = spawnId ?? chapter.start.spawn;
-    const spawn = resolveSpawn(room, selectedSpawn);
-    this.player.x = spawn?.x ?? 160;
-    this.player.y = spawn?.y ?? 610;
-    this.player.targetX = this.player.x;
-    this.player.targetY = this.player.y;
-    this.player.scale = 1;
-    this.player.targetScale = 1;
-    this.player.facing = spawn?.facing ?? 'right';
-    this.cameraX = 0;
-    this.currentSceneId = sceneId ?? chapter.start.scene;
-    this.save.resume = resumeForSave(this.save, {
-      chapter: chapter.id,
-      scene: this.currentSceneId,
-      room: this.roomId,
-      spawn: selectedSpawn,
-    });
-    if (persist) this.markDirty('chapter-change', true);
-    this.emit('room.transitionRequested', { from, to: this.roomId, spawn: selectedSpawn, effect: 'ink' });
-    this.emit('room.entered', { room: this.roomId, spawn: selectedSpawn });
-    if (persist) this.syncScene(true, { persist: true });
-    else {
-      this.persistenceSuppression += 1;
-      try {
-        this.syncScene(true, { persist: false });
-      } finally {
-        this.persistenceSuppression -= 1;
+    return this.runActionTransaction(() => {
+      const chapter = this.chapters[chapterId];
+      if (!chapter) throw new Error(`Unknown chapter ${chapterId}.`);
+      this.noteProgress();
+      this.cancelPendingInteraction();
+      this.guideWalkCue = null;
+      this.clearActorAnimations();
+      const from = this.roomId;
+      this.chapter = chapter;
+      this.bindSystems();
+      this.quests.initialize({ historical: false });
+      this.roomId = roomId && chapter.rooms[roomId] ? roomId : chapter.start.room;
+      const room = chapter.rooms[this.roomId];
+      const selectedSpawn = spawnId ?? chapter.start.spawn;
+      const spawn = resolveSpawn(room, selectedSpawn);
+      this.player.x = spawn?.x ?? 160;
+      this.player.y = spawn?.y ?? 610;
+      this.player.targetX = this.player.x;
+      this.player.targetY = this.player.y;
+      this.player.scale = 1;
+      this.player.targetScale = 1;
+      this.player.facing = spawn?.facing ?? 'right';
+      this.cameraX = 0;
+      this.currentSceneId = sceneId ?? chapter.start.scene;
+      this.sceneEntryPending = false;
+      this.pendingDialogueCursor = null;
+      this.save.resume = resumeForSave(this.save, {
+        chapter: chapter.id,
+        scene: this.currentSceneId,
+        room: this.roomId,
+        spawn: selectedSpawn,
+      });
+      if (persist && actionResultFailed(this.markDirty('chapter-change', true))) return false;
+      this.emit('room.transitionRequested', { from, to: this.roomId, spawn: selectedSpawn, effect: 'ink' });
+      this.emit('room.entered', { room: this.roomId, spawn: selectedSpawn });
+      let sceneEntered;
+      if (persist) sceneEntered = this.syncScene(true, { persist: true });
+      else {
+        this.persistenceSuppression += 1;
+        try {
+          sceneEntered = this.syncScene(true, { persist: false });
+        } finally {
+          this.persistenceSuppression -= 1;
+        }
       }
-    }
-    this.updateAffordanceActivations();
+      if (!sceneEntered) {
+        if (persist) return false;
+        this.sceneEntryPending = true;
+      }
+      this.updateAffordanceActivations();
+      return true;
+    });
   }
 
   adoptPersistedResume(chapterId) {
@@ -635,6 +743,8 @@ export class World {
       room: destination.start.room,
       spawn: destination.start.spawn,
     });
+    const terminalDialogueReceipts = this.terminalDialogueReceiptsForCompletion(candidate);
+    const lifecycleActions = settleQuestLifecycleCandidate(this.chapter, candidate);
     candidate.updatedAt = this.clock();
 
     const persisted = this.onDirty({
@@ -650,29 +760,34 @@ export class World {
     }
 
     replaceObjectContents(this.save, persisted?.save ?? candidate);
+    for (const receipt of terminalDialogueReceipts) this.deferredDialogueReceipts.delete(receipt);
     this.noteProgress();
     this.emit('state.changed', {
-      paths: [
+      paths: [...new Set([
         'progress.completedChapters',
         'progress.highestUnlockedChapter',
         `progress.questFlags.${chapterId}.chapterCardSeen`,
         `progress.questFlags.${chapterId}.complete`,
+        ...(Array.isArray(this.save.progress.questReceipts) ? ['progress.questReceipts'] : []),
+        ...(terminalDialogueReceipts.length > 0 ? ['progress.storyReceipts'] : []),
+        ...lifecycleActions.flatMap(questLifecycleActionPaths),
         'resume',
-      ],
+      ])],
       reason: 'chapter-complete',
     });
+    this.emitLifecycleRewards(lifecycleActions);
     this.emit('chapter.completed', { chapter: chapterId, nextChapter });
     this.adoptPersistedResume(nextChapter);
     return { ok: true, status: persisted?.status ?? 'memory-only', save: this.save };
   }
 
-  markDirty(reason, flush = false) {
+  markDirty(reason, flush = false, { rollbackSave = null } = {}) {
     if (this.persistenceSuppression > 0) {
       this.emit('save.persistenceSuppressed', { reason });
       return { ok: true, status: 'suppressed', save: this.save };
     }
     this.save.updatedAt = this.clock();
-    const result = this.onDirty({ reason, flush, save: this.save });
+    const result = this.onDirty({ reason, flush, save: this.save, rollbackSave });
     this.emit(flush ? 'save.flushRequested' : 'save.dirty', { reason });
     return result;
   }
@@ -828,15 +943,24 @@ export class World {
   }
 
   bindSystems() {
-    this.dialogue = new Dialogue({
+    const dialogue = new Dialogue({
       scripts: this.chapter.dialogues,
       save: this.save,
       emit: (type, payload) => {
-        if (type === 'dialogue.closed') this.handleDialogueClosed(payload);
+        if (type === 'dialogue.closed') {
+          this.emit(type, payload);
+          this.handleDialogueClosed(payload, dialogue);
+          return true;
+        }
+        if (type === 'dialogue.lineChanged' || type === 'dialogue.choicesChanged') {
+          if (!this.persistDialogueCursor(dialogue)) return false;
+        }
         this.emit(type, payload);
+        return true;
       },
       runActions: (actions) => this.runActions(actions),
     });
+    this.dialogue = dialogue;
     this.quests = new Quests({
       quests: this.chapter.quests,
       save: this.save,
@@ -846,7 +970,13 @@ export class World {
         }
         this.emit(type, payload);
       },
+      claimReceipt: (receipt) => this.claimQuestReceipt(receipt),
+      runActions: (actions) => this.runActions(actions),
+      lifecycleBlocked: () => this.blocked,
+      commitTransition: (receipt, actions) => this.commitQuestTransition(receipt, actions),
+      durableLifecycle: this.chapter.contractVersion === 2,
     });
+    const chapterId = this.chapter.id;
     this.setPieces = new SetPieces({
       descriptors: this.chapter.setPieces,
       emit: (type, payload) => {
@@ -856,6 +986,13 @@ export class World {
       },
       runActions: (actions) => this.runActions(actions),
       reducedMotion: Boolean(this.save.settings?.reducedMotion),
+      hasReceipt: (id) => this.hasStoryReceipt(setPieceReceiptId(chapterId, id)),
+      recordReceipt: (id) => (
+        Array.isArray(this.save.progress?.storyReceipts)
+          ? this.claimStoryReceipt(setPieceReceiptId(chapterId, id), 'set-piece-receipt')
+          : true
+      ),
+      selectFallback: this.selectSetPieceFallback,
     });
   }
 
@@ -874,9 +1011,295 @@ export class World {
     });
   }
 
-  handleDialogueClosed({ script, reason } = {}) {
+  restoreDialogueCursor(cursor) {
+    if (!cursor || this.sceneState.scene?.id !== this.currentSceneId) return false;
+    if (!this.dialogue.isCursorRestorable(cursor)) return false;
+
+    // The saved page is already the result of every automatic action which
+    // preceded it. Re-entering the scene would replay those hidden actions or
+    // start a second set piece alongside the restored page.
+    this.restoreDialogueSourceTarget(cursor.script);
+    if (this.dialogue.openAtCursor(cursor) === false) return 'retry';
+    return this.dialogue.active;
+  }
+
+  enterPendingScene() {
+    const cursor = this.pendingDialogueCursor;
+    const restored = cursor ? this.restoreDialogueCursor(cursor) : false;
+    if (restored === 'retry') {
+      this.sceneEntryPending = true;
+      return false;
+    }
+    const entered = restored || this.syncScene(true);
+    if (!entered) {
+      this.sceneEntryPending = true;
+      return false;
+    }
+    this.pendingDialogueCursor = null;
+    this.sceneEntryPending = false;
+    return true;
+  }
+
+  restoreDialogueSourceTarget(script) {
+    const sources = this.targets().filter((target) => target.actions?.some(
+      (action) => action.type === 'dialogue.start' && action.script === script,
+    ));
+    if (sources.length !== 1) return;
+    const [source] = sources;
+    this.dialogueSourceTarget = {
+      targetId: source.id,
+      script,
+      repeat: source.repeat,
+      advertisementReceipt: source.advertisementReceipt,
+    };
+  }
+
+  persistDialogueCursor(dialogue = this.dialogue) {
+    const cursor = dialogue.cursor;
+    if (this.save.schemaVersion < 3 || !cursor) return true;
+    if (
+      this.save.resume.dialogue?.script === cursor.script
+      && this.save.resume.dialogue?.node === cursor.node
+    ) return true;
+
+    const previous = structuredClone(this.save);
+    const candidate = structuredClone(this.save);
+    candidate.resume.dialogue = { ...cursor };
+    const previousQuestReceipts = candidate.progress?.questReceipts?.length ?? 0;
+    const lifecycleActions = settleQuestLifecycleCandidate(this.chapter, candidate);
+    const paths = ['resume.dialogue'];
+    if ((candidate.progress?.questReceipts?.length ?? 0) !== previousQuestReceipts) {
+      paths.push('progress.questReceipts');
+    }
+    paths.push(...lifecycleActions.flatMap(questLifecycleActionPaths));
+    candidate.updatedAt = this.clock();
+    let persisted;
+    if (this.persistenceSuppression > 0) {
+      persisted = { ok: true, status: 'suppressed', save: candidate };
+      this.emit('save.persistenceSuppressed', { reason: 'dialogue-cursor' });
+    } else {
+      persisted = this.onDirty({
+        reason: 'dialogue-cursor',
+        flush: true,
+        save: candidate,
+        rollbackSave: previous,
+      });
+      this.emit('save.flushRequested', { reason: 'dialogue-cursor' });
+    }
+    if (persisted?.ok === false) return false;
+
+    replaceObjectContents(this.save, persisted?.save ?? candidate);
+    this.emit('state.changed', {
+      paths: [...new Set(paths)],
+      reason: 'dialogue-cursor',
+    });
+    this.emitLifecycleRewards(lifecycleActions);
+    return true;
+  }
+
+  hasStoryReceipt(receipt) {
+    return Array.isArray(this.save.progress?.storyReceipts)
+      && this.save.progress.storyReceipts.includes(receipt);
+  }
+
+  claimStoryReceipt(receipt, reason = 'story-receipt') {
+    if (!Array.isArray(this.save.progress?.storyReceipts) || this.hasStoryReceipt(receipt)) {
+      return false;
+    }
+    const rollbackSave = structuredClone(this.save);
+    this.save.progress.storyReceipts.push(receipt);
+    const persisted = this.markDirty(reason, true, { rollbackSave });
+    if (persisted?.ok === false) {
+      replaceObjectContents(this.save, rollbackSave);
+      return false;
+    }
+    this.emit('state.changed', { paths: ['progress.storyReceipts'], reason });
+    return true;
+  }
+
+  claimQuestReceipt(receipt) {
+    const receipts = this.save.progress?.questReceipts;
+    if (!Array.isArray(receipts) || receipts.includes(receipt)) return false;
+    const rollbackSave = structuredClone(this.save);
+    receipts.push(receipt);
+    const persisted = this.markDirty('quest-receipt', true, { rollbackSave });
+    if (persisted?.ok === false) {
+      receipts.pop();
+      return false;
+    }
+    this.emit('state.changed', { paths: ['progress.questReceipts'], reason: 'quest-receipt' });
+    return true;
+  }
+
+  commitQuestTransition(receipt, actions) {
+    const receipts = this.save.progress?.questReceipts;
+    if (!Array.isArray(receipts) || receipts.includes(receipt)) return false;
+
+    const previous = structuredClone(this.save);
+    const candidate = structuredClone(this.save);
+    candidate.progress.questReceipts.push(receipt);
+    for (const action of actions) applyCandidateLifecycleAction(candidate, action);
+    candidate.updatedAt = this.clock();
+
+    let persisted;
+    if (this.persistenceSuppression > 0) {
+      persisted = { ok: true, status: 'suppressed', save: candidate };
+      this.emit('save.persistenceSuppressed', { reason: 'quest-transition' });
+    } else {
+      persisted = this.onDirty({
+        reason: 'quest-transition',
+        flush: true,
+        save: candidate,
+        rollbackSave: previous,
+      });
+      this.emit('save.flushRequested', { reason: 'quest-transition' });
+    }
+    if (persisted?.ok === false) return false;
+
+    replaceObjectContents(this.save, persisted?.save ?? candidate);
+    this.noteProgress();
+    const paths = [...new Set([
+      'progress.questReceipts',
+      ...actions.flatMap(questLifecycleActionPaths),
+    ])];
+    this.emit('state.changed', { paths, reason: 'quest-transition' });
+    this.emitLifecycleRewards(actions);
+    return true;
+  }
+
+  terminalDialogueReceiptsForCompletion(candidate) {
+    if (!Array.isArray(candidate.progress?.storyReceipts)) return [];
+    const receipts = new Set();
+    if (this.dialogue.active && this.dialogue.script?.replayable === false) {
+      receipts.add(this.dialogue.scriptId);
+    }
+    for (const [script, requestedSetPieceId] of this.deferredDialogueReceipts) {
+      const setPieceReceipt = setPieceReceiptId(this.chapter.id, requestedSetPieceId);
+      if (candidate.progress.storyReceipts.includes(setPieceReceipt)) receipts.add(script);
+    }
+    for (const receipt of receipts) {
+      if (!candidate.progress.storyReceipts.includes(receipt)) {
+        candidate.progress.storyReceipts.push(receipt);
+      }
+    }
+    return [...receipts];
+  }
+
+  addDeferredDialogueReceiptsForSetPiece(setPieceId) {
+    if (!setPieceId || !Array.isArray(this.save.progress?.storyReceipts)) return [];
+    const added = [];
+    for (const [script, deferredSetPieceId] of this.deferredDialogueReceipts) {
+      if (deferredSetPieceId !== setPieceId || this.hasStoryReceipt(script)) continue;
+      this.save.progress.storyReceipts.push(script);
+      added.push(script);
+    }
+    return added;
+  }
+
+  emitLifecycleRewards(actions) {
+    for (const action of actions) {
+      if (action.type === 'collection.add') {
+        this.emit('reward.granted', { collection: action.collection, id: action.id });
+      } else if (action.type === 'reward.grant') {
+        this.emit('reward.granted', { receipt: action.receipt });
+      }
+    }
+  }
+
+  commitDialogueCompletion(script, sourceDialogue, {
+    consume = false,
+    reopenOnFailure = true,
+  } = {}) {
+    const previous = structuredClone(this.save);
+    const candidate = structuredClone(this.save);
+    const paths = [];
+    if (candidate.schemaVersion >= 3 && candidate.resume.dialogue?.script === script) {
+      candidate.resume.dialogue = null;
+      paths.push('resume.dialogue');
+    }
+    if (
+      consume
+      && Array.isArray(candidate.progress?.storyReceipts)
+      && !candidate.progress.storyReceipts.includes(script)
+    ) {
+      candidate.progress.storyReceipts.push(script);
+      paths.push('progress.storyReceipts');
+    }
+    if (
+      consume
+      && candidate.progress?.storyReceipts?.includes(script)
+      && candidate.resume?.dialogue?.script !== script
+      && paths.length === 0
+    ) {
+      this.deferredDialogueReceipts.delete(script);
+      return true;
+    }
+    const previousQuestReceipts = candidate.progress?.questReceipts?.length ?? 0;
+    const lifecycleActions = settleQuestLifecycleCandidate(this.chapter, candidate);
+    if ((candidate.progress?.questReceipts?.length ?? 0) !== previousQuestReceipts) {
+      paths.push('progress.questReceipts');
+    }
+    paths.push(...lifecycleActions.flatMap(questLifecycleActionPaths));
+    if (paths.length === 0) {
+      if (this.hasStoryReceipt(script)) this.deferredDialogueReceipts.delete(script);
+      return true;
+    }
+
+    candidate.updatedAt = this.clock();
+    let persisted;
+    if (this.persistenceSuppression > 0) {
+      persisted = { ok: true, status: 'suppressed', save: candidate };
+      this.emit('save.persistenceSuppressed', { reason: 'dialogue-completion' });
+    } else {
+      persisted = this.onDirty({
+        reason: 'dialogue-completion',
+        flush: true,
+        save: candidate,
+        rollbackSave: previous,
+      });
+      this.emit('save.flushRequested', { reason: 'dialogue-completion' });
+    }
+    if (persisted?.ok === false) {
+      if (reopenOnFailure) this.reopenDialogueCursor(sourceDialogue, previous.resume?.dialogue);
+      return false;
+    }
+
+    replaceObjectContents(this.save, persisted?.save ?? candidate);
+    this.deferredDialogueReceipts.delete(script);
+    this.emit('state.changed', {
+      paths: [...new Set(paths)],
+      reason: 'dialogue-completion',
+    });
+    this.emitLifecycleRewards(lifecycleActions);
+    return true;
+  }
+
+  reopenDialogueCursor(dialogue, cursor) {
+    if (!cursor || dialogue.active || !dialogue.isCursorRestorable(cursor)) return false;
+    dialogue.openAtCursor(cursor);
+    return dialogue.active;
+  }
+
+  handleDialogueClosed({ script, reason } = {}, sourceDialogue = this.dialogue) {
     const source = this.dialogueSourceTarget;
     this.dialogueSourceTarget = null;
+    const consume = reason === 'completed'
+      && sourceDialogue.scripts[script]?.replayable === false;
+    if (consume) {
+      const finalize = () => this.commitDialogueCompletion(
+        script,
+        sourceDialogue,
+        { consume: true, reopenOnFailure: false },
+      );
+      const requestedSetPieceId = this.setPieces.active?.requestedId;
+      if (requestedSetPieceId && this.setPieces.deferCompletion(finalize)) {
+        this.deferredDialogueReceipts.set(script, requestedSetPieceId);
+      } else {
+        this.commitDialogueCompletion(script, sourceDialogue, { consume: true });
+      }
+    } else {
+      this.commitDialogueCompletion(script, sourceDialogue);
+    }
     if (
       reason === 'completed'
       && source?.script === script
@@ -933,18 +1356,21 @@ export class World {
     });
   }
 
-  syncScene(force = false, { persist = true } = {}) {
-    const candidate = this.sceneState.scene;
-    if (!candidate || (!force && candidate.id === this.currentSceneId)) return;
-    this.currentSceneId = candidate.id;
-    this.save.resume = resumeForSave(this.save, {
-      chapter: this.chapter.id,
-      scene: candidate.id,
-      room: this.roomId,
-      spawn: candidate.resumeAt?.spawn ?? candidate.spawn,
+  syncScene(force = false, { persist = true, runOnEnter = true } = {}) {
+    return this.runActionTransaction(() => {
+      const candidate = this.sceneState.scene;
+      if (!candidate || (!force && candidate.id === this.currentSceneId)) return true;
+      this.currentSceneId = candidate.id;
+      this.save.resume = resumeForSave(this.save, {
+        chapter: this.chapter.id,
+        scene: candidate.id,
+        room: this.roomId,
+        spawn: candidate.resumeAt?.spawn ?? candidate.spawn,
+      });
+      if (runOnEnter && actionResultFailed(this.runActions(candidate.onEnter ?? []))) return false;
+      if (persist && actionResultFailed(this.markDirty('scene', true))) return false;
+      return true;
     });
-    this.runActions(candidate.onEnter ?? []);
-    if (persist) this.markDirty('scene', true);
   }
 
   snapshot() {
@@ -1049,14 +1475,14 @@ function createWorldActionHandlers(world) {
     'choice.record': (action) => {
       world.noteProgress();
       world.save.progress.storyChoices[action.id] = action.value;
-      world.markDirty('choice');
+      return world.markDirty('choice');
     },
     'character.set': (action) => {
       world.noteProgress();
       if (action.field === 'pet.type') {
         world.pendingPetType = action.value;
         world.emit('state.changed', { paths: ['character.pet.type'], reason: 'pending-choice' });
-        return;
+        return true;
       }
       if (action.field === 'pet.name') {
         world.save.character.pet = {
@@ -1068,22 +1494,26 @@ function createWorldActionHandlers(world) {
         writePath(world.save.character, action.field, action.value);
       }
       world.syncPlayerProfile();
-      world.markDirty('character');
+      return world.markDirty('character');
     },
     'dialogue.start': (action) => {
       if (world.dialogueSourceTarget?.script !== action.script) world.dialogueSourceTarget = null;
-      world.dialogue.open(action.script);
+      const presentation = world.dialogue.open(action.script);
+      if (!presentation && !world.dialogue.active) world.dialogueSourceTarget = null;
+      return presentation;
     },
     'setPiece.play': (action) => world.setPieces.start(action.id),
     'travel.request': (action) => world.travel(action.room, action.spawn, action.transition),
     'learning.start': (action) => world.emit('learning.started', { beat: action.id }),
     'spell.learn': (action) => {
-      if (world.save.spellbook.known.includes(action.spell)) return;
+      if (world.save.spellbook.known.includes(action.spell)) return true;
       world.noteProgress();
       world.save.spellbook.known.push(action.spell);
       world.save.spellbook.stats[action.spell] = { casts: 0, masteryTier: 0 };
-      world.markDirty('spell-learned', true);
+      const persisted = world.markDirty('spell-learned', true);
+      if (actionResultFailed(persisted)) return false;
       world.emit('state.changed', { paths: ['spellbook.known', `spellbook.stats.${action.spell}`], reason: 'spell-learned' });
+      return true;
     },
     'collection.add': (action) => world.addCollection(action.collection, action.id),
     'reward.grant': (action) => world.grantReward(action),
@@ -1100,6 +1530,158 @@ function createWorldActionHandlers(world) {
     'chapter.complete': (action) => world.completeChapter(action.chapter, action.nextChapter),
     'audio.command': (action) => world.emit(action.type, { ...action, type: undefined }),
   });
+}
+
+function actionResultFailed(result) {
+  return result === false || result?.ok === false;
+}
+
+function createActionBatchTransaction(world) {
+  return {
+    save: structuredClone(world.save),
+    eventLength: world.events.length,
+    seq: world.seq,
+    chapter: world.chapter,
+    roomId: world.roomId,
+    currentSceneId: world.currentSceneId,
+    player: structuredClone(world.player),
+    cameraX: world.cameraX,
+    overlay: structuredClone(world.overlay),
+    selection: structuredClone(world.selection),
+    pendingInteraction: structuredClone(world.pendingInteraction),
+    pendingPetType: world.pendingPetType,
+    objectiveEmphasisUntil: world.objectiveEmphasisUntil,
+    idleTime: world.idleTime,
+    failedAttempts: world.failedAttempts,
+    hintObjective: structuredClone(world.hintObjective),
+    hintLookShown: world.hintLookShown,
+    hintVoiceRepeated: world.hintVoiceRepeated,
+    hintTrailShown: world.hintTrailShown,
+    hintAssistTriggered: world.hintAssistTriggered,
+    dialogueSourceTarget: structuredClone(world.dialogueSourceTarget),
+    guideWalkCue: structuredClone(world.guideWalkCue),
+    actorAnimations: structuredClone(world.actorAnimations),
+    deferredDialogueReceipts: structuredClone(world.deferredDialogueReceipts),
+    persistenceSuppression: world.persistenceSuppression,
+    sceneEntryPending: world.sceneEntryPending,
+    pendingDialogueCursor: structuredClone(world.pendingDialogueCursor),
+    dialogue: captureDialogueController(world.dialogue),
+    quests: captureQuestController(world.quests),
+    setPieces: captureSetPieceController(world.setPieces),
+    glints: captureGlintLedger(world.glintActivations),
+  };
+}
+
+function restoreActionBatchRuntime(world, transaction) {
+  world.chapter = transaction.chapter;
+  world.roomId = transaction.roomId;
+  world.currentSceneId = transaction.currentSceneId;
+  world.player = structuredClone(transaction.player);
+  world.cameraX = transaction.cameraX;
+  world.overlay = structuredClone(transaction.overlay);
+  world.selection = structuredClone(transaction.selection);
+  world.pendingInteraction = structuredClone(transaction.pendingInteraction);
+  world.pendingPetType = transaction.pendingPetType;
+  world.objectiveEmphasisUntil = transaction.objectiveEmphasisUntil;
+  world.idleTime = transaction.idleTime;
+  world.failedAttempts = transaction.failedAttempts;
+  world.hintObjective = structuredClone(transaction.hintObjective);
+  world.hintLookShown = transaction.hintLookShown;
+  world.hintVoiceRepeated = transaction.hintVoiceRepeated;
+  world.hintTrailShown = transaction.hintTrailShown;
+  world.hintAssistTriggered = transaction.hintAssistTriggered;
+  world.dialogueSourceTarget = structuredClone(transaction.dialogueSourceTarget);
+  world.guideWalkCue = structuredClone(transaction.guideWalkCue);
+  world.actorAnimations = structuredClone(transaction.actorAnimations);
+  world.deferredDialogueReceipts = structuredClone(transaction.deferredDialogueReceipts);
+  world.persistenceSuppression = transaction.persistenceSuppression;
+  world.sceneEntryPending = transaction.sceneEntryPending;
+  world.pendingDialogueCursor = structuredClone(transaction.pendingDialogueCursor);
+  restoreDialogueController(world, transaction.dialogue);
+  restoreQuestController(world, transaction.quests);
+  restoreSetPieceController(world, transaction.setPieces);
+  restoreGlintLedger(world, transaction.glints);
+  world.events.length = transaction.eventLength;
+  world.seq = transaction.seq;
+}
+
+function captureDialogueController(dialogue) {
+  return {
+    ref: dialogue,
+    scriptId: dialogue?.scriptId ?? null,
+    nodeId: dialogue?.nodeId ?? null,
+    history: [...(dialogue?.history ?? [])],
+  };
+}
+
+function restoreDialogueController(world, snapshot) {
+  world.dialogue = snapshot.ref;
+  if (!snapshot.ref) return;
+  snapshot.ref.scriptId = snapshot.scriptId;
+  snapshot.ref.nodeId = snapshot.nodeId;
+  snapshot.ref.history = [...snapshot.history];
+}
+
+function captureQuestController(quests) {
+  return {
+    ref: quests,
+    lastObjectiveKey: quests?.lastObjectiveKey ?? null,
+    silentAdoptions: quests?.silentAdoptions === null
+      ? null
+      : new Set(quests?.silentAdoptions ?? []),
+    settling: quests?.settling ?? false,
+    lastSettlementStatus: quests?.lastSettlementStatus ?? 'idle',
+  };
+}
+
+function restoreQuestController(world, snapshot) {
+  world.quests = snapshot.ref;
+  if (!snapshot.ref) return;
+  snapshot.ref.lastObjectiveKey = snapshot.lastObjectiveKey;
+  snapshot.ref.silentAdoptions = snapshot.silentAdoptions === null
+    ? null
+    : new Set(snapshot.silentAdoptions);
+  snapshot.ref.settling = snapshot.settling;
+  snapshot.ref.lastSettlementStatus = snapshot.lastSettlementStatus;
+}
+
+function captureSetPieceController(setPieces) {
+  return {
+    ref: setPieces,
+    active: setPieces?.active ?? null,
+    pendingCompletion: setPieces?.pendingCompletion ?? null,
+    completingId: setPieces?.completingId ?? null,
+  };
+}
+
+function restoreSetPieceController(world, snapshot) {
+  world.setPieces = snapshot.ref;
+  if (!snapshot.ref) return;
+  snapshot.ref.active = snapshot.active;
+  snapshot.ref.pendingCompletion = snapshot.pendingCompletion;
+  snapshot.ref.completingId = snapshot.completingId;
+}
+
+function captureGlintLedger(ledger) {
+  return {
+    ref: ledger,
+    limit: ledger.limit,
+    windowSeconds: ledger.windowSeconds,
+    history: structuredClone(ledger.history),
+    seenScheduleKeys: new Set(ledger.seenScheduleKeys),
+    active: structuredClone(ledger.active),
+    lastTime: ledger.lastTime,
+  };
+}
+
+function restoreGlintLedger(world, snapshot) {
+  world.glintActivations = snapshot.ref;
+  snapshot.ref.limit = snapshot.limit;
+  snapshot.ref.windowSeconds = snapshot.windowSeconds;
+  snapshot.ref.history = structuredClone(snapshot.history);
+  snapshot.ref.seenScheduleKeys = new Set(snapshot.seenScheduleKeys);
+  snapshot.ref.active = structuredClone(snapshot.active);
+  snapshot.ref.lastTime = snapshot.lastTime;
 }
 
 function requireNpcDefinition(chapter, actorId) {
@@ -1365,6 +1947,89 @@ function resumeForSave(save, resume) {
   return save?.schemaVersion >= 3
     ? { ...resume, dialogue: null }
     : { ...resume };
+}
+
+function setPieceReceiptId(chapterId, requestedId) {
+  return requestedId.startsWith(`${chapterId}.`)
+    ? requestedId
+    : `${chapterId}.${requestedId}`;
+}
+
+function settleQuestLifecycleCandidate(chapter, save) {
+  if (chapter.contractVersion !== 2 || !Array.isArray(save.progress?.questReceipts)) return [];
+  const lifecycleActions = [];
+  const lifecycle = new Quests({
+    quests: chapter.quests,
+    save,
+    claimReceipt: (receipt) => {
+      if (save.progress.questReceipts.includes(receipt)) return false;
+      save.progress.questReceipts.push(receipt);
+      return true;
+    },
+    runActions: (actions) => {
+      for (const action of actions) {
+        applyCandidateLifecycleAction(save, action);
+        lifecycleActions.push(action);
+      }
+      return true;
+    },
+    durableLifecycle: true,
+  });
+  lifecycle.initialize({ historical: false });
+  lifecycle.update({ ignoreBlock: true });
+  return lifecycleActions;
+}
+
+function applyCandidateLifecycleAction(save, action) {
+  if (action.type === 'flag.set') {
+    save.progress.questFlags[action.flag] = action.value;
+    return;
+  }
+  if (action.type === 'choice.record') {
+    save.progress.storyChoices[action.id] = structuredClone(action.value);
+    return;
+  }
+  if (action.type === 'spell.learn') {
+    if (!save.spellbook.known.includes(action.spell)) save.spellbook.known.push(action.spell);
+    save.spellbook.stats[action.spell] ??= { casts: 0, masteryTier: 0 };
+    return;
+  }
+  if (action.type === 'collection.add') {
+    const collection = save.collections[action.collection];
+    if (!collection.includes(action.id)) collection.push(action.id);
+    return;
+  }
+  if (action.type === 'reward.grant') {
+    if (save.progress.rewardReceipts.includes(action.receipt)) return;
+    save.progress.rewardReceipts.push(action.receipt);
+    for (const card of action.cards) {
+      if (!save.collections.cards.includes(card)) save.collections.cards.push(card);
+    }
+    for (const treasure of action.treasures) {
+      if (!save.collections.treasures.includes(treasure)) save.collections.treasures.push(treasure);
+    }
+    save.collections.housePoints += action.points;
+    return;
+  }
+  throw new Error(`Unsupported quest lifecycle action in completion candidate: ${action.type}`);
+}
+
+function questLifecycleActionPaths(action) {
+  if (action.type === 'flag.set') return [`progress.questFlags.${action.flag}`];
+  if (action.type === 'choice.record') return [`progress.storyChoices.${action.id}`];
+  if (action.type === 'spell.learn') {
+    return ['spellbook.known', `spellbook.stats.${action.spell}`];
+  }
+  if (action.type === 'collection.add') return [`collections.${action.collection}`];
+  if (action.type === 'reward.grant') {
+    return [
+      'progress.rewardReceipts',
+      'collections.cards',
+      'collections.treasures',
+      'collections.housePoints',
+    ];
+  }
+  return [];
 }
 
 function replaceObjectContents(target, source) {

@@ -205,7 +205,7 @@ export const chapter1DialogueDefinitions = [
   {
     id: 'ch1.keeper.petAndName',
     start: 'welcome',
-    resumePolicy: 'restart-current-node',
+    resumePolicy: 'restart-script',
     replayable: true,
     nodes: {
       welcome: voiceLine({
