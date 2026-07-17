@@ -33,6 +33,16 @@ import {
   createIllustratedMapPresentation,
   IllustratedMapRenderer,
 } from './IllustratedMapRenderer.js';
+import {
+  LearningRenderer,
+  learningLayout,
+} from './LearningRenderer.js';
+import { QuestJournalRenderer } from './QuestJournalRenderer.js';
+import {
+  SpellbookRenderer,
+  compactSpellFanLayout,
+  fullSpellbookLayout,
+} from './SpellbookRenderer.js';
 
 export { isAllowedChildFacingUiText } from '../content/playerVisibleCopy.js';
 
@@ -101,6 +111,8 @@ export const UI_RECTS = Object.freeze({
   satchelMapTab: { x: 112, y: 112, width: 250, height: 94 },
   satchelCardsTab: { x: 378, y: 112, width: 250, height: 94 },
   satchelCardsOnlyTab: { x: 245, y: 112, width: 250, height: 94 },
+  satchelCardsPrevious: { x: 350, y: 586, width: 200, height: 88 },
+  satchelCardsNext: { x: 730, y: 586, width: 200, height: 88 },
   satchelKeyhole: { x: 112, y: 586, width: 220, height: 88 },
   satchelStartOver: { x: 936, y: 586, width: 232, height: 88 },
   satchelClose: { x: 1092, y: 54, width: 88, height: 88 },
@@ -602,11 +614,13 @@ function normalizePortraitPose(pose) {
 export class UIRenderer {
   constructor({
     resolveAsset = () => null,
+    resolveMapVignetteAsset = () => null,
     characterRenderer,
     mapRenderer = new IllustratedMapRenderer(),
     titleRenderer = null,
   } = {}) {
     this.resolveAsset = resolveAsset;
+    this.resolveMapVignetteAsset = resolveMapVignetteAsset;
     this.characterRenderer = requireCharacterRenderer(characterRenderer);
     this.mapRenderer = mapRenderer;
     this.titleRenderer = titleRenderer ?? new StorybookTitleRenderer({
@@ -615,6 +629,15 @@ export class UIRenderer {
     this.images = new Map();
     this.failedImages = new Set();
     this.yearbookImages = new Map();
+    this.spellbookRenderer = new SpellbookRenderer({
+      imageFor: (key) => this.imageFor(key),
+    });
+    this.learningRenderer = new LearningRenderer({
+      imageFor: (key) => this.imageFor(key),
+    });
+    this.questJournalRenderer = new QuestJournalRenderer({
+      imageFor: (key) => this.imageFor(key),
+    });
   }
 
   drawReviewScene(context, scene, time = 0, { reducedMotion = false } = {}) {
@@ -778,19 +801,25 @@ export class UIRenderer {
   }
 
   drawHud(context, state, time, reducedMotion = false) {
-    if (state.overlay || state.dialogue || state.selection || state.screen !== 'playing') return;
+    if (state.overlay || state.dialogue || state.selection || state.learning || state.screen !== 'playing') return;
     const animationTime = reducedMotion ? 0 : time;
-    drawQuestButton(
-      context,
-      UI_RECTS.quest,
-      animationTime,
-      Boolean(state.newObjective) && !reducedMotion,
-      {
-        baseImage: this.imageFor('ui/hud/quest-compass-base'),
-        needleImage: this.imageFor('ui/hud/quest-compass-needle'),
-      },
+    const spellbookOpen = Boolean(
+      state.spellbook?.state
+      && state.spellbook.state !== 'closed',
     );
-    if (state.hasSatchel) {
+    if (!spellbookOpen) {
+      drawQuestButton(
+        context,
+        UI_RECTS.quest,
+        animationTime,
+        Boolean(state.newObjective) && !reducedMotion,
+        {
+          baseImage: this.imageFor('ui/hud/quest-compass-base'),
+          needleImage: this.imageFor('ui/hud/quest-compass-needle'),
+        },
+      );
+    }
+    if (state.hasSatchel && !spellbookOpen) {
       drawSatchelButton(
         context,
         UI_RECTS.satchel,
@@ -808,8 +837,8 @@ export class UIRenderer {
       });
     }
     return Object.freeze({
-      quest: true,
-      satchel: Boolean(state.hasSatchel),
+      quest: !spellbookOpen,
+      satchel: Boolean(state.hasSatchel) && !spellbookOpen,
       wand: Boolean(state.hasWand),
     });
   }
@@ -1060,6 +1089,7 @@ export class UIRenderer {
     return this.mapRenderer.draw(context, mapState, state, time, {
       reducedMotion,
       imageFor: (key) => this.imageFor(key),
+      resolveVignetteAsset: this.resolveMapVignetteAsset,
       showParchmentField: !paintedSpread,
     });
   }
@@ -1072,15 +1102,83 @@ export class UIRenderer {
       buildMapState(map, state),
       state,
       time,
+      {
+        reducedMotion,
+        resolveVignetteAsset: this.resolveMapVignetteAsset,
+      },
+    );
+  }
+
+  drawSpellbookFan(context, state, time = 0, { reducedMotion = false } = {}) {
+    return this.spellbookRenderer.drawFan(
+      context,
+      state?.spellbook ?? state,
+      time,
+      { reducedMotion },
+    );
+  }
+
+  spellbookFanPresentation(state) {
+    return compactSpellFanLayout(state?.spellbook ?? state ?? {});
+  }
+
+  drawSpellbook(context, state, time = 0, { reducedMotion = false } = {}) {
+    return this.spellbookRenderer.drawBook(
+      context,
+      state?.spellbook ?? state,
+      time,
+      {
+        selectedSpellId: state?.overlay?.tab ?? state?.spellbook?.selectedSpellId ?? null,
+        reducedMotion,
+      },
+    );
+  }
+
+  spellbookPresentation(state) {
+    return fullSpellbookLayout(state?.spellbook ?? state ?? {}, {
+      selectedSpellId: state?.overlay?.tab ?? state?.spellbook?.selectedSpellId ?? null,
+    });
+  }
+
+  drawLearning(context, state, time = 0, { reducedMotion = false } = {}) {
+    return this.learningRenderer.draw(context, state?.learning ?? state, time, { reducedMotion });
+  }
+
+  learningPresentation(state) {
+    return learningLayout(state?.learning ?? state ?? {});
+  }
+
+  drawCastingAffordances(context, state, time = 0, { reducedMotion = false } = {}) {
+    return this.spellbookRenderer.drawCastingAffordances(
+      context,
+      state,
+      time,
+      { reducedMotion },
+    );
+  }
+
+  drawQuestJournal(context, state, time = 0, { reducedMotion = false } = {}) {
+    return this.questJournalRenderer.draw(
+      context,
+      state?.journal,
+      state?.objective,
+      time,
       { reducedMotion },
     );
   }
 
   drawCardAlbumContent(context, state, cardDefinitions) {
-    const entries = buildCardAlbumEntries(cardDefinitions, state.cards ?? []);
+    const album = cardAlbumPresentation(
+      cardDefinitions,
+      state.cards ?? [],
+      state.overlay?.page ?? 0,
+    );
+    const { entries } = album;
     if (entries.length === 0) drawEmptyAlbumPocket(context);
     else for (const entry of entries) this.drawAlbumCard(context, entry);
+    if (album.pageCount > 1) drawCardAlbumPagination(context, album);
     state.__cardSlots = entries;
+    state.__cardAlbum = album;
     return entries;
   }
 
@@ -1662,24 +1760,74 @@ function traceYearbookLeafVein(context, x, y, size, index) {
   );
 }
 
-export function buildCardAlbumEntries(cardDefinitions, earnedCardIds) {
+export const CARD_ALBUM_PAGE_SIZE = 4;
+
+export function cardAlbumPresentation(cardDefinitions, earnedCardIds, requestedPage = 0) {
+  const definitions = Array.isArray(cardDefinitions) ? cardDefinitions : [];
+  const pageCount = Math.ceil(definitions.length / CARD_ALBUM_PAGE_SIZE);
+  const page = pageCount === 0
+    ? 0
+    : Math.max(
+        0,
+        Math.min(pageCount - 1, Number.isInteger(requestedPage) ? requestedPage : 0),
+      );
+  const entries = buildCardAlbumEntries(definitions, earnedCardIds, page);
+  return Object.freeze({
+    page,
+    pageCount,
+    entries: Object.freeze(entries),
+    previous: UI_RECTS.satchelCardsPrevious,
+    next: UI_RECTS.satchelCardsNext,
+    pageMarks: Object.freeze({ x: 560, y: 610, width: 160, height: 40 }),
+  });
+}
+
+export function buildCardAlbumEntries(cardDefinitions, earnedCardIds, requestedPage = 0) {
+  const definitions = Array.isArray(cardDefinitions) ? cardDefinitions : [];
   const earned = new Set(earnedCardIds);
-  const compact = cardDefinitions.length > 2;
+  const pageCount = Math.ceil(definitions.length / CARD_ALBUM_PAGE_SIZE);
+  const page = pageCount === 0
+    ? 0
+    : Math.max(
+        0,
+        Math.min(pageCount - 1, Number.isInteger(requestedPage) ? requestedPage : 0),
+      );
+  const visibleDefinitions = definitions.slice(
+    page * CARD_ALBUM_PAGE_SIZE,
+    (page + 1) * CARD_ALBUM_PAGE_SIZE,
+  );
+  const compact = visibleDefinitions.length > 2;
   const slotWidth = compact ? 250 : 330;
   const slotHeight = compact ? 276 : 292;
   const gap = compact ? 26 : 50;
-  const columns = Math.max(1, Math.min(4, cardDefinitions.length));
+  const columns = Math.max(1, visibleDefinitions.length);
   const startX = (WORLD.width - (columns * slotWidth + (columns - 1) * gap)) / 2;
-  return cardDefinitions.map((card, index) => ({
+  return visibleDefinitions.map((card, index) => ({
     ...card,
     earned: earned.has(card.id),
     __rect: {
-      x: startX + (index % columns) * (slotWidth + gap),
-      y: 282 + Math.floor(index / columns) * (slotHeight + 24),
+      x: startX + index * (slotWidth + gap),
+      y: 282,
       width: slotWidth,
       height: slotHeight,
     },
   }));
+}
+
+function drawCardAlbumPagination(context, album) {
+  drawYearbookTurnControl(
+    context,
+    album.previous,
+    'previous',
+    childFacingUiText('Back', 'action'),
+  );
+  drawYearbookPageDots(context, album.pageCount, album.page, album.pageMarks);
+  drawYearbookTurnControl(
+    context,
+    album.next,
+    'next',
+    childFacingUiText('Next', 'action'),
+  );
 }
 
 const KEEPSAKE_GRAIN = Object.freeze([

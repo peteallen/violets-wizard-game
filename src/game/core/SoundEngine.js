@@ -58,20 +58,45 @@ export class SoundEngine {
     return Math.max(0, Math.min(1, this.volumes.master * this.volumes[channel]));
   }
 
-  playSfx(key, fallback = 'chime') {
-    this.eventLog.push({ type: 'sfx', key });
+  playSfx(key, fallback = 'chime', options = {}) {
+    if (fallback && typeof fallback === 'object') {
+      options = fallback;
+      fallback = 'chime';
+    }
+    const pan = normalizePan(options?.pan);
+    this.eventLog.push(pan === 0 ? { type: 'sfx', key } : { type: 'sfx', key, pan });
     const path = this.resolveAsset(key);
     if (path && typeof Audio !== 'undefined') {
       const audio = new Audio(path);
       audio.volume = this.effectiveVolume('sfx');
-      audio.play().catch(() => this.synth(fallback));
+      this.connectPannedAudio(audio, pan);
+      audio.play().catch(() => this.synth(fallback, { pan }));
       return audio;
     }
-    this.synth(fallback);
+    this.synth(fallback, { pan });
     return null;
   }
 
-  synth(kind = 'chime') {
+  connectPannedAudio(audio, pan = 0) {
+    if (
+      pan === 0
+      || !this.context
+      || this.context.state !== 'running'
+      || typeof this.context.createMediaElementSource !== 'function'
+      || typeof this.context.createStereoPanner !== 'function'
+    ) return null;
+    try {
+      const source = this.context.createMediaElementSource(audio);
+      const panner = this.context.createStereoPanner();
+      panner.pan.value = pan;
+      source.connect(panner).connect(this.context.destination);
+      return { source, panner };
+    } catch {
+      return null;
+    }
+  }
+
+  synth(kind = 'chime', { pan = 0 } = {}) {
     if (this.muted || !this.context || this.context.state !== 'running') return;
     const recipes = {
       tap: [[440, 0.045, 'sine']],
@@ -83,6 +108,14 @@ export class SoundEngine {
     };
     const now = this.context.currentTime;
     let offset = 0;
+    const normalizedPan = normalizePan(pan);
+    const panner = normalizedPan !== 0 && typeof this.context.createStereoPanner === 'function'
+      ? this.context.createStereoPanner()
+      : null;
+    if (panner) {
+      panner.pan.value = normalizedPan;
+      panner.connect(this.context.destination);
+    }
     for (const [frequency, duration, type] of recipes[kind] ?? recipes.chime) {
       const oscillator = this.context.createOscillator();
       const gain = this.context.createGain();
@@ -91,7 +124,7 @@ export class SoundEngine {
       gain.gain.setValueAtTime(0.0001, now + offset);
       gain.gain.exponentialRampToValueAtTime(Math.max(0.0001, this.effectiveVolume('sfx') * 0.08), now + offset + 0.01);
       gain.gain.exponentialRampToValueAtTime(0.0001, now + offset + duration);
-      oscillator.connect(gain).connect(this.context.destination);
+      oscillator.connect(gain).connect(panner ?? this.context.destination);
       oscillator.start(now + offset);
       oscillator.stop(now + offset + duration + 0.02);
       offset += duration * 0.45;
@@ -409,4 +442,10 @@ export class SoundEngine {
     this.context = null;
     this.unlocked = false;
   }
+}
+
+export function normalizePan(value) {
+  const pan = Number(value);
+  if (!Number.isFinite(pan)) return 0;
+  return Math.max(-1, Math.min(1, pan));
 }

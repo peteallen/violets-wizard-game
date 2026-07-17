@@ -1,0 +1,162 @@
+{
+  "schema_version": 1,
+  "algorithm": {
+    "id": "cyan-flood-aligned-character-sheet-v1",
+    "implementation": "scripts/slice-character-sheet.mjs renderCharacterFrame",
+    "component_connectivity": 8,
+    "scale_filter": "premultiplied-rgba-box-rational-v1",
+    "output_color_type": 6,
+    "output_bit_depth": 8,
+    "deterministic": true,
+    "note": "The standard full-frame renderer was invoked directly so the reviewed candidate could remain under art rather than the shipping public/assets lane."
+  },
+  "normalization": {
+    "source": {
+      "path": "art/characters/trevor/edits/held-v2.png",
+      "bytes": 1514902,
+      "sha256": "dae83177f02e6bcf2d06c6292cf152d9350d48e621e5807095c9058c0bb9404c",
+      "rgba_sha256": "c8b07d340e31f976350f349149242d3c69a51aab56a5a33fadf43abfd1172096",
+      "dimensions": {
+        "width": 1254,
+        "height": 1254
+      },
+      "png": {
+        "bit_depth": 8,
+        "color_type": 2,
+        "has_alpha": false
+      }
+    },
+    "algorithm": "premultiplied-rgba-box-rational-v1",
+    "scale": {
+      "numerator": 256,
+      "denominator": 627
+    },
+    "output": {
+      "path": "art/characters/trevor/edits/held-v2-cell.png",
+      "bytes": 293165,
+      "sha256": "2f095a07a421059543ab5c9b7f47f8ecb6f91fbde67745d968d1748e792bb447",
+      "rgba_sha256": "b5db8e468175c6aae38a26ae14ebd3b5738ba2edb49f16b5863df1c9c8f92703",
+      "dimensions": {
+        "width": 512,
+        "height": 512
+      },
+      "png": {
+        "bit_depth": 8,
+        "color_type": 2,
+        "has_alpha": false
+      }
+    },
+    "note": "The square built-in output was normalized to the batch's 512 by 512 per-pose source-cell convention before applying Trevor's unchanged 8:5 frame scale."
+  },
+  "slice_spec": {
+    "path": "art/characters/trevor/edits/held-v2.layout.json",
+    "bytes": 1217,
+    "sha256": "5d8d706d648edb0e02349c99f607f64cfb1145cd35388db4b4156cd0cb7e069b",
+    "schema_version": 1,
+    "id": "trevor.held-v2-edit"
+  },
+  "controls": {
+    "output_canvas": {
+      "width": 896,
+      "height": 1200,
+      "center_x": 448,
+      "ground_y": 1132
+    },
+    "common_scale": {
+      "numerator": 8,
+      "denominator": 5
+    },
+    "key": {
+      "color": {
+        "red": 1,
+        "green": 244,
+        "blue": 253
+      },
+      "tolerance": 28,
+      "alpha": {
+        "opaque_cyan_excess": 50,
+        "transparent_cyan_excess": 90,
+        "edge_spill_radius": 8,
+        "edge_spill_opaque_cyan_excess": 30,
+        "edge_spill_max_green_blue_delta": 70,
+        "matte_low_alpha": 170,
+        "matte_high_alpha": 245,
+        "edge_color_radius": 0
+      }
+    },
+    "components": {
+      "detail_min_pixels": 8,
+      "detail_max_pixels": 5000,
+      "detail_max_distance": 18
+    }
+  },
+  "output": {
+    "name": "held-v2-frame",
+    "path": "art/characters/trevor/edits/held-v2-frame.png",
+    "media_type": "image/png",
+    "bytes": 332332,
+    "sha256": "f4113af0392bf2b2df21f35f3f021e08bdab91e4adfd6823d6c89db035a52f22",
+    "rgba_sha256": "9d12f033c41753428ed4245452faee274a7086c04ba590c74469d946405e19b9",
+    "dimensions": {
+      "width": 896,
+      "height": 1200
+    },
+    "rgba_bytes": 4300800,
+    "crop": {
+      "x": 0,
+      "y": 0,
+      "width": 512,
+      "height": 512
+    },
+    "source_content_bounds": {
+      "x": 105,
+      "y": 96,
+      "width": 298,
+      "height": 283
+    },
+    "scaled_dimensions": {
+      "width": 477,
+      "height": 453
+    },
+    "placement": {
+      "x": 210,
+      "y": 680,
+      "width": 477,
+      "height": 453,
+      "center_x": 448,
+      "ground_y": 1132
+    },
+    "flood": {
+      "background_pixels": 202663,
+      "non_background_pixels": 59481,
+      "background_fraction": 0.7730979919433594
+    },
+    "components": {
+      "found": 1,
+      "dominant_pixels": 58763,
+      "kept": 1,
+      "removed": 0,
+      "selected_pixels": 58763,
+      "details": []
+    },
+    "source_alpha": {
+      "transparent_pixels": 203381,
+      "soft_pixels": 77,
+      "opaque_pixels": 58686
+    },
+    "frame_alpha": {
+      "transparent_pixels": 923745,
+      "soft_pixels": 2209,
+      "opaque_pixels": 149246
+    },
+    "visible_bounds": {
+      "x": 210,
+      "y": 680,
+      "width": 477,
+      "height": 453,
+      "max_y": 1132
+    },
+    "edge_artifacts_repaired": 0
+  },
+  "provenance_path": "art/characters/trevor/edits/held-v2-frame.provenance.json"
+}

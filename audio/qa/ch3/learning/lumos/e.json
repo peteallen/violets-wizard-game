@@ -1,0 +1,16 @@
+{
+  "language_code": "eng",
+  "language_probability": 1,
+  "text": "Eh",
+  "words": [
+    {
+      "text": "Eh",
+      "start": 0.039,
+      "end": 0.259,
+      "type": "word",
+      "logprob": -0.11662301421165466
+    }
+  ],
+  "transcription_id": "EEww7up40tC1Aun8nXKd",
+  "audio_duration_secs": 0.58175
+}

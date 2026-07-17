@@ -132,7 +132,11 @@ its assembled result in the game.
 
 ## After Phase 2
 
-Pete tests each green checkpoint on GitHub Pages while the pass is active. Once
-the polished Chapter Two route is green, visually reviewed, and played on the
-iPad, its findings can shape the Chapter Three detail pass. Spellbook gameplay,
-new classes, and speculative future character inventory wait until then.
+Pete tests each green checkpoint on GitHub Pages while the pass is active.
+Chapter Three's content, spellbook/learning/casting runtime, exact character
+packages, audio, and minimal Chapter Four handoff may now integrate behind the
+Chapter Three `placeholder` descriptor. That descriptor must not become
+`playable` until its production rasters, package-owned harness scenes, required
+two-size review frames, human audio listening pass, deterministic walkthrough,
+save repair, and full local build are green together. Later chapters remain at
+beat-level until deliberately scheduled.

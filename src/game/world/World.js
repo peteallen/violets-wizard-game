@@ -1,12 +1,15 @@
 import { HINTS, OBJECTIVE, WORLD } from '../config.js';
 import { createCoreActionRegistry } from '../actions/index.js';
+import { SPELLS, masteryTierForCasts } from '../content/spells.js';
 import { conditionMatches, writePath } from '../core/conditions.js';
 import { clamp } from '../core/math.js';
 import { normalizeRobeTrim, robeTrimColor, robeTrimOption } from '../core/RobeTrims.js';
 import { SeededRandom } from '../core/rng.js';
 import { Dialogue } from '../systems/Dialogue.js';
+import { Learning } from '../systems/Learning.js';
 import { Quests } from '../systems/Quests.js';
 import { SetPieces } from '../systems/SetPieces.js';
+import { Spellbook } from '../systems/Spellbook.js';
 import {
   GlintActivationLedger,
   affordanceSeenReceipt,
@@ -31,6 +34,7 @@ const PET_HINT_CORRIDOR_END = 0.16;
 const INTERACTION_ACTIVATION_DISTANCE = 45;
 const EXIT_ACTIVATION_DISTANCE = 2;
 const DOORWAY_SCALE = 0.82;
+const SPELL_CAST_AUTHORIZATION = Symbol('spell-cast-authorization');
 const PLAYER_CHARACTER_ID = 'character.violet';
 const PET_CHARACTER_IDS = Object.freeze({
   cat: 'character.cat',
@@ -79,6 +83,7 @@ export class World {
     this.actionBatchTransaction = null;
     this.sceneEntryPending = false;
     this.pendingDialogueCursor = null;
+    this.revealedSpellTargets = new Map();
     this.actionRegistry = actionRegistry;
     this.selectSetPieceFallback = selectSetPieceFallback;
     this.actionHandlers = createWorldActionHandlers(this);
@@ -173,11 +178,22 @@ export class World {
   }
 
   get objective() {
-    return this.quests.objective();
+    return this.activeQuest()?.step.objective ?? null;
+  }
+
+  activeQuest({ includeSleeping = false } = {}) {
+    const active = this.quests?.active() ?? null;
+    if (!includeSleeping && active && questIsSleeping(active, this.save)) return null;
+    return active;
   }
 
   get blocked() {
-    return this.dialogue.active || this.setPieces.blocked || Boolean(this.overlay) || Boolean(this.selection);
+    return this.dialogue.active
+      || this.setPieces.blocked
+      || this.learning.isActive
+      || this.spellbook.blocksWorldInput
+      || Boolean(this.overlay)
+      || Boolean(this.selection);
   }
 
   get affordanceRenderQuiet() {
@@ -188,7 +204,11 @@ export class World {
   }
 
   get worldAffordancesSuppressed() {
-    return this.affordanceRenderQuiet || Boolean(this.overlay) || Boolean(this.selection);
+    return this.affordanceRenderQuiet
+      || this.learning.isActive
+      || this.spellbook.blocksWorldInput
+      || Boolean(this.overlay)
+      || Boolean(this.selection);
   }
 
   emit(type, payload = {}) {
@@ -203,6 +223,8 @@ export class World {
 
   update(dt) {
     this.time += dt;
+    this.learning.update(dt);
+    this.spellbook.update(dt);
     this.setPieces.update(dt);
     this.expireActorAnimations();
 
@@ -251,8 +273,18 @@ export class World {
   tap(point) {
     if (this.setPieces.blocked) return { kind: 'blocked', reason: 'set-piece' };
     if (this.dialogue.active) return { kind: 'dialogue' };
+    if (this.learning.isActive) return { kind: 'blocked', reason: 'learning' };
+    if (this.spellbook.blocksWorldInput) return { kind: 'blocked', reason: 'spellbook' };
     const worldPoint = { x: point.x + this.cameraX, y: point.y };
     const target = this.targetAt(point);
+    if (this.spellbook.state === 'targeting') {
+      if (target?.kind === 'spellTarget') {
+        this.interactTarget(target);
+        return target;
+      }
+      this.cancelSpellbook();
+      return { kind: 'spellbook', reason: 'cancelled-targeting' };
+    }
     if (target) {
       this.interactTarget(target);
       return target;
@@ -270,7 +302,7 @@ export class World {
   interactSemantic(id) {
     const target = this.targets().find((candidate) => candidate.id === id || candidate.semanticId === id);
     if (!target) throw new Error(`No active interaction target named ${id} in ${this.roomId}.`);
-    this.interactTarget(target);
+    return this.interactTarget(target);
   }
 
   targetAt(point) {
@@ -280,6 +312,16 @@ export class World {
 
   interactTarget(target) {
     this.noteMeaningfulInput();
+    if (target.kind === 'spellTarget') {
+      if (this.spellbook.state === 'targeting') return this.castSpellAt(target.id);
+      const center = hitAreaCenter(target.hitArea);
+      this.emit('feedback.command', {
+        kind: 'spellTargetNeedsSpell',
+        x: center.x - this.cameraX,
+        y: center.y,
+      });
+      return false;
+    }
     const approach = target.approach;
     if (approach && distanceToApproach(this.player, target) > activationDistance(target)) {
       this.player.targetX = approach.x;
@@ -360,6 +402,8 @@ export class World {
         hitArea: hotspot.hitArea,
         approach: hotspot.approach,
         presentation: hotspot.presentation,
+        requiredSpell: hotspot.requiredSpell,
+        spellEffect: hotspot.spellEffect ?? null,
         actions: hotspot.onInteract ?? [],
       };
       if (hotspot.repeat === 'once' && targetIsSpent(target, this.save)) continue;
@@ -398,7 +442,14 @@ export class World {
     return targets;
   }
 
-  runTargetActions(target) {
+  runTargetActions(target, { castSpellId = null, authorization = null } = {}) {
+    if (
+      target.kind === 'spellTarget'
+      && (
+        authorization !== SPELL_CAST_AUTHORIZATION
+        || target.requiredSpell !== castSpellId
+      )
+    ) return false;
     return this.runActionTransaction(() => {
       const dialogueAction = target.actions?.find((action) => action.type === 'dialogue.start');
       if (dialogueAction) {
@@ -521,6 +572,116 @@ export class World {
     this.updateAffordanceActivations();
   }
 
+  openSpellbook() {
+    if (this.setPieces.blocked || this.overlay || this.selection) return false;
+    this.noteMeaningfulInput();
+    const opened = this.spellbook.open();
+    if (opened) this.updateAffordanceActivations();
+    return opened;
+  }
+
+  selectSpell(spellId) {
+    this.noteMeaningfulInput();
+    const selected = this.spellbook.select(spellId);
+    if (selected) this.updateAffordanceActivations();
+    return selected;
+  }
+
+  cancelSpellbook() {
+    this.noteMeaningfulInput();
+    const cancelled = this.spellbook.cancel();
+    if (cancelled) this.updateAffordanceActivations();
+    return cancelled;
+  }
+
+  castSpellAt(targetId) {
+    const target = this.targets().find((candidate) => (
+      candidate.id === targetId || candidate.semanticId === targetId
+    ));
+    if (!target) return false;
+    this.noteMeaningfulInput();
+    const result = this.spellbook.castAt(target);
+    if (!actionResultFailed(result)) this.updateAffordanceActivations();
+    return result;
+  }
+
+  startLearning(beatId) {
+    const result = this.learning.start(beatId);
+    if (result === false) return false;
+    this.updateAffordanceActivations();
+    return result;
+  }
+
+  chooseLearningUnit(unitId) {
+    return this.runActionTransaction(() => {
+      this.noteMeaningfulInput();
+      return this.learning.chooseUnit(unitId);
+    });
+  }
+
+  completeLearningBeat(beat) {
+    if (this.save.learning.completedBeats.includes(beat.id)) return true;
+    this.save.learning.completedBeats.push(beat.id);
+    const skillField = learningSkillField(beat.skill);
+    this.save.learning[skillField] = Math.min(10, this.save.learning[skillField] + 1);
+
+    const actionResult = this.runActions(beat.onComplete);
+    if (actionResultFailed(actionResult)) return false;
+    const persisted = this.markDirty('checkpoint', true);
+    if (actionResultFailed(persisted)) return false;
+    this.noteProgress();
+    this.emit('state.changed', {
+      paths: ['learning.completedBeats', `learning.${skillField}`],
+      reason: 'learning-completed',
+    });
+    return true;
+  }
+
+  performSpellCast(spell, target) {
+    return this.runActionTransaction(() => {
+      const actionResult = this.runTargetActions(target, {
+        castSpellId: spell.id,
+        authorization: SPELL_CAST_AUTHORIZATION,
+      });
+      if (actionResultFailed(actionResult)) return false;
+
+      const stats = this.save.spellbook.stats[spell.id];
+      if (!stats || !this.save.spellbook.known.includes(spell.id)) return false;
+      stats.casts += 1;
+      stats.masteryTier = masteryTierForCasts(spell.id, stats.casts);
+      const persisted = this.markDirty('mutation');
+      if (actionResultFailed(persisted)) return false;
+      this.noteProgress();
+      this.revealSpellTarget(spell, target);
+      this.emit('state.changed', {
+        paths: [`spellbook.stats.${spell.id}`],
+        reason: 'spell-cast',
+      });
+      this.emit('spell.cast', {
+        spell: spell.id,
+        target: target.id,
+        masteryTier: stats.masteryTier,
+      });
+      return { ok: true, masteryTier: stats.masteryTier };
+    });
+  }
+
+  revealSpellTarget(spell, target) {
+    const effect = target.spellEffect
+      ?? (spell.effect.kind === 'light'
+        ? { kind: 'light', radius: 240, intensity: 1 }
+        : null);
+    if (!effect) return;
+    const center = hitAreaCenter(target.hitArea);
+    this.revealedSpellTargets.set(target.id, {
+      roomId: this.roomId,
+      targetId: target.id,
+      x: center.x,
+      y: center.y,
+      ...effect,
+    });
+  }
+
   selectRobeTrim(trimId) {
     const option = robeTrimOption(trimId);
     if (this.overlay?.surface !== 'robe-picker' || !option) return false;
@@ -593,6 +754,7 @@ export class World {
       this.cancelPendingInteraction();
       this.guideWalkCue = null;
       this.clearActorAnimations();
+      this.revealedSpellTargets.clear();
       const completingSetPieceId = this.setPieces.completingId;
       const deferredReceipts = this.addDeferredDialogueReceiptsForSetPiece(
         completingSetPieceId,
@@ -653,6 +815,7 @@ export class World {
       this.cancelPendingInteraction();
       this.guideWalkCue = null;
       this.clearActorAnimations();
+      this.revealedSpellTargets.clear();
       const from = this.roomId;
       this.chapter = chapter;
       this.bindSystems();
@@ -858,7 +1021,7 @@ export class World {
   }
 
   syncHintObjective() {
-    const active = this.quests.active();
+    const active = this.activeQuest();
     const next = active ? { quest: active.quest.id, step: active.stepId } : null;
     const currentKey = this.hintObjective ? `${this.hintObjective.quest}:${this.hintObjective.step}` : null;
     const nextKey = next ? `${next.quest}:${next.step}` : null;
@@ -961,8 +1124,21 @@ export class World {
       runActions: (actions) => this.runActions(actions),
     });
     this.dialogue = dialogue;
+    this.learning = new Learning({
+      beats: this.chapter.learningBeats,
+      save: this.save,
+      emit: (type, payload) => this.emit(type, payload),
+      onComplete: (beat) => this.completeLearningBeat(beat),
+    });
+    this.spellbook = new Spellbook({
+      spells: SPELLS,
+      save: this.save,
+      emit: (type, payload) => this.emit(type, payload),
+      onCast: ({ spell, target }) => this.performSpellCast(spell, target),
+      now: () => this.time,
+    });
     this.quests = new Quests({
-      quests: this.chapter.quests,
+      quests: mainFirstQuests(this.chapter.quests),
       save: this.save,
       emit: (type, payload) => {
         if (type === 'quest.objectiveChanged') {
@@ -1001,7 +1177,7 @@ export class World {
     const { states } = createAffordancePlan({
       targets,
       objective: this.objective,
-      activeQuest: this.quests.active(),
+      activeQuest: this.activeQuest(),
       roomId: this.roomId,
       save: this.save,
       hintEscalated: this.hintLookShown || this.hintTrailShown,
@@ -1373,6 +1549,65 @@ export class World {
     });
   }
 
+  roomEffectsSnapshot(learning = this.learning.snapshot()) {
+    const darkness = this.room.lighting?.darkness;
+    const persistedLights = (this.room.hotspots ?? [])
+      .filter((hotspot) => (
+        hotspot.spellEffect?.kind === 'light'
+        && (hotspot.when?.noFlags ?? []).some((flag) => Boolean(this.flags[flag]))
+      ))
+      .map((hotspot) => {
+        const center = hitAreaCenter(hotspot.hitArea);
+        return {
+          roomId: this.roomId,
+          targetId: hotspot.id,
+          x: center.x,
+          y: center.y,
+          ...hotspot.spellEffect,
+        };
+      });
+    const runtimeLights = [...this.revealedSpellTargets.values()]
+      .filter((light) => light.roomId === this.roomId && light.kind === 'light');
+    const lightsByTarget = new Map(
+      [...persistedLights, ...runtimeLights].map((light) => [light.targetId, light]),
+    );
+    const lights = [...lightsByTarget.values()]
+      .map((light) => Object.freeze({
+        targetId: light.targetId,
+        x: light.x,
+        y: light.y,
+        radius: light.radius,
+        intensity: light.intensity,
+      }));
+    const lightMask = Number.isFinite(darkness) && darkness > 0
+      ? Object.freeze({
+        darkness: clamp(darkness, 0, 1),
+        lights: Object.freeze(lights),
+        revealedTargetIds: Object.freeze(lights.map((light) => light.targetId)),
+      })
+      : null;
+    const feather = learning?.kind === 'sequence'
+      ? Object.freeze({
+        lift: learning.featherLift,
+        stage: featherStage(learning.featherLift),
+      })
+      : null;
+    return Object.freeze({ lightMask, feather });
+  }
+
+  questJournalSnapshot() {
+    return createQuestJournalSnapshot(this.chapter.quests, this.save);
+  }
+
+  conditionStateSnapshot() {
+    return {
+      progress: { questFlags: structuredClone(this.save.progress.questFlags) },
+      character: structuredClone(this.save.character),
+      spellbook: { known: [...this.save.spellbook.known] },
+      settings: { learning: this.save.settings.learning },
+    };
+  }
+
   snapshot() {
     const tapToWalkCue = this.guideWalkCueSnapshot();
     const baseOccupants = (this.room.occupants ?? [])
@@ -1393,7 +1628,7 @@ export class World {
     const affordances = createAffordanceSnapshot({
       targets: baseTargets,
       objective: this.objective,
-      activeQuest: this.quests.active(),
+      activeQuest: this.activeQuest(),
       roomId: this.roomId,
       save: this.save,
       time: this.time,
@@ -1422,6 +1657,10 @@ export class World {
       playerActorId,
       petActorId,
     });
+    const learning = this.learning.snapshot();
+    const spellbook = this.spellbook.snapshot(baseTargets);
+    const journal = this.questJournalSnapshot();
+    const roomEffects = this.roomEffectsSnapshot(learning);
     return {
       time: this.time,
       chapterId: this.chapter.id,
@@ -1448,10 +1687,19 @@ export class World {
       setPiece: this.setPieces.active,
       overlay: this.overlay,
       selection: this.selection,
+      spellbook,
+      learning,
+      journal,
+      roomEffects,
       hasSatchel: Boolean(this.flags['ch1.satchelReceived']),
       hasWand: Boolean(this.save.character.wandId),
+      hasSpellbook: spellbook.known.length > 0 || spellbook.state !== 'closed',
       cards: [...this.save.collections.cards],
       storyChoices: structuredClone(this.save.progress.storyChoices),
+      questFlags: structuredClone(this.save.progress.questFlags),
+      knownSpells: [...this.save.spellbook.known],
+      learningMode: this.save.settings.learning,
+      conditionState: this.conditionStateSnapshot(),
       house: this.save.character.house,
       unlockedRooms: this.unlockedRooms(),
       objectiveRoom: this.objective?.mapStar?.room ?? null,
@@ -1504,7 +1752,7 @@ function createWorldActionHandlers(world) {
     },
     'setPiece.play': (action) => world.setPieces.start(action.id),
     'travel.request': (action) => world.travel(action.room, action.spawn, action.transition),
-    'learning.start': (action) => world.emit('learning.started', { beat: action.id }),
+    'learning.start': (action) => world.startLearning(action.id),
     'spell.learn': (action) => {
       if (world.save.spellbook.known.includes(action.spell)) return true;
       world.noteProgress();
@@ -1523,12 +1771,17 @@ function createWorldActionHandlers(world) {
         world.overlay.selectedTrim = normalizeRobeTrim(world.save.character.appearance?.robeTrim);
       }
       world.emit('ui.openRequested', world.overlay);
+      return true;
     },
     'yearbook.capture': (action) => {
       world.emit('yearbook.captureRequested', { moment: action.moment, caption: 'Magic!' });
     },
     'chapter.complete': (action) => world.completeChapter(action.chapter, action.nextChapter),
-    'audio.command': (action) => world.emit(action.type, { ...action, type: undefined }),
+    'audio.command': (action) => {
+      const { type, ...payload } = action;
+      world.emit(type, payload);
+      return true;
+    },
   });
 }
 
@@ -1565,7 +1818,10 @@ function createActionBatchTransaction(world) {
     persistenceSuppression: world.persistenceSuppression,
     sceneEntryPending: world.sceneEntryPending,
     pendingDialogueCursor: structuredClone(world.pendingDialogueCursor),
+    revealedSpellTargets: structuredClone(world.revealedSpellTargets),
     dialogue: captureDialogueController(world.dialogue),
+    learning: { ref: world.learning, state: world.learning?.capture() ?? null },
+    spellbook: { ref: world.spellbook, state: world.spellbook?.capture() ?? null },
     quests: captureQuestController(world.quests),
     setPieces: captureSetPieceController(world.setPieces),
     glints: captureGlintLedger(world.glintActivations),
@@ -1597,7 +1853,12 @@ function restoreActionBatchRuntime(world, transaction) {
   world.persistenceSuppression = transaction.persistenceSuppression;
   world.sceneEntryPending = transaction.sceneEntryPending;
   world.pendingDialogueCursor = structuredClone(transaction.pendingDialogueCursor);
+  world.revealedSpellTargets = structuredClone(transaction.revealedSpellTargets);
   restoreDialogueController(world, transaction.dialogue);
+  world.learning = transaction.learning.ref;
+  world.learning?.restore(transaction.learning.state);
+  world.spellbook = transaction.spellbook.ref;
+  world.spellbook?.restore(transaction.spellbook.state);
   restoreQuestController(world, transaction.quests);
   restoreSetPieceController(world, transaction.setPieces);
   restoreGlintLedger(world, transaction.glints);
@@ -1927,6 +2188,88 @@ function petHintPath(pet, destinationX, approach, room) {
   };
 }
 
+function learningSkillField(skill) {
+  if (skill === 'letters' || skill === 'matching') return 'letterSkill';
+  if (skill === 'counting') return 'countingSkill';
+  return 'phonicsSkill';
+}
+
+function mainFirstQuests(quests = {}) {
+  return Object.fromEntries(Object.entries(quests).sort(([, left], [, right]) => {
+    if (left.kind === right.kind) return 0;
+    return left.kind === 'main' ? -1 : 1;
+  }));
+}
+
+function questIsSleeping(active, save) {
+  if (!active || active.quest.kind !== 'side') return false;
+  return (active.step.doneWhen?.knownSpells ?? []).some(
+    (spellId) => !save.spellbook.known.includes(spellId),
+  );
+}
+
+function questJournalEntry(quest, save) {
+  if (!conditionMatches(quest.startWhen, save)) return null;
+  const receipts = save.progress.questReceipts;
+  const durable = Array.isArray(receipts);
+  if (durable && receipts.includes(`${quest.id}.quest.v1.completed`)) {
+    return Object.freeze({
+      id: quest.id,
+      kind: quest.kind,
+      status: 'complete',
+      caption: null,
+      mapStar: null,
+    });
+  }
+
+  let stepId = quest.startStep;
+  const visited = new Set();
+  while (stepId && !visited.has(stepId)) {
+    visited.add(stepId);
+    const step = quest.steps[stepId];
+    if (!step) break;
+    const complete = durable
+      ? receipts.includes(`${quest.id}.quest.v1.step.${stepId}.completed`)
+      : conditionMatches(step.doneWhen, save);
+    if (!complete) {
+      const active = { quest, step, stepId };
+      return Object.freeze({
+        id: quest.id,
+        kind: quest.kind,
+        status: questIsSleeping(active, save) ? 'sleeping' : 'active',
+        caption: step.objective.caption,
+        mapStar: step.objective.mapStar ? Object.freeze({ ...step.objective.mapStar }) : null,
+      });
+    }
+    stepId = step.next;
+  }
+  return Object.freeze({
+    id: quest.id,
+    kind: quest.kind,
+    status: 'complete',
+    caption: null,
+    mapStar: null,
+  });
+}
+
+function createQuestJournalSnapshot(quests, save) {
+  const entries = Object.values(mainFirstQuests(quests))
+    .map((quest) => questJournalEntry(quest, save))
+    .filter(Boolean);
+  return Object.freeze({
+    main: entries.find((entry) => entry.kind === 'main' && entry.status !== 'complete') ?? null,
+    side: Object.freeze(entries.filter((entry) => entry.kind === 'side')),
+  });
+}
+
+function featherStage(lift) {
+  if (lift >= 1) return 'sail';
+  if (lift >= 2 / 3) return 'rise';
+  if (lift >= 1 / 3) return 'roll';
+  if (lift > 0) return 'twitch';
+  return 'rest';
+}
+
 function smoothstepRange(value, start, end) {
   if (end <= start) return value >= end ? 1 : 0;
   const progress = Math.max(0, Math.min(1, (value - start) / (end - start)));
@@ -1959,7 +2302,7 @@ function settleQuestLifecycleCandidate(chapter, save) {
   if (chapter.contractVersion !== 2 || !Array.isArray(save.progress?.questReceipts)) return [];
   const lifecycleActions = [];
   const lifecycle = new Quests({
-    quests: chapter.quests,
+    quests: mainFirstQuests(chapter.quests),
     save,
     claimReceipt: (receipt) => {
       if (save.progress.questReceipts.includes(receipt)) return false;

@@ -93,6 +93,74 @@ const REVIEW_SCENE_ILLUSION_CHECKS = Object.freeze({
     'The Chapter Two completion page keeps most of the Gryffindor common-room painting unobscured while its compact hanging chapter title and separate first-classes scroll remain readable as one intentional storybook composition.',
     'The page turn reveals zero blank or unpainted frame and contains no retired preview ticket, replay choice shelf, generic owl ornament, or false gameplay affordance.',
   ],
+  'sp-ch3-spellbook-reveal-review': [
+    'The wrapped parcel, perched post owl, named spellbook, empty card frames, and opening fan read as one continuous gift in the autumn common room with no blank, doubled-book, or detached-prop frame.',
+    'All lettering and newly available spellbook state remain live-rendered rather than baked into the parcel or room painting.',
+  ],
+  'learning-ch3-lumos-review': [
+    'Exactly five recessed L-U-M-O-S rune slots remain visible while the landed L, the next matching tile, one quieter distractor, and the continuously brightening wand remain mutually separate.',
+    'The learning surface reads as a magical Charms performance over the bright painted classroom, with no quiz, score, grade, failure label, or UI covering Violet or Professor Flitwick.',
+  ],
+  'ui-ch3-spellbook-review': [
+    'The completed five-rune ceremony opens one permanent Lumos detail page with live spell lettering, one illustrated light card, and one clearly separate practice action.',
+    'The book spread, detail art, close seal, and every 88px-or-larger action remain mutually non-overlapping and retain the same book identity introduced by the parcel.',
+  ],
+  'sp-ch3-lumos-bloom-review': [
+    'The classroom stays readable as it dims and the lantern answers Violet’s warm-white wand light without using a black failure frame.',
+    'The Lumos bloom remains attached to the lantern and wand while Professor Flitwick’s celebration stays clear of Violet and the spell controls.',
+  ],
+  'learning-ch3-leviosa-review': [
+    'Exactly six ordered chant slots preserve WIN, GAR, DIUM, LEVI, O, and SA as live syllables, while landed and remaining tiles stay individually readable around one rising feather.',
+    'The feather’s partial lift and chant ribbon visibly reward each landed syllable without a score, grade, failure label, or repeated spelling-test layout.',
+  ],
+  'sp-ch3-leviosa-feather-review': [
+    'The feather’s six increasing lift stages remain one continuous motion that ends in a clean overhead sail and settled feather.',
+    'Gold ribbons and sparkles celebrate the completed chant without covering the feather, Violet, Professor Flitwick, or the learned-card meaning.',
+  ],
+  'ui-ch3-map-review': [
+    'Exactly five painted castle destinations remain readable in one route, with completed stops quiet, the second corridor marked Next, later corridors misted, and Violet’s current place marked Here.',
+    'Every destination label, route, fog state, completion mark, Here marker, and single gold objective star is live-rendered and remains separate from the map tabs, close seal, and 88px-or-larger destinations.',
+  ],
+  'sp-ch3-corridor-one-reveal-review': [
+    'Lumos reveals a small wet footprint trail inside one feathered pool of light while every corridor silhouette remains cozy and legible.',
+    'The footprints point toward the next route without resembling Trevor or baking a false completion mark into the room painting.',
+  ],
+  'ui-ch3-corridor-two-lumos-review': [
+    'The second corridor keeps two distinct worthwhile alcoves visible while Lumos is selected, with the Circe hiding place and ribbon clue receiving equal valid-target meaning and no false single-answer punishment.',
+    'The compact two-spell wand fan, both 88px-or-larger targets, Violet, and the velvet-blue corridor silhouettes remain mutually readable without hard black darkness or overlapping gold glows.',
+  ],
+  'ui-ch3-corridor-three-lumos-review': [
+    'Armor, curtain, and the alcove’s reflected eyes remain exactly three distinct cozy hiding shapes while Lumos targeting makes all three valid without revealing Trevor early.',
+    'The compact two-spell wand fan and three 88px-or-larger targets remain clear of Violet and preserve readable castle silhouettes beneath the velvet-blue light mask.',
+  ],
+  'sp-ch3-trevor-reveal-review': [
+    'Trevor emerges from the correct alcove as one distinct toad identity, never becoming confused with Violet’s possible pet toad.',
+    'Reflected eyes resolve into Trevor only after the valid Lumos cast, while the armor and curtain remain clearly ordinary shapes.',
+  ],
+  'sp-ch3-trevor-found-review': [
+    'Trevor’s hop into Violet’s hands and one indignant croak read clearly beneath the live Found Trevor caption without giving silent Violet a generated or authored spoken line.',
+    'The short celebration preserves the corridor’s cozy night legibility and leaves the return route immediately available.',
+  ],
+  'sp-ch3-trevor-reunion-review': [
+    'Neville and Trevor’s relieved reunion remains the focal action while exactly ten new house points and one toad token arrive as a restrained reward beat.',
+    'The distinct Trevor identity remains readable throughout the handoff and never swaps to Violet’s selectable pet-toad art.',
+  ],
+  'room-ch3-friendly-ghost-review': [
+    'The unnamed friendly ghost reads as warm and bookish rather than frightening while emerging from the corridor wall beside one visibly torn book.',
+    'The ghost’s live dialogue portrait, full figure, torn-book prop, Violet, and two 88px dialogue controls remain mutually separate against the cozy night corridor.',
+  ],
+  'ui-ch3-quest-journal-review': [
+    'Exactly one current main objective carries the active gold star while Fix the book appears separately with one sleeping silver star and never advertises a map route or current cast target.',
+    'The main and side entries, short live captions, sleeping-star art, parchment panel, and close control remain mutually separate and readable over the real corridor.',
+  ],
+  'ui-ch3-cards-review': [
+    'The live second album page shows exactly two earned Chapter Three keepsakes, Circe and Bertie Bott, with both painted portraits, live names, page marks, and navigation remaining mutually separate.',
+    'Both card targets remain at least 88px, cross neither the book gutter nor controls, and contain no closed pocket or baked player-facing text.',
+  ],
+  'sp-ch3-chapter-close-review': [
+    'Lumos and Leviosa appear together in Violet’s open spellbook beneath the exact live chapter title Violet’s First Spells.',
+    'The autumn common-room close turns cleanly into one truthful flying-lesson preview with no blank page or playable-Chapter-Four implication.',
+  ],
   'parent-panel': [
     'The grown-up book presents replay and yearbook as two distinct 88px-or-larger actions, with tabs, content, and close control mutually non-overlapping.',
   ],
@@ -262,6 +330,26 @@ const REVIEW_SCENE_ILLUSION_CHECKS = Object.freeze({
     'At portrait scale, blink closes both eyes naturally, talk A and talk B have distinct readable mouth shapes, and wonder, proud, and curious preserve their approved eye, brow, and mouth art without changing Violet’s identity.',
     'The cyan source field is completely absent, with no turquoise fringe, clipped hair wisps, holes, or detached edge fragments at either review zoom.',
     'All seven full figures share exact aligned-canvas registration, each receives exactly one figure-sized planted contact shadow, and all remain visually separated from their labels, portrait frames, and the outer gold frame.',
+  ],
+  'flitwick-sprite-review': [
+    'Exactly three labeled dialogue portraits and six labeled full-body Professor Flitwick states remain separated: idle, speaking, demonstrate, wand cast, celebrate, and delighted.',
+    'Every state retains one connected, recognizably tiny professor with silver-white hair, spectacles, layered academic robes, an intact wand hand, and one floor-planted contact shadow.',
+    'Teaching, wand-cast, and celebration actions keep Professor Flitwick’s identity and registration stable with no floating parts, cropped wand, or silhouette collision with labels.',
+  ],
+  'neville-sprite-review': [
+    'Exactly three labeled dialogue portraits and six labeled full-body Neville states remain separated: idle, speaking, worried, relieved, reunion, and Trevor hold.',
+    'Worried reads as tearful but not panicked, relieved remains recognizably the same kind classmate, and every state keeps one connected figure with grounded shoes and intact hands.',
+    'The reunion and Trevor-hold states keep Neville and Trevor readable as distinct identities without clipping, doubled toads, or detached character parts.',
+  ],
+  'trevor-sprite-review': [
+    'Exactly two labeled portraits and six labeled Trevor states remain separated: idle, hidden eyes, croak, hop, held, and reunion.',
+    'Every visible state retains the same distinct Trevor markings and connected toad silhouette, remaining unmistakable from Violet’s selectable pet toad at gameplay scale.',
+    'The reflected eyes, croak, hop, held, and reunion actions preserve stable registration with no detached eyes, missing limbs, doubled toad, or label collision.',
+  ],
+  'friendly-ghost-sprite-review': [
+    'Exactly three labeled dialogue portraits and six labeled full-body Friendly Ghost states remain separated: ambient, speaking, emerge, portrait rise, listening gift, and delighted.',
+    'Every state retains one unnamed, warm, bookish ghost identity with a continuous translucent silhouette and no floor shadow that falsely makes him solid.',
+    'Emergence and listening-reward states keep face, hands, bookish costume detail, and live labels readable with no frightening expression, detached transparency fringe, or clipped figure.',
   ],
 });
 

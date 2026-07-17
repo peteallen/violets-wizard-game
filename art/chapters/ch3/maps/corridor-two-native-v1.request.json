@@ -1,0 +1,49 @@
+{
+  "schema_version": 1,
+  "slug": "ch3-destination-corridor-two-native-v1",
+  "prompt": {
+    "path": "art/chapters/ch3/maps/corridor-two-native-v1.prompt.md",
+    "section": "Accepted built-in prompt"
+  },
+  "references": [
+    {
+      "path": "public/assets/art/ui/satchel/destination-diagon-alley.webp",
+      "role": "exact destination-card family, silhouette, rim, portrait geometry, and blank-label-band reference"
+    },
+    {
+      "path": "art/raw/ch2-great-hall-v4.png",
+      "role": "magical-school stone, timber, arched architecture, candlelit depth, and painterly finish only"
+    }
+  ],
+  "generation": {
+    "workflow": "Codex built-in image generation",
+    "tool": "image_gen.imagegen",
+    "model_identifier": null,
+    "provider_route": null,
+    "seed": null,
+    "returned_model_provider_or_seed_note": "The built-in workflow did not return a model identifier, provider route, or seed."
+  },
+  "output": {
+    "generated_output_id": "exec-8a340d2a-15df-4d76-9aa0-8117bbc95c63",
+    "generated_output_path": "/Users/peteallen/.codex/generated_images/019f7183-d655-79c3-8eae-91a6bf9bf959/exec-8a340d2a-15df-4d76-9aa0-8117bbc95c63.png",
+    "native_chroma_source": "art/raw/ch3-destination-corridor-two-native-v1.png",
+    "accepted_alpha_png": "art/raw/ch3-destination-corridor-two-v1.png",
+    "shipping_webp": "public/assets/art/maps/ch3-destination-corridor-two.webp",
+    "metadata": "art/chapters/ch3/maps/corridor-two-native-v1.metadata.json"
+  },
+  "processing": {
+    "alpha_extraction": {
+      "tool": "${CODEX_HOME:-$HOME/.codex}/skills/.system/imagegen/scripts/remove_chroma_key.py",
+      "arguments": ["--auto-key", "border", "--soft-matte", "--transparent-threshold", "12", "--opaque-threshold", "220", "--despill"]
+    },
+    "aspect_normalization": {
+      "tool": "ffmpeg",
+      "operation": "transparent padding only; no crop and no aspect distortion",
+      "filter": "pad=1176:1400:(ow-iw)/2:(oh-ih)/2:color=0x00000000"
+    },
+    "shipping_encode": {
+      "tool": "cwebp",
+      "arguments": ["-q", "88", "-alpha_q", "100", "-m", "6", "-sharp_yuv", "-resize", "420", "500"]
+    }
+  }
+}

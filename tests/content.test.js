@@ -16,7 +16,9 @@ import {
   chapter1LetterNarration,
 } from '../src/game/content/chapters/ch1-letter.js';
 import { chapter2, chapter2AssetKeys } from '../src/game/content/chapters/ch2.js';
-import { chapter3 } from '../src/game/content/chapters/ch3.js';
+import { chapter3, chapter3AssetKeys } from '../src/game/content/chapters/ch3.js';
+import { chapter4 } from '../src/game/content/chapters/ch4.js';
+import { assetManifest } from '../src/game/core/assetManifest.js';
 import {
   chapterAvailability,
   contentRegistry,
@@ -53,25 +55,31 @@ function referencedAssets(chapter) {
 }
 
 describe('chapter content contracts', () => {
-  it('validates playable Chapters One and Two plus the Chapter Three handoff', () => {
+  it('validates playable Chapters One and Two plus the Chapter Three and Four handoffs', () => {
     expect(validateChapter(chapter1)).toBe(chapter1);
     expect(validateChapter(chapter2)).toBe(chapter2);
     expect(validateChapter(chapter3)).toBe(chapter3);
+    expect(validateChapter(chapter4)).toBe(chapter4);
     expect(validateMap(chapter1Map)).toBe(chapter1Map);
-    expect(contentRegistry).toEqual({ ch1: chapter1, ch2: chapter2, ch3: chapter3 });
+    expect(contentRegistry).toEqual({
+      ch1: chapter1, ch2: chapter2, ch3: chapter3, ch4: chapter4,
+    });
     expect(maps).toEqual({ [chapter1Map.id]: chapter1Map });
     expect(getMap(chapter1Map.id)).toBe(chapter1Map);
     expect(getMap('map.ch8.missing')).toBeNull();
     expect(getChapter(1)).toBe(chapter1);
     expect(getChapter('ch2')).toBe(chapter2);
-    expect(chapterAvailability).toEqual({ ch1: 'playable', ch2: 'playable', ch3: 'placeholder' });
+    expect(chapterAvailability).toEqual({
+      ch1: 'playable', ch2: 'playable', ch3: 'placeholder', ch4: 'placeholder',
+    });
     expect(isChapterPlayable('ch1')).toBe(true);
     expect(isChapterPlayable(2)).toBe(true);
     expect(isChapterPlayable(3)).toBe(false);
+    expect(isChapterPlayable(4)).toBe(false);
   });
 
   it('keeps captions short, familiar, and complete across dialogue, objectives, cards, and recaps', () => {
-    const objectiveCaptions = [chapter1, chapter2].flatMap((chapter) => (
+    const objectiveCaptions = [chapter1, chapter2, chapter3].flatMap((chapter) => (
       Object.values(chapter.quests).flatMap((quest) => (
         Object.values(quest.steps).map((step) => step.objective.caption)
       ))
@@ -83,18 +91,27 @@ describe('chapter content contracts', () => {
       ...objectiveCaptions,
       ...cards.map((card) => card.caption),
       ...chapter1ResumeRecaps.map((recap) => recap.caption),
+      ...chapter3.recaps.map((recap) => recap.caption),
       ...chapter1Map.locations.map((location) => location.caption),
+      ...chapter3.maps['ch3.map.castle'].locations.map((location) => location.caption),
     ];
     expect(allCaptions.every((caption) => isSupportedCaption(caption))).toBe(true);
   });
 
-  it('registers every asset referenced by the two chapter data sets', () => {
+  it('registers every asset referenced by the authored chapter data sets', () => {
     expect(new Set(chapter1AssetKeys).size).toBe(chapter1AssetKeys.length);
     expect(new Set(chapter2AssetKeys).size).toBe(chapter2AssetKeys.length);
+    expect(new Set(chapter3AssetKeys).size).toBe(chapter3AssetKeys.length);
     for (const key of referencedAssets(chapter1)) expect(chapter1AssetKeys).toContain(key);
     for (const key of referencedAssets(chapter2)) expect(chapter2AssetKeys).toContain(key);
+    for (const key of referencedAssets(chapter3)) expect(assetManifest).toHaveProperty(key);
+    for (const key of referencedAssets(chapter4)) expect(assetManifest).toHaveProperty(key);
     for (const card of cards) {
-      const assetKeys = card.chapter === 1 ? chapter1AssetKeys : chapter2AssetKeys;
+      const assetKeys = {
+        1: chapter1AssetKeys,
+        2: chapter2AssetKeys,
+        3: chapter3AssetKeys,
+      }[card.chapter];
       expect(assetKeys).toContain(card.portraitAsset);
       expect(assetKeys).toContain(card.voice);
       expect(cardsById[card.id]).toBe(card);

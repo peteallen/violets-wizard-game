@@ -1,0 +1,80 @@
+{
+  "schema_version": 1,
+  "kind": "codex-built-in-chapter-card-image-generation",
+  "slug": "first-spells-native-v1",
+  "workflow": {
+    "name": "Codex built-in image generation",
+    "tool": "image_gen.imagegen",
+    "mode": "generate",
+    "model_identifier": null,
+    "seed": null,
+    "note": "The built-in workflow did not return a model identifier or seed."
+  },
+  "timestamps": {
+    "generation_started_at": "2026-07-17T19:22:06.992Z",
+    "generation_completed_at": "2026-07-17T19:23:13.269Z",
+    "duration_ms": 66277
+  },
+  "request_spec": {
+    "path": "art/chapters/ch3/chapter-cards/first-spells-native-v1.request.json",
+    "bytes": 1600,
+    "sha256": "4427c7dfe9649ae6ae4d3dce0487c58d7385625979b2c6bf4105a6c5808b25c9"
+  },
+  "prompt": {
+    "path": "art/chapters/ch3/chapter-cards/first-spells-native-v1.prompt.md",
+    "section": "Prompt",
+    "bytes": 2647,
+    "sha256": "dae294dcfe5a16e212b086ab0ce0fc09eb62fbec91da4086826a80c53a624f00"
+  },
+  "references": [
+    {
+      "index": 1,
+      "path": "art/raw/ch2-gryffindor-common-room-v2.png",
+      "role": "common-room material, palette, lighting, and atmosphere reference only",
+      "bytes": 3635015,
+      "sha256": "e05275fdf21456cf91a92c1e963a2f02ee8ae81fc90005a943c532cd97b319dd",
+      "dimensions": { "width": 2048, "height": 1152 }
+    },
+    {
+      "index": 2,
+      "path": "art/raw/ch1-platform.png",
+      "role": "polished storybook finish, handcrafted surface, detail density, and luminous color-separation reference only",
+      "bytes": 2884310,
+      "sha256": "8035bbc87dd43643a59132dec27a91255d942f653ca6a78487312a46ac022af1",
+      "dimensions": { "width": 1672, "height": 941 }
+    }
+  ],
+  "generation_output": {
+    "id": "exec-e2a1600c-5f69-41ad-87c0-e2998f6d111f",
+    "original_path": "/Users/peteallen/.codex/generated_images/019f717f-ae86-7712-9cf3-200179c51a6a/exec-e2a1600c-5f69-41ad-87c0-e2998f6d111f.png",
+    "copied_to": "art/raw/ch3-first-spells-native-v1.png",
+    "media_type": "image/png",
+    "bytes": 2684732,
+    "sha256": "8d2df63a60fcccfe8d6003a3dea1b315c4bd4aa8fd3d0e927eb44d90f22837fd",
+    "dimensions": { "width": 1672, "height": 941 }
+  },
+  "derivatives": {
+    "accepted_png": {
+      "path": "art/raw/ch3-first-spells-v1.png",
+      "bytes": 3698736,
+      "sha256": "dfd20635af1a3919fe5ce02f41be23acc1923a9316c46b2e71a790872fe79cbe",
+      "dimensions": { "width": 2048, "height": 1152 }
+    },
+    "shipping_webp": {
+      "path": "public/assets/art/chapter-cards/ch3-first-spells.webp",
+      "bytes": 393250,
+      "sha256": "b9c578b1c10cee5a2beb97a2c33ce5a3fe736fb07443efa60f02548f9309d8f3",
+      "dimensions": { "width": 2048, "height": 1152 }
+    }
+  },
+  "conversion": {
+    "crop": "sips -s format png -c 940 1672",
+    "resize": "sips -s format png -z 1152 2048",
+    "shipping": "cwebp -q 88 -m 6 -sharp_yuv",
+    "note": "The 1672x941 native PNG was center-cropped by one pixel to 1672x940, resized once to 2048x1152, then encoded as WebP."
+  },
+  "visual_inspection": {
+    "source": "Accepted: textless autumn-morning common-room painting with an open blank-page spellbook, distinct warm-white light bloom and single feather swirl, restrained gold motes, no people or readable marks, and calm upper and lower runtime zones.",
+    "shipping": "Accepted at 2048x1152: the crop and encode retain both distinct magical motifs, blank readable-as-blank pages, title and action space, deep violet shadow, warm light, and fine painted texture without a visible conversion defect."
+  }
+}

@@ -330,6 +330,7 @@ export function migrateSave(value, options = {}) {
   let version = schemaVersionOf(value);
   let current = cloneSave(value);
   const resumeRedirects = validateResumeRedirects(options.resumeRedirects ?? []);
+  const completionRedirects = validateCompletionRedirects(options.completionRedirects ?? []);
   const checkpointRedirects = validateCheckpointRedirects(options.checkpointRedirects ?? []);
 
   if (version > CURRENT_SAVE_SCHEMA_VERSION) {
@@ -354,6 +355,10 @@ export function migrateSave(value, options = {}) {
   }
 
   validateSaveV3MigrationFields(current);
+  const completionRedirect = matchingCompletionRedirect(current, completionRedirects);
+  if (completionRedirect) {
+    current.resume = { ...completionRedirect.to, dialogue: null };
+  }
   const resumeRedirect = matchingResumeRedirect(current.resume, resumeRedirects);
   if (resumeRedirect) {
     current.resume = { ...resumeRedirect.to, dialogue: null };

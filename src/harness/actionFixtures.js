@@ -120,6 +120,100 @@ registry
   .register('sp-ch2-chapter-card-review', createFixture(
     'Hold the Chapter Two completion page on its deterministic page-turn timeline.',
   ))
+  .register('sp-ch3-spellbook-reveal-review', createFixture(
+    'Hold the wrapped spellbook reveal and opening fan on their deterministic timeline.',
+  ))
+  .register('learning-ch3-lumos-review', createFixture(
+    'Begin the real Lumos lesson, land its self-teaching first rune, and hold the next guided match.',
+    [
+      { frame: 0, type: 'tap', target: 'ch3.charms.flitwickLumos' },
+      { frame: 150, type: 'tap', target: 'dialogue.advance' },
+      { frame: 180, type: 'tap', target: 'dialogue.advance' },
+      { frame: 210, type: 'tap', target: 'learning.tile.l' },
+    ],
+  ))
+  .register('ui-ch3-spellbook-review', createFixture(
+    'Complete the real Lumos rune sequence and hold its permanent illustrated spell detail page.',
+    [
+      { frame: 0, type: 'tap', target: 'ch3.charms.flitwickLumos' },
+      { frame: 150, type: 'tap', target: 'dialogue.advance' },
+      { frame: 180, type: 'tap', target: 'dialogue.advance' },
+      { frame: 210, type: 'tap', target: 'learning.tile.l' },
+      { frame: 240, type: 'tap', target: 'learning.tile.u' },
+      { frame: 270, type: 'tap', target: 'learning.tile.m' },
+      { frame: 300, type: 'tap', target: 'learning.tile.o' },
+      { frame: 330, type: 'tap', target: 'learning.tile.s' },
+    ],
+  ))
+  .register('sp-ch3-lumos-bloom-review', createFixture(
+    'Hold Violet’s first free Lumos cast and responsive lantern bloom on their deterministic timeline.',
+  ))
+  .register('learning-ch3-leviosa-review', createFixture(
+    'Begin the real Leviosa chant, land three spoken syllables, and hold its half-lifted feather performance.',
+    [
+      { frame: 0, type: 'tap', target: 'ch3.charms.flitwickLeviosa' },
+      { frame: 90, type: 'tap', target: 'dialogue.advance' },
+      { frame: 120, type: 'tap', target: 'dialogue.advance' },
+      { frame: 150, type: 'tap', target: 'learning.tile.win' },
+      { frame: 180, type: 'tap', target: 'learning.tile.gar' },
+      { frame: 210, type: 'tap', target: 'learning.tile.dium' },
+    ],
+  ))
+  .register('sp-ch3-leviosa-feather-review', createFixture(
+    'Hold the completed Leviosa feather sail and restrained gold celebration on their deterministic timeline.',
+  ))
+  .register('ui-ch3-map-review', createFixture(
+    'Open the live Chapter Three castle map at the second-corridor objective.',
+    [{ frame: 30, type: 'tap', target: 'hud.satchel' }],
+  ))
+  .register('sp-ch3-corridor-one-reveal-review', createFixture(
+    'Hold the first corridor’s Lumos pool and wet-footprint reveal on their deterministic timeline.',
+  ))
+  .register('ui-ch3-corridor-two-lumos-review', createFixture(
+    'Open Violet’s two-spell wand fan, choose Lumos, and hold both valid second-corridor targets.',
+    [
+      { frame: 30, type: 'tap', target: 'hud.wand' },
+      { frame: 60, type: 'tap', target: 'spellbook.cast.lumos' },
+    ],
+  ))
+  .register('ui-ch3-corridor-three-lumos-review', createFixture(
+    'Open Violet’s two-spell wand fan, choose Lumos, and hold the three distinct third-corridor hiding shapes.',
+    [
+      { frame: 30, type: 'tap', target: 'hud.wand' },
+      { frame: 60, type: 'tap', target: 'spellbook.cast.lumos' },
+    ],
+  ))
+  .register('sp-ch3-trevor-reveal-review', createFixture(
+    'Hold the valid Lumos reveal as reflected eyes resolve into Trevor on its deterministic timeline.',
+  ))
+  .register('sp-ch3-trevor-found-review', createFixture(
+    'Hold Trevor’s hop, croak, and short Found Trevor celebration on their deterministic timeline.',
+  ))
+  .register('sp-ch3-trevor-reunion-review', createFixture(
+    'Hold Neville and Trevor’s reunion, points, and toad-token reward on their deterministic timeline.',
+  ))
+  .register('room-ch3-friendly-ghost-review', createFixture(
+    'Approach the friendly ghost and hold his torn-book request against the real night corridor.',
+    [
+      { frame: 0, type: 'tap', target: 'ch3.corridorOne.friendlyGhost' },
+      { frame: 150, type: 'tap', target: 'dialogue.replay' },
+    ],
+  ))
+  .register('ui-ch3-quest-journal-review', createFixture(
+    'Open the real quest journal with its active gold main thread and sleeping silver Fix the book promise.',
+    [{ frame: 30, type: 'tap', target: 'hud.quest' }],
+  ))
+  .register('ui-ch3-cards-review', createFixture(
+    'Open the satchel’s Cards tab and turn to the live Circe and Bertie Bott keepsake page.',
+    [
+      { frame: 15, type: 'tap', target: 'hud.satchel' },
+      { frame: 30, type: 'tap', target: 'satchel.cards' },
+      { frame: 45, type: 'tap', target: 'satchel.cards.next' },
+    ],
+  ))
+  .register('sp-ch3-chapter-close-review', createFixture(
+    'Hold Violet’s First Spells and the truthful flying-lesson page turn on their deterministic timeline.',
+  ))
   .register('parent-panel', createFixture(
     'Open the satchel and hold its grown-up brass keyhole for the full three-second gate.',
     [
@@ -209,6 +303,18 @@ registry
   ))
   .register('violet-expression-review', createFixture(
     'Hold every approved aligned Violet expression without animation or input.',
+  ))
+  .register('flitwick-sprite-review', createFixture(
+    'Hold Professor Flitwick’s production portraits and teaching, casting, and celebration actions.',
+  ))
+  .register('neville-sprite-review', createFixture(
+    'Hold Neville’s production portraits and worried, relieved, and reunion states.',
+  ))
+  .register('trevor-sprite-review', createFixture(
+    'Hold Trevor’s production portrait, reveal, croak, hop, held, and reunion states.',
+  ))
+  .register('friendly-ghost-sprite-review', createFixture(
+    'Hold the friendly ghost’s production portrait, emergence, dialogue, reward, and delighted states.',
   ))
   .register('ui-dialogue-review', createFixture(
     'Hold the illustrated voiced-dialogue frame and replay control.',

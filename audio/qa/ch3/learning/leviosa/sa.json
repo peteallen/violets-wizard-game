@@ -1,0 +1,16 @@
+{
+  "language_code": "eng",
+  "language_probability": 1,
+  "text": "So",
+  "words": [
+    {
+      "text": "So",
+      "start": 0.099,
+      "end": 0.34,
+      "type": "word",
+      "logprob": -0.016081858426332474
+    }
+  ],
+  "transcription_id": "OLst2Gws07eEaCyuwBoy",
+  "audio_duration_secs": 0.6290625
+}

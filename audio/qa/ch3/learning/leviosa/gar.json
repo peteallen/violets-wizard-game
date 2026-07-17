@@ -1,0 +1,16 @@
+{
+  "language_code": "eng",
+  "language_probability": 1,
+  "text": "Ga",
+  "words": [
+    {
+      "text": "Ga",
+      "start": 0.099,
+      "end": 0.239,
+      "type": "word",
+      "logprob": -0.41939038038253784
+    }
+  ],
+  "transcription_id": "o80WWGZ2R9GnknVlaRtf",
+  "audio_duration_secs": 0.6289375
+}

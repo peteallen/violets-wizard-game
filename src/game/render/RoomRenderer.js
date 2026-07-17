@@ -1,8 +1,5 @@
 import { PALETTE, WORLD } from '../config.js';
-import {
-  drawProductionRoomVariantBackground,
-  drawProductionRoomVariantOverlay,
-} from '../presentation/productionRoomVariantOverlays.js';
+import { productionPresentationRegistry } from '../presentation/productionRoomVariantOverlays.js';
 import { resolveRoomVariant } from '../world/roomVariant.js';
 
 const ROOM_MOODS = Object.freeze({
@@ -25,6 +22,7 @@ export const ROOM_MEMORY_LIMITS = Object.freeze({
 export class RoomRenderer {
   constructor({
     resolveAsset = () => null,
+    presentationRegistry = productionPresentationRegistry,
     imageFactory = defaultImageFactory,
     canvasFactory = defaultCanvasFactory,
     logger = globalThis.console,
@@ -34,6 +32,7 @@ export class RoomRenderer {
     maxDecodedImages = ROOM_MEMORY_LIMITS.decodedImageCount,
   } = {}) {
     this.resolveAsset = resolveAsset;
+    this.presentationRegistry = presentationRegistry;
     this.imageFactory = imageFactory;
     this.canvasFactory = canvasFactory;
     this.logger = logger;
@@ -340,7 +339,7 @@ export class RoomRenderer {
       reducedMotion: Boolean(reducedMotion),
       state,
     };
-    drawProductionRoomVariantBackground(context, presentationRequest, () => {
+    this.presentationRegistry.drawRoomVariantBackground(context, presentationRequest, () => {
       if (cache?.canvas && cache.canvas.width > 1 && cache.canvas.height > 1) {
         this.touchCache(cache);
         const roomWidth = room?.size?.width ?? WORLD.width;
@@ -358,7 +357,7 @@ export class RoomRenderer {
       }
     });
 
-    drawProductionRoomVariantOverlay(context, presentationRequest);
+    this.presentationRegistry.drawRoomVariantOverlay(context, presentationRequest);
   }
 
   drawProcedural(context, roomId, variant, time, cameraX = 0) {

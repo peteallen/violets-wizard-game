@@ -6,8 +6,9 @@ import {
   productionCharacterCatalog,
   titleCharacterDependencies,
 } from './game/characters/productionCatalog.js';
-import { loadChapterPackage } from './game/content/index.js';
+import { chapterDescriptors, loadChapterPackage } from './game/content/index.js';
 import { loadGameFonts } from './game/core/loadFonts.js';
+import { loadProductionPresentationRegistry } from './game/presentation/productionRoomVariantOverlays.js';
 import { VersionWatcher, shouldRevealVersionOffer } from './game/core/VersionWatcher.js';
 import { RegisteredCharacterRenderer } from './game/render/RegisteredCharacterRenderer.js';
 import { Save } from './game/systems/Save.js';
@@ -32,6 +33,10 @@ if (params.get('reset') === '1') {
 
 const canvas = document.querySelector('#game');
 await loadGameFonts();
+const presentationRegistry = await loadProductionPresentationRegistry({
+  chapterDescriptors,
+  loadChapterPackage,
+});
 const characterScopes = new CharacterScopeController({
   catalog: productionCharacterCatalog,
   loadChapterPackage,
@@ -45,6 +50,7 @@ const game = new Game(canvas, {
   saveManager,
   characterRenderer,
   characterScopes,
+  presentationRegistry,
 });
 game.start();
 

@@ -1,0 +1,37 @@
+{
+  "schema_version": 1,
+  "slug": "corridor-three-native-v1",
+  "prompt": {
+    "path": "art/chapters/ch3/rooms/corridor-three-native-v1.prompt.md",
+    "section": "Prompt"
+  },
+  "references": [
+    {
+      "path": "art/raw/ch1-courtyard.png",
+      "role": "readable old-stone staging and calm gameplay-floor reference"
+    },
+    {
+      "path": "public/assets/art/rooms/ch2-great-hall.webp",
+      "role": "magical-school scale, candlelit night color, and dimensional stone reference"
+    },
+    {
+      "path": "art/guides/ch1-room-style-triptych.png",
+      "role": "consolidated Chapter One finish and staging reference"
+    }
+  ],
+  "generation": {
+    "workflow": "Codex built-in image generation",
+    "tool": "image_gen.imagegen",
+    "model_identifier": null,
+    "seed": null,
+    "returned_model_or_seed_note": "The built-in workflow did not return a model identifier or seed."
+  },
+  "output": {
+    "generated_output_id": "exec-c79ff835-e88a-4444-b1be-b6b860bb93e5",
+    "generated_output_path": "/Users/peteallen/.codex/generated_images/019f717f-2a8a-7bb0-8623-a1c4b20b10fe/exec-c79ff835-e88a-4444-b1be-b6b860bb93e5.png",
+    "native_source": "art/raw/ch3-corridor-three-native-v1.png",
+    "accepted_png": "art/raw/ch3-corridor-three-v1.png",
+    "shipping_webp": "public/assets/art/rooms/ch3-corridor-three.webp",
+    "metadata": "art/chapters/ch3/rooms/corridor-three-native-v1.metadata.json"
+  }
+}

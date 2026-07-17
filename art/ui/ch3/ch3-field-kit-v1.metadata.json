@@ -1,0 +1,814 @@
+{
+  "schema_version": 1,
+  "kind": "codex-built-in-chapter-three-ui-image-generation",
+  "slug": "chapter-three-field-kit-v1",
+  "generated_at": "2026-07-17",
+  "validation_scope": "Metadata and scripts only. No source or shipping image was opened for visual inspection during this integration.",
+  "source_session": {
+    "id": "019f6f81-0cc0-7252-a86a-57b089c9e468",
+    "path": "/Users/peteallen/.codex/sessions/2026/07/17/rollout-2026-07-17T03-55-56-019f6f81-0cc0-7252-a86a-57b089c9e468.jsonl",
+    "extraction_boundary": "Only prompt, call, receipt, timestamp, status, and saved-path fields were read. Image data, base64 fields, result payloads, and tool output payloads were not copied."
+  },
+  "workflow": {
+    "name": "Codex built-in image generation",
+    "tool": "image_gen.imagegen",
+    "recorded_invocation": "tools.image_gen__imagegen",
+    "model_identifier": null,
+    "provider_route": null,
+    "seed": null,
+    "note": "The built-in workflow did not return a model identifier, provider route, or seed."
+  },
+  "request_spec": {
+    "path": "art/ui/ch3/ch3-field-kit-v1.request.json",
+    "bytes": 10325,
+    "sha256": "c5b2ee4c20a5ca074f6fce36cf9fd2d0d45ed08a3abd5006406ac2c899601a7a"
+  },
+  "prompt_document": {
+    "path": "art/ui/ch3/ch3-field-kit-v1.prompts.md",
+    "bytes": 13901,
+    "sha256": "15878df9f396a91d1217dcfb0498ae2877ddc811e1dd96e1677e6da80bc2191a"
+  },
+  "processing_script": {
+    "path": "art/ui/ch3/process.mjs",
+    "command": "node art/ui/ch3/process.mjs",
+    "bytes": 8470,
+    "sha256": "2643a8daaa396797474ce40f21e96e29ba34fbc8ba307350451a0e8eb4147eda"
+  },
+  "processing_environment": {
+    "python": "3.14.6",
+    "pillow": "12.3.0",
+    "cwebp": "1.6.0",
+    "libsharpyuv": "0.4.2",
+    "sips": "sips-316",
+    "chroma_helper": {
+      "path": "${CODEX_HOME:-$HOME/.codex}/skills/.system/imagegen/scripts/remove_chroma_key.py",
+      "bytes": 13836,
+      "sha256": "3f7b9b14ad5c90f37618bc1c16a039a2076abca12ddc41b3ae470e2b1cad6c0e"
+    }
+  },
+  "artifacts": [
+    {
+      "id": "exec-14a102dc-61a0-4fe2-8145-3261e647f603",
+      "asset_id": "spellbook-spread",
+      "prompt": {
+        "section": "Spellbook spread",
+        "bytes": 2286,
+        "sha256": "e6625b1588d3ea8c7359fa2d1df8a891437df7393cca038b5c8607790eae844f",
+        "original_request_matches_revised_prompt": true
+      },
+      "references": [
+        {
+          "index": 1,
+          "path": "art/ui/satchel/source/spread-v2.png",
+          "role": "exact open-folio material, composition, blank live-content aperture, and practical-clearance edit target",
+          "bytes": 2751733,
+          "sha256": "c5217ab11def5062ff8bcd466da3448f239d6d1d9eaa3e2560bd33da7f5e1937",
+          "dimensions": [
+            1643,
+            957
+          ]
+        }
+      ],
+      "generation_output": {
+        "original_path": "/Users/peteallen/.codex/generated_images/019f6f81-0cc0-7252-a86a-57b089c9e468/exec-14a102dc-61a0-4fe2-8145-3261e647f603.png",
+        "copied_to": "art/ui/ch3/source/spellbook-spread.png",
+        "copy_note": "Copied byte-for-byte without image edits before deterministic processing.",
+        "media_type": "image/png",
+        "bytes": 2700724,
+        "sha256": "efe065e7e2172b3f24c5781a8bbdd898f5dfb09f1734511ff707c4dea96273b8",
+        "dimensions": [
+          1643,
+          957
+        ]
+      },
+      "shipping": {
+        "path": "public/assets/art/ui/ch3/spellbook-spread.webp",
+        "media_type": "image/webp",
+        "bytes": 477994,
+        "sha256": "cad143f1233f73f161ed532cf8ff721e34a9230c4f94d280eae8acf680351238",
+        "dimensions": [
+          2560,
+          1440
+        ],
+        "has_alpha": false
+      },
+      "manifest": {
+        "key": "ui/spells/spellbook-spread",
+        "path": "assets/art/ui/ch3/spellbook-spread.webp",
+        "kind": "image",
+        "chapter": "ch3",
+        "resolved": true
+      },
+      "processing": {
+        "crop": {
+          "tool": "sips",
+          "arguments": [
+            "-s",
+            "format",
+            "png",
+            "-c",
+            "924",
+            "1643"
+          ],
+          "dimensions": [
+            1643,
+            924
+          ]
+        },
+        "resize": {
+          "tool": "sips",
+          "arguments": [
+            "-s",
+            "format",
+            "png",
+            "-z",
+            "1440",
+            "2560"
+          ],
+          "dimensions": [
+            2560,
+            1440
+          ]
+        },
+        "shipping_encode": {
+          "tool": "cwebp",
+          "arguments": [
+            "-q",
+            "90",
+            "-m",
+            "6",
+            "-sharp_yuv"
+          ]
+        }
+      },
+      "validation": {
+        "alpha_extrema": [
+          255,
+          255
+        ],
+        "opaque": true
+      }
+    },
+    {
+      "id": "exec-626e67a1-b6fd-4955-92e9-123931072dbd",
+      "asset_id": "card-shell",
+      "prompt": {
+        "section": "Card shell",
+        "bytes": 2078,
+        "sha256": "4ed7f304833953bcf753925cf8fcb87e2cebab0e150168c6f3466998fcbbe936",
+        "original_request_matches_revised_prompt": true
+      },
+      "references": [
+        {
+          "index": 1,
+          "path": "art/ui/satchel/source/card-frame-v2-chroma.png",
+          "role": "painted leather and parchment Field Kit style plus flat chroma-background reference",
+          "bytes": 2011654,
+          "sha256": "67e284fac209d5f3145724d59b0bcce9037ce966a0955a31243f0f93d9c70856",
+          "dimensions": [
+            1190,
+            1322
+          ]
+        }
+      ],
+      "generation_output": {
+        "original_path": "/Users/peteallen/.codex/generated_images/019f6f81-0cc0-7252-a86a-57b089c9e468/exec-626e67a1-b6fd-4955-92e9-123931072dbd.png",
+        "copied_to": "art/ui/ch3/source/card-shell-chroma.png",
+        "copy_note": "Copied byte-for-byte without image edits before deterministic processing.",
+        "media_type": "image/png",
+        "bytes": 2848773,
+        "sha256": "df360c647e534f7ecb8c2727dbaa435a87e32b7ea7695f323ad44918b98c2773",
+        "dimensions": [
+          1062,
+          1480
+        ]
+      },
+      "shipping": {
+        "path": "public/assets/art/ui/ch3/card-shell.webp",
+        "media_type": "image/webp",
+        "bytes": 227374,
+        "sha256": "5b140a5ba546d6130696075c4d4109c9d093da2f7569e12b4c677c186051d762",
+        "dimensions": [
+          720,
+          1000
+        ],
+        "has_alpha": true
+      },
+      "manifest": {
+        "key": "ui/spells/card-shell",
+        "path": "assets/art/ui/ch3/card-shell.webp",
+        "kind": "image",
+        "chapter": "ch3",
+        "resolved": true
+      },
+      "processing": {
+        "alpha_extraction": {
+          "tool": "${CODEX_HOME:-$HOME/.codex}/skills/.system/imagegen/scripts/remove_chroma_key.py",
+          "arguments": [
+            "--auto-key",
+            "border",
+            "--soft-matte",
+            "--transparent-threshold",
+            "12",
+            "--opaque-threshold",
+            "220",
+            "--despill",
+            "--force"
+          ],
+          "sampled_key_color": "#02f708",
+          "source_transparent_pixels": 402192,
+          "source_partially_transparent_pixels": 5118,
+          "source_total_pixels": 1571760
+        },
+        "shipping_encode": {
+          "tool": "cwebp",
+          "arguments": [
+            "-q",
+            "90",
+            "-alpha_q",
+            "100",
+            "-m",
+            "6",
+            "-sharp_yuv",
+            "-resize",
+            "720",
+            "1000"
+          ]
+        }
+      },
+      "validation": {
+        "alpha_extrema": [
+          0,
+          255
+        ],
+        "transparent_pixels": 182657,
+        "partially_transparent_pixels": 5530,
+        "opaque_pixels": 531813,
+        "nonzero_alpha_bounds": [
+          45,
+          56,
+          677,
+          949
+        ],
+        "corner_patch_size": [
+          16,
+          16
+        ],
+        "corner_alpha_extrema": {
+          "top_left": [
+            0,
+            0
+          ],
+          "top_right": [
+            0,
+            0
+          ],
+          "bottom_left": [
+            0,
+            0
+          ],
+          "bottom_right": [
+            0,
+            0
+          ]
+        },
+        "visible_fringe_alpha_floor": 12,
+        "chroma_green_floor": 180,
+        "chroma_green_excess_threshold": 80,
+        "visible_chroma_pixels_above_threshold": 0,
+        "maximum_visible_fringe_green_excess": 12
+      }
+    },
+    {
+      "id": "exec-43d8f3b3-a36b-4f91-9290-a6ef5478cb43",
+      "asset_id": "card-shell-selected",
+      "prompt": {
+        "section": "Selected card shell",
+        "bytes": 1751,
+        "sha256": "eba38f68a24b30450e5598d96d55a7672e7c4b16556bcc4ed003dd8c1d842f2f",
+        "original_request_matches_revised_prompt": true
+      },
+      "references": [
+        {
+          "index": 1,
+          "path": "art/ui/ch3/source/card-shell-chroma.png",
+          "original_call_path": "/Users/peteallen/.codex/generated_images/019f6f81-0cc0-7252-a86a-57b089c9e468/exec-626e67a1-b6fd-4955-92e9-123931072dbd.png",
+          "role": "exact unselected spell-card shell edit target",
+          "bytes": 2848773,
+          "sha256": "df360c647e534f7ecb8c2727dbaa435a87e32b7ea7695f323ad44918b98c2773",
+          "dimensions": [
+            1062,
+            1480
+          ]
+        }
+      ],
+      "generation_output": {
+        "original_path": "/Users/peteallen/.codex/generated_images/019f6f81-0cc0-7252-a86a-57b089c9e468/exec-43d8f3b3-a36b-4f91-9290-a6ef5478cb43.png",
+        "copied_to": "art/ui/ch3/source/card-shell-selected-chroma.png",
+        "copy_note": "Copied byte-for-byte without image edits before deterministic processing.",
+        "media_type": "image/png",
+        "bytes": 2833502,
+        "sha256": "f084016f4b1ddc0771fbf3319d9906c5fe3d5f75ba3e58e86f7017e62bd7c949",
+        "dimensions": [
+          1063,
+          1480
+        ]
+      },
+      "shipping": {
+        "path": "public/assets/art/ui/ch3/card-shell-selected.webp",
+        "media_type": "image/webp",
+        "bytes": 218960,
+        "sha256": "1333844765f8c369d82cefdd8c70e40753d43ec0692a210cc3ab448683f3c9cf",
+        "dimensions": [
+          720,
+          1000
+        ],
+        "has_alpha": true
+      },
+      "manifest": {
+        "key": "ui/spells/card-shell-selected",
+        "path": "assets/art/ui/ch3/card-shell-selected.webp",
+        "kind": "image",
+        "chapter": "ch3",
+        "resolved": true
+      },
+      "processing": {
+        "alpha_extraction": {
+          "tool": "${CODEX_HOME:-$HOME/.codex}/skills/.system/imagegen/scripts/remove_chroma_key.py",
+          "arguments": [
+            "--auto-key",
+            "border",
+            "--soft-matte",
+            "--transparent-threshold",
+            "12",
+            "--opaque-threshold",
+            "220",
+            "--despill",
+            "--force"
+          ],
+          "sampled_key_color": "#02ec0e",
+          "source_transparent_pixels": 405013,
+          "source_partially_transparent_pixels": 4839,
+          "source_total_pixels": 1573240
+        },
+        "shipping_encode": {
+          "tool": "cwebp",
+          "arguments": [
+            "-q",
+            "90",
+            "-alpha_q",
+            "100",
+            "-m",
+            "6",
+            "-sharp_yuv",
+            "-resize",
+            "720",
+            "1000"
+          ]
+        }
+      },
+      "validation": {
+        "alpha_extrema": [
+          0,
+          255
+        ],
+        "transparent_pixels": 183816,
+        "partially_transparent_pixels": 5520,
+        "opaque_pixels": 530664,
+        "nonzero_alpha_bounds": [
+          45,
+          56,
+          676,
+          949
+        ],
+        "corner_patch_size": [
+          16,
+          16
+        ],
+        "corner_alpha_extrema": {
+          "top_left": [
+            0,
+            0
+          ],
+          "top_right": [
+            0,
+            0
+          ],
+          "bottom_left": [
+            0,
+            0
+          ],
+          "bottom_right": [
+            0,
+            0
+          ]
+        },
+        "visible_fringe_alpha_floor": 12,
+        "chroma_green_floor": 180,
+        "chroma_green_excess_threshold": 80,
+        "visible_chroma_pixels_above_threshold": 0,
+        "maximum_visible_fringe_green_excess": 14
+      }
+    },
+    {
+      "id": "exec-c440da33-ee62-4fda-a046-0d7ae4794b97",
+      "asset_id": "incantation-ribbon",
+      "prompt": {
+        "section": "Incantation ribbon",
+        "bytes": 1979,
+        "sha256": "6ca546200007966c3a19e84a2d2d0bc9eda85179edd0eb1f4572987daeb8fdd0",
+        "original_request_matches_revised_prompt": true
+      },
+      "references": [
+        {
+          "index": 1,
+          "path": "art/ui/story-surfaces/source/action-note-v2-chroma.png",
+          "role": "painted parchment and leather action-note material plus flat chroma-background reference",
+          "bytes": 2472149,
+          "sha256": "fff8e5bd1a4035bbe3be3beb4201a85ba4634a1bffb33aa04c88fc6801032ee5",
+          "dimensions": [
+            2172,
+            724
+          ]
+        }
+      ],
+      "generation_output": {
+        "original_path": "/Users/peteallen/.codex/generated_images/019f6f81-0cc0-7252-a86a-57b089c9e468/exec-c440da33-ee62-4fda-a046-0d7ae4794b97.png",
+        "copied_to": "art/ui/ch3/source/incantation-ribbon-chroma.png",
+        "copy_note": "Copied byte-for-byte without image edits before deterministic processing.",
+        "media_type": "image/png",
+        "bytes": 2010621,
+        "sha256": "0989375a454206264e585e968c997703d17f4c24dbd714aa78efa53063d1c81f",
+        "dimensions": [
+          2172,
+          724
+        ]
+      },
+      "shipping": {
+        "path": "public/assets/art/ui/ch3/incantation-ribbon.webp",
+        "media_type": "image/webp",
+        "bytes": 90808,
+        "sha256": "5c15a976500ee7d48c58b37a3a8663a7000d0c2f31c12a3635aec1ad6ca7f662",
+        "dimensions": [
+          1200,
+          400
+        ],
+        "has_alpha": true
+      },
+      "manifest": {
+        "key": "ui/spells/incantation-ribbon",
+        "path": "assets/art/ui/ch3/incantation-ribbon.webp",
+        "kind": "image",
+        "chapter": "ch3",
+        "resolved": true
+      },
+      "processing": {
+        "alpha_extraction": {
+          "tool": "${CODEX_HOME:-$HOME/.codex}/skills/.system/imagegen/scripts/remove_chroma_key.py",
+          "arguments": [
+            "--auto-key",
+            "border",
+            "--soft-matte",
+            "--transparent-threshold",
+            "12",
+            "--opaque-threshold",
+            "220",
+            "--despill",
+            "--force"
+          ],
+          "sampled_key_color": "#04f309",
+          "source_transparent_pixels": 910099,
+          "source_partially_transparent_pixels": 5518,
+          "source_total_pixels": 1572528
+        },
+        "shipping_encode": {
+          "tool": "cwebp",
+          "arguments": [
+            "-q",
+            "90",
+            "-alpha_q",
+            "100",
+            "-m",
+            "6",
+            "-sharp_yuv",
+            "-resize",
+            "1200",
+            "400"
+          ]
+        }
+      },
+      "validation": {
+        "alpha_extrema": [
+          0,
+          255
+        ],
+        "transparent_pixels": 276469,
+        "partially_transparent_pixels": 4502,
+        "opaque_pixels": 199029,
+        "nonzero_alpha_bounds": [
+          9,
+          95,
+          1190,
+          297
+        ],
+        "corner_patch_size": [
+          16,
+          16
+        ],
+        "corner_alpha_extrema": {
+          "top_left": [
+            0,
+            0
+          ],
+          "top_right": [
+            0,
+            0
+          ],
+          "bottom_left": [
+            0,
+            0
+          ],
+          "bottom_right": [
+            0,
+            0
+          ]
+        },
+        "visible_fringe_alpha_floor": 12,
+        "chroma_green_floor": 180,
+        "chroma_green_excess_threshold": 80,
+        "visible_chroma_pixels_above_threshold": 0,
+        "maximum_visible_fringe_green_excess": 10
+      }
+    },
+    {
+      "id": "exec-3893eb0c-5feb-4cc7-b71f-b09854d26f5f",
+      "asset_id": "rune-tile",
+      "prompt": {
+        "section": "Rune tile",
+        "bytes": 2155,
+        "sha256": "cfa70cdb8cfa9168ab9d419bdaecca5d3f63a3687b86f1d444fb655249b74b00",
+        "original_request_matches_revised_prompt": true
+      },
+      "references": [
+        {
+          "index": 1,
+          "path": "art/ui/satchel/source/card-frame-v2-chroma.png",
+          "role": "painted Field Kit material and flat chroma-background reference",
+          "bytes": 2011654,
+          "sha256": "67e284fac209d5f3145724d59b0bcce9037ce966a0955a31243f0f93d9c70856",
+          "dimensions": [
+            1190,
+            1322
+          ]
+        }
+      ],
+      "generation_output": {
+        "original_path": "/Users/peteallen/.codex/generated_images/019f6f81-0cc0-7252-a86a-57b089c9e468/exec-3893eb0c-5feb-4cc7-b71f-b09854d26f5f.png",
+        "copied_to": "art/ui/ch3/source/rune-tile-chroma.png",
+        "copy_note": "Copied byte-for-byte without image edits before deterministic processing.",
+        "media_type": "image/png",
+        "bytes": 2733445,
+        "sha256": "7e7b3015873b241762ab19636b21e06a77b2e50142ae6dce07e25d5dc5111f4e",
+        "dimensions": [
+          1254,
+          1254
+        ]
+      },
+      "shipping": {
+        "path": "public/assets/art/ui/ch3/rune-tile.webp",
+        "media_type": "image/webp",
+        "bytes": 118544,
+        "sha256": "f0ae32e645e09394f045aa549391af4084739059e5bf774888de589c47ff692d",
+        "dimensions": [
+          640,
+          640
+        ],
+        "has_alpha": true
+      },
+      "manifest": {
+        "key": "ui/spells/rune-tile",
+        "path": "assets/art/ui/ch3/rune-tile.webp",
+        "kind": "image",
+        "chapter": "ch3",
+        "resolved": true
+      },
+      "processing": {
+        "alpha_extraction": {
+          "tool": "${CODEX_HOME:-$HOME/.codex}/skills/.system/imagegen/scripts/remove_chroma_key.py",
+          "arguments": [
+            "--auto-key",
+            "border",
+            "--soft-matte",
+            "--transparent-threshold",
+            "12",
+            "--opaque-threshold",
+            "220",
+            "--despill",
+            "--force"
+          ],
+          "sampled_key_color": "#03fa05",
+          "source_transparent_pixels": 535507,
+          "source_partially_transparent_pixels": 4625,
+          "source_total_pixels": 1572516
+        },
+        "shipping_encode": {
+          "tool": "cwebp",
+          "arguments": [
+            "-q",
+            "90",
+            "-alpha_q",
+            "100",
+            "-m",
+            "6",
+            "-sharp_yuv",
+            "-resize",
+            "640",
+            "640"
+          ]
+        }
+      },
+      "validation": {
+        "alpha_extrema": [
+          0,
+          255
+        ],
+        "transparent_pixels": 138386,
+        "partially_transparent_pixels": 3377,
+        "opaque_pixels": 267837,
+        "nonzero_alpha_bounds": [
+          54,
+          29,
+          592,
+          600
+        ],
+        "corner_patch_size": [
+          16,
+          16
+        ],
+        "corner_alpha_extrema": {
+          "top_left": [
+            0,
+            0
+          ],
+          "top_right": [
+            0,
+            0
+          ],
+          "bottom_left": [
+            0,
+            0
+          ],
+          "bottom_right": [
+            0,
+            0
+          ]
+        },
+        "visible_fringe_alpha_floor": 12,
+        "chroma_green_floor": 180,
+        "chroma_green_excess_threshold": 80,
+        "visible_chroma_pixels_above_threshold": 0,
+        "maximum_visible_fringe_green_excess": 7
+      }
+    },
+    {
+      "id": "exec-0ddf40dd-7ddd-48ac-8192-e843e96fa077",
+      "asset_id": "chant-tile",
+      "prompt": {
+        "section": "Chant tile",
+        "bytes": 2100,
+        "sha256": "73b2d5826ac8600ac82efd60c4876151bdb88ca73b6df2d987173babb1011571",
+        "original_request_matches_revised_prompt": true
+      },
+      "references": [
+        {
+          "index": 1,
+          "path": "art/ui/story-surfaces/source/action-note-v2-chroma.png",
+          "role": "painted parchment and leather Field Kit material plus flat chroma-background reference",
+          "bytes": 2472149,
+          "sha256": "fff8e5bd1a4035bbe3be3beb4201a85ba4634a1bffb33aa04c88fc6801032ee5",
+          "dimensions": [
+            2172,
+            724
+          ]
+        }
+      ],
+      "generation_output": {
+        "original_path": "/Users/peteallen/.codex/generated_images/019f6f81-0cc0-7252-a86a-57b089c9e468/exec-0ddf40dd-7ddd-48ac-8192-e843e96fa077.png",
+        "copied_to": "art/ui/ch3/source/chant-tile-chroma.png",
+        "copy_note": "Copied byte-for-byte without image edits before deterministic processing.",
+        "media_type": "image/png",
+        "bytes": 2151630,
+        "sha256": "72eb5a9d728242d5645b5f3a41018e25fc66dd51ee1bb52e5521f00a7893f50e",
+        "dimensions": [
+          1536,
+          1024
+        ]
+      },
+      "shipping": {
+        "path": "public/assets/art/ui/ch3/chant-tile.webp",
+        "media_type": "image/webp",
+        "bytes": 69278,
+        "sha256": "19455fc475b099ca80252e05586442885fc77304791e0de7757bdebc3cdb141d",
+        "dimensions": [
+          768,
+          512
+        ],
+        "has_alpha": true
+      },
+      "manifest": {
+        "key": "ui/spells/chant-tile",
+        "path": "assets/art/ui/ch3/chant-tile.webp",
+        "kind": "image",
+        "chapter": "ch3",
+        "resolved": true
+      },
+      "processing": {
+        "alpha_extraction": {
+          "tool": "${CODEX_HOME:-$HOME/.codex}/skills/.system/imagegen/scripts/remove_chroma_key.py",
+          "arguments": [
+            "--auto-key",
+            "border",
+            "--soft-matte",
+            "--transparent-threshold",
+            "12",
+            "--opaque-threshold",
+            "220",
+            "--despill",
+            "--force"
+          ],
+          "sampled_key_color": "#03f906",
+          "source_transparent_pixels": 1047499,
+          "source_partially_transparent_pixels": 2778,
+          "source_total_pixels": 1572864
+        },
+        "shipping_encode": {
+          "tool": "cwebp",
+          "arguments": [
+            "-q",
+            "90",
+            "-alpha_q",
+            "100",
+            "-m",
+            "6",
+            "-sharp_yuv",
+            "-resize",
+            "768",
+            "512"
+          ]
+        }
+      },
+      "validation": {
+        "alpha_extrema": [
+          0,
+          255
+        ],
+        "transparent_pixels": 261417,
+        "partially_transparent_pixels": 1616,
+        "opaque_pixels": 130183,
+        "nonzero_alpha_bounds": [
+          81,
+          123,
+          687,
+          389
+        ],
+        "corner_patch_size": [
+          16,
+          16
+        ],
+        "corner_alpha_extrema": {
+          "top_left": [
+            0,
+            0
+          ],
+          "top_right": [
+            0,
+            0
+          ],
+          "bottom_left": [
+            0,
+            0
+          ],
+          "bottom_right": [
+            0,
+            0
+          ]
+        },
+        "visible_fringe_alpha_floor": 12,
+        "chroma_green_floor": 180,
+        "chroma_green_excess_threshold": 80,
+        "visible_chroma_pixels_above_threshold": 0,
+        "maximum_visible_fringe_green_excess": 11
+      }
+    }
+  ],
+  "validation": {
+    "dimensions_alpha_corners_file_sizes": "Passed by art/ui/ch3/process.mjs for all six shipping files.",
+    "manifest_resolution": "All six ui/spells keys resolved to the expected Chapter Three image paths.",
+    "prompt_integrity": "All six recorded prompt blocks match their original request and image_generation_end revised-prompt SHA-256 values.",
+    "source_copy_integrity": "All six repository source PNGs match their generated output SHA-256 values."
+  },
+  "determinism": {
+    "consecutive_processing_runs_compared": 2,
+    "byte_identical_shipping_outputs": true
+  }
+}

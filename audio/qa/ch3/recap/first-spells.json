@@ -1,0 +1,100 @@
+{
+  "language_code": "eng",
+  "language_probability": 1,
+  "text": "Professor Flitwick taught Violet Lumos and Leviosa",
+  "words": [
+    {
+      "text": "Professor",
+      "start": 0.079,
+      "end": 0.439,
+      "type": "word",
+      "logprob": -0.0006568658282049
+    },
+    {
+      "text": " ",
+      "start": 0.439,
+      "end": 0.539,
+      "type": "spacing",
+      "logprob": -0.00002312633478140924
+    },
+    {
+      "text": "Flitwick",
+      "start": 0.539,
+      "end": 0.979,
+      "type": "word",
+      "logprob": -0.00005268892391541158
+    },
+    {
+      "text": " ",
+      "start": 0.979,
+      "end": 1.039,
+      "type": "spacing",
+      "logprob": -0.0000014305104514278355
+    },
+    {
+      "text": "taught",
+      "start": 1.039,
+      "end": 1.24,
+      "type": "word",
+      "logprob": -0.0000014305104514278355
+    },
+    {
+      "text": " ",
+      "start": 1.24,
+      "end": 1.36,
+      "type": "spacing",
+      "logprob": -0.0005614373367279768
+    },
+    {
+      "text": "Violet",
+      "start": 1.36,
+      "end": 1.779,
+      "type": "word",
+      "logprob": -0.0005614373367279768
+    },
+    {
+      "text": " ",
+      "start": 1.779,
+      "end": 1.879,
+      "type": "spacing",
+      "logprob": -0.012817145325243473
+    },
+    {
+      "text": "Lumos",
+      "start": 1.879,
+      "end": 2.279,
+      "type": "word",
+      "logprob": -0.007690620981020402
+    },
+    {
+      "text": " ",
+      "start": 2.279,
+      "end": 2.319,
+      "type": "spacing",
+      "logprob": -0.000001311301275563892
+    },
+    {
+      "text": "and",
+      "start": 2.319,
+      "end": 2.419,
+      "type": "word",
+      "logprob": -0.000001311301275563892
+    },
+    {
+      "text": " ",
+      "start": 2.419,
+      "end": 2.459,
+      "type": "spacing",
+      "logprob": -0.01255018636584282
+    },
+    {
+      "text": "Leviosa",
+      "start": 2.46,
+      "end": 3.059,
+      "type": "word",
+      "logprob": -0.00560033757106534
+    }
+  ],
+  "transcription_id": "OaaAg7BRr6gOEVxELG2g",
+  "audio_duration_secs": 3.3436875
+}

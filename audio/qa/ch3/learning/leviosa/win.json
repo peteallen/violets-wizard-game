@@ -1,0 +1,16 @@
+{
+  "language_code": "eng",
+  "language_probability": 1,
+  "text": "Win",
+  "words": [
+    {
+      "text": "Win",
+      "start": 0.099,
+      "end": 0.419,
+      "type": "word",
+      "logprob": -0.003365687560290098
+    }
+  ],
+  "transcription_id": "T4Zl7FkBAfs7F6iNGqtD",
+  "audio_duration_secs": 0.6325
+}

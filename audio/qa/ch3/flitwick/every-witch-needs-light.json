@@ -1,0 +1,198 @@
+{
+  "language_code": "eng",
+  "language_probability": 1,
+  "text": "Every witch needs a light, Violet. This little lantern has forgotten how to shine.",
+  "words": [
+    {
+      "text": "Every",
+      "start": 0.079,
+      "end": 0.399,
+      "type": "word",
+      "logprob": -0.0003885467885993421
+    },
+    {
+      "text": " ",
+      "start": 0.399,
+      "end": 0.439,
+      "type": "spacing",
+      "logprob": -0.0007426364463753998
+    },
+    {
+      "text": "witch",
+      "start": 0.439,
+      "end": 0.659,
+      "type": "word",
+      "logprob": -0.0007426364463753998
+    },
+    {
+      "text": " ",
+      "start": 0.659,
+      "end": 0.779,
+      "type": "spacing",
+      "logprob": -0.0000016689286894688848
+    },
+    {
+      "text": "needs",
+      "start": 0.779,
+      "end": 0.959,
+      "type": "word",
+      "logprob": -0.0000016689286894688848
+    },
+    {
+      "text": " ",
+      "start": 0.959,
+      "end": 1,
+      "type": "spacing",
+      "logprob": 0
+    },
+    {
+      "text": "a",
+      "start": 1,
+      "end": 1.019,
+      "type": "word",
+      "logprob": 0
+    },
+    {
+      "text": " ",
+      "start": 1.019,
+      "end": 1.1,
+      "type": "spacing",
+      "logprob": -0.000006318072337307967
+    },
+    {
+      "text": "light,",
+      "start": 1.1,
+      "end": 1.339,
+      "type": "word",
+      "logprob": -0.0004167638086679896
+    },
+    {
+      "text": " ",
+      "start": 1.339,
+      "end": 1.419,
+      "type": "spacing",
+      "logprob": -0.00006818538531661034
+    },
+    {
+      "text": "Violet.",
+      "start": 1.419,
+      "end": 1.799,
+      "type": "word",
+      "logprob": -0.00006132263972956155
+    },
+    {
+      "text": " ",
+      "start": 1.799,
+      "end": 2.24,
+      "type": "spacing",
+      "logprob": -1.1920928244535389e-7
+    },
+    {
+      "text": "This",
+      "start": 2.24,
+      "end": 2.399,
+      "type": "word",
+      "logprob": -1.1920928244535389e-7
+    },
+    {
+      "text": " ",
+      "start": 2.399,
+      "end": 2.479,
+      "type": "spacing",
+      "logprob": -0.000007271740287251305
+    },
+    {
+      "text": "little",
+      "start": 2.48,
+      "end": 2.72,
+      "type": "word",
+      "logprob": -0.000007271740287251305
+    },
+    {
+      "text": " ",
+      "start": 2.72,
+      "end": 2.759,
+      "type": "spacing",
+      "logprob": -0.0000983428253675811
+    },
+    {
+      "text": "lantern",
+      "start": 2.759,
+      "end": 3.139,
+      "type": "word",
+      "logprob": -0.0000983428253675811
+    },
+    {
+      "text": " ",
+      "start": 3.139,
+      "end": 3.179,
+      "type": "spacing",
+      "logprob": 0
+    },
+    {
+      "text": "has",
+      "start": 3.179,
+      "end": 3.279,
+      "type": "word",
+      "logprob": 0
+    },
+    {
+      "text": " ",
+      "start": 3.279,
+      "end": 3.319,
+      "type": "spacing",
+      "logprob": -0.000006794906312279636
+    },
+    {
+      "text": "forgotten",
+      "start": 3.319,
+      "end": 3.699,
+      "type": "word",
+      "logprob": -0.000006794906312279636
+    },
+    {
+      "text": " ",
+      "start": 3.699,
+      "end": 3.739,
+      "type": "spacing",
+      "logprob": 0
+    },
+    {
+      "text": "how",
+      "start": 3.74,
+      "end": 3.859,
+      "type": "word",
+      "logprob": 0
+    },
+    {
+      "text": " ",
+      "start": 3.859,
+      "end": 3.899,
+      "type": "spacing",
+      "logprob": 0
+    },
+    {
+      "text": "to",
+      "start": 3.899,
+      "end": 3.959,
+      "type": "word",
+      "logprob": 0
+    },
+    {
+      "text": " ",
+      "start": 3.959,
+      "end": 4.079,
+      "type": "spacing",
+      "logprob": -1.1920928244535389e-7
+    },
+    {
+      "text": "shine.",
+      "start": 4.079,
+      "end": 4.46,
+      "type": "word",
+      "logprob": -0.01482556015252475
+    }
+  ],
+  "transcription_id": "K4PSxPFyto39qWJV4q7r",
+  "audio_duration_secs": 4.8114375
+}

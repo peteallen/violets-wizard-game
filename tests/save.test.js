@@ -241,9 +241,9 @@ describe('safe storage adapter', () => {
         schemaVersion: 3,
         resume: {
           chapter: 'ch3',
-          scene: 'ch3.scene.preview',
-          room: 'ch3.previewRoom',
-          spawn: 'start',
+          scene: 'ch3.scene.spellbookParcel',
+          room: 'ch3.commonRoom',
+          spawn: 'parcel',
           dialogue: null,
         },
       },

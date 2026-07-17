@@ -1,0 +1,16 @@
+{
+  "language_code": "eng",
+  "language_probability": 1,
+  "text": "Uh",
+  "words": [
+    {
+      "text": "Uh",
+      "start": 0.099,
+      "end": 0.119,
+      "type": "word",
+      "logprob": -0.0014527016319334507
+    }
+  ],
+  "transcription_id": "JuloMEZVupWbESOGJlId",
+  "audio_duration_secs": 0.459875
+}

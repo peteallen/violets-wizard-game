@@ -1,0 +1,83 @@
+{
+  "schema_version": 1,
+  "kind": "codex-built-in-room-image-generation",
+  "slug": "common-room-autumn-native-v1",
+  "workflow": {
+    "name": "Codex built-in image generation",
+    "tool": "image_gen.imagegen",
+    "model_identifier": null,
+    "seed": null,
+    "note": "The built-in workflow did not return a model identifier or seed."
+  },
+  "timestamps": {
+    "generation_started_at": "2026-07-17T19:17:29.777Z",
+    "generation_completed_at": "2026-07-17T19:18:49.946Z",
+    "duration_ms": 80169
+  },
+  "request_spec": {
+    "path": "art/chapters/ch3/rooms/common-room-autumn-native-v1.request.json",
+    "bytes": 1445,
+    "sha256": "a0efa67091d6438b6459e2d8aeb51b5899cb54e45a8f96621f72732237343c95"
+  },
+  "prompt": {
+    "path": "art/chapters/ch3/rooms/common-room-autumn-native-v1.prompt.md",
+    "section": "Prompt",
+    "bytes": 3942,
+    "sha256": "4a5267785a9907fe0c610706e44cb69b4708df0e7869024294eb88bbcead6a54"
+  },
+  "references": [
+    {
+      "index": 1,
+      "path": "art/raw/ch2-gryffindor-common-room-v2.png",
+      "role": "stable accepted same-room identity and architecture reference",
+      "bytes": 3635015,
+      "sha256": "e05275fdf21456cf91a92c1e963a2f02ee8ae81fc90005a943c532cd97b319dd",
+      "dimensions": { "width": 2048, "height": 1152 }
+    },
+    {
+      "index": 2,
+      "path": "art/raw/ch1-bedroom.png",
+      "role": "bright autumn-morning window light, warm wood, and calm gameplay-floor reference",
+      "bytes": 2538610,
+      "sha256": "dbfbdf69b481f4bc563c2c7711e55615d9f838b20bef4f2fb2fd3ba3c02ca1df",
+      "dimensions": { "width": 1672, "height": 941 }
+    },
+    {
+      "index": 3,
+      "path": "art/guides/ch1-room-style-triptych.png",
+      "role": "consolidated Chapter One finish and staging reference",
+      "bytes": 683274,
+      "sha256": "ce0628710e9add1a8641c869ce6df94303457faac6434fcb188733b096450a07",
+      "dimensions": { "width": 1536, "height": 288 }
+    }
+  ],
+  "generation_output": {
+    "id": "exec-b99d0101-5669-4c70-bea0-bf044e2b071c",
+    "original_path": "/Users/peteallen/.codex/generated_images/019f717f-2a8a-7bb0-8623-a1c4b20b10fe/exec-b99d0101-5669-4c70-bea0-bf044e2b071c.png",
+    "copied_to": "art/raw/ch3-common-room-autumn-native-v1.png",
+    "media_type": "image/png",
+    "bytes": 3019696,
+    "sha256": "76740cb046a90a57ce1ca5f9bcbc35d0b82f9df3fc45bf307197756091501d10",
+    "dimensions": { "width": 1672, "height": 941 }
+  },
+  "derivatives": {
+    "accepted_png": {
+      "path": "art/raw/ch3-common-room-autumn-v1.png",
+      "bytes": 4036175,
+      "sha256": "b073aa31411086c09dde94be389e26cb55835a4afcb31057658d7f56435c5147",
+      "dimensions": { "width": 2048, "height": 1152 }
+    },
+    "shipping_webp": {
+      "path": "public/assets/art/rooms/ch3-common-room-autumn.webp",
+      "bytes": 548642,
+      "sha256": "fd6ffed6ba9579b0b1afa8d8ac54ca55aa5d626917e5c012bc9332539780b0aa",
+      "dimensions": { "width": 2048, "height": 1152 }
+    }
+  },
+  "conversion": {
+    "crop": "sips -s format png -c 940 1672",
+    "resize": "sips -s format png -z 1152 2048",
+    "shipping": "cwebp -q 88 -m 6 -sharp_yuv",
+    "note": "The 1672x941 native PNG was center-cropped by one pixel to 1672x940, resized once to 2048x1152, then encoded as WebP."
+  }
+}

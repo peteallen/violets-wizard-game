@@ -1,0 +1,30 @@
+{
+  "language_code": "eng",
+  "language_probability": 1,
+  "text": "D, um",
+  "words": [
+    {
+      "text": "D,",
+      "start": 0.079,
+      "end": 0.419,
+      "type": "word",
+      "logprob": -0.004794828128069639
+    },
+    {
+      "text": " ",
+      "start": 0.419,
+      "end": 0.439,
+      "type": "spacing",
+      "logprob": -0.000004291525328881107
+    },
+    {
+      "text": "um",
+      "start": 0.439,
+      "end": 0.799,
+      "type": "word",
+      "logprob": -0.000004291525328881107
+    }
+  ],
+  "transcription_id": "3rBKGgxff2JGQy9g2Zez",
+  "audio_duration_secs": 1.0433125
+}

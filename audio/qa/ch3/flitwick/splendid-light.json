@@ -1,0 +1,72 @@
+{
+  "language_code": "eng",
+  "language_probability": 1,
+  "text": "Splendid, you woke the light",
+  "words": [
+    {
+      "text": "Splendid,",
+      "start": 0.079,
+      "end": 0.56,
+      "type": "word",
+      "logprob": -0.05814570699860471
+    },
+    {
+      "text": " ",
+      "start": 0.56,
+      "end": 0.879,
+      "type": "spacing",
+      "logprob": -0.0000358813522325363
+    },
+    {
+      "text": "you",
+      "start": 0.879,
+      "end": 0.979,
+      "type": "word",
+      "logprob": -0.0000358813522325363
+    },
+    {
+      "text": " ",
+      "start": 0.979,
+      "end": 0.999,
+      "type": "spacing",
+      "logprob": -0.0000460137271147687
+    },
+    {
+      "text": "woke",
+      "start": 1,
+      "end": 1.24,
+      "type": "word",
+      "logprob": -0.0000460137271147687
+    },
+    {
+      "text": " ",
+      "start": 1.24,
+      "end": 1.279,
+      "type": "spacing",
+      "logprob": -0.00026258357684127986
+    },
+    {
+      "text": "the",
+      "start": 1.279,
+      "end": 1.339,
+      "type": "word",
+      "logprob": -0.00026258357684127986
+    },
+    {
+      "text": " ",
+      "start": 1.339,
+      "end": 1.419,
+      "type": "spacing",
+      "logprob": -0.020636726170778275
+    },
+    {
+      "text": "light",
+      "start": 1.419,
+      "end": 1.719,
+      "type": "word",
+      "logprob": -0.020636726170778275
+    }
+  ],
+  "transcription_id": "GKOtaIBT0QujMxGPzJCu",
+  "audio_duration_secs": 1.9764375
+}

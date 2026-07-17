@@ -1,0 +1,142 @@
+{
+  "language_code": "eng",
+  "language_probability": 1,
+  "text": "Return to Professor Flitwick and lift the feather with Leviosa",
+  "words": [
+    {
+      "text": "Return",
+      "start": 0.099,
+      "end": 0.459,
+      "type": "word",
+      "logprob": -0.015109962783753872
+    },
+    {
+      "text": " ",
+      "start": 0.459,
+      "end": 0.479,
+      "type": "spacing",
+      "logprob": -7.152555099310121e-7
+    },
+    {
+      "text": "to",
+      "start": 0.479,
+      "end": 0.579,
+      "type": "word",
+      "logprob": -7.152555099310121e-7
+    },
+    {
+      "text": " ",
+      "start": 0.579,
+      "end": 0.62,
+      "type": "spacing",
+      "logprob": -0.000010013530300057027
+    },
+    {
+      "text": "Professor",
+      "start": 0.62,
+      "end": 1,
+      "type": "word",
+      "logprob": -0.000010013530300057027
+    },
+    {
+      "text": " ",
+      "start": 1,
+      "end": 1.12,
+      "type": "spacing",
+      "logprob": -0.00002455681169521995
+    },
+    {
+      "text": "Flitwick",
+      "start": 1.12,
+      "end": 1.579,
+      "type": "word",
+      "logprob": -0.00006466815921157831
+    },
+    {
+      "text": " ",
+      "start": 1.579,
+      "end": 1.599,
+      "type": "spacing",
+      "logprob": -0.00003480850500636734
+    },
+    {
+      "text": "and",
+      "start": 1.599,
+      "end": 1.799,
+      "type": "word",
+      "logprob": -0.00003480850500636734
+    },
+    {
+      "text": " ",
+      "start": 1.799,
+      "end": 1.839,
+      "type": "spacing",
+      "logprob": -0.000022411095415009186
+    },
+    {
+      "text": "lift",
+      "start": 1.839,
+      "end": 2.039,
+      "type": "word",
+      "logprob": -0.000022411095415009186
+    },
+    {
+      "text": " ",
+      "start": 2.039,
+      "end": 2.099,
+      "type": "spacing",
+      "logprob": -3.576278118089249e-7
+    },
+    {
+      "text": "the",
+      "start": 2.099,
+      "end": 2.22,
+      "type": "word",
+      "logprob": -3.576278118089249e-7
+    },
+    {
+      "text": " ",
+      "start": 2.22,
+      "end": 2.24,
+      "type": "spacing",
+      "logprob": -0.00007676783570786938
+    },
+    {
+      "text": "feather",
+      "start": 2.24,
+      "end": 2.5,
+      "type": "word",
+      "logprob": -0.00007676783570786938
+    },
+    {
+      "text": " ",
+      "start": 2.5,
+      "end": 2.519,
+      "type": "spacing",
+      "logprob": -8.344646857949556e-7
+    },
+    {
+      "text": "with",
+      "start": 2.519,
+      "end": 2.639,
+      "type": "word",
+      "logprob": -8.344646857949556e-7
+    },
+    {
+      "text": " ",
+      "start": 2.639,
+      "end": 2.739,
+      "type": "spacing",
+      "logprob": -0.18060410022735596
+    },
+    {
+      "text": "Leviosa",
+      "start": 2.74,
+      "end": 3.419,
+      "type": "word",
+      "logprob": -0.07755616350498583
+    }
+  ],
+  "transcription_id": "EbQzPQGgcOK14hfS8iBJ",
+  "audio_duration_secs": 3.66875
+}

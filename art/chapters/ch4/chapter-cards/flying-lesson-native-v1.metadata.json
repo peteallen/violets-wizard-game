@@ -1,0 +1,63 @@
+{
+  "schema_version": 1,
+  "kind": "codex-built-in-chapter-card-image-generation",
+  "slug": "flying-lesson-native-v1",
+  "workflow": {
+    "name": "Codex built-in image generation",
+    "tool": "image_gen.imagegen",
+    "mode": "generate",
+    "model_identifier": null,
+    "seed": null,
+    "note": "The built-in workflow did not return a model identifier or seed."
+  },
+  "timestamps": {
+    "generation_started_at": "2026-07-17T19:23:47.975Z",
+    "generation_completed_at": "2026-07-17T19:24:58.416Z",
+    "duration_ms": 70441
+  },
+  "request_spec": {
+    "path": "art/chapters/ch4/chapter-cards/flying-lesson-native-v1.request.json",
+    "bytes": 1438,
+    "sha256": "0399764f2d031110d433a41c915b1eed4798de4b7c1c4b0244a797b62339ff9e"
+  },
+  "prompt": {
+    "path": "art/chapters/ch4/chapter-cards/flying-lesson-native-v1.prompt.md",
+    "section": "Prompt",
+    "bytes": 2627,
+    "sha256": "2884052e66fab0603848e80de38786e690f53a14fcebc8849b0c7d7746c470a5"
+  },
+  "references": [
+    {
+      "index": 1,
+      "path": "art/raw/ch2-lake-vista-v2.png",
+      "role": "original distant castle continuity and magical blue-violet atmosphere reference only",
+      "bytes": 3680689,
+      "sha256": "9c16e29df4adf2f606e4d26b472fa395d84fe2a6d16a782edd1fa162275a999c",
+      "dimensions": { "width": 2048, "height": 1152 }
+    },
+    {
+      "index": 2,
+      "path": "art/raw/ch1-platform.png",
+      "role": "polished storybook finish, dimensional light, and luminous-gold accent reference only",
+      "bytes": 2884310,
+      "sha256": "8035bbc87dd43643a59132dec27a91255d942f653ca6a78487312a46ac022af1",
+      "dimensions": { "width": 1672, "height": 941 }
+    }
+  ],
+  "generation_output": {
+    "id": "exec-75134036-dcb4-4047-81ed-2bab60281ce4",
+    "original_path": "/Users/peteallen/.codex/generated_images/019f717f-ae86-7712-9cf3-200179c51a6a/exec-75134036-dcb4-4047-81ed-2bab60281ce4.png",
+    "copied_to": "art/raw/ch4-flying-lesson-native-v1.png",
+    "media_type": "image/png",
+    "bytes": 3055927,
+    "sha256": "e5de523dccb48023e175bbcff85587ee5f38e0341318dbe0b26db34469e7dc0a",
+    "dimensions": { "width": 1672, "height": 941 }
+  },
+  "derivatives": {},
+  "visual_inspection": {
+    "status": "rejected",
+    "safe_to_ship": false,
+    "reason": "The painting otherwise met the single-riderless-broom, original-castle, autumn-lawn, safe-mood, textless, and runtime-zone requirements, but it contained five golden star rings rather than the requested three or four.",
+    "resolution": "A tightly scoped built-in edit removed only the highest ring; the corrected accepted lineage is flying-lesson-native-v2."
+  }
+}

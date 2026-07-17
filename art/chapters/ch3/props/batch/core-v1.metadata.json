@@ -1,0 +1,27 @@
+{
+  "schema_version": 1,
+  "mode": "built-in-image-generation",
+  "generated_at": "2026-07-17T20:04:28Z",
+  "prompt": {
+    "path": "art/chapters/ch3/props/batch/core-v1.prompt.md",
+    "section": "Prompt"
+  },
+  "references": [
+    {
+      "index": 1,
+      "path": "art/guides/ch1-room-style-triptych.png",
+      "role": "the game's painterly storybook texture, warm key light, violet-blue shadow color, and soft dark-brown edge treatment only"
+    },
+    {
+      "index": 2,
+      "path": "art/guides/flat-cyan-chroma.png",
+      "role": "the exact flat extraction background"
+    }
+  ],
+  "generated_source_path": "/Users/peteallen/.codex/generated_images/019f71ab-48a4-7df0-977b-38ec5cf4fc37/exec-a0d53cb3-4f16-4668-8e75-0e7d9424e5ad.png",
+  "output": {
+    "path": "art/chapters/ch3/props/batch/core-v1.png",
+    "bytes": 2036046,
+    "sha256": "d16a9b4254590ef7c0dd41646f15096cbdcb33fb487dcea3d88b98a27650f31b"
+  }
+}

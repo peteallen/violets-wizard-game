@@ -1,0 +1,142 @@
+{
+  "language_code": "eng",
+  "language_probability": 1,
+  "text": "Tap the post owl and open the parcel from home.",
+  "words": [
+    {
+      "text": "Tap",
+      "start": 0.079,
+      "end": 0.319,
+      "type": "word",
+      "logprob": -0.0009478605352342129
+    },
+    {
+      "text": " ",
+      "start": 0.319,
+      "end": 0.34,
+      "type": "spacing",
+      "logprob": -0.000009298280929215252
+    },
+    {
+      "text": "the",
+      "start": 0.34,
+      "end": 0.439,
+      "type": "word",
+      "logprob": -0.000009298280929215252
+    },
+    {
+      "text": " ",
+      "start": 0.439,
+      "end": 0.479,
+      "type": "spacing",
+      "logprob": -0.011073562316596508
+    },
+    {
+      "text": "post",
+      "start": 0.479,
+      "end": 0.759,
+      "type": "word",
+      "logprob": -0.011073562316596508
+    },
+    {
+      "text": " ",
+      "start": 0.759,
+      "end": 0.799,
+      "type": "spacing",
+      "logprob": -0.00047088501742109656
+    },
+    {
+      "text": "owl",
+      "start": 0.799,
+      "end": 1.079,
+      "type": "word",
+      "logprob": -0.00047088501742109656
+    },
+    {
+      "text": " ",
+      "start": 1.079,
+      "end": 1.119,
+      "type": "spacing",
+      "logprob": -0.00003433168603805825
+    },
+    {
+      "text": "and",
+      "start": 1.12,
+      "end": 1.24,
+      "type": "word",
+      "logprob": -0.00003433168603805825
+    },
+    {
+      "text": " ",
+      "start": 1.24,
+      "end": 1.319,
+      "type": "spacing",
+      "logprob": -0.0000029802276912960224
+    },
+    {
+      "text": "open",
+      "start": 1.319,
+      "end": 1.539,
+      "type": "word",
+      "logprob": -0.0000029802276912960224
+    },
+    {
+      "text": " ",
+      "start": 1.539,
+      "end": 1.579,
+      "type": "spacing",
+      "logprob": -0.000006318072337307967
+    },
+    {
+      "text": "the",
+      "start": 1.579,
+      "end": 1.62,
+      "type": "word",
+      "logprob": -0.000006318072337307967
+    },
+    {
+      "text": " ",
+      "start": 1.62,
+      "end": 1.74,
+      "type": "spacing",
+      "logprob": -0.00012730741582345217
+    },
+    {
+      "text": "parcel",
+      "start": 1.74,
+      "end": 2.099,
+      "type": "word",
+      "logprob": -0.00012730741582345217
+    },
+    {
+      "text": " ",
+      "start": 2.099,
+      "end": 2.179,
+      "type": "spacing",
+      "logprob": -0.000011324817933200393
+    },
+    {
+      "text": "from",
+      "start": 2.18,
+      "end": 2.299,
+      "type": "word",
+      "logprob": -0.000011324817933200393
+    },
+    {
+      "text": " ",
+      "start": 2.299,
+      "end": 2.379,
+      "type": "spacing",
+      "logprob": -0.0011736417654901743
+    },
+    {
+      "text": "home.",
+      "start": 2.379,
+      "end": 2.74,
+      "type": "word",
+      "logprob": -0.051389834471046926
+    }
+  ],
+  "transcription_id": "OjC1DAkRexlzKqsAZ1tF",
+  "audio_duration_secs": 3.018625
+}

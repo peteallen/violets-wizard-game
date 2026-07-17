@@ -1,0 +1,170 @@
+{
+  "language_code": "eng",
+  "language_probability": 1,
+  "text": "Bertie Bott invented beans with every flavor, including a few surprising ones.",
+  "words": [
+    {
+      "text": "Bertie",
+      "start": 0.079,
+      "end": 0.34,
+      "type": "word",
+      "logprob": -0.010828442987985909
+    },
+    {
+      "text": " ",
+      "start": 0.34,
+      "end": 0.379,
+      "type": "spacing",
+      "logprob": -0.5396378636360168
+    },
+    {
+      "text": "Bott",
+      "start": 0.379,
+      "end": 0.56,
+      "type": "word",
+      "logprob": -0.5396378636360168
+    },
+    {
+      "text": " ",
+      "start": 0.56,
+      "end": 0.599,
+      "type": "spacing",
+      "logprob": -0.0001722425949992612
+    },
+    {
+      "text": "invented",
+      "start": 0.599,
+      "end": 1,
+      "type": "word",
+      "logprob": -0.0001722425949992612
+    },
+    {
+      "text": " ",
+      "start": 1,
+      "end": 1.139,
+      "type": "spacing",
+      "logprob": -0.000847933697514236
+    },
+    {
+      "text": "beans",
+      "start": 1.139,
+      "end": 1.579,
+      "type": "word",
+      "logprob": -0.000847933697514236
+    },
+    {
+      "text": " ",
+      "start": 1.579,
+      "end": 1.639,
+      "type": "spacing",
+      "logprob": -9.536738616588991e-7
+    },
+    {
+      "text": "with",
+      "start": 1.639,
+      "end": 1.74,
+      "type": "word",
+      "logprob": -9.536738616588991e-7
+    },
+    {
+      "text": " ",
+      "start": 1.74,
+      "end": 1.779,
+      "type": "spacing",
+      "logprob": -4.768370445162873e-7
+    },
+    {
+      "text": "every",
+      "start": 1.779,
+      "end": 2.099,
+      "type": "word",
+      "logprob": -4.768370445162873e-7
+    },
+    {
+      "text": " ",
+      "start": 2.099,
+      "end": 2.119,
+      "type": "spacing",
+      "logprob": -0.020542483776807785
+    },
+    {
+      "text": "flavor,",
+      "start": 2.119,
+      "end": 2.5,
+      "type": "word",
+      "logprob": -0.017791988012114807
+    },
+    {
+      "text": " ",
+      "start": 2.5,
+      "end": 2.899,
+      "type": "spacing",
+      "logprob": -0.0000017881377516459906
+    },
+    {
+      "text": "including",
+      "start": 2.899,
+      "end": 3.379,
+      "type": "word",
+      "logprob": -0.0000017881377516459906
+    },
+    {
+      "text": " ",
+      "start": 3.379,
+      "end": 3.479,
+      "type": "spacing",
+      "logprob": -1.1920928244535389e-7
+    },
+    {
+      "text": "a",
+      "start": 3.48,
+      "end": 3.5,
+      "type": "word",
+      "logprob": -1.1920928244535389e-7
+    },
+    {
+      "text": " ",
+      "start": 3.5,
+      "end": 3.539,
+      "type": "spacing",
+      "logprob": -7.152555099310121e-7
+    },
+    {
+      "text": "few",
+      "start": 3.539,
+      "end": 3.659,
+      "type": "word",
+      "logprob": -7.152555099310121e-7
+    },
+    {
+      "text": " ",
+      "start": 3.659,
+      "end": 3.739,
+      "type": "spacing",
+      "logprob": -0.000004291525328881107
+    },
+    {
+      "text": "surprising",
+      "start": 3.74,
+      "end": 4.319,
+      "type": "word",
+      "logprob": -0.000004291525328881107
+    },
+    {
+      "text": " ",
+      "start": 4.319,
+      "end": 4.399,
+      "type": "spacing",
+      "logprob": -3.576278118089249e-7
+    },
+    {
+      "text": "ones.",
+      "start": 4.4,
+      "end": 4.739,
+      "type": "word",
+      "logprob": -0.03217471539969665
+    }
+  ],
+  "transcription_id": "hOccIzFfTxWSJWuMeZ6W",
+  "audio_duration_secs": 5.0155
+}

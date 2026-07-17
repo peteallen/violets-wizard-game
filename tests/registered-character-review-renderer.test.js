@@ -22,6 +22,10 @@ const EXPECTED_SCENES = Object.freeze([
   'madam-malkin-sprite-review',
   'menagerie-keeper-sprite-review',
   'violet-expression-review',
+  'flitwick-sprite-review',
+  'neville-sprite-review',
+  'trevor-sprite-review',
+  'friendly-ghost-sprite-review',
 ]);
 
 function entry(overrides = {}) {
@@ -65,7 +69,7 @@ function drawingContext() {
 }
 
 describe('registered character review scenes', () => {
-  it('publishes the nine preserved exact scene IDs as immutable descriptors', () => {
+  it('publishes the preserved and Chapter Three scene IDs as immutable descriptors', () => {
     expect(productionCharacterReviewCatalog.sceneIds).toEqual(EXPECTED_SCENES);
     expect(Object.isFrozen(productionCharacterReviewCatalog.sceneIds)).toBe(true);
     expect(Object.isFrozen(productionCharacterReviewDescriptors)).toBe(true);

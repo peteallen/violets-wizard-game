@@ -1,0 +1,184 @@
+{
+  "language_code": "eng",
+  "language_probability": 1,
+  "text": "Long spells come in little pieces. Listen closely as they lift the feather.",
+  "words": [
+    {
+      "text": "Long",
+      "start": 0.099,
+      "end": 0.299,
+      "type": "word",
+      "logprob": -0.000653530121780932
+    },
+    {
+      "text": " ",
+      "start": 0.299,
+      "end": 0.359,
+      "type": "spacing",
+      "logprob": -0.0002302858338225633
+    },
+    {
+      "text": "spells",
+      "start": 0.359,
+      "end": 0.719,
+      "type": "word",
+      "logprob": -0.0002302858338225633
+    },
+    {
+      "text": " ",
+      "start": 0.719,
+      "end": 0.799,
+      "type": "spacing",
+      "logprob": -0.000018954096958623268
+    },
+    {
+      "text": "come",
+      "start": 0.799,
+      "end": 1.039,
+      "type": "word",
+      "logprob": -0.000018954096958623268
+    },
+    {
+      "text": " ",
+      "start": 1.039,
+      "end": 1.079,
+      "type": "spacing",
+      "logprob": -1.1920928244535389e-7
+    },
+    {
+      "text": "in",
+      "start": 1.079,
+      "end": 1.159,
+      "type": "word",
+      "logprob": -1.1920928244535389e-7
+    },
+    {
+      "text": " ",
+      "start": 1.159,
+      "end": 1.219,
+      "type": "spacing",
+      "logprob": -0.000008702239938429557
+    },
+    {
+      "text": "little",
+      "start": 1.22,
+      "end": 1.399,
+      "type": "word",
+      "logprob": -0.000008702239938429557
+    },
+    {
+      "text": " ",
+      "start": 1.399,
+      "end": 1.5,
+      "type": "spacing",
+      "logprob": -0.0000011920922133867862
+    },
+    {
+      "text": "pieces.",
+      "start": 1.5,
+      "end": 1.979,
+      "type": "word",
+      "logprob": -0.00004915720475245118
+    },
+    {
+      "text": " ",
+      "start": 1.979,
+      "end": 2.74,
+      "type": "spacing",
+      "logprob": -0.000008821448318485636
+    },
+    {
+      "text": "Listen",
+      "start": 2.74,
+      "end": 3,
+      "type": "word",
+      "logprob": -0.000008821448318485636
+    },
+    {
+      "text": " ",
+      "start": 3,
+      "end": 3.119,
+      "type": "spacing",
+      "logprob": -0.000003576272320060525
+    },
+    {
+      "text": "closely",
+      "start": 3.119,
+      "end": 3.559,
+      "type": "word",
+      "logprob": -0.000003576272320060525
+    },
+    {
+      "text": " ",
+      "start": 3.559,
+      "end": 3.599,
+      "type": "spacing",
+      "logprob": -0.000053165931603871286
+    },
+    {
+      "text": "as",
+      "start": 3.599,
+      "end": 3.699,
+      "type": "word",
+      "logprob": -0.000053165931603871286
+    },
+    {
+      "text": " ",
+      "start": 3.699,
+      "end": 3.739,
+      "type": "spacing",
+      "logprob": -0.0000014305104514278355
+    },
+    {
+      "text": "they",
+      "start": 3.74,
+      "end": 3.879,
+      "type": "word",
+      "logprob": -0.0000014305104514278355
+    },
+    {
+      "text": " ",
+      "start": 3.879,
+      "end": 3.899,
+      "type": "spacing",
+      "logprob": -0.00002002696055569686
+    },
+    {
+      "text": "lift",
+      "start": 3.899,
+      "end": 4.079,
+      "type": "word",
+      "logprob": -0.00002002696055569686
+    },
+    {
+      "text": " ",
+      "start": 4.079,
+      "end": 4.119,
+      "type": "spacing",
+      "logprob": -0.000002861018856492592
+    },
+    {
+      "text": "the",
+      "start": 4.119,
+      "end": 4.179,
+      "type": "word",
+      "logprob": -0.000002861018856492592
+    },
+    {
+      "text": " ",
+      "start": 4.179,
+      "end": 4.259,
+      "type": "spacing",
+      "logprob": -0.00035041390219703317
+    },
+    {
+      "text": "feather.",
+      "start": 4.259,
+      "end": 4.579,
+      "type": "word",
+      "logprob": -0.059602747023745906
+    }
+  ],
+  "transcription_id": "O2IdSPyjwMBHn0YQDtWj",
+  "audio_duration_secs": 4.9454375
+}

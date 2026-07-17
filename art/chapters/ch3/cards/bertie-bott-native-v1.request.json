@@ -1,0 +1,42 @@
+{
+  "schema_version": 1,
+  "slug": "bertie-bott-native-v1",
+  "prompt": {
+    "path": "art/chapters/ch3/cards/bertie-bott-native-v1.prompt.md",
+    "section": "Prompt"
+  },
+  "references": [
+    {
+      "path": "art/raw/ch2-card-merlin.png",
+      "role": "painted finish, square portrait scale, breathing room, and runtime oval-crop safety reference only"
+    },
+    {
+      "path": "art/raw/ch2-card-jocunda-sykes.png",
+      "role": "painted finish, expressive face treatment, and runtime oval-crop safety reference only"
+    }
+  ],
+  "generation": {
+    "workflow": "Codex built-in image generation",
+    "tool": "image_gen.imagegen",
+    "mode": "generate",
+    "model_identifier": null,
+    "seed": null,
+    "returned_model_or_seed_note": "The built-in workflow did not return a model identifier or seed."
+  },
+  "output": {
+    "generated_output_id": "exec-47ad3c12-ef21-4016-8db9-3d9194c4df3a",
+    "generated_output_path": "/Users/peteallen/.codex/generated_images/019f717f-ae86-7712-9cf3-200179c51a6a/exec-47ad3c12-ef21-4016-8db9-3d9194c4df3a.png",
+    "native_source": "art/raw/ch3-card-bertie-bott-native-v1.png",
+    "accepted_png": "art/raw/ch3-card-bertie-bott-v1.png",
+    "shipping_webp": "public/assets/art/cards/bertie-bott.webp",
+    "metadata": "art/chapters/ch3/cards/bertie-bott-native-v1.metadata.json"
+  },
+  "conversion": {
+    "width": 1254,
+    "height": 1254,
+    "native_copy_required_resize": false,
+    "webp_quality": 84,
+    "webp_method": 6,
+    "sharp_yuv": true
+  }
+}

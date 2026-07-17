@@ -1,0 +1,16 @@
+{
+  "language_code": "eng",
+  "language_probability": 1,
+  "text": "S",
+  "words": [
+    {
+      "text": "S",
+      "start": 0,
+      "end": 0.34,
+      "type": "word",
+      "logprob": -0.7485248446464539
+    }
+  ],
+  "transcription_id": "ZpOFHBtO9XmVDdJabsjU",
+  "audio_duration_secs": 0.4954375
+}

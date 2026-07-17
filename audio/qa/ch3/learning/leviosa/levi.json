@@ -1,0 +1,16 @@
+{
+  "language_code": "eng",
+  "language_probability": 1,
+  "text": "Levy",
+  "words": [
+    {
+      "text": "Levy",
+      "start": 0.119,
+      "end": 0.599,
+      "type": "word",
+      "logprob": -0.03256308162235655
+    }
+  ],
+  "transcription_id": "Vy5JYmRp4OtfGl1VIQtz",
+  "audio_duration_secs": 0.877875
+}

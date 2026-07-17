@@ -1,0 +1,16 @@
+{
+  "language_code": "eng",
+  "language_probability": 1,
+  "text": "Luh",
+  "words": [
+    {
+      "text": "Luh",
+      "start": 0.099,
+      "end": 0.379,
+      "type": "word",
+      "logprob": -0.37531233827273053
+    }
+  ],
+  "transcription_id": "thyfzrywxqMlzRQdTNMf",
+  "audio_duration_secs": 0.5823125
+}

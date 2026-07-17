@@ -5,6 +5,7 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 import { cards } from '../src/game/content/cards.js';
 import { chapter1, chapter1ResumeRecaps } from '../src/game/content/chapters/ch1.js';
 import { chapter2 } from '../src/game/content/chapters/ch2.js';
+import { chapter3VoiceManifest } from './chapter3_voice_manifest.mjs';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const DEFAULT_QA_DIRECTORY = resolve(ROOT, 'audio/qa');
@@ -24,6 +25,11 @@ const ROLE_ORDER = Object.freeze([
   'deputy-head',
   'sorting-hat',
   'headmaster',
+  'home',
+  'flitwick',
+  'learning',
+  'neville',
+  'ghost',
   'violet',
 ]);
 
@@ -47,6 +53,9 @@ export function collectExpectedVoiceLines() {
     for (const recap of recaps) addLine(lines, recap.voice, recap.text, 'narrator');
   }
   for (const card of cards) addLine(lines, card.voice, card.text, 'narrator');
+  for (const entry of chapter3VoiceManifest) {
+    addLine(lines, entry.key, entry.text, entry.role, entry.acceptableTexts);
+  }
 
   const unique = new Map();
   for (const line of lines) {
@@ -67,6 +76,7 @@ export function normalizeSpokenText(value) {
     .replace(/\bcolour\b/gu, 'color')
     .replace(/\bchokunda\b/gu, 'jocunda')
     .replace(/\bahem\b/gu, 'hmm')
+    .replace(/\bspell book\b/gu, 'spellbook')
     .replace(/&/gu, ' and ')
     .replace(/[\u2018\u2019'`]/gu, '')
     .replace(/[^\p{L}\p{N}]+/gu, ' ')
@@ -109,9 +119,9 @@ export function auditVoiceQa(expectedLines, records, loadIssues = []) {
       continue;
     }
     stats.present += 1;
-    const expected = normalizeSpokenText(line.text);
     const actual = normalizeSpokenText(record.text);
-    if (expected === actual) stats.matched += 1;
+    const acceptable = line.acceptableTexts?.length ? line.acceptableTexts : [line.text];
+    if (acceptable.some((text) => normalizeSpokenText(text) === actual)) stats.matched += 1;
     else {
       stats.mismatched += 1;
       mismatched.push({ ...line, actualText: record.text, file: record.file });
@@ -280,10 +290,10 @@ export function formatVoiceQaReport(result) {
   return output.join('\n');
 }
 
-function addLine(lines, key, text, role) {
+function addLine(lines, key, text, role, acceptableTexts = [text]) {
   if (typeof key !== 'string' || !key.startsWith('voice/')) throw new TypeError('Voice lines require a voice/ asset key.');
   if (typeof text !== 'string' || text.trim() === '') throw new TypeError(`${key} requires spoken text.`);
-  lines.push({ key, text, role });
+  lines.push({ key, text, role, acceptableTexts });
 }
 
 function roleForSpeaker(speaker) {

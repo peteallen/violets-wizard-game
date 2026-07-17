@@ -1,0 +1,150 @@
+{
+  "schema_version": 1,
+  "kind": "codex-built-in-character-sheet-image-generation",
+  "slug": "friendly-ghost-core-v1",
+  "workflow": {
+    "name": "Codex built-in image generation",
+    "tool": "image_gen.imagegen",
+    "call_count": 1,
+    "model_identifier": null,
+    "provider_route": null,
+    "seed": null,
+    "note": "The built-in workflow did not return a model identifier, provider route, or seed. The existing Prompt section was passed unchanged with the two request references supplied directly in their declared order. No OpenRouter or CLI fallback was used."
+  },
+  "timestamps": {
+    "generation_completed_at": "2026-07-17T20:09:54Z",
+    "workspace_copy_completed_at": "2026-07-17T20:10:02Z",
+    "note": "Completion times are the filesystem birth times of the generated original and byte-for-byte workspace copy; the built-in workflow did not return a generation-start timestamp."
+  },
+  "repository": {
+    "commit": "93953021eea52f2591f3c3ae7d6b3f80c73742b5",
+    "dirty": true
+  },
+  "request_spec": {
+    "path": "art/characters/friendly-ghost/batch/core-v1.request.json",
+    "bytes": 716,
+    "sha256": "7119a53c7d455b34c0c6bbb40f1356b2efd82d18536f1573ec11137a81b4d524",
+    "schema_version": 1
+  },
+  "prompt": {
+    "path": "art/characters/friendly-ghost/batch/core-v1.prompt.md",
+    "section": "Prompt",
+    "document_bytes": 4819,
+    "document_sha256": "e001914b91fbc2939eb0a17b707f8da8719ee65149a374d3bea1f660e6f1bc11",
+    "normalization": "None. Only the authored Prompt section was passed to the built-in tool."
+  },
+  "references": [
+    {
+      "index": 1,
+      "path": "art/guides/ch1-room-style-triptych.png",
+      "role": "the game's painterly storybook texture, warm key light, violet-blue shadow color, and soft dark-brown edge treatment only",
+      "bytes": 683274,
+      "sha256": "ce0628710e9add1a8641c869ce6df94303457faac6434fcb188733b096450a07",
+      "dimensions": {
+        "width": 1536,
+        "height": 288
+      }
+    },
+    {
+      "index": 2,
+      "path": "art/guides/flat-cyan-chroma.png",
+      "role": "the exact flat extraction background",
+      "bytes": 15860,
+      "sha256": "be13115e6b358a8d99ef4c4c4a8a82d917ee826d0b57c4a9457e046fe776ea46",
+      "dimensions": {
+        "width": 768,
+        "height": 1024
+      }
+    }
+  ],
+  "generation_output": {
+    "id": "exec-f8c04d64-0b84-45cd-83f2-a5ec85a905c0",
+    "original_path": "/Users/peteallen/.codex/generated_images/019f71af-fd85-7da0-b9ce-7f2c89b606f8/exec-f8c04d64-0b84-45cd-83f2-a5ec85a905c0.png",
+    "copied_to": "art/characters/friendly-ghost/batch/core-v1.png",
+    "copy_note": "Copied byte-for-byte without image edits before deterministic cyan extraction and slicing.",
+    "media_type": "image/png",
+    "bytes": 1954171,
+    "sha256": "16c271cdd45fedfbd70cf759b20b7e3bd4a1da0a4a0811bb0067b66e67eee640",
+    "dimensions": {
+      "width": 1536,
+      "height": 1024
+    },
+    "png": {
+      "bit_depth": 8,
+      "color_type": 2,
+      "has_color": true,
+      "has_alpha": false,
+      "interlaced": false
+    }
+  },
+  "deterministic_extraction": {
+    "layout": {
+      "path": "art/characters/friendly-ghost/batch/core-v1.layout.json",
+      "bytes": 1803,
+      "sha256": "f64218fff0bc8a78de39730ea5cf899b5d1e922dc4ce1ad977ded82c1653d271"
+    },
+    "provenance": {
+      "path": "art/characters/friendly-ghost/batch/core-v1.slice-provenance.json",
+      "bytes": 10289,
+      "sha256": "d66cb90a7b92d5f2f306eb443398c56cdbf5064f092e5cc12fa427db23c8d2d9"
+    },
+    "algorithm": "cyan-flood-aligned-character-sheet-v1",
+    "deterministic": true,
+    "output_canvas": {
+      "width": 896,
+      "height": 1200,
+      "center_x": 448,
+      "ground_y": 1132
+    },
+    "frames": [
+      {
+        "name": "ambient",
+        "path": "public/assets/art/characters/friendly-ghost/default/ambient.png",
+        "bytes": 251752,
+        "sha256": "fd5e508e18aab79c7cb71e7f0eddea4e83584bc64036ac7489b0cc67c686fc6c",
+        "dimensions": { "width": 896, "height": 1200 },
+        "alpha": { "transparent_pixels": 759892, "soft_pixels": 576, "opaque_pixels": 314732 }
+      },
+      {
+        "name": "talk-a",
+        "path": "public/assets/art/characters/friendly-ghost/default/talk-a.png",
+        "bytes": 265063,
+        "sha256": "0b9898962380f41a34b7c94fb3d4913d1597df498c6e7c0e4a53f17f51df8e1b",
+        "dimensions": { "width": 896, "height": 1200 },
+        "alpha": { "transparent_pixels": 744396, "soft_pixels": 720, "opaque_pixels": 330084 }
+      },
+      {
+        "name": "talk-b",
+        "path": "public/assets/art/characters/friendly-ghost/default/talk-b.png",
+        "bytes": 255936,
+        "sha256": "c1395c78f2cb7fc1e7b79bf4e3c92241a12e8141ecc6c635aa4175f5c2c7187f",
+        "dimensions": { "width": 896, "height": 1200 },
+        "alpha": { "transparent_pixels": 755256, "soft_pixels": 684, "opaque_pixels": 319260 }
+      },
+      {
+        "name": "emerge",
+        "path": "public/assets/art/characters/friendly-ghost/default/emerge.png",
+        "bytes": 289931,
+        "sha256": "a997eb3fce78518102c6ac002de51eb625c7beb3946c42a16d6a77a28b03b917",
+        "dimensions": { "width": 896, "height": 1200 },
+        "alpha": { "transparent_pixels": 708080, "soft_pixels": 764, "opaque_pixels": 366356 }
+      },
+      {
+        "name": "listening-reward",
+        "path": "public/assets/art/characters/friendly-ghost/default/listening-reward.png",
+        "bytes": 290540,
+        "sha256": "e087e3d0d47aa1ae4ad09733c0de8e998cf056a6cf4e610d5c6a92eb74ae4ae7",
+        "dimensions": { "width": 896, "height": 1200 },
+        "alpha": { "transparent_pixels": 703488, "soft_pixels": 612, "opaque_pixels": 371100 }
+      },
+      {
+        "name": "delighted",
+        "path": "public/assets/art/characters/friendly-ghost/default/delighted.png",
+        "bytes": 254067,
+        "sha256": "abbc2a659469f240f51cc70690b7d4512b104389fbb0f1c05d23b906340b3f3e",
+        "dimensions": { "width": 896, "height": 1200 },
+        "alpha": { "transparent_pixels": 753200, "soft_pixels": 656, "opaque_pixels": 321344 }
+      }
+    ]
+  }
+}

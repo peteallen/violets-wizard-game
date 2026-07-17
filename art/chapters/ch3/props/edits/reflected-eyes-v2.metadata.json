@@ -1,0 +1,277 @@
+{
+  "schema_version": 1,
+  "id": "ch3-props-reflected-eyes-v2",
+  "status": "accepted production replacement",
+  "recorded_at": "2026-07-17T20:25:21Z",
+  "generation": {
+    "mode": "built-in-image-generation",
+    "tool": "image_gen.imagegen",
+    "call_count": 1,
+    "generated_source_path": "/Users/peteallen/.codex/generated_images/019f71bc-ba79-7e11-bb49-ed7337c2e619/exec-8d30b120-93d2-4ff1-b14c-2f27a19e8a81.png",
+    "prompt": {
+      "path": "art/chapters/ch3/props/edits/reflected-eyes-v2.prompt.md",
+      "section": "Prompt",
+      "bytes": 4106,
+      "sha256": "b29d4ddfe8bc9fbc54353e5e3612403fc15b54e81d50ca6bbee86d441e2733a4"
+    },
+    "request": {
+      "path": "art/chapters/ch3/props/edits/reflected-eyes-v2.request.json",
+      "bytes": 937,
+      "sha256": "48ef6441ffe0b5beb050d9cf4d6effb2f2b094ef3eb112cdb1ea9735d9c6124d"
+    },
+    "references": [
+      {
+        "index": 1,
+        "path": "art/chapters/ch3/props/batch/core-v1.png",
+        "role": "sole reference for the established prop-sheet gouache-and-watercolor finish, paper tooth, warm light, violet shadow material, soft dark-brown edge treatment, and flat cyan extraction field",
+        "dimensions": [
+          1536,
+          1024
+        ],
+        "bytes": 2036046,
+        "sha256": "d16a9b4254590ef7c0dd41646f15096cbdcb33fb487dcea3d88b98a27650f31b"
+      }
+    ],
+    "source": {
+      "path": "art/chapters/ch3/props/edits/reflected-eyes-v2.png",
+      "dimensions": [
+        1254,
+        1254
+      ],
+      "mode": "RGB",
+      "bytes": 1011489,
+      "sha256": "04c3725fddb8121da61d2b591a0978b9a73c22a83daab924bc48df3bef3736b6"
+    }
+  },
+  "processing": {
+    "deterministic": true,
+    "alpha_extraction": {
+      "tool": "${HOME}/.codex/skills/.system/imagegen/scripts/remove_chroma_key.py",
+      "tool_sha256": "3f7b9b14ad5c90f37618bc1c16a039a2076abca12ddc41b3ae470e2b1cad6c0e",
+      "arguments": [
+        "--auto-key",
+        "border",
+        "--soft-matte",
+        "--transparent-threshold",
+        "12",
+        "--opaque-threshold",
+        "220",
+        "--despill",
+        "--force"
+      ],
+      "sampled_key_color": "#02f7fd",
+      "source_alpha_extrema": [
+        0,
+        255
+      ],
+      "source_alpha_bounds_before_component_cleanup": [
+        355,
+        644,
+        904,
+        865
+      ],
+      "transparent_pixels": 1480752,
+      "partially_transparent_pixels": 18772,
+      "opaque_pixels": 72992
+    },
+    "component_cleanup": {
+      "connectivity": 8,
+      "selection_rule": "Retain the largest component at alpha greater than zero; discard only disconnected extraction or resampling flecks.",
+      "source": {
+        "components_before_cleanup": 23,
+        "retained_component_pixels": 91713,
+        "retained_component_bounds": [
+          355,
+          644,
+          904,
+          864
+        ],
+        "discarded_components": 22,
+        "discarded_pixels": 51,
+        "largest_discarded_component_pixels": 10
+      },
+      "post_resample": {
+        "components_before_cleanup": 12,
+        "retained_component_pixels": 40043,
+        "discarded_components": 11,
+        "discarded_pixels": 12,
+        "largest_discarded_component_pixels": 2
+      }
+    },
+    "trim": {
+      "source_alpha_bounds": [
+        355,
+        644,
+        904,
+        864
+      ],
+      "trimmed_dimensions": [
+        549,
+        220
+      ]
+    },
+    "placement": {
+      "canvas_dimensions": [
+        384,
+        232
+      ],
+      "padding_minimum": 12,
+      "filter": "Pillow LANCZOS in premultiplied RGBa",
+      "pillow_version": "12.3.0",
+      "scale": 0.655737705,
+      "resized_dimensions": [
+        360,
+        144
+      ],
+      "destination": [
+        12,
+        44
+      ],
+      "aspect_preserved": true
+    },
+    "encoding": {
+      "tool": "/opt/homebrew/bin/cwebp",
+      "version": "1.6.0",
+      "libsharpyuv_version": "0.4.2",
+      "arguments": [
+        "-quiet",
+        "-q",
+        "90",
+        "-alpha_q",
+        "100",
+        "-m",
+        "6",
+        "-sharp_yuv",
+        "-metadata",
+        "none"
+      ]
+    }
+  },
+  "candidate": {
+    "path": "art/chapters/ch3/props/edits/reflected-eyes-v2.webp",
+    "dimensions": [
+      384,
+      232
+    ],
+    "mode": "RGBA",
+    "bytes": 26282,
+    "sha256": "bd2773c48e10b9bce9cd552aaa2de8a67b4e3f32945bfa5405b5fe1210e4caec",
+    "alpha": {
+      "extrema": [
+        0,
+        255
+      ],
+      "transparent_pixels": 49045,
+      "partially_transparent_pixels": 10226,
+      "opaque_pixels": 29817,
+      "nonzero_bounds": [
+        12,
+        44,
+        372,
+        188
+      ],
+      "strong_bounds_alpha_gt_127": [
+        18,
+        50,
+        364,
+        181
+      ],
+      "soft_edge_expansion": [
+        6,
+        6,
+        8,
+        7
+      ],
+      "maximum_soft_edge_expansion": 8,
+      "transparent_insets": [
+        12,
+        44,
+        12,
+        44
+      ],
+      "corner_patch_size": [
+        16,
+        16
+      ],
+      "corner_alpha_extrema": {
+        "top_left": [
+          0,
+          0
+        ],
+        "top_right": [
+          0,
+          0
+        ],
+        "bottom_left": [
+          0,
+          0
+        ],
+        "bottom_right": [
+          0,
+          0
+        ]
+      },
+      "visible_cyan_alpha_floor": 12,
+      "visible_cyan_channel_floor": 180,
+      "visible_cyan_excess_threshold": 80,
+      "visible_cyan_pixels_above_threshold": 0,
+      "maximum_visible_cyan_excess": 16
+    },
+    "components": {
+      "connectivity": 8,
+      "alpha_gt_0": {
+        "component_count": 1,
+        "pixels": 40043,
+        "bounds": [
+          12,
+          44,
+          372,
+          188
+        ]
+      },
+      "alpha_gt_12_minimum_50_pixels": {
+        "retained_component_count": 1,
+        "retained_component_pixels": 38839,
+        "retained_component_bounds": [
+          12,
+          46,
+          371,
+          187
+        ],
+        "ignored_component_count": 14,
+        "ignored_pixels": 27,
+        "largest_ignored_component_pixels": 6
+      }
+    },
+    "validation": {
+      "dimensions_match_384x232": true,
+      "has_transparent_partial_and_opaque_alpha": true,
+      "all_16x16_corner_patches_fully_transparent": true,
+      "minimum_transparent_inset_at_least_10_pixels": true,
+      "single_connected_component_at_alpha_gt_0": true,
+      "single_retained_component_at_alpha_gt_12_minimum_50_pixels": true,
+      "ignored_component_pixels_at_most_100": true,
+      "visible_cyan_pixels_above_threshold": 0,
+      "hashes_recomputed_after_encoding": true
+    }
+  },
+  "shipping_asset": {
+    "path": "public/assets/art/props/ch3/reflected-eyes.webp",
+    "modified": true,
+    "replaced_sha256": "5959c659fc6a51c05b28c5bda311cd51e26a1361ae64a6e7cd7e9c21db835935",
+    "sha256": "bd2773c48e10b9bce9cd552aaa2de8a67b4e3f32945bfa5405b5fe1210e4caec"
+  },
+  "review": {
+    "completed_at": "2026-07-17T20:30:48Z",
+    "result": "accepted",
+    "method": "single compressed comparison sheet showing the shipping asset and replacement at runtime size on dark and light backings",
+    "findings": "The replacement reads clearly as Trevor's eyes at the 96x58 runtime size: its warm-brown pupils are horizontal and toad-like, its compact amber-green forms preserve Trevor's identity, and its alpha edge is clean without cyan residue or detached marks."
+  },
+  "promotion": {
+    "source": "art/chapters/ch3/props/edits/reflected-eyes-v2.webp",
+    "path": "public/assets/art/props/ch3/reflected-eyes.webp",
+    "bytes": 26282,
+    "sha256": "bd2773c48e10b9bce9cd552aaa2de8a67b4e3f32945bfa5405b5fe1210e4caec",
+    "promoted_at": "2026-07-17T20:30:48Z"
+  }
+}

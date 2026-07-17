@@ -57,11 +57,12 @@ This is matching, not spelling from memory.
 - A wrong tile does something entertaining—a tiny puff, hiccup, or squeak—then
   remains available. The professor never says “wrong,” “try again,” or names the
   educational skill.
-- The first position offers only **L** so the interaction teaches itself. The
-  middle positions offer one distractor. The final **S** may offer two only if
-  the hidden Gentle-dial signal says she has been moving confidently.
-- On completion the five notes resolve, Violet says “Lumos!”, and the classroom
-  briefly dims so her wand can bloom warm white.
+- The first position offers only **L** so the interaction teaches itself.
+  Gentle offers at most one distractor afterward; Stretchy may offer two and
+  briefly hide a later printed letter while retaining its silhouette.
+- On completion the five notes resolve, the live spell lettering answers the
+  player's participation, and the classroom briefly dims so Violet's silent
+  cast can bloom warm white.
 
 The reward is continuous: every correct letter makes the wand visibly more
 magical. The game never waits until the end to tell her she succeeded.
@@ -80,7 +81,7 @@ illustrated chant tiles:
   the expected tile glows immediately. There is no loss of progress.
 - Each landed syllable adds lift: the feather twitches, rolls, rises a little,
   and finally sails overhead on **SA**.
-- The professor's familiar correction is about performance—“Swish and flick!”—
+- Professor Flitwick's familiar correction is about performance—“Swish and flick!”—
   never literacy.
 - Completion is guaranteed and extravagant: harp gliss, gold ribbons, maximum
   sparkle, delighted classmates, and Violet's feather rising cleanly on the
@@ -112,7 +113,8 @@ light. The room may dim only for the Lumos payoff.
 
 1. The Charms Professor greets Violet by name and produces a dark little lantern
    that has “forgotten how to shine.”
-2. Violet taps the lantern; her empty spellbook opens to a new page.
+2. Violet taps Professor Flitwick; her empty spellbook opens to a new page and
+   the lantern becomes the lesson's visible promise.
 3. Run the Lumos assembly above.
 4. The lantern answers her completed cast and glows. The **Lumos** card settles
    permanently into the spellbook.
@@ -123,7 +125,7 @@ light. The room may dim only for the Lumos payoff.
 
 - Professor: “Every witch needs a light.” / **A light!**
 - Professor: “Letters into magic. Listen…” / **Lumos**
-- Violet: “Lumos!” / **Lumos!**
+- Wand lettering and player participation: **Lumos!** Violet remains silent.
 - Professor: “Splendid! You woke the light.” / **It shines!**
 
 The free cast proves that assembly was the one-time learning ceremony and icon
@@ -144,7 +146,7 @@ casting is how mastered magic works afterward.
 
 - Professor: “Long spells come in little pieces.” / **Listen close**
 - Professor: “Swish and flick!” / **Swish! Flick!**
-- Violet: “Wingardium Leviosa!” / **Leviosa!**
+- Chant ribbon and player participation: **Leviosa!** Violet remains silent.
 - Professor: “Up she goes!” / **You did it!**
 
 The celebration is in-world excitement, not praise for decoding syllables.
@@ -153,7 +155,7 @@ The celebration is in-world excitement, not praise for decoding syllables.
 
 ### C3-S4 — Trevor is missing
 
-Outside class, a Neville-shaped child is tearful but not panicked. Trevor has
+Outside class, Neville is tearful but not panicked. Trevor has
 escaped into the night corridors. Violet receives one clear voiced objective:
 “Please help me find Trevor.” The quest-star caption is **Find Trevor**.
 
@@ -178,7 +180,8 @@ There is no decoy spell target. This room is a confidence check, not a puzzle.
 Two alcoves sit along the corridor. Lumos may be cast on either, and both casts
 produce something worthwhile:
 
-- first alcove: a hidden chocolate frog card and a louder croak from farther on;
+- first alcove: the hidden **Circe** chocolate frog card and a louder croak from
+  farther on;
 - second alcove: a dropped toad-sized ribbon or scarf scrap that confirms the
   trail.
 
@@ -196,14 +199,16 @@ Lumos on the alcove reveals Trevor. Any other inspection gets a one-line comic
 reaction and makes the correct alcove shimmer immediately. Violet taps Trevor;
 he hops into her hands and says one indignant croak.
 
-Violet: “Found you!” / **Found Trevor!**
+The live caption reads **Found Trevor!** while Violet reacts silently and
+scoops him up. Trevor supplies the one indignant croak.
 
 **Save boundary:** Trevor found.
 
 ### C3-S8 — Return and first side quest
 
-Returning Trevor completes the main quest. His owner hugs him, Violet earns
-house points, and a small toad token appears in her dormitory collection.
+Returning Trevor to Neville completes the main quest. He hugs Trevor, Violet
+earns exactly **10 house points**, and a small toad token appears in her
+dormitory collection.
 
 On the walk back, a friendly ghost calls from a wall portrait. His favorite book
 has torn pages and he asks Violet to remember him if she ever learns a mending
@@ -215,14 +220,14 @@ spell. This is the first optional side quest:
 - no current spell applies, so the book does not shimmer as a cast target;
 - Reparo in Chapter 5 wakes the quest automatically.
 
-The ghost gives one frog card for listening, so accepting an unresolved quest
-still feels rewarding now.
+The unnamed friendly ghost gives the **Bertie Bott** frog card for listening,
+so accepting an unresolved quest still feels rewarding now.
 
 ### C3-S9 — Chapter close
 
 Back in the common room, the spellbook opens to show Lumos and Leviosa together.
 The chapter card reads **Violet's First Spells**. Autumn arrives visibly in the
-map and common-room window. Owl post teases flying lessons.
+map and common-room window. A truthful illustrated page teases flying lessons.
 
 ## State and interaction contract
 
@@ -235,17 +240,26 @@ map and common-room window. Owl post teases flying lessons.
 | Accept Trevor quest | Advance voiced request | `ch3.toadQuestAccepted` | quest star repeats line |
 | Corridor one | Lumos the alcove | `ch3.trailFound` | pet look → glint → auto-highlight |
 | Corridor two | Find either clue | `ch3.corridorClueFound` | both alcoves become valid |
-| Corridor three | Reveal and tap Trevor | `ch3.toadFound` | croak/eyes → shimmer → completion |
+| Corridor two card | Reveal the Circe card | `ch3.corridorCardFound` | optional; the ribbon remains available |
+| Corridor two ribbon | Reveal the ribbon clue | `ch3.corridorRibbonFound` | optional; the card remains available |
+| Corridor three reveal | Lumos the correct alcove | `ch3.toadRevealed` | croak/eyes → shimmer → Trevor appears |
+| Corridor three pickup | Tap Trevor | `ch3.toadFound` | hop, croak, and return route |
 | Return Trevor | Talk to owner | `ch3.toadReturned` | map and quest star point back |
-| Ghost request | Hear or skip request | `side.ghostBookAccepted` | optional; never blocks chapter |
+| Ghost request | Hear or skip request | `ch3.ghostBookAccepted` | optional; never blocks chapter |
+| Chapter close | Open the spellbook page | `ch3.chapterCardSeen` | Lumos and Leviosa together |
+| Chapter handoff | Finish the flying preview | `ch3.complete` | atomically enters Chapter 4 preview |
 
-Exact flag names are proposed documentation, not a demand to change existing
-contracts if the implementation already has canonical equivalents.
+These are the canonical implementation flags. `ch3.corridorClueFound` becomes
+true after either optional corridor-two discovery, while the two individual
+flags preserve which reward or clue Violet actually found. `ch3.toadRevealed`
+is deliberately separate from `ch3.toadFound`, so a save can never treat a lit
+alcove as though Violet already picked Trevor up.
 
 ## Parent-dial behavior
 
-- **Off:** Lumos completes with five large tiles arriving in order on taps;
-  Leviosa remains the syllable performance because it is spectacle, not a test.
+- **Off:** Lumos still completes with five large guided taps in order, and
+  Leviosa still performs all six chant beats. There are no distractors and no
+  literacy test, but the magical performance is not skipped.
 - **Gentle (default):** matching layout described above; at most one distractor
   until the final letter.
 - **Stretchy:** later Lumos positions may offer two distractors and one recessed
@@ -269,3 +283,26 @@ Do not ask whether the minigame was educational or fun. Watch:
 
 The chapter passes when she experiences herself as learning magic. Literacy and
 phonological practice are the machinery under the floor.
+
+## Implemented content boundary
+
+The authored package contains exactly five castle destinations: the autumn
+Gryffindor common room, Charms classroom, and three distinct night corridors.
+One illustrated castle map reveals them in that order and keeps all destination
+labels, routes, fog, Here/Next marks, completion state, and objective stars live.
+
+The nine scene beats above are native version-two chapter fragments. Lumos and
+Leviosa use stable spell IDs `lumos` and `leviosa`; each learning ceremony can
+complete only once, while its mastered spell remains permanently available in
+the normal wand fan. The compact class ladder owns its own deterministic
+3/6/9-second assistance state rather than borrowing the slower exploration hint
+timer. The sleeping **Fix the book** side quest is visible with a silver star but
+cannot become the gold active thread or advertise the torn book until Reparo is
+known.
+
+Chapter 3 remains catalogued as `placeholder` until its production characters,
+room paintings, prop and Field Kit rasters, package-owned harness scenes, both
+required capture sizes, human audio listening pass, full walkthrough, and local
+`npm run build` gate are all green together. The completed route hands off to a
+minimal registered Chapter 4 flying-lesson preview so chapter completion and
+save repair always have a truthful destination.

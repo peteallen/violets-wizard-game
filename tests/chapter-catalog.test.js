@@ -17,6 +17,7 @@ import {
   chapter2CharacterIds,
 } from '../src/game/content/chapters/ch2.js';
 import { chapter3 } from '../src/game/content/chapters/ch3.js';
+import { chapter4 } from '../src/game/content/chapters/ch4.js';
 import {
   chapterAvailability,
   chapterCatalog,
@@ -113,33 +114,45 @@ describe('ChapterCatalog', () => {
 });
 
 describe('production chapter packages', () => {
-  it('publishes playable Chapter Two and the Chapter Three handoff destination', () => {
-    expect(chapterCatalog.ids()).toEqual(['ch1', 'ch2', 'ch3']);
+  it('publishes playable Chapter Two plus the Chapter Three and Four handoff destinations', () => {
+    expect(chapterCatalog.ids()).toEqual(['ch1', 'ch2', 'ch3', 'ch4']);
     expect(chapterDescriptors.map(({ id, number, title, availability }) => ({
       id, number, title, availability,
     }))).toEqual([
       { id: 'ch1', number: 1, title: chapter1.title, availability: 'playable' },
       { id: 'ch2', number: 2, title: chapter2.title, availability: 'playable' },
       { id: 'ch3', number: 3, title: chapter3.title, availability: 'placeholder' },
+      { id: 'ch4', number: 4, title: chapter4.title, availability: 'placeholder' },
     ]);
-    expect(contentRegistry).toEqual({ ch1: chapter1, ch2: chapter2, ch3: chapter3 });
+    expect(contentRegistry).toEqual({
+      ch1: chapter1, ch2: chapter2, ch3: chapter3, ch4: chapter4,
+    });
     expect(chapterMaps.ch1).toEqual({ [chapter1Map.id]: chapter1Map });
     expect(getChapterMap('ch1')).toBe(chapter1Map);
     expect(getChapterMap('ch2')).toBeNull();
+    expect(getChapterMap('ch3', 'ch3.scene.spellbookParcel'))
+      .toBe(chapter3.maps['ch3.map.castle']);
     expect(getChapterMap('ch99')).toBeNull();
     expect(getChapter('ch1')).toBe(chapter1);
     expect(getChapter(2)).toBe(chapter2);
-    expect(chapterAvailability).toEqual({ ch1: 'playable', ch2: 'playable', ch3: 'placeholder' });
+    expect(chapterAvailability).toEqual({
+      ch1: 'playable', ch2: 'playable', ch3: 'placeholder', ch4: 'placeholder',
+    });
     expect(isChapterPlayable(1)).toBe(true);
     expect(isChapterPlayable('ch2')).toBe(true);
     expect(isChapterPlayable('ch3')).toBe(false);
+    expect(isChapterPlayable('ch4')).toBe(false);
   });
 
   it('loads exact existing content and character dependencies through each package', async () => {
     const chapterOneModule = await loadChapterPackage('ch1');
     const chapterTwoModule = await loadChapterPackage(2);
+    const chapterThreeModule = await loadChapterPackage(3);
+    const chapterFourModule = await loadChapterPackage(4);
     const chapterOnePackage = chapterOneModule.default;
     const chapterTwoPackage = chapterTwoModule.default;
+    const chapterThreePackage = chapterThreeModule.default;
+    const chapterFourPackage = chapterFourModule.default;
 
     expect(chapterOnePackage.chapter).toBe(chapter1);
     expect(chapterOnePackage.maps).toEqual({ [chapter1Map.id]: chapter1Map });
@@ -149,8 +162,14 @@ describe('production chapter packages', () => {
     expect(chapterTwoPackage.chapter).toBe(chapter2);
     expect(chapterTwoPackage.assetKeys).toEqual(chapter2AssetKeys);
     expect(chapterTwoPackage.characterDependencies).toEqual(chapter2CharacterIds);
+    expect(chapterThreePackage.chapter).toBe(chapter3);
+    expect(chapterThreePackage.status).toBe('placeholder');
+    expect(chapterFourPackage.chapter).toBe(chapter4);
+    expect(chapterFourPackage.status).toBe('placeholder');
     expect(Object.isFrozen(chapterOnePackage)).toBe(true);
     expect(Object.isFrozen(chapterTwoPackage)).toBe(true);
+    expect(Object.isFrozen(chapterThreePackage)).toBe(true);
+    expect(Object.isFrozen(chapterFourPackage)).toBe(true);
   });
 
   it('authors Chapter One scenes with explicit immutable order while preserving the v1 view', () => {

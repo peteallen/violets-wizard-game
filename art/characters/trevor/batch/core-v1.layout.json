@@ -1,0 +1,73 @@
+{
+  "schema_version": 1,
+  "id": "trevor.core-v1",
+  "source": {
+    "path": "art/characters/trevor/batch/core-v1.png",
+    "sha256": "59723d3960b4f868f2fcf1eb601d8197acc6e2c6b106564f3c8580da115e5cec"
+  },
+  "output": {
+    "directory": "public/assets/art/characters/trevor/default",
+    "provenance": "art/characters/trevor/batch/core-v1.slice-provenance.json",
+    "canvas": {
+      "width": 896,
+      "height": 1200,
+      "center_x": 448,
+      "ground_y": 1132
+    }
+  },
+  "scale": {
+    "numerator": 8,
+    "denominator": 5
+  },
+  "key": {
+    "color": {
+      "red": 1,
+      "green": 244,
+      "blue": 253
+    },
+    "tolerance": 28,
+    "alpha": {
+      "opaque_cyan_excess": 50,
+      "transparent_cyan_excess": 90,
+      "edge_spill_radius": 8,
+      "edge_spill_opaque_cyan_excess": 30,
+      "edge_spill_max_green_blue_delta": 70,
+      "matte_low_alpha": 170,
+      "matte_high_alpha": 245,
+      "edge_color_radius": 0
+    }
+  },
+  "components": {
+    "detail_min_pixels": 8,
+    "detail_max_pixels": 5000,
+    "detail_max_distance": 18
+  },
+  "frames": [
+    {
+      "name": "neutral",
+      "crop": { "x": 0, "y": 0, "width": 512, "height": 512 }
+    },
+    {
+      "name": "hidden-eyes",
+      "crop": { "x": 512, "y": 0, "width": 512, "height": 512 }
+    },
+    {
+      "name": "croak",
+      "crop": { "x": 1024, "y": 0, "width": 512, "height": 512 }
+    },
+    {
+      "name": "hop",
+      "crop": { "x": 0, "y": 512, "width": 512, "height": 512 },
+      "overlap": { "top": 0, "right": 96, "bottom": 0, "left": 0 }
+    },
+    {
+      "name": "held",
+      "crop": { "x": 512, "y": 512, "width": 512, "height": 512 }
+    },
+    {
+      "name": "reunion",
+      "crop": { "x": 1024, "y": 512, "width": 512, "height": 512 },
+      "overlap": { "top": 0, "right": 0, "bottom": 0, "left": 32 }
+    }
+  ]
+}

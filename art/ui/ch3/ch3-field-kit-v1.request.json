@@ -1,0 +1,301 @@
+{
+  "schema_version": 1,
+  "kind": "codex-built-in-chapter-three-ui-image-generation-request",
+  "slug": "chapter-three-field-kit-v1",
+  "generated_at": "2026-07-17",
+  "source_session": {
+    "id": "019f6f81-0cc0-7252-a86a-57b089c9e468",
+    "path": "/Users/peteallen/.codex/sessions/2026/07/17/rollout-2026-07-17T03-55-56-019f6f81-0cc0-7252-a86a-57b089c9e468.jsonl",
+    "note": "Prompt and receipt fields were extracted without copying image data, tool output payloads, or base64 fields."
+  },
+  "prompt": {
+    "path": "art/ui/ch3/ch3-field-kit-v1.prompts.md",
+    "sections": [
+      "Spellbook spread",
+      "Card shell",
+      "Selected card shell",
+      "Incantation ribbon",
+      "Rune tile",
+      "Chant tile"
+    ]
+  },
+  "generation": {
+    "workflow": "Codex built-in image generation",
+    "tool": "image_gen.imagegen",
+    "recorded_invocation": "tools.image_gen__imagegen",
+    "mode": "edit-with-reference",
+    "model_identifier": null,
+    "provider_route": null,
+    "seed": null,
+    "returned_model_provider_or_seed_note": "The built-in workflow did not return a model identifier, provider route, or seed."
+  },
+  "assets": [
+    {
+      "id": "spellbook-spread",
+      "prompt_section": "Spellbook spread",
+      "references": [
+        {
+          "index": 1,
+          "path": "art/ui/satchel/source/spread-v2.png",
+          "original_call_path": "/Users/peteallen/work/violets-wizard-game/art/ui/satchel/source/spread-v2.png",
+          "role": "exact open-folio material, composition, blank live-content aperture, and practical-clearance edit target"
+        }
+      ],
+      "receipt": {
+        "tool_call_id": "call_olxyz01raxxpBvyroMMON442",
+        "source_log_call_line": 1242,
+        "source_log_receipt_line": 1246,
+        "requested_at": "2026-07-17T18:43:11.219Z",
+        "completed_at": "2026-07-17T18:44:08.871Z",
+        "duration_ms": 57652,
+        "status": "completed"
+      },
+      "output": {
+        "generated_output_id": "exec-14a102dc-61a0-4fe2-8145-3261e647f603",
+        "generated_output_path": "/Users/peteallen/.codex/generated_images/019f6f81-0cc0-7252-a86a-57b089c9e468/exec-14a102dc-61a0-4fe2-8145-3261e647f603.png",
+        "untouched_source": "art/ui/ch3/source/spellbook-spread.png",
+        "shipping_webp": "public/assets/art/ui/ch3/spellbook-spread.webp"
+      }
+    },
+    {
+      "id": "card-shell",
+      "prompt_section": "Card shell",
+      "references": [
+        {
+          "index": 1,
+          "path": "art/ui/satchel/source/card-frame-v2-chroma.png",
+          "original_call_path": "/Users/peteallen/work/violets-wizard-game/art/ui/satchel/source/card-frame-v2-chroma.png",
+          "role": "painted leather and parchment Field Kit style plus flat chroma-background reference"
+        }
+      ],
+      "receipt": {
+        "tool_call_id": "call_4JJUaVHVhAj8YQmxDajMLVb9",
+        "source_log_call_line": 1252,
+        "source_log_receipt_line": 1256,
+        "requested_at": "2026-07-17T18:44:30.135Z",
+        "completed_at": "2026-07-17T18:45:29.779Z",
+        "duration_ms": 59644,
+        "status": "completed"
+      },
+      "output": {
+        "generated_output_id": "exec-626e67a1-b6fd-4955-92e9-123931072dbd",
+        "generated_output_path": "/Users/peteallen/.codex/generated_images/019f6f81-0cc0-7252-a86a-57b089c9e468/exec-626e67a1-b6fd-4955-92e9-123931072dbd.png",
+        "untouched_chroma_source": "art/ui/ch3/source/card-shell-chroma.png",
+        "shipping_webp": "public/assets/art/ui/ch3/card-shell.webp"
+      }
+    },
+    {
+      "id": "card-shell-selected",
+      "prompt_section": "Selected card shell",
+      "references": [
+        {
+          "index": 1,
+          "path": "art/ui/ch3/source/card-shell-chroma.png",
+          "original_call_path": "/Users/peteallen/.codex/generated_images/019f6f81-0cc0-7252-a86a-57b089c9e468/exec-626e67a1-b6fd-4955-92e9-123931072dbd.png",
+          "role": "exact unselected spell-card shell edit target"
+        }
+      ],
+      "receipt": {
+        "tool_call_id": "call_QjeOvYCJrgQN2JZozCZhZsfm",
+        "source_log_call_line": 1263,
+        "source_log_receipt_line": 1276,
+        "requested_at": "2026-07-17T18:45:49.808Z",
+        "completed_at": "2026-07-17T18:46:49.941Z",
+        "duration_ms": 60133,
+        "status": "completed"
+      },
+      "output": {
+        "generated_output_id": "exec-43d8f3b3-a36b-4f91-9290-a6ef5478cb43",
+        "generated_output_path": "/Users/peteallen/.codex/generated_images/019f6f81-0cc0-7252-a86a-57b089c9e468/exec-43d8f3b3-a36b-4f91-9290-a6ef5478cb43.png",
+        "untouched_chroma_source": "art/ui/ch3/source/card-shell-selected-chroma.png",
+        "shipping_webp": "public/assets/art/ui/ch3/card-shell-selected.webp"
+      }
+    },
+    {
+      "id": "incantation-ribbon",
+      "prompt_section": "Incantation ribbon",
+      "references": [
+        {
+          "index": 1,
+          "path": "art/ui/story-surfaces/source/action-note-v2-chroma.png",
+          "original_call_path": "/Users/peteallen/work/violets-wizard-game/art/ui/story-surfaces/source/action-note-v2-chroma.png",
+          "role": "painted parchment and leather action-note material plus flat chroma-background reference"
+        }
+      ],
+      "receipt": {
+        "tool_call_id": "call_KgGnv35MInwoQCp4DeI2gMxe",
+        "source_log_call_line": 1284,
+        "source_log_receipt_line": 1288,
+        "requested_at": "2026-07-17T18:47:11.373Z",
+        "completed_at": "2026-07-17T18:47:54.543Z",
+        "duration_ms": 43170,
+        "status": "completed"
+      },
+      "output": {
+        "generated_output_id": "exec-c440da33-ee62-4fda-a046-0d7ae4794b97",
+        "generated_output_path": "/Users/peteallen/.codex/generated_images/019f6f81-0cc0-7252-a86a-57b089c9e468/exec-c440da33-ee62-4fda-a046-0d7ae4794b97.png",
+        "untouched_chroma_source": "art/ui/ch3/source/incantation-ribbon-chroma.png",
+        "shipping_webp": "public/assets/art/ui/ch3/incantation-ribbon.webp"
+      }
+    },
+    {
+      "id": "rune-tile",
+      "prompt_section": "Rune tile",
+      "references": [
+        {
+          "index": 1,
+          "path": "art/ui/satchel/source/card-frame-v2-chroma.png",
+          "original_call_path": "/Users/peteallen/work/violets-wizard-game/art/ui/satchel/source/card-frame-v2-chroma.png",
+          "role": "painted Field Kit material and flat chroma-background reference"
+        }
+      ],
+      "receipt": {
+        "tool_call_id": "call_kfYohR0vnQtNfH8LG8osZw7x",
+        "source_log_call_line": 1293,
+        "source_log_receipt_line": 1297,
+        "requested_at": "2026-07-17T18:48:15.403Z",
+        "completed_at": "2026-07-17T18:49:49.213Z",
+        "duration_ms": 93810,
+        "status": "completed"
+      },
+      "output": {
+        "generated_output_id": "exec-3893eb0c-5feb-4cc7-b71f-b09854d26f5f",
+        "generated_output_path": "/Users/peteallen/.codex/generated_images/019f6f81-0cc0-7252-a86a-57b089c9e468/exec-3893eb0c-5feb-4cc7-b71f-b09854d26f5f.png",
+        "untouched_chroma_source": "art/ui/ch3/source/rune-tile-chroma.png",
+        "shipping_webp": "public/assets/art/ui/ch3/rune-tile.webp"
+      }
+    },
+    {
+      "id": "chant-tile",
+      "prompt_section": "Chant tile",
+      "references": [
+        {
+          "index": 1,
+          "path": "art/ui/story-surfaces/source/action-note-v2-chroma.png",
+          "original_call_path": "/Users/peteallen/work/violets-wizard-game/art/ui/story-surfaces/source/action-note-v2-chroma.png",
+          "role": "painted parchment and leather Field Kit material plus flat chroma-background reference"
+        }
+      ],
+      "receipt": {
+        "tool_call_id": "call_BK5RuzjNDQaEmLbIoxVrgsyi",
+        "source_log_call_line": 1318,
+        "source_log_receipt_line": 1328,
+        "requested_at": "2026-07-17T18:50:28.436Z",
+        "completed_at": "2026-07-17T18:51:07.036Z",
+        "duration_ms": 38600,
+        "status": "completed"
+      },
+      "output": {
+        "generated_output_id": "exec-0ddf40dd-7ddd-48ac-8192-e843e96fa077",
+        "generated_output_path": "/Users/peteallen/.codex/generated_images/019f6f81-0cc0-7252-a86a-57b089c9e468/exec-0ddf40dd-7ddd-48ac-8192-e843e96fa077.png",
+        "untouched_chroma_source": "art/ui/ch3/source/chant-tile-chroma.png",
+        "shipping_webp": "public/assets/art/ui/ch3/chant-tile.webp"
+      }
+    }
+  ],
+  "processing": {
+    "script": "art/ui/ch3/process.mjs",
+    "command": "node art/ui/ch3/process.mjs",
+    "alpha_extraction": {
+      "applies_to": [
+        "card-shell",
+        "card-shell-selected",
+        "incantation-ribbon",
+        "rune-tile",
+        "chant-tile"
+      ],
+      "tool": "${CODEX_HOME:-$HOME/.codex}/skills/.system/imagegen/scripts/remove_chroma_key.py",
+      "arguments": [
+        "--auto-key",
+        "border",
+        "--soft-matte",
+        "--transparent-threshold",
+        "12",
+        "--opaque-threshold",
+        "220",
+        "--despill",
+        "--force"
+      ]
+    },
+    "alpha_shipping_encode": {
+      "tool": "cwebp",
+      "common_arguments": [
+        "-q",
+        "90",
+        "-alpha_q",
+        "100",
+        "-m",
+        "6",
+        "-sharp_yuv"
+      ],
+      "targets": {
+        "card-shell": [
+          720,
+          1000
+        ],
+        "card-shell-selected": [
+          720,
+          1000
+        ],
+        "incantation-ribbon": [
+          1200,
+          400
+        ],
+        "rune-tile": [
+          640,
+          640
+        ],
+        "chant-tile": [
+          768,
+          512
+        ]
+      }
+    },
+    "opaque_spread": {
+      "crop": {
+        "tool": "sips",
+        "source_dimensions": [
+          1643,
+          957
+        ],
+        "crop_dimensions": [
+          1643,
+          924
+        ],
+        "arguments": [
+          "-s",
+          "format",
+          "png",
+          "-c",
+          "924",
+          "1643"
+        ]
+      },
+      "resize": {
+        "tool": "sips",
+        "target_dimensions": [
+          2560,
+          1440
+        ],
+        "arguments": [
+          "-s",
+          "format",
+          "png",
+          "-z",
+          "1440",
+          "2560"
+        ]
+      },
+      "shipping_encode": {
+        "tool": "cwebp",
+        "arguments": [
+          "-q",
+          "90",
+          "-m",
+          "6",
+          "-sharp_yuv"
+        ]
+      }
+    }
+  }
+}

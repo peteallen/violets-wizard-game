@@ -1,0 +1,79 @@
+{
+  "schema_version": 1,
+  "kind": "codex-built-in-card-portrait-generation",
+  "slug": "bertie-bott-native-v1",
+  "workflow": {
+    "name": "Codex built-in image generation",
+    "tool": "image_gen.imagegen",
+    "mode": "generate",
+    "model_identifier": null,
+    "seed": null,
+    "note": "The built-in workflow did not return a model identifier or seed."
+  },
+  "timestamps": {
+    "generation_started_at": "2026-07-17T19:20:14.442Z",
+    "generation_completed_at": "2026-07-17T19:21:34.314Z",
+    "duration_ms": 79872
+  },
+  "request_spec": {
+    "path": "art/chapters/ch3/cards/bertie-bott-native-v1.request.json",
+    "bytes": 1506,
+    "sha256": "0d0010226fce18aefd4a85591fcac89a6a096caeb988d597c929ebc05173835c"
+  },
+  "prompt": {
+    "path": "art/chapters/ch3/cards/bertie-bott-native-v1.prompt.md",
+    "section": "Prompt",
+    "bytes": 2879,
+    "sha256": "97467ce1cd76b8c82dc23526b8013692d4a9a2098a9d663baab395895e4e86ae"
+  },
+  "references": [
+    {
+      "index": 1,
+      "path": "art/raw/ch2-card-merlin.png",
+      "role": "painted finish, square portrait scale, breathing room, and runtime oval-crop safety reference only",
+      "bytes": 2295455,
+      "sha256": "8baf8a6dd9d1b1b1100b33613099a5d6dd8c68b2d221bdb0ee7294a500dcc274",
+      "dimensions": { "width": 1254, "height": 1254 }
+    },
+    {
+      "index": 2,
+      "path": "art/raw/ch2-card-jocunda-sykes.png",
+      "role": "painted finish, expressive face treatment, and runtime oval-crop safety reference only",
+      "bytes": 2197964,
+      "sha256": "5ec6094a27d42834f619f49a5698c7d712bd5b5d7e85ec2ccd7d23e4a2e61d6a",
+      "dimensions": { "width": 1254, "height": 1254 }
+    }
+  ],
+  "generation_output": {
+    "id": "exec-47ad3c12-ef21-4016-8db9-3d9194c4df3a",
+    "original_path": "/Users/peteallen/.codex/generated_images/019f717f-ae86-7712-9cf3-200179c51a6a/exec-47ad3c12-ef21-4016-8db9-3d9194c4df3a.png",
+    "copied_to": "art/raw/ch3-card-bertie-bott-native-v1.png",
+    "media_type": "image/png",
+    "bytes": 2804038,
+    "sha256": "0b79e3002613b8153ea7c0658e4a031169c133e786280c043f93d459e59987b4",
+    "dimensions": { "width": 1254, "height": 1254 }
+  },
+  "derivatives": {
+    "accepted_png": {
+      "path": "art/raw/ch3-card-bertie-bott-v1.png",
+      "bytes": 2804038,
+      "sha256": "0b79e3002613b8153ea7c0658e4a031169c133e786280c043f93d459e59987b4",
+      "dimensions": { "width": 1254, "height": 1254 }
+    },
+    "shipping_webp": {
+      "path": "public/assets/art/cards/bertie-bott.webp",
+      "bytes": 271750,
+      "sha256": "41a675c23c84f70e4b3831449a5c06292e88864da68c0ec47f56dac619da18ee",
+      "dimensions": { "width": 1254, "height": 1254 }
+    }
+  },
+  "conversion": {
+    "accepted_png": "The native output already matched the 1254x1254 card contract and was copied byte-for-byte.",
+    "shipping": "cwebp -q 84 -m 6 -sharp_yuv",
+    "note": "No crop or resize was required before the shipping encode."
+  },
+  "visual_inspection": {
+    "source": "Accepted: original cheerful and mischievous adult wizard inventor with curled auburn-brown hair and moustache, plum waistcoat, moss-green coat, abstract clothing dots only, no beans, packages, brand marks, text, frame, or adaptation likeness, and sufficient oval-crop breathing room.",
+    "shipping": "Accepted at 1254x1254: WebP retains facial readability, clothing detail, traditional painted texture, crop safety, and textless frameless edges without a visible conversion defect."
+  }
+}

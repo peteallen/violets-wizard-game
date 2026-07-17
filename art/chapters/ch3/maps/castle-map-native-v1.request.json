@@ -1,0 +1,33 @@
+{
+  "schema_version": 1,
+  "slug": "castle-map-native-v1",
+  "prompt": {
+    "path": "art/chapters/ch3/maps/castle-map-native-v1.prompt.md",
+    "section": "Prompt"
+  },
+  "references": [
+    {
+      "path": "art/raw/ch2-lake-vista-v2.png",
+      "role": "established original castle identity, twilight lighting, and premium painted finish reference"
+    },
+    {
+      "path": "art/ui/satchel/source/spread-v2.png",
+      "role": "warm parchment, gold, plum, and Field Kit material-finish reference"
+    }
+  ],
+  "generation": {
+    "workflow": "Codex built-in image generation",
+    "tool": "image_gen.imagegen",
+    "model_identifier": null,
+    "seed": null,
+    "returned_model_or_seed_note": "The built-in workflow did not return a model identifier or seed."
+  },
+  "output": {
+    "generated_output_id": "exec-bdea3d58-5d35-4f8f-8f15-a16897e1aa93",
+    "generated_output_path": "/Users/peteallen/.codex/generated_images/019f7183-6ad4-7271-af63-4e295c819dcd/exec-bdea3d58-5d35-4f8f-8f15-a16897e1aa93.png",
+    "native_source": "art/raw/ch3-castle-map-native-v1.png",
+    "accepted_png": "art/raw/ch3-castle-map-v1.png",
+    "shipping_webp": "public/assets/art/maps/ch3-castle.webp",
+    "metadata": "art/chapters/ch3/maps/castle-map-native-v1.metadata.json"
+  }
+}

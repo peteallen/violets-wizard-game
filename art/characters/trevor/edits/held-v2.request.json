@@ -1,0 +1,26 @@
+{
+  "schema_version": 1,
+  "prompt": {
+    "path": "art/characters/trevor/edits/held-v2.prompt.md",
+    "section": "Prompt"
+  },
+  "references": [
+    {
+      "path": "art/characters/trevor/batch/core-v1.png",
+      "role": "sole reference for Trevor's established identity, proportions, anatomy, palette, skin texture, storybook painting style, and flat cyan extraction field"
+    }
+  ],
+  "generation": {
+    "workflow": "Codex built-in image generation",
+    "tool": "image_gen.imagegen",
+    "call_count": 1,
+    "requested_composition": "one complete held pose on a square cyan source canvas"
+  },
+  "output": {
+    "source_image": "art/characters/trevor/edits/held-v2.png",
+    "normalized_cell": "art/characters/trevor/edits/held-v2-cell.png",
+    "candidate_frame": "art/characters/trevor/edits/held-v2-frame.png",
+    "metadata": "art/characters/trevor/edits/held-v2.metadata.json",
+    "processing_provenance": "art/characters/trevor/edits/held-v2-frame.provenance.json"
+  }
+}

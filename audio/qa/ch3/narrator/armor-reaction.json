@@ -1,0 +1,114 @@
+{
+  "language_code": "eng",
+  "language_probability": 1,
+  "text": "The armor squeaks indignantly. No toad in there",
+  "words": [
+    {
+      "text": "The",
+      "start": 0.079,
+      "end": 0.159,
+      "type": "word",
+      "logprob": -0.0003133521240670234
+    },
+    {
+      "text": " ",
+      "start": 0.159,
+      "end": 0.259,
+      "type": "spacing",
+      "logprob": -0.00031263710116036236
+    },
+    {
+      "text": "armor",
+      "start": 0.259,
+      "end": 0.5,
+      "type": "word",
+      "logprob": -0.00031263710116036236
+    },
+    {
+      "text": " ",
+      "start": 0.5,
+      "end": 0.639,
+      "type": "spacing",
+      "logprob": -0.000006437280717364047
+    },
+    {
+      "text": "squeaks",
+      "start": 0.639,
+      "end": 1.1,
+      "type": "word",
+      "logprob": -0.000008531939524151052
+    },
+    {
+      "text": " ",
+      "start": 1.1,
+      "end": 1.159,
+      "type": "spacing",
+      "logprob": -0.00015698630886618048
+    },
+    {
+      "text": "indignantly.",
+      "start": 1.159,
+      "end": 1.879,
+      "type": "word",
+      "logprob": -0.002026632410585686
+    },
+    {
+      "text": " ",
+      "start": 1.879,
+      "end": 2.259,
+      "type": "spacing",
+      "logprob": -0.25206810235977173
+    },
+    {
+      "text": "No",
+      "start": 2.259,
+      "end": 2.379,
+      "type": "word",
+      "logprob": -0.25206810235977173
+    },
+    {
+      "text": " ",
+      "start": 2.379,
+      "end": 2.519,
+      "type": "spacing",
+      "logprob": -0.01816869154572487
+    },
+    {
+      "text": "toad",
+      "start": 2.519,
+      "end": 2.799,
+      "type": "word",
+      "logprob": -0.01816869154572487
+    },
+    {
+      "text": " ",
+      "start": 2.799,
+      "end": 2.839,
+      "type": "spacing",
+      "logprob": -2.3841855067985307e-7
+    },
+    {
+      "text": "in",
+      "start": 2.839,
+      "end": 2.96,
+      "type": "word",
+      "logprob": -2.3841855067985307e-7
+    },
+    {
+      "text": " ",
+      "start": 2.96,
+      "end": 3.019,
+      "type": "spacing",
+      "logprob": -0.000002145764938177308
+    },
+    {
+      "text": "there",
+      "start": 3.019,
+      "end": 3.259,
+      "type": "word",
+      "logprob": -0.000002145764938177308
+    }
+  ],
+  "transcription_id": "BfDcZ9uaBCNqYkYvgFqK",
+  "audio_duration_secs": 3.5294375
+}

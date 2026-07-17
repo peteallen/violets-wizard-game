@@ -1,0 +1,1355 @@
+{
+  "alpha_extraction": {
+    "arguments": [
+      "--auto-key",
+      "border",
+      "--soft-matte",
+      "--transparent-threshold",
+      "12",
+      "--opaque-threshold",
+      "220",
+      "--despill",
+      "--force"
+    ],
+    "component_alpha_floor": 12,
+    "component_min_pixels": 50,
+    "sampled_key_color": "#01f6fd",
+    "sheet_alpha_bounds": [
+      99,
+      15,
+      1462,
+      995
+    ],
+    "sheet_alpha_extrema": [
+      0,
+      255
+    ],
+    "tool": "${HOME}/.codex/skills/.system/imagegen/scripts/remove_chroma_key.py"
+  },
+  "assets": [
+    {
+      "components": [
+        {
+          "bounds": [
+            157,
+            48,
+            522,
+            385
+          ],
+          "centroid": [
+            334.827,
+            206.359
+          ],
+          "pixels": 96094
+        }
+      ],
+      "crop": {
+        "height": 391,
+        "width": 557,
+        "x": 0,
+        "y": 0
+      },
+      "equal_cell_overrun": {
+        "bottom": 44,
+        "left": 0,
+        "right": 10,
+        "top": 0
+      },
+      "grid_cell": {
+        "column": 0,
+        "row": 0
+      },
+      "id": "spellbook-parcel",
+      "ignored_small_components": {
+        "components": 0,
+        "largest_component_pixels": 0,
+        "pixels": 0
+      },
+      "key": "props/ch3/spellbook-parcel",
+      "output": {
+        "alpha": {
+          "corner_alpha_extrema": {
+            "bottom_left": [
+              0,
+              0
+            ],
+            "bottom_right": [
+              0,
+              0
+            ],
+            "top_left": [
+              0,
+              0
+            ],
+            "top_right": [
+              0,
+              0
+            ]
+          },
+          "corner_patch_size": [
+            16,
+            16
+          ],
+          "extrema": [
+            0,
+            255
+          ],
+          "maximum_soft_edge_expansion": 1,
+          "maximum_visible_cyan_excess": 76,
+          "nonzero_bounds": [
+            47,
+            24,
+            612,
+            546
+          ],
+          "opaque_pixels": 224388,
+          "partially_transparent_pixels": 9650,
+          "soft_edge_expansion": [
+            1,
+            0,
+            1,
+            1
+          ],
+          "strong_bounds_alpha_gt_127": [
+            48,
+            24,
+            611,
+            545
+          ],
+          "transparent_pixels": 142162,
+          "visible_cyan_alpha_floor": 12,
+          "visible_cyan_channel_floor": 180,
+          "visible_cyan_excess_threshold": 80,
+          "visible_cyan_pixels_above_threshold": 0
+        },
+        "bytes": 75608,
+        "dimensions": [
+          660,
+          570
+        ],
+        "path": "public/assets/art/props/ch3/spellbook-parcel.webp",
+        "sha256": "291af1edf9ae84a147b2c3056c9f0390a7ae1805af39fa9e68fdd7f807ecd8d2"
+      },
+      "placement": {
+        "aspect_preserved": true,
+        "destination": [
+          47,
+          24
+        ],
+        "filter": "Pillow LANCZOS in premultiplied RGBa",
+        "padding_minimum": 24,
+        "resized_dimensions": [
+          565,
+          522
+        ],
+        "scale": 1.548961424
+      },
+      "request_index": 0,
+      "source_alpha_bounds": [
+        157,
+        48,
+        522,
+        385
+      ],
+      "trimmed_dimensions": [
+        365,
+        337
+      ]
+    },
+    {
+      "components": [
+        {
+          "bounds": [
+            663,
+            15,
+            884,
+            387
+          ],
+          "centroid": [
+            772.51,
+            232.987
+          ],
+          "pixels": 55597
+        }
+      ],
+      "crop": {
+        "height": 391,
+        "width": 422,
+        "x": 557,
+        "y": 0
+      },
+      "equal_cell_overrun": {
+        "bottom": 46,
+        "left": 0,
+        "right": 0,
+        "top": 0
+      },
+      "grid_cell": {
+        "column": 1,
+        "row": 0
+      },
+      "id": "lantern",
+      "ignored_small_components": {
+        "components": 0,
+        "largest_component_pixels": 0,
+        "pixels": 0
+      },
+      "key": "props/ch3/lantern",
+      "output": {
+        "alpha": {
+          "corner_alpha_extrema": {
+            "bottom_left": [
+              0,
+              0
+            ],
+            "bottom_right": [
+              0,
+              0
+            ],
+            "top_left": [
+              0,
+              0
+            ],
+            "top_right": [
+              0,
+              0
+            ]
+          },
+          "corner_patch_size": [
+            16,
+            16
+          ],
+          "extrema": [
+            0,
+            255
+          ],
+          "maximum_soft_edge_expansion": 1,
+          "maximum_visible_cyan_excess": 67,
+          "nonzero_bounds": [
+            67,
+            24,
+            404,
+            592
+          ],
+          "opaque_pixels": 122762,
+          "partially_transparent_pixels": 10539,
+          "soft_edge_expansion": [
+            1,
+            0,
+            0,
+            0
+          ],
+          "strong_bounds_alpha_gt_127": [
+            68,
+            24,
+            404,
+            592
+          ],
+          "transparent_pixels": 157451,
+          "visible_cyan_alpha_floor": 12,
+          "visible_cyan_channel_floor": 180,
+          "visible_cyan_excess_threshold": 80,
+          "visible_cyan_pixels_above_threshold": 0
+        },
+        "bytes": 59780,
+        "dimensions": [
+          472,
+          616
+        ],
+        "path": "public/assets/art/props/ch3/lantern.webp",
+        "sha256": "82d1edfc62ecf3aba49894a556da6c60152d581674ec2a20d0c8e4a54c41534d"
+      },
+      "placement": {
+        "aspect_preserved": true,
+        "destination": [
+          67,
+          24
+        ],
+        "filter": "Pillow LANCZOS in premultiplied RGBa",
+        "padding_minimum": 24,
+        "resized_dimensions": [
+          337,
+          568
+        ],
+        "scale": 1.52688172
+      },
+      "request_index": 1,
+      "source_alpha_bounds": [
+        663,
+        15,
+        884,
+        387
+      ],
+      "trimmed_dimensions": [
+        221,
+        372
+      ]
+    },
+    {
+      "components": [
+        {
+          "bounds": [
+            1048,
+            21,
+            1462,
+            386
+          ],
+          "centroid": [
+            1255.39,
+            172.654
+          ],
+          "pixels": 51435
+        }
+      ],
+      "crop": {
+        "height": 391,
+        "width": 557,
+        "x": 979,
+        "y": 0
+      },
+      "equal_cell_overrun": {
+        "bottom": 45,
+        "left": 0,
+        "right": 0,
+        "top": 0
+      },
+      "grid_cell": {
+        "column": 2,
+        "row": 0
+      },
+      "id": "feather",
+      "ignored_small_components": {
+        "components": 0,
+        "largest_component_pixels": 0,
+        "pixels": 0
+      },
+      "key": "props/ch3/feather",
+      "output": {
+        "alpha": {
+          "corner_alpha_extrema": {
+            "bottom_left": [
+              0,
+              0
+            ],
+            "bottom_right": [
+              0,
+              0
+            ],
+            "top_left": [
+              0,
+              0
+            ],
+            "top_right": [
+              0,
+              0
+            ]
+          },
+          "corner_patch_size": [
+            16,
+            16
+          ],
+          "extrema": [
+            0,
+            255
+          ],
+          "maximum_soft_edge_expansion": 0,
+          "maximum_visible_cyan_excess": 72,
+          "nonzero_bounds": [
+            168,
+            16,
+            567,
+            368
+          ],
+          "opaque_pixels": 43664,
+          "partially_transparent_pixels": 6026,
+          "soft_edge_expansion": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "strong_bounds_alpha_gt_127": [
+            168,
+            16,
+            567,
+            368
+          ],
+          "transparent_pixels": 232934,
+          "visible_cyan_alpha_floor": 12,
+          "visible_cyan_channel_floor": 180,
+          "visible_cyan_excess_threshold": 80,
+          "visible_cyan_pixels_above_threshold": 0
+        },
+        "bytes": 34084,
+        "dimensions": [
+          736,
+          384
+        ],
+        "path": "public/assets/art/props/ch3/feather.webp",
+        "sha256": "34e7d26779a082799b7e4c77f0fbfc7dc2c8494eab2a5cccc1523a45f04cec23"
+      },
+      "placement": {
+        "aspect_preserved": true,
+        "destination": [
+          168,
+          16
+        ],
+        "filter": "Pillow LANCZOS in premultiplied RGBa",
+        "padding_minimum": 16,
+        "resized_dimensions": [
+          399,
+          352
+        ],
+        "scale": 0.964383562
+      },
+      "request_index": 2,
+      "source_alpha_bounds": [
+        1048,
+        21,
+        1462,
+        386
+      ],
+      "trimmed_dimensions": [
+        414,
+        365
+      ]
+    },
+    {
+      "components": [
+        {
+          "bounds": [
+            221,
+            501,
+            308,
+            594
+          ],
+          "centroid": [
+            260.437,
+            548.848
+          ],
+          "pixels": 4241
+        },
+        {
+          "bounds": [
+            107,
+            574,
+            196,
+            658
+          ],
+          "centroid": [
+            147.385,
+            618.597
+          ],
+          "pixels": 4226
+        },
+        {
+          "bounds": [
+            327,
+            441,
+            410,
+            528
+          ],
+          "centroid": [
+            363.85,
+            484.038
+          ],
+          "pixels": 3905
+        },
+        {
+          "bounds": [
+            433,
+            397,
+            521,
+            479
+          ],
+          "centroid": [
+            473.8,
+            438.421
+          ],
+          "pixels": 3846
+        }
+      ],
+      "crop": {
+        "height": 278,
+        "width": 557,
+        "x": 0,
+        "y": 391
+      },
+      "equal_cell_overrun": {
+        "bottom": 0,
+        "left": 0,
+        "right": 9,
+        "top": 0
+      },
+      "grid_cell": {
+        "column": 0,
+        "row": 1
+      },
+      "id": "wet-footprints",
+      "ignored_small_components": {
+        "components": 0,
+        "largest_component_pixels": 0,
+        "pixels": 0
+      },
+      "key": "props/ch3/wet-footprints",
+      "output": {
+        "alpha": {
+          "corner_alpha_extrema": {
+            "bottom_left": [
+              0,
+              0
+            ],
+            "bottom_right": [
+              0,
+              0
+            ],
+            "top_left": [
+              0,
+              0
+            ],
+            "top_right": [
+              0,
+              0
+            ]
+          },
+          "corner_patch_size": [
+            16,
+            16
+          ],
+          "extrema": [
+            0,
+            255
+          ],
+          "maximum_soft_edge_expansion": 2,
+          "maximum_visible_cyan_excess": 75,
+          "nonzero_bounds": [
+            130,
+            20,
+            749,
+            412
+          ],
+          "opaque_pixels": 29612,
+          "partially_transparent_pixels": 10978,
+          "soft_edge_expansion": [
+            0,
+            2,
+            1,
+            0
+          ],
+          "strong_bounds_alpha_gt_127": [
+            130,
+            22,
+            748,
+            412
+          ],
+          "transparent_pixels": 339570,
+          "visible_cyan_alpha_floor": 12,
+          "visible_cyan_channel_floor": 180,
+          "visible_cyan_excess_threshold": 80,
+          "visible_cyan_pixels_above_threshold": 0
+        },
+        "bytes": 37208,
+        "dimensions": [
+          880,
+          432
+        ],
+        "path": "public/assets/art/props/ch3/wet-footprints.webp",
+        "sha256": "d3701b3a23d4c04528f33210d299f466eccb8e2b3dcd8c3c4d02b734beb122cf"
+      },
+      "placement": {
+        "aspect_preserved": true,
+        "destination": [
+          130,
+          20
+        ],
+        "filter": "Pillow LANCZOS in premultiplied RGBa",
+        "padding_minimum": 20,
+        "resized_dimensions": [
+          619,
+          392
+        ],
+        "scale": 1.496183206
+      },
+      "request_index": 3,
+      "source_alpha_bounds": [
+        107,
+        396,
+        521,
+        658
+      ],
+      "trimmed_dimensions": [
+        414,
+        262
+      ]
+    },
+    {
+      "components": [
+        {
+          "bounds": [
+            592,
+            434,
+            936,
+            637
+          ],
+          "centroid": [
+            752.618,
+            522.713
+          ],
+          "pixels": 33317
+        }
+      ],
+      "crop": {
+        "height": 278,
+        "width": 422,
+        "x": 557,
+        "y": 391
+      },
+      "equal_cell_overrun": {
+        "bottom": 0,
+        "left": 0,
+        "right": 0,
+        "top": 0
+      },
+      "grid_cell": {
+        "column": 1,
+        "row": 1
+      },
+      "id": "ribbon-clue",
+      "ignored_small_components": {
+        "components": 0,
+        "largest_component_pixels": 0,
+        "pixels": 0
+      },
+      "key": "props/ch3/ribbon-clue",
+      "output": {
+        "alpha": {
+          "corner_alpha_extrema": {
+            "bottom_left": [
+              0,
+              0
+            ],
+            "bottom_right": [
+              0,
+              0
+            ],
+            "top_left": [
+              0,
+              0
+            ],
+            "top_right": [
+              0,
+              0
+            ]
+          },
+          "corner_patch_size": [
+            16,
+            16
+          ],
+          "extrema": [
+            0,
+            255
+          ],
+          "maximum_soft_edge_expansion": 1,
+          "maximum_visible_cyan_excess": 104,
+          "nonzero_bounds": [
+            19,
+            16,
+            588,
+            352
+          ],
+          "opaque_pixels": 84646,
+          "partially_transparent_pixels": 10310,
+          "soft_edge_expansion": [
+            1,
+            0,
+            1,
+            0
+          ],
+          "strong_bounds_alpha_gt_127": [
+            20,
+            16,
+            587,
+            352
+          ],
+          "transparent_pixels": 128788,
+          "visible_cyan_alpha_floor": 12,
+          "visible_cyan_channel_floor": 180,
+          "visible_cyan_excess_threshold": 80,
+          "visible_cyan_pixels_above_threshold": 0
+        },
+        "bytes": 49736,
+        "dimensions": [
+          608,
+          368
+        ],
+        "path": "public/assets/art/props/ch3/ribbon-clue.webp",
+        "sha256": "e5845e261ab3361bfddbf72df36b97e06093cb445e32c25202d46e94c4eebe1c"
+      },
+      "placement": {
+        "aspect_preserved": true,
+        "destination": [
+          19,
+          16
+        ],
+        "filter": "Pillow LANCZOS in premultiplied RGBa",
+        "padding_minimum": 16,
+        "resized_dimensions": [
+          569,
+          336
+        ],
+        "scale": 1.655172414
+      },
+      "request_index": 4,
+      "source_alpha_bounds": [
+        592,
+        434,
+        936,
+        637
+      ],
+      "trimmed_dimensions": [
+        344,
+        203
+      ]
+    },
+    {
+      "components": [
+        {
+          "bounds": [
+            1023,
+            454,
+            1393,
+            607
+          ],
+          "centroid": [
+            1208.176,
+            529.993
+          ],
+          "pixels": 45228
+        }
+      ],
+      "crop": {
+        "height": 278,
+        "width": 557,
+        "x": 979,
+        "y": 391
+      },
+      "equal_cell_overrun": {
+        "bottom": 0,
+        "left": 2,
+        "right": 0,
+        "top": 0
+      },
+      "grid_cell": {
+        "column": 2,
+        "row": 1
+      },
+      "id": "reflected-eyes",
+      "ignored_small_components": {
+        "components": 10,
+        "largest_component_pixels": 6,
+        "pixels": 22
+      },
+      "key": "props/ch3/reflected-eyes",
+      "output": {
+        "alpha": {
+          "corner_alpha_extrema": {
+            "bottom_left": [
+              0,
+              0
+            ],
+            "bottom_right": [
+              0,
+              0
+            ],
+            "top_left": [
+              0,
+              0
+            ],
+            "top_right": [
+              0,
+              0
+            ]
+          },
+          "corner_patch_size": [
+            16,
+            16
+          ],
+          "extrema": [
+            0,
+            255
+          ],
+          "maximum_soft_edge_expansion": 14,
+          "maximum_visible_cyan_excess": 22,
+          "nonzero_bounds": [
+            12,
+            41,
+            372,
+            190
+          ],
+          "opaque_pixels": 31518,
+          "partially_transparent_pixels": 11633,
+          "soft_edge_expansion": [
+            9,
+            7,
+            14,
+            9
+          ],
+          "strong_bounds_alpha_gt_127": [
+            21,
+            48,
+            358,
+            181
+          ],
+          "transparent_pixels": 45937,
+          "visible_cyan_alpha_floor": 12,
+          "visible_cyan_channel_floor": 180,
+          "visible_cyan_excess_threshold": 80,
+          "visible_cyan_pixels_above_threshold": 0
+        },
+        "bytes": 25748,
+        "dimensions": [
+          384,
+          232
+        ],
+        "path": "public/assets/art/props/ch3/reflected-eyes.webp",
+        "sha256": "5959c659fc6a51c05b28c5bda311cd51e26a1361ae64a6e7cd7e9c21db835935"
+      },
+      "placement": {
+        "aspect_preserved": true,
+        "destination": [
+          12,
+          41
+        ],
+        "filter": "Pillow LANCZOS in premultiplied RGBa",
+        "padding_minimum": 12,
+        "resized_dimensions": [
+          360,
+          149
+        ],
+        "scale": 0.962566845
+      },
+      "request_index": 5,
+      "source_alpha_bounds": [
+        1022,
+        453,
+        1396,
+        608
+      ],
+      "trimmed_dimensions": [
+        374,
+        155
+      ]
+    },
+    {
+      "components": [
+        {
+          "bounds": [
+            99,
+            680,
+            513,
+            995
+          ],
+          "centroid": [
+            302.357,
+            831.642
+          ],
+          "pixels": 85815
+        }
+      ],
+      "crop": {
+        "height": 355,
+        "width": 557,
+        "x": 0,
+        "y": 669
+      },
+      "equal_cell_overrun": {
+        "bottom": 0,
+        "left": 0,
+        "right": 1,
+        "top": 3
+      },
+      "grid_cell": {
+        "column": 0,
+        "row": 2
+      },
+      "id": "torn-book",
+      "ignored_small_components": {
+        "components": 0,
+        "largest_component_pixels": 0,
+        "pixels": 0
+      },
+      "key": "props/ch3/torn-book",
+      "output": {
+        "alpha": {
+          "corner_alpha_extrema": {
+            "bottom_left": [
+              0,
+              0
+            ],
+            "bottom_right": [
+              0,
+              0
+            ],
+            "top_left": [
+              0,
+              0
+            ],
+            "top_right": [
+              0,
+              0
+            ]
+          },
+          "corner_patch_size": [
+            16,
+            16
+          ],
+          "extrema": [
+            0,
+            255
+          ],
+          "maximum_soft_edge_expansion": 0,
+          "maximum_visible_cyan_excess": 44,
+          "nonzero_bounds": [
+            60,
+            20,
+            596,
+            428
+          ],
+          "opaque_pixels": 139760,
+          "partially_transparent_pixels": 6527,
+          "soft_edge_expansion": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "strong_bounds_alpha_gt_127": [
+            60,
+            20,
+            596,
+            428
+          ],
+          "transparent_pixels": 147601,
+          "visible_cyan_alpha_floor": 12,
+          "visible_cyan_channel_floor": 180,
+          "visible_cyan_excess_threshold": 80,
+          "visible_cyan_pixels_above_threshold": 0
+        },
+        "bytes": 59564,
+        "dimensions": [
+          656,
+          448
+        ],
+        "path": "public/assets/art/props/ch3/torn-book.webp",
+        "sha256": "63a923f56c75c3c6db906b2ce665ef0a78299752622e2cd18d9f7bed0dd114e8"
+      },
+      "placement": {
+        "aspect_preserved": true,
+        "destination": [
+          60,
+          20
+        ],
+        "filter": "Pillow LANCZOS in premultiplied RGBa",
+        "padding_minimum": 20,
+        "resized_dimensions": [
+          536,
+          408
+        ],
+        "scale": 1.295238095
+      },
+      "request_index": 6,
+      "source_alpha_bounds": [
+        99,
+        680,
+        513,
+        995
+      ],
+      "trimmed_dimensions": [
+        414,
+        315
+      ]
+    },
+    {
+      "components": [
+        {
+          "bounds": [
+            622,
+            687,
+            916,
+            979
+          ],
+          "centroid": [
+            768.243,
+            832.681
+          ],
+          "pixels": 67911
+        }
+      ],
+      "crop": {
+        "height": 355,
+        "width": 422,
+        "x": 557,
+        "y": 669
+      },
+      "equal_cell_overrun": {
+        "bottom": 0,
+        "left": 0,
+        "right": 0,
+        "top": 0
+      },
+      "grid_cell": {
+        "column": 1,
+        "row": 2
+      },
+      "id": "toad-token",
+      "ignored_small_components": {
+        "components": 0,
+        "largest_component_pixels": 0,
+        "pixels": 0
+      },
+      "key": "props/ch3/toad-token",
+      "output": {
+        "alpha": {
+          "corner_alpha_extrema": {
+            "bottom_left": [
+              0,
+              0
+            ],
+            "bottom_right": [
+              0,
+              0
+            ],
+            "top_left": [
+              0,
+              0
+            ],
+            "top_right": [
+              0,
+              0
+            ]
+          },
+          "corner_patch_size": [
+            16,
+            16
+          ],
+          "extrema": [
+            0,
+            255
+          ],
+          "maximum_soft_edge_expansion": 1,
+          "maximum_visible_cyan_excess": 75,
+          "nonzero_bounds": [
+            18,
+            19,
+            414,
+            412
+          ],
+          "opaque_pixels": 119807,
+          "partially_transparent_pixels": 4996,
+          "soft_edge_expansion": [
+            0,
+            1,
+            1,
+            0
+          ],
+          "strong_bounds_alpha_gt_127": [
+            18,
+            20,
+            413,
+            412
+          ],
+          "transparent_pixels": 61821,
+          "visible_cyan_alpha_floor": 12,
+          "visible_cyan_channel_floor": 180,
+          "visible_cyan_excess_threshold": 80,
+          "visible_cyan_pixels_above_threshold": 0
+        },
+        "bytes": 55832,
+        "dimensions": [
+          432,
+          432
+        ],
+        "path": "public/assets/art/props/ch3/toad-token.webp",
+        "sha256": "987d1960747e17d32419c87934390e9d35ee9ee390af0f210bbf858d3f31806e"
+      },
+      "placement": {
+        "aspect_preserved": true,
+        "destination": [
+          18,
+          19
+        ],
+        "filter": "Pillow LANCZOS in premultiplied RGBa",
+        "padding_minimum": 18,
+        "resized_dimensions": [
+          396,
+          393
+        ],
+        "scale": 1.346938776
+      },
+      "request_index": 7,
+      "source_alpha_bounds": [
+        622,
+        687,
+        916,
+        979
+      ],
+      "trimmed_dimensions": [
+        294,
+        292
+      ]
+    },
+    {
+      "components": [
+        {
+          "bounds": [
+            1090,
+            706,
+            1342,
+            952
+          ],
+          "centroid": [
+            1214.998,
+            840.873
+          ],
+          "pixels": 34465
+        }
+      ],
+      "crop": {
+        "height": 355,
+        "width": 557,
+        "x": 979,
+        "y": 669
+      },
+      "equal_cell_overrun": {
+        "bottom": 0,
+        "left": 0,
+        "right": 0,
+        "top": 0
+      },
+      "grid_cell": {
+        "column": 2,
+        "row": 2
+      },
+      "id": "sleeping-star",
+      "ignored_small_components": {
+        "components": 0,
+        "largest_component_pixels": 0,
+        "pixels": 0
+      },
+      "key": "props/ch3/sleeping-star",
+      "output": {
+        "alpha": {
+          "corner_alpha_extrema": {
+            "bottom_left": [
+              0,
+              0
+            ],
+            "bottom_right": [
+              0,
+              0
+            ],
+            "top_left": [
+              0,
+              0
+            ],
+            "top_right": [
+              0,
+              0
+            ]
+          },
+          "corner_patch_size": [
+            16,
+            16
+          ],
+          "extrema": [
+            0,
+            255
+          ],
+          "maximum_soft_edge_expansion": 2,
+          "maximum_visible_cyan_excess": 24,
+          "nonzero_bounds": [
+            18,
+            22,
+            414,
+            409
+          ],
+          "opaque_pixels": 80794,
+          "partially_transparent_pixels": 6799,
+          "soft_edge_expansion": [
+            2,
+            0,
+            2,
+            0
+          ],
+          "strong_bounds_alpha_gt_127": [
+            20,
+            22,
+            412,
+            409
+          ],
+          "transparent_pixels": 99031,
+          "visible_cyan_alpha_floor": 12,
+          "visible_cyan_channel_floor": 180,
+          "visible_cyan_excess_threshold": 80,
+          "visible_cyan_pixels_above_threshold": 0
+        },
+        "bytes": 35348,
+        "dimensions": [
+          432,
+          432
+        ],
+        "path": "public/assets/art/props/ch3/sleeping-star.webp",
+        "sha256": "97a926c01775c91b5f870e125e669694d448bab57c6c195c2c6fac72fef370c5"
+      },
+      "placement": {
+        "aspect_preserved": true,
+        "destination": [
+          18,
+          22
+        ],
+        "filter": "Pillow LANCZOS in premultiplied RGBa",
+        "padding_minimum": 18,
+        "resized_dimensions": [
+          396,
+          387
+        ],
+        "scale": 1.571428571
+      },
+      "request_index": 8,
+      "source_alpha_bounds": [
+        1090,
+        706,
+        1342,
+        952
+      ],
+      "trimmed_dimensions": [
+        252,
+        246
+      ]
+    }
+  ],
+  "deterministic": true,
+  "encoding": {
+    "arguments": [
+      "-quiet",
+      "-q",
+      "90",
+      "-alpha_q",
+      "100",
+      "-m",
+      "6",
+      "-sharp_yuv",
+      "-metadata",
+      "none"
+    ],
+    "tool": "/opt/homebrew/bin/cwebp",
+    "version": "1.6.0\nlibsharpyuv: 0.4.2"
+  },
+  "grid": {
+    "accepted_gutter_boundaries": {
+      "x": [
+        0,
+        557,
+        979,
+        1536
+      ],
+      "y": [
+        0,
+        391,
+        669,
+        1024
+      ]
+    },
+    "equal_boundaries": {
+      "x": [
+        0,
+        512,
+        1024,
+        1536
+      ],
+      "y": [
+        0,
+        341,
+        683,
+        1024
+      ]
+    },
+    "ignored_small_component_pixels": 22,
+    "retained_component_count": 12,
+    "selection_rule": "Fixed boundaries are centered in source-wide zero-alpha gutters. Every retained component centroid remains in its requested equal-grid cell.",
+    "verified_empty_gutters": [
+      {
+        "axis": "x",
+        "boundary": 557,
+        "end": 592,
+        "start": 522,
+        "visible_alpha_pixels": 0
+      },
+      {
+        "axis": "x",
+        "boundary": 979,
+        "end": 1022,
+        "start": 936,
+        "visible_alpha_pixels": 0
+      },
+      {
+        "axis": "y",
+        "boundary": 391,
+        "end": 396,
+        "start": 387,
+        "visible_alpha_pixels": 0
+      },
+      {
+        "axis": "y",
+        "boundary": 669,
+        "end": 680,
+        "start": 658,
+        "visible_alpha_pixels": 0
+      }
+    ]
+  },
+  "id": "ch3-props-core-v1",
+  "processing_spec": {
+    "bytes": 5239,
+    "path": "art/chapters/ch3/props/core-v1.processing.json",
+    "sha256": "06b7f08adb73923ed6ae4c7297b65b95892249820d699b37cd1b23bafc2aeec2"
+  },
+  "processor": {
+    "bytes": 34889,
+    "command": "python3 art/chapters/ch3/props/process-core-v1.py",
+    "path": "art/chapters/ch3/props/process-core-v1.py",
+    "sha256": "6ac471bda13910a8f812ca58feb0e440356bd2aa37d7668914cea6298b536833"
+  },
+  "request": {
+    "bytes": 950,
+    "order": [
+      "spellbook-parcel",
+      "lantern",
+      "feather",
+      "wet-footprints",
+      "ribbon-clue",
+      "reflected-eyes",
+      "torn-book",
+      "toad-token",
+      "sleeping-star"
+    ],
+    "path": "art/chapters/ch3/props/batch/core-v1.request.json",
+    "sha256": "fa088a532843ed5a082ea9c7a4f17b9d17bc911b551b43631ba3dfd29a09fa46"
+  },
+  "resampling": {
+    "algorithm": "Pillow LANCZOS in premultiplied RGBa",
+    "pillow_version": "12.3.0",
+    "preserves_aspect": true
+  },
+  "schema_version": 1,
+  "source": {
+    "bytes": 2036046,
+    "dimensions": [
+      1536,
+      1024
+    ],
+    "mode": "RGB",
+    "path": "art/chapters/ch3/props/batch/core-v1.png",
+    "sha256": "d16a9b4254590ef7c0dd41646f15096cbdcb33fb487dcea3d88b98a27650f31b"
+  }
+}

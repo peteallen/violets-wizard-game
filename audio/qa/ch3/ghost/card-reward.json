@@ -1,0 +1,212 @@
+{
+  "language_code": "eng",
+  "language_probability": 1,
+  "text": "Keep this Bertie Bott card for listening. A promise can still begin with a present.",
+  "words": [
+    {
+      "text": "Keep",
+      "start": 0.159,
+      "end": 0.319,
+      "type": "word",
+      "logprob": -0.0031822300516068935
+    },
+    {
+      "text": " ",
+      "start": 0.319,
+      "end": 0.34,
+      "type": "spacing",
+      "logprob": -0.00009190614218823612
+    },
+    {
+      "text": "this",
+      "start": 0.34,
+      "end": 0.56,
+      "type": "word",
+      "logprob": -0.00009190614218823612
+    },
+    {
+      "text": " ",
+      "start": 0.56,
+      "end": 0.599,
+      "type": "spacing",
+      "logprob": -0.026494108140468597
+    },
+    {
+      "text": "Bertie",
+      "start": 0.599,
+      "end": 0.879,
+      "type": "word",
+      "logprob": -0.01770080408702294
+    },
+    {
+      "text": " ",
+      "start": 0.879,
+      "end": 0.959,
+      "type": "spacing",
+      "logprob": -0.5147653222084045
+    },
+    {
+      "text": "Bott",
+      "start": 0.959,
+      "end": 1.159,
+      "type": "word",
+      "logprob": -0.5147653222084045
+    },
+    {
+      "text": " ",
+      "start": 1.159,
+      "end": 1.199,
+      "type": "spacing",
+      "logprob": -0.0019338493002578616
+    },
+    {
+      "text": "card",
+      "start": 1.199,
+      "end": 1.48,
+      "type": "word",
+      "logprob": -0.0019338493002578616
+    },
+    {
+      "text": " ",
+      "start": 1.48,
+      "end": 1.519,
+      "type": "spacing",
+      "logprob": -0.000010847986231965479
+    },
+    {
+      "text": "for",
+      "start": 1.519,
+      "end": 1.639,
+      "type": "word",
+      "logprob": -0.000010847986231965479
+    },
+    {
+      "text": " ",
+      "start": 1.639,
+      "end": 1.679,
+      "type": "spacing",
+      "logprob": -0.00008737658936297521
+    },
+    {
+      "text": "listening.",
+      "start": 1.679,
+      "end": 2.639,
+      "type": "word",
+      "logprob": -0.00015783405615366064
+    },
+    {
+      "text": " ",
+      "start": 2.639,
+      "end": 2.719,
+      "type": "spacing",
+      "logprob": -0.000033378044463461265
+    },
+    {
+      "text": "A",
+      "start": 2.72,
+      "end": 2.799,
+      "type": "word",
+      "logprob": -0.000033378044463461265
+    },
+    {
+      "text": " ",
+      "start": 2.799,
+      "end": 2.839,
+      "type": "spacing",
+      "logprob": -0.000005483612312673358
+    },
+    {
+      "text": "promise",
+      "start": 2.839,
+      "end": 3.46,
+      "type": "word",
+      "logprob": -0.000005483612312673358
+    },
+    {
+      "text": " ",
+      "start": 3.46,
+      "end": 3.5,
+      "type": "spacing",
+      "logprob": -1.1920928244535389e-7
+    },
+    {
+      "text": "can",
+      "start": 3.5,
+      "end": 3.679,
+      "type": "word",
+      "logprob": -1.1920928244535389e-7
+    },
+    {
+      "text": " ",
+      "start": 3.679,
+      "end": 3.759,
+      "type": "spacing",
+      "logprob": -3.576278118089249e-7
+    },
+    {
+      "text": "still",
+      "start": 3.759,
+      "end": 3.959,
+      "type": "word",
+      "logprob": -3.576278118089249e-7
+    },
+    {
+      "text": " ",
+      "start": 3.959,
+      "end": 4.039,
+      "type": "spacing",
+      "logprob": -1.1920928244535389e-7
+    },
+    {
+      "text": "begin",
+      "start": 4.039,
+      "end": 4.679,
+      "type": "word",
+      "logprob": -1.1920928244535389e-7
+    },
+    {
+      "text": " ",
+      "start": 4.679,
+      "end": 4.719,
+      "type": "spacing",
+      "logprob": -0.000002264974000354414
+    },
+    {
+      "text": "with",
+      "start": 4.719,
+      "end": 4.839,
+      "type": "word",
+      "logprob": -0.000002264974000354414
+    },
+    {
+      "text": " ",
+      "start": 4.839,
+      "end": 4.939,
+      "type": "spacing",
+      "logprob": -4.768370445162873e-7
+    },
+    {
+      "text": "a",
+      "start": 4.94,
+      "end": 4.96,
+      "type": "word",
+      "logprob": -4.768370445162873e-7
+    },
+    {
+      "text": " ",
+      "start": 4.96,
+      "end": 4.98,
+      "type": "spacing",
+      "logprob": -0.000005245195097813848
+    },
+    {
+      "text": "present.",
+      "start": 4.98,
+      "end": 5.44,
+      "type": "word",
+      "logprob": -0.048383869218810105
+    }
+  ],
+  "transcription_id": "QFAqetZ3rX7uzja0jBD0",
+  "audio_duration_secs": 5.790125
+}

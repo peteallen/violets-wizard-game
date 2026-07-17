@@ -414,6 +414,294 @@
       "audio": "voice/ch2/trolley-witch/offer.mp3",
       "bytes": 74440,
       "sha256": "6aa929b0a950f4d0fe15a72d8edf9fdbce0776185715cfbbe93940364ac7e445"
+    },
+    "voice/ch3/card/bertie-bott": {
+      "transcript": "ch3/card/bertie-bott.json",
+      "audio": "voice/ch3/card/bertie-bott.mp3",
+      "bytes": 81128,
+      "sha256": "5e8758cd53a0bf0acfeb47bdc03daa05ea77a89260c98a8dda6841cedcff3a63"
+    },
+    "voice/ch3/card/circe": {
+      "transcript": "ch3/card/circe.json",
+      "audio": "voice/ch3/card/circe.mp3",
+      "bytes": 84471,
+      "sha256": "5f9ff2dd62c9255528a02794e99ab47d61bde44a44845c43f0419a8a19ce3651"
+    },
+    "voice/ch3/flitwick/every-witch-needs-light": {
+      "transcript": "ch3/flitwick/every-witch-needs-light.json",
+      "audio": "voice/ch3/flitwick/every-witch-needs-light.mp3",
+      "bytes": 78202,
+      "sha256": "5996114b4a2493ec629c8f0b2cd2c77580fbc1ed430c08b89ab384b503953632"
+    },
+    "voice/ch3/flitwick/letters-into-magic": {
+      "transcript": "ch3/flitwick/letters-into-magic.json",
+      "audio": "voice/ch3/flitwick/letters-into-magic.mp3",
+      "bytes": 47691,
+      "sha256": "25ef11fcc35331e64378a5fd3ea5a6ba0f658babe23cc21e84b7d3340fcd2799"
+    },
+    "voice/ch3/flitwick/long-spells-little-pieces": {
+      "transcript": "ch3/flitwick/long-spells-little-pieces.json",
+      "audio": "voice/ch3/flitwick/long-spells-little-pieces.mp3",
+      "bytes": 80292,
+      "sha256": "342d58f49b02d0b3422abd5c8ca9635bb093e0d818a09593631c328c11acef6b"
+    },
+    "voice/ch3/flitwick/splendid-light": {
+      "transcript": "ch3/flitwick/splendid-light.json",
+      "audio": "voice/ch3/flitwick/splendid-light.mp3",
+      "bytes": 32644,
+      "sha256": "af9a33ade3fc2e2cdd41dc13163e551877f3de1f5ae3574bd9362b88fe1c2184"
+    },
+    "voice/ch3/flitwick/swish-and-flick": {
+      "transcript": "ch3/flitwick/swish-and-flick.json",
+      "audio": "voice/ch3/flitwick/swish-and-flick.mp3",
+      "bytes": 20942,
+      "sha256": "55488f1668c88df2cbd5c6ba8b91660e658c714a5f5ac3cc94ade4378d68030c"
+    },
+    "voice/ch3/flitwick/up-she-goes": {
+      "transcript": "ch3/flitwick/up-she-goes.json",
+      "audio": "voice/ch3/flitwick/up-she-goes.mp3",
+      "bytes": 46855,
+      "sha256": "f1708824d75e43f3ef41d0cecc4ea959a3106ad6a8365731aa7fbb6b39b7de96"
+    },
+    "voice/ch3/flitwick/use-lumos": {
+      "transcript": "ch3/flitwick/use-lumos.json",
+      "audio": "voice/ch3/flitwick/use-lumos.mp3",
+      "bytes": 47691,
+      "sha256": "7614b8691fe370a2f7db7ccb639147b6168162736c11ad8e2b3cdc9afcdd71ac"
+    },
+    "voice/ch3/ghost/book-request": {
+      "transcript": "ch3/ghost/book-request.json",
+      "audio": "voice/ch3/ghost/book-request.mp3",
+      "bytes": 130029,
+      "sha256": "9fdf4cdaece2e7a168301d92a324f72fdd4f58eca5e64bb008fa8695b00d2c43"
+    },
+    "voice/ch3/ghost/card-reward": {
+      "transcript": "ch3/ghost/card-reward.json",
+      "audio": "voice/ch3/ghost/card-reward.mp3",
+      "bytes": 93666,
+      "sha256": "60ba4acd84d7d36e753d7e952b222533bce0efd2b8719734b673d7d6f491823e"
+    },
+    "voice/ch3/home/letter": {
+      "transcript": "ch3/home/letter.json",
+      "audio": "voice/ch3/home/letter.mp3",
+      "bytes": 130447,
+      "sha256": "7cff52b6ffd44d06081523d82a106920a2b8de86737ba32362b3f5b7cd7010cf"
+    },
+    "voice/ch3/learning/leviosa/dium": {
+      "transcript": "ch3/learning/leviosa/dium.json",
+      "audio": "voice/ch3/learning/leviosa/dium.mp3",
+      "bytes": 17598,
+      "sha256": "253b495bab6cb00389d3c0b46a2d332774c00ffbf18471f6f90be2b9870aa0ea"
+    },
+    "voice/ch3/learning/leviosa/gar": {
+      "transcript": "ch3/learning/leviosa/gar.json",
+      "audio": "voice/ch3/learning/leviosa/gar.mp3",
+      "bytes": 11328,
+      "sha256": "31e2da2c8e41cffeab04a0bb93ab70a117db760dd2388b2492b05e889513959e"
+    },
+    "voice/ch3/learning/leviosa/levi": {
+      "transcript": "ch3/learning/leviosa/levi.json",
+      "audio": "voice/ch3/learning/leviosa/levi.mp3",
+      "bytes": 15090,
+      "sha256": "fae86c0995cacff05adf1c5795aa351fcaa1e4d99455ac6958e9cb988938691d"
+    },
+    "voice/ch3/learning/leviosa/o": {
+      "transcript": "ch3/learning/leviosa/o.json",
+      "audio": "voice/ch3/learning/leviosa/o.mp3",
+      "bytes": 8821,
+      "sha256": "fc8b52861e664fc5eedb6e80d4968266dca6890bdec8a051e8de6cfb4e359005"
+    },
+    "voice/ch3/learning/leviosa/sa": {
+      "transcript": "ch3/learning/leviosa/sa.json",
+      "audio": "voice/ch3/learning/leviosa/sa.mp3",
+      "bytes": 11328,
+      "sha256": "7dcbf5225cf1df88ae0140fb2acaa3f929bf64a04f8c6d83b3c3eafbcdcd02e6"
+    },
+    "voice/ch3/learning/leviosa/win": {
+      "transcript": "ch3/learning/leviosa/win.json",
+      "audio": "voice/ch3/learning/leviosa/win.mp3",
+      "bytes": 11328,
+      "sha256": "94cd31a2dc3ef11d8187d429d20b8feb641f300c892af3b67c43bb7cb8861e9b"
+    },
+    "voice/ch3/learning/lumos/a": {
+      "transcript": "ch3/learning/lumos/a.json",
+      "audio": "voice/ch3/learning/lumos/a.mp3",
+      "bytes": 8821,
+      "sha256": "55a7f2c9b5cfb131b31bf5702a06e95077c97f76d587329090d503ded0e48b31"
+    },
+    "voice/ch3/learning/lumos/e": {
+      "transcript": "ch3/learning/lumos/e.json",
+      "audio": "voice/ch3/learning/lumos/e.mp3",
+      "bytes": 10493,
+      "sha256": "3eaeca44997047a10e3428fd4383d0eca471292cec51829998577f5ae6e926fd"
+    },
+    "voice/ch3/learning/lumos/l": {
+      "transcript": "ch3/learning/lumos/l.json",
+      "audio": "voice/ch3/learning/lumos/l.mp3",
+      "bytes": 10493,
+      "sha256": "04aa2efcf57f2b0a299b62e9c242670f89542c8eac99bf52f8a99ffd29910f23"
+    },
+    "voice/ch3/learning/lumos/m": {
+      "transcript": "ch3/learning/lumos/m.json",
+      "audio": "voice/ch3/learning/lumos/m.mp3",
+      "bytes": 11328,
+      "sha256": "9a052b5de48a9ef61b8a0842acb25bf8b5cd3ffc2d50d1c4ccf86c63a19b8d2c"
+    },
+    "voice/ch3/learning/lumos/o": {
+      "transcript": "ch3/learning/lumos/o.json",
+      "audio": "voice/ch3/learning/lumos/o.mp3",
+      "bytes": 9657,
+      "sha256": "2a50e1cb4eb46b9ecb9eff2f1161588fdcafbe1923af2de56951fe4f55124a25"
+    },
+    "voice/ch3/learning/lumos/s": {
+      "transcript": "ch3/learning/lumos/s.json",
+      "audio": "voice/ch3/learning/lumos/s.mp3",
+      "bytes": 8821,
+      "sha256": "3719177fa8d700c5c0a30960c603d1fba5a109cb04142c40f8825ef59f85e068"
+    },
+    "voice/ch3/learning/lumos/u": {
+      "transcript": "ch3/learning/lumos/u.json",
+      "audio": "voice/ch3/learning/lumos/u.mp3",
+      "bytes": 8403,
+      "sha256": "1f0afd5c7d0be88bf2e36fb9773cc18b973ee4491d79f1e301756e9c579d322d"
+    },
+    "voice/ch3/narrator/armor-reaction": {
+      "transcript": "ch3/narrator/armor-reaction.json",
+      "audio": "voice/ch3/narrator/armor-reaction.mp3",
+      "bytes": 57722,
+      "sha256": "0bb75fec2b2fca3298513da01050f886d46b738fc0a3a14cd537f0fd6daf2e88"
+    },
+    "voice/ch3/narrator/chapter-close": {
+      "transcript": "ch3/narrator/chapter-close.json",
+      "audio": "voice/ch3/narrator/chapter-close.mp3",
+      "bytes": 122088,
+      "sha256": "3715bb129258e0dac63f25e0ce9f9a410a9e066a12363f278d942870691ba8de"
+    },
+    "voice/ch3/narrator/curtain-reaction": {
+      "transcript": "ch3/narrator/curtain-reaction.json",
+      "audio": "voice/ch3/narrator/curtain-reaction.mp3",
+      "bytes": 52288,
+      "sha256": "a09c79f76db43b7084649a2ca72e4bc86ccc0bfd7aab8e15596522ec5c147532"
+    },
+    "voice/ch3/narrator/flying-preview": {
+      "transcript": "ch3/narrator/flying-preview.json",
+      "audio": "voice/ch3/narrator/flying-preview.mp3",
+      "bytes": 96174,
+      "sha256": "3427792992184d1b7ab7daca0b85b602ef8c3a2fa9d8d3cd8b37f4c5191eae72"
+    },
+    "voice/ch3/narrator/trevor-found": {
+      "transcript": "ch3/narrator/trevor-found.json",
+      "audio": "voice/ch3/narrator/trevor-found.mp3",
+      "bytes": 53960,
+      "sha256": "d0b47d1e62a0c5ed20d9e0b7bd212ebf61f5ccccd3b581ffd6484f252a67658d"
+    },
+    "voice/ch3/neville/please-help": {
+      "transcript": "ch3/neville/please-help.json",
+      "audio": "voice/ch3/neville/please-help.mp3",
+      "bytes": 54796,
+      "sha256": "2bb189cf3bdd9f27b709973827dc3132ec158abba5f6277c0b9ca4272cc7f813"
+    },
+    "voice/ch3/neville/trevor-missing": {
+      "transcript": "ch3/neville/trevor-missing.json",
+      "audio": "voice/ch3/neville/trevor-missing.mp3",
+      "bytes": 64827,
+      "sha256": "b7b602d271e141cf73b6fbf21ce9ce658a63348a76ba8907b09637e3338f649e"
+    },
+    "voice/ch3/neville/trevor-safe": {
+      "transcript": "ch3/neville/trevor-safe.json",
+      "audio": "voice/ch3/neville/trevor-safe.mp3",
+      "bytes": 55632,
+      "sha256": "1d8eb075512546951abd7cc7fb988547566ea5414ebdcac60382d26137bc815b"
+    },
+    "voice/ch3/objective/find-clue": {
+      "transcript": "ch3/objective/find-clue.json",
+      "audio": "voice/ch3/objective/find-clue.mp3",
+      "bytes": 56050,
+      "sha256": "02d88a5a66703d7932ba9901d5d1d59c96602045979090b23fb0223fe3e0ae43"
+    },
+    "voice/ch3/objective/find-trevor": {
+      "transcript": "ch3/objective/find-trevor.json",
+      "audio": "voice/ch3/objective/find-trevor.mp3",
+      "bytes": 48527,
+      "sha256": "bccdf334e5858c24d11fc36f1a15c66c02c88ac8abc7740049abaf79af267185"
+    },
+    "voice/ch3/objective/fix-book": {
+      "transcript": "ch3/objective/fix-book.json",
+      "audio": "voice/ch3/objective/fix-book.mp3",
+      "bytes": 59394,
+      "sha256": "79a211ea2c8242b3c0726959c7e9d9814597a4d2d890dc758d7b7d5f27247df9"
+    },
+    "voice/ch3/objective/follow-trail": {
+      "transcript": "ch3/objective/follow-trail.json",
+      "audio": "voice/ch3/objective/follow-trail.mp3",
+      "bytes": 68589,
+      "sha256": "ff81f30a55131ee38e8f4ddbcabcdebe11aaf946dab747bd7d60cea454dd9181"
+    },
+    "voice/ch3/objective/help-neville": {
+      "transcript": "ch3/objective/help-neville.json",
+      "audio": "voice/ch3/objective/help-neville.mp3",
+      "bytes": 28465,
+      "sha256": "151930c32959440acbd10c2d5577d71f6936feac87381e0fb769107449987052"
+    },
+    "voice/ch3/objective/learn-leviosa": {
+      "transcript": "ch3/objective/learn-leviosa.json",
+      "audio": "voice/ch3/objective/learn-leviosa.mp3",
+      "bytes": 59812,
+      "sha256": "0236e3258eae15a46b102ca52a6c0c67eb5b3c6bec9c70a1d0662c1ed0ee6308"
+    },
+    "voice/ch3/objective/learn-lumos": {
+      "transcript": "ch3/objective/learn-lumos.json",
+      "audio": "voice/ch3/objective/learn-lumos.mp3",
+      "bytes": 56886,
+      "sha256": "c1d0a54042b8fa2ed41f99813860d35f245c94936ed806c846b248a380de32b9"
+    },
+    "voice/ch3/objective/open-spellbook": {
+      "transcript": "ch3/objective/open-spellbook.json",
+      "audio": "voice/ch3/objective/open-spellbook.mp3",
+      "bytes": 49363,
+      "sha256": "dd0f97e36710b6daba50fc25a6a64de1f32ca334c7eeba529141fc73f4b17820"
+    },
+    "voice/ch3/objective/return-trevor": {
+      "transcript": "ch3/objective/return-trevor.json",
+      "audio": "voice/ch3/objective/return-trevor.mp3",
+      "bytes": 46437,
+      "sha256": "99771fc74a10d4f36982d9f5b2f5898e4fd9e95c2afe783f5ecbfa6e1c611e16"
+    },
+    "voice/ch3/objective/turn-page": {
+      "transcript": "ch3/objective/turn-page.json",
+      "audio": "voice/ch3/objective/turn-page.mp3",
+      "bytes": 53960,
+      "sha256": "66cda8ec43790c84dc0c2da738f4092944a8ce3ec8d4d61588b1a7d54e21eb11"
+    },
+    "voice/ch3/recap/first-spells": {
+      "transcript": "ch3/recap/first-spells.json",
+      "audio": "voice/ch3/recap/first-spells.mp3",
+      "bytes": 54378,
+      "sha256": "4823c5ae6c58150d15f1617f656a7900ddb9332c2f38c5f76d80130c76a3724a"
+    },
+    "voice/ch3/recap/spellbook": {
+      "transcript": "ch3/recap/spellbook.json",
+      "audio": "voice/ch3/recap/spellbook.mp3",
+      "bytes": 71097,
+      "sha256": "0c7dede70091c07e5855da622659b619bb5ff79bdb711fa3dfdee7913ad4db77"
+    },
+    "voice/ch3/recap/trevor-safe": {
+      "transcript": "ch3/recap/trevor-safe.json",
+      "audio": "voice/ch3/recap/trevor-safe.mp3",
+      "bytes": 53960,
+      "sha256": "fd0124ae2ebfdeef51248528287a5786d140d7cf8fe8b936ad369a0613211f6d"
+    },
+    "voice/ch3/recap/trevor-trail": {
+      "transcript": "ch3/recap/trevor-trail.json",
+      "audio": "voice/ch3/recap/trevor-trail.mp3",
+      "bytes": 58140,
+      "sha256": "1df9240ebd9d2a15b24e64586873e21515e123e879fc70f9aa3921a00867b3e1"
+    },
+    "voice/ch4/narrator/preview": {
+      "transcript": "ch4/narrator/preview.json",
+      "audio": "voice/ch4/narrator/preview.mp3",
+      "bytes": 107877,
+      "sha256": "73420a157559d0ac76bd1510b0344a964fa8f32c829a1a09e73d49952b42612d"
     }
   }
 }

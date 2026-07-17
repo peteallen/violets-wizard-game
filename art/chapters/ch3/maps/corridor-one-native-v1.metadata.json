@@ -1,0 +1,79 @@
+{
+  "schema_version": 1,
+  "kind": "codex-built-in-map-destination-image-generation",
+  "slug": "ch3-destination-corridor-one-native-v1",
+  "workflow": {
+    "name": "Codex built-in image generation",
+    "tool": "image_gen.imagegen",
+    "model_identifier": null,
+    "seed": null,
+    "note": "The built-in workflow did not return a model identifier or seed."
+  },
+  "timestamps": {
+    "generation_started_at": "2026-07-17T19:24:33.000Z",
+    "generation_completed_at": "2026-07-17T19:26:22.000Z",
+    "duration_ms": 109000
+  },
+  "request_spec": {
+    "path": "art/chapters/ch3/maps/corridor-one-native-v1.request.json",
+    "bytes": 2032,
+    "sha256": "6131f9518ef7702373e001b37fde129bf5d9da7f3e11ceffce1ef14231f218d5"
+  },
+  "prompt": {
+    "path": "art/chapters/ch3/maps/corridor-one-native-v1.prompt.md",
+    "section": "Prompt",
+    "bytes": 4038,
+    "sha256": "521f4d4bfe65722b7ccaf907b240218a05c707e1f2c7d2f80c16b2729b79b242"
+  },
+  "references": [
+    {
+      "index": 1,
+      "path": "public/assets/art/ui/satchel/destination-diagon-alley.webp",
+      "role": "exact destination-card silhouette, parchment border, plum-and-gold trim, and blank-label-band reference",
+      "bytes": 94950,
+      "sha256": "d13787aab1525c552e63663b540bb98307c6fcee54366b2ed982ed1ce00949e1",
+      "dimensions": { "width": 420, "height": 500 }
+    },
+    {
+      "index": 2,
+      "path": "art/raw/ch2-great-hall-v4.png",
+      "role": "premium magical-school stone, candlelight, night palette, and painted finish reference",
+      "bytes": 3836559,
+      "sha256": "47794a3e7c7341cc258f5393d8a98bb405957e786418a2ae46b04a2a9acfd5b8",
+      "dimensions": { "width": 2048, "height": 1152 }
+    }
+  ],
+  "generation_output": {
+    "id": "exec-0a66f3b0-d4dd-446b-ad30-2d6ad97c2a7d",
+    "original_path": "/Users/peteallen/.codex/generated_images/019f7183-6ad4-7271-af63-4e295c819dcd/exec-0a66f3b0-d4dd-446b-ad30-2d6ad97c2a7d.png",
+    "copied_to": "art/raw/ch3-destination-corridor-one-native-v1.png",
+    "copy_note": "Copied byte-for-byte without image edits before deterministic chroma extraction.",
+    "media_type": "image/png",
+    "bytes": 2865210,
+    "sha256": "d2f89bea5765e92fc28336406b8c3ebb682255b0884a005e3310730146c8dec5",
+    "dimensions": { "width": 1149, "height": 1368 }
+  },
+  "derivatives": {
+    "accepted_alpha_png": {
+      "path": "art/raw/ch3-destination-corridor-one-v1.png",
+      "bytes": 413245,
+      "sha256": "1f070c61912807bf4ea7deb017774cfd4ca7dc6539a7d6358d5be7a1f6f35b5d",
+      "dimensions": { "width": 420, "height": 500 },
+      "has_alpha": true
+    },
+    "shipping_webp": {
+      "path": "public/assets/art/maps/ch3-destination-corridor-one.webp",
+      "bytes": 65596,
+      "sha256": "a535d61d80f588bd3c654a2955d6cad7736cf133e7c7ebeb13802ccb7c551df8",
+      "dimensions": { "width": 420, "height": 500 },
+      "has_alpha": true
+    }
+  },
+  "conversion": {
+    "alpha_extraction": "remove_chroma_key.py --auto-key border --soft-matte --transparent-threshold 12 --opaque-threshold 220 --despill --edge-contract 1",
+    "sampled_key_color": "#02fb02",
+    "resize": "sips -s format png -z 500 420",
+    "shipping": "cwebp -q 88 -alpha_q 100 -m 6 -sharp_yuv",
+    "note": "The opaque 1149x1368 native chroma PNG already matched the target 21:25 aspect closely, so the final alpha result was resized directly to 420x500 without a crop. Visual review of the first matte found isolated green top-edge pixels; the accepted derivative was rebuilt once with a one-pixel edge contraction before WebP encoding."
+  }
+}

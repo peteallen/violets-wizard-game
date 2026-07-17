@@ -1,0 +1,128 @@
+{
+  "language_code": "eng",
+  "language_probability": 1,
+  "text": "Take Trevor back to Neville in the first corridor",
+  "words": [
+    {
+      "text": "Take",
+      "start": 0.079,
+      "end": 0.28,
+      "type": "word",
+      "logprob": -0.0001586549769854173
+    },
+    {
+      "text": " ",
+      "start": 0.28,
+      "end": 0.399,
+      "type": "spacing",
+      "logprob": -0.000005006777428206988
+    },
+    {
+      "text": "Trevor",
+      "start": 0.399,
+      "end": 0.659,
+      "type": "word",
+      "logprob": -0.000005006777428206988
+    },
+    {
+      "text": " ",
+      "start": 0.659,
+      "end": 0.74,
+      "type": "spacing",
+      "logprob": -0.000019073304429184645
+    },
+    {
+      "text": "back",
+      "start": 0.74,
+      "end": 0.919,
+      "type": "word",
+      "logprob": -0.000019073304429184645
+    },
+    {
+      "text": " ",
+      "start": 0.919,
+      "end": 0.959,
+      "type": "spacing",
+      "logprob": -1.1920928244535389e-7
+    },
+    {
+      "text": "to",
+      "start": 0.959,
+      "end": 1.1,
+      "type": "word",
+      "logprob": -1.1920928244535389e-7
+    },
+    {
+      "text": " ",
+      "start": 1.1,
+      "end": 1.12,
+      "type": "spacing",
+      "logprob": -0.0010650444310158491
+    },
+    {
+      "text": "Neville",
+      "start": 1.12,
+      "end": 1.419,
+      "type": "word",
+      "logprob": -0.0010650444310158491
+    },
+    {
+      "text": " ",
+      "start": 1.419,
+      "end": 1.439,
+      "type": "spacing",
+      "logprob": -5.960462772236497e-7
+    },
+    {
+      "text": "in",
+      "start": 1.439,
+      "end": 1.519,
+      "type": "word",
+      "logprob": -5.960462772236497e-7
+    },
+    {
+      "text": " ",
+      "start": 1.519,
+      "end": 1.539,
+      "type": "spacing",
+      "logprob": -5.960462772236497e-7
+    },
+    {
+      "text": "the",
+      "start": 1.539,
+      "end": 1.62,
+      "type": "word",
+      "logprob": -5.960462772236497e-7
+    },
+    {
+      "text": " ",
+      "start": 1.62,
+      "end": 1.659,
+      "type": "spacing",
+      "logprob": -0.00010895135346800089
+    },
+    {
+      "text": "first",
+      "start": 1.659,
+      "end": 1.959,
+      "type": "word",
+      "logprob": -0.00010895135346800089
+    },
+    {
+      "text": " ",
+      "start": 1.959,
+      "end": 1.999,
+      "type": "spacing",
+      "logprob": -0.000025748875486897305
+    },
+    {
+      "text": "corridor",
+      "start": 2,
+      "end": 2.539,
+      "type": "word",
+      "logprob": -0.000025748875486897305
+    }
+  ],
+  "transcription_id": "0b8QbZMihdGxORdlPs2q",
+  "audio_duration_secs": 2.832875
+}

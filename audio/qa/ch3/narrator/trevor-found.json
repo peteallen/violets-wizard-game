@@ -1,0 +1,142 @@
+{
+  "language_code": "eng",
+  "language_probability": 1,
+  "text": "Violet scoops Trevor up as he gives one indignant croak",
+  "words": [
+    {
+      "text": "Violet",
+      "start": 0.079,
+      "end": 0.459,
+      "type": "word",
+      "logprob": -0.0004551566671580076
+    },
+    {
+      "text": " ",
+      "start": 0.459,
+      "end": 0.539,
+      "type": "spacing",
+      "logprob": -0.0004555141495075077
+    },
+    {
+      "text": "scoops",
+      "start": 0.539,
+      "end": 0.839,
+      "type": "word",
+      "logprob": -0.0004555141495075077
+    },
+    {
+      "text": " ",
+      "start": 0.839,
+      "end": 0.939,
+      "type": "spacing",
+      "logprob": -0.000004768360213347478
+    },
+    {
+      "text": "Trevor",
+      "start": 0.939,
+      "end": 1.179,
+      "type": "word",
+      "logprob": -0.000004768360213347478
+    },
+    {
+      "text": " ",
+      "start": 1.179,
+      "end": 1.219,
+      "type": "spacing",
+      "logprob": -0.000003576272320060525
+    },
+    {
+      "text": "up",
+      "start": 1.22,
+      "end": 1.339,
+      "type": "word",
+      "logprob": -0.000003576272320060525
+    },
+    {
+      "text": " ",
+      "start": 1.339,
+      "end": 1.379,
+      "type": "spacing",
+      "logprob": -0.0000011920922133867862
+    },
+    {
+      "text": "as",
+      "start": 1.379,
+      "end": 1.459,
+      "type": "word",
+      "logprob": -0.0000011920922133867862
+    },
+    {
+      "text": " ",
+      "start": 1.459,
+      "end": 1.479,
+      "type": "spacing",
+      "logprob": 0
+    },
+    {
+      "text": "he",
+      "start": 1.48,
+      "end": 1.579,
+      "type": "word",
+      "logprob": 0
+    },
+    {
+      "text": " ",
+      "start": 1.579,
+      "end": 1.639,
+      "type": "spacing",
+      "logprob": -0.00000250339189733495
+    },
+    {
+      "text": "gives",
+      "start": 1.639,
+      "end": 1.839,
+      "type": "word",
+      "logprob": -0.00000250339189733495
+    },
+    {
+      "text": " ",
+      "start": 1.839,
+      "end": 1.899,
+      "type": "spacing",
+      "logprob": -1.1920928244535389e-7
+    },
+    {
+      "text": "one",
+      "start": 1.899,
+      "end": 2.019,
+      "type": "word",
+      "logprob": -1.1920928244535389e-7
+    },
+    {
+      "text": " ",
+      "start": 2.019,
+      "end": 2.059,
+      "type": "spacing",
+      "logprob": -0.0001370812824461609
+    },
+    {
+      "text": "indignant",
+      "start": 2.059,
+      "end": 2.619,
+      "type": "word",
+      "logprob": -0.0001370812824461609
+    },
+    {
+      "text": " ",
+      "start": 2.619,
+      "end": 2.739,
+      "type": "spacing",
+      "logprob": -0.000010847986231965479
+    },
+    {
+      "text": "croak",
+      "start": 2.74,
+      "end": 3.039,
+      "type": "word",
+      "logprob": -0.000006890261283842847
+    }
+  ],
+  "transcription_id": "RmCHi6P6l8frbM49TBlP",
+  "audio_duration_secs": 3.29725
+}

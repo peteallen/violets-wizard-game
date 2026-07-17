@@ -1,0 +1,83 @@
+{
+  "schema_version": 1,
+  "kind": "codex-built-in-room-image-generation",
+  "slug": "charms-classroom-native-v1",
+  "workflow": {
+    "name": "Codex built-in image generation",
+    "tool": "image_gen.imagegen",
+    "model_identifier": null,
+    "seed": null,
+    "note": "The built-in workflow did not return a model identifier or seed."
+  },
+  "timestamps": {
+    "generation_started_at": "2026-07-17T19:19:18.748Z",
+    "generation_completed_at": "2026-07-17T19:20:25.446Z",
+    "duration_ms": 66698
+  },
+  "request_spec": {
+    "path": "art/chapters/ch3/rooms/charms-classroom-native-v1.request.json",
+    "bytes": 1417,
+    "sha256": "7d26f1b710944b5cffbb84096e6906954c682ad0a779f22a8b7a8bcacb9faa58"
+  },
+  "prompt": {
+    "path": "art/chapters/ch3/rooms/charms-classroom-native-v1.prompt.md",
+    "section": "Prompt",
+    "bytes": 3707,
+    "sha256": "1544aba88d8ed15a9470bb17d4415f2d0d6b251c95e803074fbe76e3f5a29079"
+  },
+  "references": [
+    {
+      "index": 1,
+      "path": "public/assets/art/rooms/ch2-great-hall.webp",
+      "role": "magical-school stone architecture and warm gold-light reference",
+      "bytes": 452810,
+      "sha256": "e976d3ec5f7b6e21429812b480467d1123989fb9f70e4607256115b3e58eba75",
+      "dimensions": { "width": 2048, "height": 1152 }
+    },
+    {
+      "index": 2,
+      "path": "art/raw/ch1-ollivanders.png",
+      "role": "bookish classroom depth and blue-violet shadow reference",
+      "bytes": 2262906,
+      "sha256": "0ad6d0941b7ca7b4a4ea4ebe31488333b60c5dbb09ed6b8620fe2b073f2385a2",
+      "dimensions": { "width": 1672, "height": 941 }
+    },
+    {
+      "index": 3,
+      "path": "art/guides/ch1-room-style-triptych.png",
+      "role": "consolidated Chapter One finish and staging reference",
+      "bytes": 683274,
+      "sha256": "ce0628710e9add1a8641c869ce6df94303457faac6434fcb188733b096450a07",
+      "dimensions": { "width": 1536, "height": 288 }
+    }
+  ],
+  "generation_output": {
+    "id": "exec-6ac3592e-d50b-4557-824c-a7204b057d80",
+    "original_path": "/Users/peteallen/.codex/generated_images/019f717f-2a8a-7bb0-8623-a1c4b20b10fe/exec-6ac3592e-d50b-4557-824c-a7204b057d80.png",
+    "copied_to": "art/raw/ch3-charms-classroom-native-v1.png",
+    "media_type": "image/png",
+    "bytes": 2679074,
+    "sha256": "0cca1e07474a35c627cf24a9134607d16339ad866ae8914382c04f0afc8f9cee",
+    "dimensions": { "width": 1672, "height": 941 }
+  },
+  "derivatives": {
+    "accepted_png": {
+      "path": "art/raw/ch3-charms-classroom-v1.png",
+      "bytes": 3687160,
+      "sha256": "30b05e62ea3cc4555806e1be8a2a731b20da6b251ead120fa65fb73fd8791d53",
+      "dimensions": { "width": 2048, "height": 1152 }
+    },
+    "shipping_webp": {
+      "path": "public/assets/art/rooms/ch3-charms-classroom.webp",
+      "bytes": 417808,
+      "sha256": "941a090c8faf3c90b9eef8d72ad5c95df59730bee6b6dc8dea1c5f2c80d85db6",
+      "dimensions": { "width": 2048, "height": 1152 }
+    }
+  },
+  "conversion": {
+    "crop": "sips -s format png -c 940 1672",
+    "resize": "sips -s format png -z 1152 2048",
+    "shipping": "cwebp -q 88 -m 6 -sharp_yuv",
+    "note": "The 1672x941 native PNG was center-cropped by one pixel to 1672x940, resized once to 2048x1152, then encoded as WebP."
+  }
+}

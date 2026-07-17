@@ -1,0 +1,79 @@
+{
+  "schema_version": 1,
+  "kind": "codex-built-in-card-portrait-generation",
+  "slug": "circe-native-v1",
+  "workflow": {
+    "name": "Codex built-in image generation",
+    "tool": "image_gen.imagegen",
+    "mode": "generate",
+    "model_identifier": null,
+    "seed": null,
+    "note": "The built-in workflow did not return a model identifier or seed."
+  },
+  "timestamps": {
+    "generation_started_at": "2026-07-17T19:18:11.697Z",
+    "generation_completed_at": "2026-07-17T19:19:36.855Z",
+    "duration_ms": 85158
+  },
+  "request_spec": {
+    "path": "art/chapters/ch3/cards/circe-native-v1.request.json",
+    "bytes": 1470,
+    "sha256": "a210199d64a5bebcb258dcf3247fcb9bfebdceb9ff501cc0cc59fbf2190dbc1d"
+  },
+  "prompt": {
+    "path": "art/chapters/ch3/cards/circe-native-v1.prompt.md",
+    "section": "Prompt",
+    "bytes": 2566,
+    "sha256": "3493608d2414f9df4d6556c3a070b9f4be976c185322ee01f63cae3258c6e3ca"
+  },
+  "references": [
+    {
+      "index": 1,
+      "path": "art/raw/ch2-card-merlin.png",
+      "role": "painted finish, square portrait scale, breathing room, and runtime oval-crop safety reference only",
+      "bytes": 2295455,
+      "sha256": "8baf8a6dd9d1b1b1100b33613099a5d6dd8c68b2d221bdb0ee7294a500dcc274",
+      "dimensions": { "width": 1254, "height": 1254 }
+    },
+    {
+      "index": 2,
+      "path": "art/raw/ch2-card-jocunda-sykes.png",
+      "role": "painted finish, expressive face treatment, and runtime oval-crop safety reference only",
+      "bytes": 2197964,
+      "sha256": "5ec6094a27d42834f619f49a5698c7d712bd5b5d7e85ec2ccd7d23e4a2e61d6a",
+      "dimensions": { "width": 1254, "height": 1254 }
+    }
+  ],
+  "generation_output": {
+    "id": "exec-e2564474-649b-4d9f-945a-0afa692d0c95",
+    "original_path": "/Users/peteallen/.codex/generated_images/019f717f-ae86-7712-9cf3-200179c51a6a/exec-e2564474-649b-4d9f-945a-0afa692d0c95.png",
+    "copied_to": "art/raw/ch3-card-circe-native-v1.png",
+    "media_type": "image/png",
+    "bytes": 2849633,
+    "sha256": "72f26b8644854f1b3ab2711884a28991409d945d5d5a7f16b143a122cda0fa71",
+    "dimensions": { "width": 1254, "height": 1254 }
+  },
+  "derivatives": {
+    "accepted_png": {
+      "path": "art/raw/ch3-card-circe-v1.png",
+      "bytes": 2849633,
+      "sha256": "72f26b8644854f1b3ab2711884a28991409d945d5d5a7f16b143a122cda0fa71",
+      "dimensions": { "width": 1254, "height": 1254 }
+    },
+    "shipping_webp": {
+      "path": "public/assets/art/cards/circe.webp",
+      "bytes": 293284,
+      "sha256": "96cb17e2cb06ec0a50d753bdeba2c5c54f284f080e0eafae83b7582e10aa25c1",
+      "dimensions": { "width": 1254, "height": 1254 }
+    }
+  },
+  "conversion": {
+    "accepted_png": "The native output already matched the 1254x1254 card contract and was copied byte-for-byte.",
+    "shipping": "cwebp -q 84 -m 6 -sharp_yuv",
+    "note": "No crop or resize was required before the shipping encode."
+  },
+  "visual_inspection": {
+    "source": "Accepted: original adult mythic witch portrait with warm confidence, dark wavy hair, sea-green and plum robes, restrained aged-gold botanical detail, atmospheric indigo/olive field, no animal, victim, wand, text, frame, or adaptation likeness, and sufficient oval-crop breathing room.",
+    "shipping": "Accepted at 1254x1254: WebP retains the source composition, facial readability, traditional painted texture, crop safety, and textless frameless edges without a visible conversion defect."
+  }
+}

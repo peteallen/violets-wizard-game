@@ -152,10 +152,10 @@ describe('chapter completion action', () => {
     });
     expect(save.resume).toEqual({
       chapter: 'ch3',
-      scene: 'ch3.scene.preview',
-      room: 'ch3.previewRoom',
-      spawn: 'start',
-      dialogue: { script: 'ch3.dialogue.preview', node: 'nextTime' },
+      scene: 'ch3.scene.spellbookParcel',
+      room: 'ch3.commonRoom',
+      spawn: 'parcel',
+      dialogue: null,
     });
     expect(persist.mock.calls.filter(([request]) => request.reason === 'chapter-complete')).toHaveLength(2);
     expect(world.drainEvents()).toContainEqual(expect.objectContaining({
@@ -164,8 +164,8 @@ describe('chapter completion action', () => {
     }));
     expect(persist.mock.calls.filter(([request]) => request.reason === 'chapter-complete')).toHaveLength(2);
     expect(world.chapter.id).toBe('ch3');
-    expect(world.currentSceneId).toBe('ch3.scene.preview');
-    expect(world.dialogue.scriptId).toBe('ch3.dialogue.preview');
+    expect(world.currentSceneId).toBe('ch3.scene.spellbookParcel');
+    expect(world.dialogue.active).toBe(false);
   });
 
   it('suppresses destination entry writes after the single committed completion candidate', () => {

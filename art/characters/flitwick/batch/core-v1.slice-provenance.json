@@ -1,0 +1,588 @@
+{
+  "schema_version": 1,
+  "algorithm": {
+    "id": "cyan-flood-aligned-character-sheet-v1",
+    "component_connectivity": 8,
+    "scale_filter": "premultiplied-rgba-box-rational-v1",
+    "output_color_type": 6,
+    "output_bit_depth": 8,
+    "deterministic": true
+  },
+  "slice_spec": {
+    "path": "art/characters/flitwick/batch/core-v1.layout.json",
+    "bytes": 1913,
+    "sha256": "f68566360ec3125bc2e08322a41aa18f629d1e0a387c505ac1b8c841c3b07af9",
+    "schema_version": 1,
+    "id": "flitwick.core-v1"
+  },
+  "source": {
+    "path": "art/characters/flitwick/batch/core-v1.png",
+    "bytes": 2088622,
+    "expected_sha256": "1951f7f610c09461105560f2703c52c4578b9b133fc4c89fbd396dc0660ed6ac",
+    "sha256": "1951f7f610c09461105560f2703c52c4578b9b133fc4c89fbd396dc0660ed6ac",
+    "rgba_sha256": "013dde661a11c604566cc68c9e529256a52b98b049bb1e3051fabf53809e2bb0",
+    "dimensions": {
+      "width": 1536,
+      "height": 1024
+    }
+  },
+  "controls": {
+    "output_canvas": {
+      "width": 896,
+      "height": 1200,
+      "center_x": 448,
+      "ground_y": 1132
+    },
+    "common_scale": {
+      "numerator": 2,
+      "denominator": 1
+    },
+    "key": {
+      "color": {
+        "red": 1,
+        "green": 248,
+        "blue": 253
+      },
+      "tolerance": 28,
+      "alpha": {
+        "opaque_cyan_excess": 50,
+        "transparent_cyan_excess": 90,
+        "edge_spill_radius": 8,
+        "edge_spill_opaque_cyan_excess": 30,
+        "edge_spill_max_green_blue_delta": 70,
+        "matte_low_alpha": 170,
+        "matte_high_alpha": 245,
+        "edge_color_radius": 0
+      }
+    },
+    "components": {
+      "detail_min_pixels": 8,
+      "detail_max_pixels": 5000,
+      "detail_max_distance": 18
+    }
+  },
+  "outputs": [
+    {
+      "name": "neutral",
+      "path": "public/assets/art/characters/flitwick/default/neutral.png",
+      "media_type": "image/png",
+      "bytes": 264312,
+      "sha256": "a4ed0a38c3582075ef09f1b2d2c71a8d3b2c31f122ee7bda64f8ede933184279",
+      "rgba_sha256": "3f29d36382683f1036068e8d5c9d9a12a2aa9b775e2849a14f6ef108f29e65b8",
+      "dimensions": {
+        "width": 896,
+        "height": 1200
+      },
+      "crop": {
+        "x": 0,
+        "y": 0,
+        "width": 512,
+        "height": 512
+      },
+      "source_content_bounds": {
+        "x": 180,
+        "y": 15,
+        "width": 254,
+        "height": 461
+      },
+      "scaled_dimensions": {
+        "width": 508,
+        "height": 922
+      },
+      "placement": {
+        "x": 194,
+        "y": 211,
+        "width": 508,
+        "height": 922,
+        "center_x": 448,
+        "ground_y": 1132
+      },
+      "flood": {
+        "background_pixels": 180258,
+        "non_background_pixels": 81886,
+        "background_fraction": 0.6876296997070312
+      },
+      "components": {
+        "found": 9,
+        "dominant_pixels": 78619,
+        "kept": 1,
+        "removed": 8,
+        "selected_pixels": 78619,
+        "details": [
+          {
+            "pixels": 4,
+            "distance_from_dominant": 3,
+            "kept": false
+          },
+          {
+            "pixels": 4,
+            "distance_from_dominant": 4,
+            "kept": false
+          },
+          {
+            "pixels": 1,
+            "distance_from_dominant": 3,
+            "kept": false
+          },
+          {
+            "pixels": 816,
+            "distance_from_dominant": 23,
+            "kept": false
+          },
+          {
+            "pixels": 9,
+            "distance_from_dominant": 33,
+            "kept": false
+          },
+          {
+            "pixels": 1,
+            "distance_from_dominant": 103,
+            "kept": false
+          },
+          {
+            "pixels": 1,
+            "distance_from_dominant": 105,
+            "kept": false
+          },
+          {
+            "pixels": 1,
+            "distance_from_dominant": 107,
+            "kept": false
+          }
+        ]
+      },
+      "alpha": {
+        "transparent_pixels": 183525,
+        "soft_pixels": 212,
+        "opaque_pixels": 78407
+      },
+      "edge_artifacts_repaired": 16
+    },
+    {
+      "name": "talk-a",
+      "path": "public/assets/art/characters/flitwick/default/talk-a.png",
+      "media_type": "image/png",
+      "bytes": 273618,
+      "sha256": "5a01f6c1babfdc8e9ca73f6a4672b5defb8ee222ff3f60459c859a0f9456d10d",
+      "rgba_sha256": "4af1d170beab23dcb35f38b3bb6b8d390ef2ac01d572b0768fc8ebc13db05e41",
+      "dimensions": {
+        "width": 896,
+        "height": 1200
+      },
+      "crop": {
+        "x": 512,
+        "y": 0,
+        "width": 512,
+        "height": 512
+      },
+      "source_content_bounds": {
+        "x": 106,
+        "y": 17,
+        "width": 317,
+        "height": 461
+      },
+      "scaled_dimensions": {
+        "width": 634,
+        "height": 922
+      },
+      "placement": {
+        "x": 131,
+        "y": 211,
+        "width": 634,
+        "height": 922,
+        "center_x": 448,
+        "ground_y": 1132
+      },
+      "flood": {
+        "background_pixels": 178837,
+        "non_background_pixels": 83307,
+        "background_fraction": 0.6822090148925781
+      },
+      "components": {
+        "found": 6,
+        "dominant_pixels": 81274,
+        "kept": 2,
+        "removed": 4,
+        "selected_pixels": 81290,
+        "details": [
+          {
+            "pixels": 2,
+            "distance_from_dominant": 3,
+            "kept": false
+          },
+          {
+            "pixels": 16,
+            "distance_from_dominant": 3,
+            "kept": true
+          },
+          {
+            "pixels": 42,
+            "distance_from_dominant": 109,
+            "kept": false
+          },
+          {
+            "pixels": 117,
+            "distance_from_dominant": 34,
+            "kept": false
+          },
+          {
+            "pixels": 3,
+            "distance_from_dominant": 35,
+            "kept": false
+          }
+        ]
+      },
+      "alpha": {
+        "transparent_pixels": 180854,
+        "soft_pixels": 220,
+        "opaque_pixels": 81070
+      },
+      "edge_artifacts_repaired": 0
+    },
+    {
+      "name": "talk-b",
+      "path": "public/assets/art/characters/flitwick/default/talk-b.png",
+      "media_type": "image/png",
+      "bytes": 263955,
+      "sha256": "661d23b2113dd4133df7115364f2f9b3e4b61014a1a7ae68e535fe9e2cc0b472",
+      "rgba_sha256": "42dc24c8af55df001806d7085ba4aee53e682c33e2020d54f89d7d10f586710d",
+      "dimensions": {
+        "width": 896,
+        "height": 1200
+      },
+      "crop": {
+        "x": 1024,
+        "y": 0,
+        "width": 512,
+        "height": 512
+      },
+      "source_content_bounds": {
+        "x": 43,
+        "y": 16,
+        "width": 254,
+        "height": 462
+      },
+      "scaled_dimensions": {
+        "width": 508,
+        "height": 924
+      },
+      "placement": {
+        "x": 194,
+        "y": 209,
+        "width": 508,
+        "height": 924,
+        "center_x": 448,
+        "ground_y": 1132
+      },
+      "flood": {
+        "background_pixels": 181752,
+        "non_background_pixels": 80392,
+        "background_fraction": 0.693328857421875
+      },
+      "components": {
+        "found": 6,
+        "dominant_pixels": 78627,
+        "kept": 1,
+        "removed": 5,
+        "selected_pixels": 78627,
+        "details": [
+          {
+            "pixels": 3,
+            "distance_from_dominant": 2,
+            "kept": false
+          },
+          {
+            "pixels": 6,
+            "distance_from_dominant": 4,
+            "kept": false
+          },
+          {
+            "pixels": 2,
+            "distance_from_dominant": 4,
+            "kept": false
+          },
+          {
+            "pixels": 37,
+            "distance_from_dominant": 40,
+            "kept": false
+          },
+          {
+            "pixels": 62,
+            "distance_from_dominant": 42,
+            "kept": false
+          }
+        ]
+      },
+      "alpha": {
+        "transparent_pixels": 183517,
+        "soft_pixels": 226,
+        "opaque_pixels": 78401
+      },
+      "edge_artifacts_repaired": 12
+    },
+    {
+      "name": "demonstrate",
+      "path": "public/assets/art/characters/flitwick/default/demonstrate.png",
+      "media_type": "image/png",
+      "bytes": 319670,
+      "sha256": "2955072924b26c8c55a494f0c27277e375351e5172c2d621d544fb3624ad4fe8",
+      "rgba_sha256": "6c18feac435895956e5f38df9a13ed35f52cac9da4cb380588bdb995aa5b18e2",
+      "dimensions": {
+        "width": 896,
+        "height": 1200
+      },
+      "crop": {
+        "x": 0,
+        "y": 448,
+        "width": 512,
+        "height": 576
+      },
+      "source_content_bounds": {
+        "x": 103,
+        "y": 47,
+        "width": 363,
+        "height": 481
+      },
+      "scaled_dimensions": {
+        "width": 726,
+        "height": 962
+      },
+      "placement": {
+        "x": 85,
+        "y": 171,
+        "width": 726,
+        "height": 962,
+        "center_x": 448,
+        "ground_y": 1132
+      },
+      "flood": {
+        "background_pixels": 191771,
+        "non_background_pixels": 103141,
+        "background_fraction": 0.6502651638454862
+      },
+      "components": {
+        "found": 16,
+        "dominant_pixels": 96202,
+        "kept": 2,
+        "removed": 14,
+        "selected_pixels": 96216,
+        "details": [
+          {
+            "pixels": 1442,
+            "distance_from_dominant": 23,
+            "kept": false
+          },
+          {
+            "pixels": 1085,
+            "distance_from_dominant": 36,
+            "kept": false
+          },
+          {
+            "pixels": 1,
+            "distance_from_dominant": 41,
+            "kept": false
+          },
+          {
+            "pixels": 1,
+            "distance_from_dominant": 44,
+            "kept": false
+          },
+          {
+            "pixels": 1,
+            "distance_from_dominant": 45,
+            "kept": false
+          },
+          {
+            "pixels": 2,
+            "distance_from_dominant": 49,
+            "kept": false
+          },
+          {
+            "pixels": 2,
+            "distance_from_dominant": 51,
+            "kept": false
+          },
+          {
+            "pixels": 1,
+            "distance_from_dominant": 53,
+            "kept": false
+          },
+          {
+            "pixels": 1,
+            "distance_from_dominant": 55,
+            "kept": false
+          },
+          {
+            "pixels": 1,
+            "distance_from_dominant": 57,
+            "kept": false
+          },
+          {
+            "pixels": 1,
+            "distance_from_dominant": 71,
+            "kept": false
+          },
+          {
+            "pixels": 14,
+            "distance_from_dominant": 2,
+            "kept": true
+          },
+          {
+            "pixels": 2,
+            "distance_from_dominant": 41,
+            "kept": false
+          },
+          {
+            "pixels": 47,
+            "distance_from_dominant": 42,
+            "kept": false
+          },
+          {
+            "pixels": 4,
+            "distance_from_dominant": 60,
+            "kept": false
+          }
+        ]
+      },
+      "alpha": {
+        "transparent_pixels": 198696,
+        "soft_pixels": 345,
+        "opaque_pixels": 95871
+      },
+      "edge_artifacts_repaired": 20
+    },
+    {
+      "name": "wand-cast",
+      "path": "public/assets/art/characters/flitwick/default/wand-cast.png",
+      "media_type": "image/png",
+      "bytes": 291168,
+      "sha256": "238753edb9bf8fd97cd172df5ea5a432b4778316e275840beb32e514c42f4e8a",
+      "rgba_sha256": "fad2461dba32259a577e7b9d49d446cd6ca40c865d6217e4142bd32bb1decaf4",
+      "dimensions": {
+        "width": 896,
+        "height": 1200
+      },
+      "crop": {
+        "x": 512,
+        "y": 448,
+        "width": 512,
+        "height": 576
+      },
+      "source_content_bounds": {
+        "x": 7,
+        "y": 57,
+        "width": 433,
+        "height": 459
+      },
+      "scaled_dimensions": {
+        "width": 866,
+        "height": 918
+      },
+      "placement": {
+        "x": 15,
+        "y": 215,
+        "width": 866,
+        "height": 918,
+        "center_x": 448,
+        "ground_y": 1132
+      },
+      "flood": {
+        "background_pixels": 203217,
+        "non_background_pixels": 91695,
+        "background_fraction": 0.6890767415364584
+      },
+      "components": {
+        "found": 3,
+        "dominant_pixels": 86590,
+        "kept": 1,
+        "removed": 2,
+        "selected_pixels": 86590,
+        "details": [
+          {
+            "pixels": 1552,
+            "distance_from_dominant": 34,
+            "kept": false
+          },
+          {
+            "pixels": 1223,
+            "distance_from_dominant": 40,
+            "kept": false
+          }
+        ]
+      },
+      "alpha": {
+        "transparent_pixels": 208322,
+        "soft_pixels": 322,
+        "opaque_pixels": 86268
+      },
+      "edge_artifacts_repaired": 20
+    },
+    {
+      "name": "celebrate",
+      "path": "public/assets/art/characters/flitwick/default/celebrate.png",
+      "media_type": "image/png",
+      "bytes": 291496,
+      "sha256": "c72ad84a9990c440cacb4cb39ca4b81e18f6aa97d8391c71fd2f7a70c7741dd0",
+      "rgba_sha256": "903a0bd73d91c29221f8134dbf277f44cf7357e3593fb77720a0431d6c82d50a",
+      "dimensions": {
+        "width": 896,
+        "height": 1200
+      },
+      "crop": {
+        "x": 1024,
+        "y": 448,
+        "width": 512,
+        "height": 576
+      },
+      "source_content_bounds": {
+        "x": 3,
+        "y": 58,
+        "width": 414,
+        "height": 455
+      },
+      "scaled_dimensions": {
+        "width": 828,
+        "height": 910
+      },
+      "placement": {
+        "x": 34,
+        "y": 223,
+        "width": 828,
+        "height": 910,
+        "center_x": 448,
+        "ground_y": 1132
+      },
+      "flood": {
+        "background_pixels": 202903,
+        "non_background_pixels": 92009,
+        "background_fraction": 0.6880120171440972
+      },
+      "components": {
+        "found": 3,
+        "dominant_pixels": 86810,
+        "kept": 1,
+        "removed": 2,
+        "selected_pixels": 86810,
+        "details": [
+          {
+            "pixels": 1543,
+            "distance_from_dominant": 42,
+            "kept": false
+          },
+          {
+            "pixels": 1229,
+            "distance_from_dominant": 40,
+            "kept": false
+          }
+        ]
+      },
+      "alpha": {
+        "transparent_pixels": 208102,
+        "soft_pixels": 284,
+        "opaque_pixels": 86526
+      },
+      "edge_artifacts_repaired": 16
+    }
+  ],
+  "provenance_path": "art/characters/flitwick/batch/core-v1.slice-provenance.json"
+}

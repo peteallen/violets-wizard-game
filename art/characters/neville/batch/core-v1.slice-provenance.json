@@ -1,0 +1,435 @@
+{
+  "schema_version": 1,
+  "algorithm": {
+    "id": "cyan-flood-aligned-character-sheet-v1",
+    "component_connectivity": 8,
+    "scale_filter": "premultiplied-rgba-box-rational-v1",
+    "output_color_type": 6,
+    "output_bit_depth": 8,
+    "deterministic": true
+  },
+  "slice_spec": {
+    "path": "art/characters/neville/batch/core-v1.layout.json",
+    "bytes": 1698,
+    "sha256": "d25d4b745579489c287da4be5e7a3ab1c73bc5c93bc621f01e19331756e9b60c",
+    "schema_version": 1,
+    "id": "neville.core-v1"
+  },
+  "source": {
+    "path": "art/characters/neville/batch/core-v1.png",
+    "bytes": 1640252,
+    "expected_sha256": "f24899f4dc82ac51ce1c783431f1043d0bf495b681d04dd2868907495b0bee51",
+    "sha256": "f24899f4dc82ac51ce1c783431f1043d0bf495b681d04dd2868907495b0bee51",
+    "rgba_sha256": "21d6dd882644d18ccc8429e94bb4578c9c4c4263c17f6ee8f0ce967b42ddf68d",
+    "dimensions": {
+      "width": 1448,
+      "height": 1086
+    }
+  },
+  "controls": {
+    "output_canvas": {
+      "width": 896,
+      "height": 1200,
+      "center_x": 448,
+      "ground_y": 1132
+    },
+    "common_scale": {
+      "numerator": 9,
+      "denominator": 4
+    },
+    "key": {
+      "color": {
+        "red": 1,
+        "green": 244,
+        "blue": 253
+      },
+      "tolerance": 28,
+      "alpha": {
+        "opaque_cyan_excess": 20,
+        "transparent_cyan_excess": 225,
+        "edge_spill_radius": 8,
+        "edge_spill_opaque_cyan_excess": -20,
+        "edge_spill_max_green_blue_delta": 70,
+        "matte_low_alpha": 170,
+        "matte_high_alpha": 245,
+        "edge_color_radius": 0
+      }
+    },
+    "components": {
+      "detail_min_pixels": 8,
+      "detail_max_pixels": 5000,
+      "detail_max_distance": 48
+    }
+  },
+  "outputs": [
+    {
+      "name": "neutral",
+      "path": "public/assets/art/characters/neville/default/neutral.png",
+      "media_type": "image/png",
+      "bytes": 397646,
+      "sha256": "4eb03dde04a3faa2a27e978134d90259c68d3371106e0d7cd2288dca8a94e556",
+      "rgba_sha256": "5f04e7f985ad91e872a8ead3065657565dfa83a6e06e0026565f82b65bf3395e",
+      "dimensions": {
+        "width": 896,
+        "height": 1200
+      },
+      "crop": {
+        "x": 0,
+        "y": 0,
+        "width": 483,
+        "height": 543
+      },
+      "source_content_bounds": {
+        "x": 213,
+        "y": 24,
+        "width": 176,
+        "height": 487
+      },
+      "scaled_dimensions": {
+        "width": 396,
+        "height": 1096
+      },
+      "placement": {
+        "x": 250,
+        "y": 37,
+        "width": 396,
+        "height": 1096,
+        "center_x": 448,
+        "ground_y": 1132
+      },
+      "flood": {
+        "background_pixels": 197308,
+        "non_background_pixels": 64961,
+        "background_fraction": 0.7523115579805467
+      },
+      "components": {
+        "found": 2,
+        "dominant_pixels": 63289,
+        "kept": 1,
+        "removed": 1,
+        "selected_pixels": 63289,
+        "details": [
+          {
+            "pixels": 6,
+            "distance_from_dominant": 2,
+            "kept": false
+          }
+        ]
+      },
+      "alpha": {
+        "transparent_pixels": 198980,
+        "soft_pixels": 2670,
+        "opaque_pixels": 60619
+      },
+      "edge_artifacts_repaired": 217
+    },
+    {
+      "name": "talk-a",
+      "path": "public/assets/art/characters/neville/default/talk-a.png",
+      "media_type": "image/png",
+      "bytes": 433902,
+      "sha256": "21a0bd5868accd15510fdbc16d3d1004648b3481ec4b55acd132d1f6774d3cd5",
+      "rgba_sha256": "68c875c3911f26906c4ff8290ebb33d47acc9aa92b56423b4780bc75d58e2d5e",
+      "dimensions": {
+        "width": 896,
+        "height": 1200
+      },
+      "crop": {
+        "x": 483,
+        "y": 0,
+        "width": 482,
+        "height": 543
+      },
+      "source_content_bounds": {
+        "x": 143,
+        "y": 18,
+        "width": 246,
+        "height": 493
+      },
+      "scaled_dimensions": {
+        "width": 554,
+        "height": 1110
+      },
+      "placement": {
+        "x": 171,
+        "y": 23,
+        "width": 554,
+        "height": 1110,
+        "center_x": 448,
+        "ground_y": 1132
+      },
+      "flood": {
+        "background_pixels": 190869,
+        "non_background_pixels": 70857,
+        "background_fraction": 0.7292703055867586
+      },
+      "components": {
+        "found": 1,
+        "dominant_pixels": 68726,
+        "kept": 1,
+        "removed": 0,
+        "selected_pixels": 68726,
+        "details": []
+      },
+      "alpha": {
+        "transparent_pixels": 193000,
+        "soft_pixels": 2221,
+        "opaque_pixels": 66505
+      },
+      "edge_artifacts_repaired": 310
+    },
+    {
+      "name": "talk-b",
+      "path": "public/assets/art/characters/neville/default/talk-b.png",
+      "media_type": "image/png",
+      "bytes": 405670,
+      "sha256": "b047add739de33539f9890a10902ed01eea1c407040f24a5c198aaa5f11b0005",
+      "rgba_sha256": "7f0b08ebeb17b21de9103e85f8071dc4396c386cdf21ae58f4488b5984f27ce3",
+      "dimensions": {
+        "width": 896,
+        "height": 1200
+      },
+      "crop": {
+        "x": 965,
+        "y": 0,
+        "width": 483,
+        "height": 543
+      },
+      "source_content_bounds": {
+        "x": 104,
+        "y": 23,
+        "width": 189,
+        "height": 488
+      },
+      "scaled_dimensions": {
+        "width": 426,
+        "height": 1098
+      },
+      "placement": {
+        "x": 235,
+        "y": 35,
+        "width": 426,
+        "height": 1098,
+        "center_x": 448,
+        "ground_y": 1132
+      },
+      "flood": {
+        "background_pixels": 195522,
+        "non_background_pixels": 66747,
+        "background_fraction": 0.7455017558308454
+      },
+      "components": {
+        "found": 3,
+        "dominant_pixels": 64831,
+        "kept": 1,
+        "removed": 2,
+        "selected_pixels": 64831,
+        "details": [
+          {
+            "pixels": 4,
+            "distance_from_dominant": 3,
+            "kept": false
+          },
+          {
+            "pixels": 5,
+            "distance_from_dominant": 2,
+            "kept": false
+          }
+        ]
+      },
+      "alpha": {
+        "transparent_pixels": 197438,
+        "soft_pixels": 2119,
+        "opaque_pixels": 62712
+      },
+      "edge_artifacts_repaired": 201
+    },
+    {
+      "name": "tearful",
+      "path": "public/assets/art/characters/neville/default/tearful.png",
+      "media_type": "image/png",
+      "bytes": 402692,
+      "sha256": "cb85008574046a61c7bb3ad4d7bed712c96adb0ef3f8fb8610336bd9b2343b71",
+      "rgba_sha256": "76c94013a156d73b19471de7ff47c9514382fbe8fc82435d4bdea9b87f960ffb",
+      "dimensions": {
+        "width": 896,
+        "height": 1200
+      },
+      "crop": {
+        "x": 0,
+        "y": 511,
+        "width": 483,
+        "height": 575
+      },
+      "source_content_bounds": {
+        "x": 214,
+        "y": 38,
+        "width": 177,
+        "height": 484
+      },
+      "scaled_dimensions": {
+        "width": 399,
+        "height": 1089
+      },
+      "placement": {
+        "x": 249,
+        "y": 44,
+        "width": 399,
+        "height": 1089,
+        "center_x": 448,
+        "ground_y": 1132
+      },
+      "flood": {
+        "background_pixels": 211582,
+        "non_background_pixels": 66143,
+        "background_fraction": 0.7618399495904222
+      },
+      "components": {
+        "found": 1,
+        "dominant_pixels": 64321,
+        "kept": 1,
+        "removed": 0,
+        "selected_pixels": 64321,
+        "details": []
+      },
+      "alpha": {
+        "transparent_pixels": 213404,
+        "soft_pixels": 3069,
+        "opaque_pixels": 61252
+      },
+      "edge_artifacts_repaired": 256
+    },
+    {
+      "name": "relieved",
+      "path": "public/assets/art/characters/neville/default/relieved.png",
+      "media_type": "image/png",
+      "bytes": 411259,
+      "sha256": "dfd609c7b77b7dd30c3ecaaf69819abc663e1161f1390d82bd930b4d07e501d1",
+      "rgba_sha256": "e06076c425acac4f6338f1e7a9fa9ffbf754dc3ebd9f2811bff2e4802fe1b78a",
+      "dimensions": {
+        "width": 896,
+        "height": 1200
+      },
+      "crop": {
+        "x": 483,
+        "y": 511,
+        "width": 482,
+        "height": 575
+      },
+      "source_content_bounds": {
+        "x": 137,
+        "y": 32,
+        "width": 194,
+        "height": 490
+      },
+      "scaled_dimensions": {
+        "width": 437,
+        "height": 1103
+      },
+      "placement": {
+        "x": 230,
+        "y": 30,
+        "width": 437,
+        "height": 1103,
+        "center_x": 448,
+        "ground_y": 1132
+      },
+      "flood": {
+        "background_pixels": 209949,
+        "non_background_pixels": 67201,
+        "background_fraction": 0.7575284142161285
+      },
+      "components": {
+        "found": 1,
+        "dominant_pixels": 65176,
+        "kept": 1,
+        "removed": 0,
+        "selected_pixels": 65176,
+        "details": []
+      },
+      "alpha": {
+        "transparent_pixels": 211974,
+        "soft_pixels": 2604,
+        "opaque_pixels": 62572
+      },
+      "edge_artifacts_repaired": 310
+    },
+    {
+      "name": "reunion",
+      "path": "public/assets/art/characters/neville/default/reunion.png",
+      "media_type": "image/png",
+      "bytes": 468804,
+      "sha256": "5b22d71547376229ccef778b7700260f9fca7e2e11d2a2eeba3765cd40bc4c2b",
+      "rgba_sha256": "67997352a46b4a8c9673bbba5bbf133c5d48e5156a9857b92a09ddd51f87cb0a",
+      "dimensions": {
+        "width": 896,
+        "height": 1200
+      },
+      "crop": {
+        "x": 965,
+        "y": 511,
+        "width": 483,
+        "height": 575
+      },
+      "source_content_bounds": {
+        "x": 77,
+        "y": 59,
+        "width": 266,
+        "height": 457
+      },
+      "scaled_dimensions": {
+        "width": 599,
+        "height": 1029
+      },
+      "placement": {
+        "x": 149,
+        "y": 104,
+        "width": 599,
+        "height": 1029,
+        "center_x": 448,
+        "ground_y": 1132
+      },
+      "flood": {
+        "background_pixels": 201496,
+        "non_background_pixels": 76229,
+        "background_fraction": 0.7255234494553965
+      },
+      "components": {
+        "found": 5,
+        "dominant_pixels": 74474,
+        "kept": 1,
+        "removed": 4,
+        "selected_pixels": 74474,
+        "details": [
+          {
+            "pixels": 1,
+            "distance_from_dominant": 3,
+            "kept": false
+          },
+          {
+            "pixels": 3,
+            "distance_from_dominant": 2,
+            "kept": false
+          },
+          {
+            "pixels": 3,
+            "distance_from_dominant": 3,
+            "kept": false
+          },
+          {
+            "pixels": 2,
+            "distance_from_dominant": 4,
+            "kept": false
+          }
+        ]
+      },
+      "alpha": {
+        "transparent_pixels": 203251,
+        "soft_pixels": 1824,
+        "opaque_pixels": 72650
+      },
+      "edge_artifacts_repaired": 186
+    }
+  ],
+  "provenance_path": "art/characters/neville/batch/core-v1.slice-provenance.json"
+}

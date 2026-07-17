@@ -1,0 +1,128 @@
+{
+  "language_code": "eng",
+  "language_probability": 1,
+  "text": "The curtain sneezes out one enormous puff of dust",
+  "words": [
+    {
+      "text": "The",
+      "start": 0.079,
+      "end": 0.179,
+      "type": "word",
+      "logprob": -0.000037431014789035544
+    },
+    {
+      "text": " ",
+      "start": 0.179,
+      "end": 0.219,
+      "type": "spacing",
+      "logprob": -0.0013260389678180218
+    },
+    {
+      "text": "curtain",
+      "start": 0.219,
+      "end": 0.639,
+      "type": "word",
+      "logprob": -0.0013260389678180218
+    },
+    {
+      "text": " ",
+      "start": 0.639,
+      "end": 0.659,
+      "type": "spacing",
+      "logprob": -0.000012159273865108844
+    },
+    {
+      "text": "sneezes",
+      "start": 0.659,
+      "end": 1.099,
+      "type": "word",
+      "logprob": -0.000018051371885771266
+    },
+    {
+      "text": " ",
+      "start": 1.099,
+      "end": 1.159,
+      "type": "spacing",
+      "logprob": -2.3841855067985307e-7
+    },
+    {
+      "text": "out",
+      "start": 1.159,
+      "end": 1.339,
+      "type": "word",
+      "logprob": -2.3841855067985307e-7
+    },
+    {
+      "text": " ",
+      "start": 1.339,
+      "end": 1.399,
+      "type": "spacing",
+      "logprob": -0.000002861018856492592
+    },
+    {
+      "text": "one",
+      "start": 1.399,
+      "end": 1.5,
+      "type": "word",
+      "logprob": -0.000002861018856492592
+    },
+    {
+      "text": " ",
+      "start": 1.5,
+      "end": 1.539,
+      "type": "spacing",
+      "logprob": -0.0000016689286894688848
+    },
+    {
+      "text": "enormous",
+      "start": 1.539,
+      "end": 2.159,
+      "type": "word",
+      "logprob": -0.0000016689286894688848
+    },
+    {
+      "text": " ",
+      "start": 2.159,
+      "end": 2.219,
+      "type": "spacing",
+      "logprob": -0.000013470558769768104
+    },
+    {
+      "text": "puff",
+      "start": 2.22,
+      "end": 2.359,
+      "type": "word",
+      "logprob": -0.000013470558769768104
+    },
+    {
+      "text": " ",
+      "start": 2.359,
+      "end": 2.399,
+      "type": "spacing",
+      "logprob": 0
+    },
+    {
+      "text": "of",
+      "start": 2.399,
+      "end": 2.559,
+      "type": "word",
+      "logprob": 0
+    },
+    {
+      "text": " ",
+      "start": 2.559,
+      "end": 2.599,
+      "type": "spacing",
+      "logprob": -5.960462772236497e-7
+    },
+    {
+      "text": "dust",
+      "start": 2.599,
+      "end": 3,
+      "type": "word",
+      "logprob": -5.960462772236497e-7
+    }
+  ],
+  "transcription_id": "ATTSNHWaOzXyF5JeYw7p",
+  "audio_duration_secs": 3.204375
+}

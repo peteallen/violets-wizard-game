@@ -223,7 +223,7 @@ describe('World runtime receipts', () => {
     expect(world.dialogue.open('ch1.dialogue.lastPage')).toBeNull();
   });
 
-  it('does not let the closing Chapter Two script erase Chapter Three’s new cursor', () => {
+  it('lands the closing Chapter Two script on Chapter Three’s durable interactive start', () => {
     const save = saveV3({
       chapter: 'ch2', scene: 'ch2.scene.chapterCard', room: 'ch2.chapterCardRoom',
       flags: {
@@ -249,8 +249,10 @@ describe('World runtime receipts', () => {
     world.advanceDialogue();
 
     expect(world.chapter.id).toBe('ch3');
-    expect(world.dialoguePresentation).toMatchObject({ scriptId: 'ch3.dialogue.preview', nodeId: 'nextTime' });
-    expect(save.resume.dialogue).toEqual({ script: 'ch3.dialogue.preview', node: 'nextTime' });
+    expect(world.currentSceneId).toBe('ch3.scene.spellbookParcel');
+    expect(world.roomId).toBe('ch3.commonRoom');
+    expect(world.dialoguePresentation).toBeNull();
+    expect(save.resume.dialogue).toBeNull();
     expect(save.progress.questReceipts).toEqual(expect.arrayContaining([
       'ch2.quest.belonging.quest.v1.step.turnPage.completed',
       'ch2.quest.belonging.quest.v1.completed',

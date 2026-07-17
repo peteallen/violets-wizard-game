@@ -1,0 +1,128 @@
+{
+  "language_code": "eng",
+  "language_probability": 1,
+  "text": "Use Lumos in the third corridor and find Trevor",
+  "words": [
+    {
+      "text": "Use",
+      "start": 0.099,
+      "end": 0.34,
+      "type": "word",
+      "logprob": -0.000051616290875244886
+    },
+    {
+      "text": " ",
+      "start": 0.34,
+      "end": 0.399,
+      "type": "spacing",
+      "logprob": -0.006790182087570429
+    },
+    {
+      "text": "Lumos",
+      "start": 0.399,
+      "end": 0.839,
+      "type": "word",
+      "logprob": -0.004074252303666981
+    },
+    {
+      "text": " ",
+      "start": 0.839,
+      "end": 0.879,
+      "type": "spacing",
+      "logprob": -0.000001311301275563892
+    },
+    {
+      "text": "in",
+      "start": 0.879,
+      "end": 0.939,
+      "type": "word",
+      "logprob": -0.000001311301275563892
+    },
+    {
+      "text": " ",
+      "start": 0.939,
+      "end": 0.979,
+      "type": "spacing",
+      "logprob": -8.344646857949556e-7
+    },
+    {
+      "text": "the",
+      "start": 0.979,
+      "end": 1.019,
+      "type": "word",
+      "logprob": -8.344646857949556e-7
+    },
+    {
+      "text": " ",
+      "start": 1.019,
+      "end": 1.12,
+      "type": "spacing",
+      "logprob": -0.00005149708886165172
+    },
+    {
+      "text": "third",
+      "start": 1.12,
+      "end": 1.339,
+      "type": "word",
+      "logprob": -0.00005149708886165172
+    },
+    {
+      "text": " ",
+      "start": 1.339,
+      "end": 1.459,
+      "type": "spacing",
+      "logprob": -0.000006556489552167477
+    },
+    {
+      "text": "corridor",
+      "start": 1.459,
+      "end": 1.839,
+      "type": "word",
+      "logprob": -0.000006556489552167477
+    },
+    {
+      "text": " ",
+      "start": 1.839,
+      "end": 1.879,
+      "type": "spacing",
+      "logprob": -0.00003564294092939235
+    },
+    {
+      "text": "and",
+      "start": 1.879,
+      "end": 1.959,
+      "type": "word",
+      "logprob": -0.00003564294092939235
+    },
+    {
+      "text": " ",
+      "start": 1.959,
+      "end": 2.079,
+      "type": "spacing",
+      "logprob": -4.768370445162873e-7
+    },
+    {
+      "text": "find",
+      "start": 2.079,
+      "end": 2.319,
+      "type": "word",
+      "logprob": -4.768370445162873e-7
+    },
+    {
+      "text": " ",
+      "start": 2.319,
+      "end": 2.359,
+      "type": "spacing",
+      "logprob": -0.00009512448741588742
+    },
+    {
+      "text": "Trevor",
+      "start": 2.359,
+      "end": 2.719,
+      "type": "word",
+      "logprob": -0.00009512448741588742
+    }
+  ],
+  "transcription_id": "SqI9Ok6mnbd500la9kgP",
+  "audio_duration_secs": 2.9721875
+}

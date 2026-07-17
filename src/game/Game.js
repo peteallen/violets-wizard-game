@@ -7,7 +7,7 @@ import {
 } from './content/index.js';
 import { chapter1ResumeRecaps } from './content/chapters/ch1.js';
 import { INPUT, PALETTE, WORLD } from './config.js';
-import { resolveAsset } from './core/assetManifest.js';
+import { getAsset, resolveAsset } from './core/assetManifest.js';
 import { conditionMatches } from './core/conditions.js';
 import { cleanPetName, PetNameDialog } from './core/PetNameDialog.js';
 import { SaveTransferDialog } from './core/SaveTransferDialog.js';
@@ -23,6 +23,7 @@ import {
 import { GuideFootprintRenderer } from './render/GuideFootprintRenderer.js';
 import { Particles } from './render/Particles.js';
 import { RoomRenderer } from './render/RoomRenderer.js';
+import { RoomEffectsRenderer } from './render/RoomEffectsRenderer.js';
 import { SetPieceRenderer } from './render/SetPieceRenderer.js';
 import {
   UIRenderer,
@@ -35,7 +36,9 @@ import {
 } from './render/UIRenderer.js';
 import { WorldAffordanceRenderer } from './render/WorldAffordanceRenderer.js';
 import { WorldPropRenderer } from './render/WorldPropRenderer.js';
-import { resolveProductionRoomMusic } from './presentation/productionRoomVariantOverlays.js';
+import {
+  productionPresentationRegistry,
+} from './presentation/productionRoomVariantOverlays.js';
 import { Save, YEARBOOK_MAX_BYTES, createSave } from './systems/Save.js';
 import { World } from './world/World.js';
 
@@ -133,7 +136,11 @@ export class Game {
       muted: this.saveData.settings.muted,
       volumes: this.saveData.settings.volumes,
     });
-    this.roomRenderer = new RoomRenderer({ resolveAsset });
+    this.presentationRegistry = options.presentationRegistry ?? productionPresentationRegistry;
+    this.roomRenderer = new RoomRenderer({
+      resolveAsset,
+      presentationRegistry: this.presentationRegistry,
+    });
     this.worldPropRenderer = new WorldPropRenderer();
     if (!options.characterRenderer || typeof options.characterRenderer.draw !== 'function') {
       throw new TypeError('Game requires an injected character renderer with draw().');
@@ -157,13 +164,17 @@ export class Game {
     this.guideFootprintRenderer = new GuideFootprintRenderer();
     this.uiRenderer = new UIRenderer({
       resolveAsset,
+      resolveMapVignetteAsset: (request) => this.presentationRegistry
+        .resolveMapVignetteAsset(request),
       characterRenderer: this.characterRenderer,
     });
     this.setPieceRenderer = new SetPieceRenderer({
       resolveAsset,
       characterRenderer: this.characterRenderer,
+      presentationRegistry: this.presentationRegistry,
     });
     this.worldAffordanceRenderer = new WorldAffordanceRenderer();
+    this.roomEffectsRenderer = new RoomEffectsRenderer();
     this.particles = new Particles(new SeededRandom(this.saveData.worldSeed).fork('particles'), { reducedMotion: this.reducedMotion });
     this.world = null;
     this.screen = options.startImmediately ? 'playing' : 'title';
@@ -536,6 +547,17 @@ export class Game {
         this.processWorldEvents();
         return;
       }
+      const inputLockSeconds = (this.presentationRegistry ?? productionPresentationRegistry)
+        .setPieceInputLockSeconds(state.setPiece, state);
+      if (
+        inputLockSeconds !== null
+        && (state.setPiece.time ?? 0) + Number.EPSILON >= inputLockSeconds
+      ) {
+        this.sound.playSfx('sfx/ui/page', 'tap');
+        this.world.setPieces.skip();
+        this.processWorldEvents();
+        return;
+      }
       this.sound.playSfx('sfx/ui/tap', 'tap');
       return;
     }
@@ -569,6 +591,16 @@ export class Game {
       return;
     }
 
+    if (state.learning) {
+      this.handleLearningTap(point, state);
+      return;
+    }
+
+    if (state.spellbook?.state && state.spellbook.state !== 'closed') {
+      this.handleSpellbookTap(point, state);
+      return;
+    }
+
     if (pointInUiRect(point, UI_RECTS.quest)) {
       this.world.overlay = { surface: 'objective' };
       const objective = this.world.objective;
@@ -585,12 +617,90 @@ export class Game {
       return;
     }
     if (state.hasWand && pointInUiRect(point, UI_RECTS.wand)) {
-      this.sound.playSfx('sfx/ui/locked', 'fizzle');
+      if ((state.spellbook?.known?.length ?? 0) === 0 || typeof this.world.openSpellbook !== 'function') {
+        this.sound.playSfx('sfx/ui/locked', 'fizzle');
+        this.updateStatus('Spells come later.');
+        return;
+      }
+      this.world.openSpellbook();
+      this.sound.playSfx('sfx/ui/parchment', 'chime');
+      this.processWorldEvents();
       return;
     }
 
     this.world.tap(point);
     this.processWorldEvents();
+  }
+
+  handleLearningTap(point, state) {
+    const presentation = this.uiRenderer.learningPresentation(state);
+    const target = presentation.targets.find(
+      (candidate) => pointInUiRect(point, candidate.hitArea),
+    );
+    if (!target) {
+      this.sound.playSfx('sfx/ui/tap', 'tap');
+      return false;
+    }
+    const tile = state.learning.tiles?.find(({ id }) => id === target.unitId) ?? null;
+    if (tile?.voice) this.sound.speak(tile.voice, tile.glyph ?? '');
+    const selected = this.world.chooseLearningUnit?.(target.unitId);
+    if (selected === false) {
+      this.sound.playSfx('sfx/ui/locked', 'fizzle');
+      return false;
+    }
+    this.processWorldEvents();
+    return true;
+  }
+
+  handleSpellbookTap(point, state) {
+    const spellbook = state.spellbook;
+    if (pointInUiRect(point, UI_RECTS.wand)) {
+      this.world.cancelSpellbook?.();
+      if (spellbook.state === 'targeting') this.world.cancelSpellbook?.();
+      this.sound.playSfx('sfx/ui/close', 'tap');
+      this.processWorldEvents();
+      return true;
+    }
+    const presentation = this.uiRenderer.spellbookFanPresentation(state);
+    const fanTarget = presentation.targets.find(
+      (candidate) => pointInUiRect(point, candidate.hitArea),
+    );
+    if (fanTarget?.kind === 'close') {
+      this.world.cancelSpellbook?.();
+      if (spellbook.state === 'targeting') this.world.cancelSpellbook?.();
+      this.sound.playSfx('sfx/ui/close', 'tap');
+      this.processWorldEvents();
+      return true;
+    }
+    if (fanTarget?.kind === 'spell-card') {
+      const selected = this.world.selectSpell?.(fanTarget.spellId);
+      this.sound.playSfx(
+        selected === false ? 'sfx/ui/locked' : 'sfx/ui/choice',
+        selected === false ? 'fizzle' : 'chime',
+      );
+      this.processWorldEvents();
+      return selected !== false;
+    }
+    if (spellbook.state === 'targeting') {
+      const target = this.world.targetAt(point);
+      if (target && (spellbook.validTargetIds ?? []).includes(target.id)) {
+        const cast = this.world.castSpellAt?.(target.id);
+        if (cast !== false) {
+          this.sound.playSfx('sfx/ui/choice', 'sparkle');
+          this.processWorldEvents();
+          return true;
+        }
+      }
+    }
+    if (spellbook.state !== 'casting') {
+      this.world.cancelSpellbook?.();
+      this.sound.playSfx(
+        spellbook.state === 'targeting' ? 'sfx/ui/page' : 'sfx/ui/close',
+        'tap',
+      );
+      this.processWorldEvents();
+    } else this.sound.playSfx('sfx/ui/tap', 'tap');
+    return false;
   }
 
   onKeyDown(event) {
@@ -742,6 +852,34 @@ export class Game {
       }
       return;
     }
+    if (state.overlay.surface === 'spellbook') {
+      const presentation = this.uiRenderer.spellbookPresentation(state);
+      const target = presentation.targets.find(
+        (candidate) => pointInUiRect(point, candidate.hitArea),
+      );
+      if (!target) return;
+      if (target.kind === 'close') {
+        this.world.closeOverlay();
+        this.sound.playSfx('sfx/ui/close', 'tap');
+        return;
+      }
+      if (target.kind === 'spell-detail') {
+        this.world.overlay = { surface: 'spellbook', tab: target.spellId };
+        this.sound.playSfx('sfx/ui/page', 'tap');
+        return;
+      }
+      if (target.kind === 'spell-practice') {
+        this.world.closeOverlay();
+        const opened = this.world.openSpellbook?.();
+        const selected = opened === false ? false : this.world.selectSpell?.(target.spellId);
+        this.sound.playSfx(
+          selected === false ? 'sfx/ui/locked' : 'sfx/ui/choice',
+          selected === false ? 'fizzle' : 'chime',
+        );
+        this.processWorldEvents();
+      }
+      return;
+    }
     const closeRect = state.overlay.surface === 'satchel'
       ? UI_RECTS.satchelClose
       : UI_RECTS.close;
@@ -771,6 +909,7 @@ export class Game {
         this.openParentPanel('confirm-start-over', null, {
           returnTo: 'satchel',
           returnTab: state.overlay.tab,
+          returnPage: state.overlay.page,
         });
         return;
       }
@@ -788,6 +927,27 @@ export class Game {
         return;
       }
       if (state.overlay.tab === 'cards') {
+        const album = state.__cardAlbum;
+        if (album?.pageCount > 1 && pointInUiRect(point, UI_RECTS.satchelCardsPrevious)) {
+          this.world.overlay = {
+            surface: 'satchel',
+            tab: 'cards',
+            page: (album.page - 1 + album.pageCount) % album.pageCount,
+          };
+          this.sound.playSfx('sfx/ui/page', 'tap');
+          this.render();
+          return;
+        }
+        if (album?.pageCount > 1 && pointInUiRect(point, UI_RECTS.satchelCardsNext)) {
+          this.world.overlay = {
+            surface: 'satchel',
+            tab: 'cards',
+            page: (album.page + 1) % album.pageCount,
+          };
+          this.sound.playSfx('sfx/ui/page', 'tap');
+          this.render();
+          return;
+        }
         const slot = state.__cardSlots?.find((candidate) => candidate.__rect && pointInUiRect(point, candidate.__rect));
         if (!slot) return;
         if (!slot.earned) {
@@ -828,12 +988,17 @@ export class Game {
     }
   }
 
-  openParentPanel(page = 'play', notice = null, { returnTo = null, returnTab = null } = {}) {
+  openParentPanel(page = 'play', notice = null, {
+    returnTo = null,
+    returnTab = null,
+    returnPage = null,
+  } = {}) {
     if (!this.world) return false;
     this.parentGateProgress = 0;
     this.world.overlay = { surface: 'parent', page, notice };
     if (returnTo) this.world.overlay.returnTo = returnTo;
     if (returnTab) this.world.overlay.returnTab = returnTab;
+    if (Number.isInteger(returnPage)) this.world.overlay.returnPage = returnPage;
     this.render();
     return true;
   }
@@ -856,6 +1021,7 @@ export class Game {
           this.render();
         } else if (overlay.returnTo === 'satchel') {
           this.world.overlay = { surface: 'satchel', tab: overlay.returnTab ?? 'cards' };
+          if (Number.isInteger(overlay.returnPage)) this.world.overlay.page = overlay.returnPage;
           this.render();
         } else this.openParentPanel('save');
         this.sound.playSfx('sfx/ui/page', 'tap');
@@ -1039,7 +1205,47 @@ export class Game {
       case 'hint.cleared':
         this.sound.stopVoice();
         break;
+      case 'learning.started':
+        this.updateStatus('Magic is ready. Tap the glowing piece.');
+        break;
+      case 'learning.attempted': {
+        const successful = event.payload.outcome !== 'wrong';
+        this.sound.playSfx(
+          successful ? 'sfx/ui/choice' : 'sfx/ui/locked',
+          successful ? 'chime' : 'fizzle',
+        );
+        break;
+      }
+      case 'learning.hintChanged':
+        this.updateStatus(
+          event.payload.stage === 'focus' || event.payload.stage === 'complete'
+            ? 'Tap the glowing piece.'
+            : 'Continue making magic.',
+        );
+        break;
+      case 'learning.completed':
+        this.particles.emit('sparkle', WORLD.width / 2, 300, 30, { size: 9, speed: 60 });
+        this.sound.playSfx('sfx/ui/choice', 'flourish');
+        this.updateStatus('The spell is complete.');
+        break;
+      case 'spellbook.stateChanged':
+        this.updateStatus(spellbookStatusText(event.payload));
+        break;
+      case 'spell.cast': {
+        const spellId = event.payload.spellId ?? event.payload.spell;
+        const card = this.world.snapshot().spellbook?.known?.find(({ id }) => id === spellId);
+        const audioKey = card?.audio?.cast ?? card?.audio?.success ?? null;
+        const activeSetPieceAssets = this.world.setPieces.active?.descriptor?.assets ?? [];
+        if (audioKey && !activeSetPieceAssets.includes(audioKey)) {
+          this.sound.playSfx(audioKey, 'sparkle');
+        }
+        const target = this.hintTargetPosition(event.payload.targetId ?? event.payload.target);
+        if (target) this.particles.emit('sparkle', target.x, target.y, 22, { size: 8, speed: 52 });
+        this.updateStatus(`${card?.incantation ?? card?.label ?? 'Magic'}!`);
+        break;
+      }
       case 'setPiece.started':
+        void this.preloadSetPieceAssets(this.world.setPieces.active);
         void this.preloadSetPieceRoomVariant(this.world.setPieces.active);
         if (event.payload.id.includes('previewTicket')) {
           this.playOrDeferTransitionAudio({
@@ -1092,7 +1298,10 @@ export class Game {
   }
 
   handleAudioCommand(command) {
-    if (command.command === 'sfx') this.sound.playSfx(command.key, 'chime');
+    if (command.command === 'sfx') {
+      if (command.pan === undefined) this.sound.playSfx(command.key, 'chime');
+      else this.sound.playSfx(command.key, 'chime', { pan: command.pan });
+    }
     else if (command.command === 'voice') this.sound.speak(command.key);
     else if (command.command === 'stopVoice') this.sound.stopVoice();
     else if (command.command === 'music' && command.mode === 'stop') this.sound.stopMusic();
@@ -1144,7 +1353,7 @@ export class Game {
 
   updateMusic() {
     if (!this.world) return;
-    const key = resolveProductionRoomMusic({
+    const key = (this.presentationRegistry ?? productionPresentationRegistry).resolveRoomMusic({
       chapterId: this.world.chapter?.id,
       roomId: this.world.roomId,
     });
@@ -1158,6 +1367,14 @@ export class Game {
       .map((descriptor) => descriptor.params?.preloadRoomVariant)
       .filter((variant) => roomHasVariant(this.world.room, variant)))];
     return Promise.all(variants.map((variant) => this.preloadRoomVariant(variant)));
+  }
+
+  preloadSetPieceAssets(active) {
+    const keys = [...new Set([
+      ...(active?.descriptor?.assets ?? []),
+      ...(active?.logicalDescriptor?.assets ?? []),
+    ])].filter((key) => getAsset(key)?.kind === 'image');
+    return Promise.all(keys.map((key) => this.setPieceRenderer.loadImage(key)));
   }
 
   preloadSetPieceRoomVariant(active) {
@@ -1822,8 +2039,26 @@ export class Game {
       if (behindCastSetPieceActive) {
         this.setPieceRenderer.draw(context, state.setPiece, presentedState, { reducedMotion: this.reducedMotion });
       }
-      if (!state.setPiece) this.drawWorldTargets(context, presentedState);
+      if (!state.setPiece) {
+        this.drawWorldTargets(context, presentedState);
+        this.uiRenderer.drawCastingAffordances?.(
+          context,
+          presentedState,
+          this.simTime,
+          { reducedMotion: this.reducedMotion },
+        );
+      }
       this.drawCharacters(context, presentedState);
+      (this.presentationRegistry ?? productionPresentationRegistry).drawWorldEffects(context, {
+        chapterId: state.chapterId,
+        layer: 'front-effects',
+        state: presentedState,
+        time: this.simTime,
+        reducedMotion: this.reducedMotion,
+        cameraX: state.cameraX,
+        effectsRenderer: this.roomEffectsRenderer,
+        imageFor: (key) => this.uiRenderer.imageFor(key),
+      });
       this.particles.draw(context);
       if (brickWallActive) {
         this.setPieceRenderer.drawBrickWallCover(
@@ -1837,6 +2072,16 @@ export class Game {
     if (!behindCastSetPieceActive) {
       this.setPieceRenderer.draw(context, state.setPiece, presentedState, { reducedMotion: this.reducedMotion });
     }
+    (this.presentationRegistry ?? productionPresentationRegistry).drawWorldEffects(context, {
+      chapterId: state.chapterId,
+      layer: 'lighting',
+      state: presentedState,
+      time: this.simTime,
+      reducedMotion: this.reducedMotion,
+      cameraX: state.cameraX,
+      effectsRenderer: this.roomEffectsRenderer,
+      imageFor: (key) => this.uiRenderer.imageFor(key),
+    });
     if (!state.setPiece) this.uiRenderer.drawHud(context, state, this.simTime, this.reducedMotion);
     if (this.resumeRecap) {
       this.uiRenderer.drawResumeRecap(
@@ -1858,6 +2103,21 @@ export class Game {
           dialogueSceneContext(state),
         );
       }
+      if (state.learning && state.learning.status !== 'completed') {
+        this.uiRenderer.drawLearning(
+          context,
+          state,
+          this.simTime,
+          { reducedMotion: this.reducedMotion },
+        );
+      } else if (state.spellbook?.state && state.spellbook.state !== 'closed') {
+        this.uiRenderer.drawSpellbookFan(
+          context,
+          state,
+          this.simTime,
+          { reducedMotion: this.reducedMotion },
+        );
+      }
       if (state.overlay?.surface === 'satchel') {
         const map = activeChapterMap(this.world, state);
         this.uiRenderer.drawSatchel(context, state, cards, {
@@ -1872,7 +2132,20 @@ export class Game {
         this.uiRenderer.drawRobePicker(context, state, this.simTime, this.reducedMotion);
       }
       if (state.overlay?.surface === 'objective') {
-        this.uiRenderer.drawObjective(context, state.objective, this.simTime, { reducedMotion: this.reducedMotion });
+        this.uiRenderer.drawQuestJournal(
+          context,
+          state,
+          this.simTime,
+          { reducedMotion: this.reducedMotion },
+        );
+      }
+      if (state.overlay?.surface === 'spellbook') {
+        this.uiRenderer.drawSpellbook(
+          context,
+          state,
+          this.simTime,
+          { reducedMotion: this.reducedMotion },
+        );
       }
       if (state.overlay?.surface === 'parent') this.uiRenderer.drawParentPanel(context, this.parentPanelModel(state.overlay));
       if (state.overlay?.surface === 'yearbook') {
@@ -1955,6 +2228,39 @@ export class Game {
       ];
     }
     const state = stateOverride ?? this.lastRenderState ?? this.world.snapshot();
+    if (state.overlay?.surface === 'spellbook') {
+      const spellbook = this.uiRenderer.spellbookPresentation(state);
+      return [
+        ...spellbook.targets.map(({ id, x, y }) => ({ id, x, y })),
+        ...debugTargets,
+      ];
+    }
+    if (state.learning && state.learning.status !== 'completed') {
+      const learning = this.uiRenderer.learningPresentation(state);
+      return [
+        ...learning.targets.map(({ id, x, y }) => ({ id, x, y })),
+        ...debugTargets,
+      ];
+    }
+    if (state.spellbook?.state && state.spellbook.state !== 'closed') {
+      const spellbook = this.uiRenderer.spellbookFanPresentation(state);
+      const validTargetIds = new Set(state.spellbook.validTargetIds ?? []);
+      const castingTargets = state.spellbook.state === 'targeting'
+        ? state.targets.filter(({ id }) => validTargetIds.has(id)).map((target) => ({
+            id: target.id,
+            x: (target.hitArea.x ?? 0) - state.cameraX
+              + (target.hitArea.shape === 'rect' ? target.hitArea.width / 2 : 0),
+            y: (target.hitArea.y ?? 0)
+              + (target.hitArea.shape === 'rect' ? target.hitArea.height / 2 : 0),
+          }))
+        : [];
+      return [
+        ...spellbook.targets.map(({ id, x, y }) => ({ id, x, y })),
+        ...castingTargets,
+        { id: 'hud.wand', x: 1198, y: 638 },
+        ...debugTargets,
+      ];
+    }
     const targets = state.targets.map((target) => ({
       id: target.id,
       x: (target.hitArea.x ?? 0) - state.cameraX + (target.hitArea.shape === 'rect' ? target.hitArea.width / 2 : 0),
@@ -1962,6 +2268,14 @@ export class Game {
     }));
     if (isSkippableChapterCardSetPiece(state)) {
       targets.push(semanticRect('chapter.card.continue', chapterCardLayout().action));
+    }
+    const inputLockSeconds = (this.presentationRegistry ?? productionPresentationRegistry)
+      .setPieceInputLockSeconds(state.setPiece, state);
+    if (
+      inputLockSeconds !== null
+      && (state.setPiece?.time ?? 0) + Number.EPSILON >= inputLockSeconds
+    ) {
+      targets.push({ id: 'setPiece.continue', x: WORLD.width / 2, y: WORLD.height / 2 });
     }
     targets.push({ id: 'hud.quest', x: 80, y: 80 });
     if (state.hasSatchel) targets.push({ id: 'hud.satchel', x: 82, y: 638 });
@@ -2007,6 +2321,12 @@ export class Game {
         semanticRect('overlay.close', UI_RECTS.satchelClose),
       );
       if (state.overlay.tab === 'cards') {
+        if (state.__cardAlbum?.pageCount > 1) {
+          targets.push(
+            semanticRect('satchel.cards.previous', UI_RECTS.satchelCardsPrevious),
+            semanticRect('satchel.cards.next', UI_RECTS.satchelCardsNext),
+          );
+        }
         for (const slot of state.__cardSlots ?? []) {
           targets.push({ id: `satchel.card.${slot.id}`, x: slot.__rect.x + slot.__rect.width / 2, y: slot.__rect.y + slot.__rect.height / 2 });
         }
@@ -2030,6 +2350,9 @@ export class Game {
         semanticRect('letter.hear', UI_RECTS.letterHear),
         semanticRect('letter.continue', UI_RECTS.letterContinue),
       );
+    }
+    if (state.overlay?.surface === 'objective') {
+      targets.push(semanticRect('overlay.close', UI_RECTS.close));
     }
     if (state.overlay?.surface === 'robe-picker') {
       const layout = robePickerLayout(state.overlay.selectedTrim);
@@ -2142,7 +2465,7 @@ export class Game {
   }
 
   updateStatus(text) {
-    const status = document.querySelector('#game-status');
+    const status = globalThis.document?.querySelector?.('#game-status');
     if (status && text) status.textContent = text;
   }
 
@@ -2162,6 +2485,7 @@ export class Game {
     this.sound.destroy();
     this.roomRenderer.destroy?.();
     this.setPieceRenderer.destroy?.();
+    this.roomEffectsRenderer?.destroy?.();
     this.releaseRoomTransition();
     this.saveTransferDialog?.destroy?.();
     this.petNameDialog?.destroy?.();
@@ -2684,6 +3008,13 @@ function latestReplayChapterId(save) {
   return [...(save?.progress?.completedChapters ?? [])]
     .filter((chapterId) => Boolean(contentRegistry[chapterId]))
     .sort((left, right) => contentRegistry[right].number - contentRegistry[left].number)[0] ?? null;
+}
+
+function spellbookStatusText(payload = {}) {
+  if (payload.state === 'fan') return 'Choose a spell.';
+  if (payload.state === 'targeting') return 'Tap something glowing, or tap the wand to close the spellbook.';
+  if (payload.state === 'casting') return 'Violet is casting the spell.';
+  return 'Continue Violet’s adventure.';
 }
 
 export function mergeReplayCollections(canonical, replay) {

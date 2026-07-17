@@ -193,6 +193,82 @@ const chapter2StoryChoices = Object.freeze({
 
 const CHAPTER_TWO_PLAYER = Object.freeze(['character.violet', 'character.cat']);
 
+const chapter3BaseFlags = Object.freeze({
+  ...chapter2ThroughFeastFlags,
+  'ch2.commonRoomArrived': true,
+  'ch2.chapterCardSeen': true,
+  'ch2.complete': true,
+});
+
+const chapter3SpellbookFlags = Object.freeze({
+  ...chapter3BaseFlags,
+  'ch3.spellbookOpened': true,
+});
+
+const chapter3LumosFlags = Object.freeze({
+  ...chapter3SpellbookFlags,
+  'ch3.lumosLearned': true,
+});
+
+const chapter3LumosProvedFlags = Object.freeze({
+  ...chapter3LumosFlags,
+  'ch3.lumosProved': true,
+});
+
+const chapter3LeviosaFlags = Object.freeze({
+  ...chapter3LumosProvedFlags,
+  'ch3.leviosaLearned': true,
+});
+
+const chapter3QuestFlags = Object.freeze({
+  ...chapter3LeviosaFlags,
+  'ch3.toadQuestAccepted': true,
+});
+
+const chapter3TrailFlags = Object.freeze({
+  ...chapter3QuestFlags,
+  'ch3.trailFound': true,
+});
+
+const chapter3ClueFlags = Object.freeze({
+  ...chapter3TrailFlags,
+  'ch3.corridorRibbonFound': true,
+  'ch3.corridorClueFound': true,
+});
+
+const chapter3TrevorRevealedFlags = Object.freeze({
+  ...chapter3ClueFlags,
+  'ch3.toadRevealed': true,
+});
+
+const chapter3TrevorFoundFlags = Object.freeze({
+  ...chapter3TrevorRevealedFlags,
+  'ch3.toadFound': true,
+});
+
+const chapter3TrevorReturnedFlags = Object.freeze({
+  ...chapter3TrevorFoundFlags,
+  'ch3.toadReturned': true,
+});
+
+const chapter3GhostFlags = Object.freeze({
+  ...chapter3TrevorReturnedFlags,
+  'ch3.ghostBookAccepted': true,
+});
+
+const CHAPTER_THREE_PLAYER = Object.freeze(['character.violet', 'character.cat']);
+const CHAPTER_THREE_BASE_CARDS = Object.freeze([
+  'morgana',
+  'dumbledore',
+  'merlin',
+  'jocunda-sykes',
+]);
+const CHAPTER_THREE_SPELLS = Object.freeze(['lumos', 'leviosa']);
+const CHAPTER_THREE_LEARNING_BEATS = Object.freeze([
+  'ch3.learning.lumos',
+  'ch3.learning.leviosa',
+]);
+
 function chapter2SetPieceFixture({
   id,
   description,
@@ -219,6 +295,54 @@ function chapter2SetPieceFixture({
       house,
       housePoints,
     }),
+    characterDependencies,
+  );
+}
+
+function chapter3ReviewFixture({
+  id,
+  description,
+  scene,
+  room,
+  spawn,
+  questFlags = chapter3BaseFlags,
+  knownSpells = [],
+  completedBeats = [],
+  phonicsSkill = completedBeats.length,
+  spellStats = {},
+  cards = CHAPTER_THREE_BASE_CARDS,
+  treasures = [],
+  housePoints = 10,
+  pet = completedProfile.pet,
+  characterDependencies = CHAPTER_THREE_PLAYER,
+}) {
+  const save = createSave({
+    ...completedProfile,
+    chapter: 'ch3',
+    scene,
+    room,
+    spawn,
+    highestUnlockedChapter: 3,
+    completedChapters: ['ch1', 'ch2'],
+    questFlags,
+    storyChoices: chapter2StoryChoices,
+    house: 'gryffindor',
+    pet,
+    cards,
+    treasures,
+    housePoints,
+  });
+  save.spellbook.known = [...knownSpells];
+  save.spellbook.stats = Object.fromEntries(knownSpells.map((spellId) => [
+    spellId,
+    structuredClone(spellStats[spellId] ?? { casts: 0, masteryTier: 0 }),
+  ]));
+  save.learning.completedBeats = [...completedBeats];
+  save.learning.phonicsSkill = phonicsSkill;
+  return createFixture(
+    description,
+    { chapter: 3, scene: id },
+    save,
     characterDependencies,
   );
 }
@@ -577,6 +701,250 @@ registry
       'character.narrator',
     ],
   }))
+  .register('sp-ch3-spellbook-reveal-review', chapter3ReviewFixture({
+    id: 'sp-ch3-spellbook-reveal-review',
+    description: 'The autumn common-room owl post staged immediately before Violet’s wrapped spellbook opens into its empty illustrated spread.',
+    scene: 'ch3.scene.spellbookParcel',
+    room: 'ch3.commonRoom',
+    spawn: 'parcel',
+    characterDependencies: [
+      ...CHAPTER_THREE_PLAYER,
+      'character.post-owl',
+    ],
+  }))
+  .register('learning-ch3-lumos-review', chapter3ReviewFixture({
+    id: 'learning-ch3-lumos-review',
+    description: 'The real Charms lesson after the first Lumos rune lands, with five recessed slots, one guided match, a charging wand, and Professor Flitwick in the painted classroom.',
+    scene: 'ch3.scene.lumosClass',
+    room: 'ch3.charmsClassroom',
+    spawn: 'map',
+    questFlags: chapter3SpellbookFlags,
+    characterDependencies: [
+      ...CHAPTER_THREE_PLAYER,
+      'character.flitwick',
+    ],
+  }))
+  .register('ui-ch3-spellbook-review', chapter3ReviewFixture({
+    id: 'ui-ch3-spellbook-review',
+    description: 'The real Lumos learning reward opened to its permanent illustrated spell detail after all five runes land.',
+    scene: 'ch3.scene.lumosClass',
+    room: 'ch3.charmsClassroom',
+    spawn: 'map',
+    questFlags: chapter3SpellbookFlags,
+    characterDependencies: [
+      ...CHAPTER_THREE_PLAYER,
+      'character.flitwick',
+    ],
+  }))
+  .register('sp-ch3-lumos-bloom-review', chapter3ReviewFixture({
+    id: 'sp-ch3-lumos-bloom-review',
+    description: 'The Charms classroom staged for Violet’s first free Lumos cast, with the lantern answering her warm-white wand light.',
+    scene: 'ch3.scene.lumosClass',
+    room: 'ch3.charmsClassroom',
+    spawn: 'map',
+    questFlags: chapter3LumosFlags,
+    knownSpells: ['lumos'],
+    completedBeats: ['ch3.learning.lumos'],
+    characterDependencies: [
+      ...CHAPTER_THREE_PLAYER,
+      'character.flitwick',
+    ],
+  }))
+  .register('learning-ch3-leviosa-review', chapter3ReviewFixture({
+    id: 'learning-ch3-leviosa-review',
+    description: 'The real Charms chant midway through Wingardium Leviosa, with landed syllables, the remaining spoken tiles, and a visibly rising feather.',
+    scene: 'ch3.scene.leviosaClass',
+    room: 'ch3.charmsClassroom',
+    spawn: 'lesson',
+    questFlags: chapter3LumosProvedFlags,
+    knownSpells: ['lumos'],
+    completedBeats: ['ch3.learning.lumos'],
+    spellStats: { lumos: { casts: 1, masteryTier: 1 } },
+    characterDependencies: [
+      ...CHAPTER_THREE_PLAYER,
+      'character.flitwick',
+    ],
+  }))
+  .register('sp-ch3-leviosa-feather-review', chapter3ReviewFixture({
+    id: 'sp-ch3-leviosa-feather-review',
+    description: 'The live post-learning Charms state staged for the completed Leviosa feather sail, with Flitwick’s celebration and worried Neville already present as in normal play.',
+    scene: 'ch3.scene.trevorMissing',
+    room: 'ch3.charmsClassroom',
+    spawn: 'lesson',
+    questFlags: chapter3LeviosaFlags,
+    knownSpells: CHAPTER_THREE_SPELLS,
+    completedBeats: CHAPTER_THREE_LEARNING_BEATS,
+    spellStats: { lumos: { casts: 1, masteryTier: 1 } },
+    characterDependencies: [
+      ...CHAPTER_THREE_PLAYER,
+      'character.flitwick',
+      'character.neville',
+    ],
+  }))
+  .register('ui-ch3-map-review', chapter3ReviewFixture({
+    id: 'ui-ch3-map-review',
+    description: 'The live five-destination castle map after the first corridor trail is found, with completed rooms, the second corridor marked Next, and later rooms still misted.',
+    scene: 'ch3.scene.corridorTwo',
+    room: 'ch3.corridorTwo',
+    spawn: 'map',
+    questFlags: chapter3TrailFlags,
+    knownSpells: CHAPTER_THREE_SPELLS,
+    completedBeats: CHAPTER_THREE_LEARNING_BEATS,
+    spellStats: { lumos: { casts: 2, masteryTier: 1 } },
+  }))
+  .register('sp-ch3-corridor-one-reveal-review', chapter3ReviewFixture({
+    id: 'sp-ch3-corridor-one-reveal-review',
+    description: 'The first velvet-blue corridor staged for Lumos to reveal a small wet footprint trail inside one soft pool of light.',
+    scene: 'ch3.scene.corridorOne',
+    room: 'ch3.corridorOne',
+    spawn: 'map',
+    questFlags: chapter3QuestFlags,
+    knownSpells: CHAPTER_THREE_SPELLS,
+    completedBeats: CHAPTER_THREE_LEARNING_BEATS,
+    spellStats: { lumos: { casts: 1, masteryTier: 1 } },
+  }))
+  .register('ui-ch3-corridor-two-lumos-review', chapter3ReviewFixture({
+    id: 'ui-ch3-corridor-two-lumos-review',
+    description: 'The second night corridor with Violet’s two-spell wand fan in Lumos targeting mode, keeping both worthwhile alcoves and the ribbon clue readable.',
+    scene: 'ch3.scene.corridorTwo',
+    room: 'ch3.corridorTwo',
+    spawn: 'map',
+    questFlags: chapter3TrailFlags,
+    knownSpells: CHAPTER_THREE_SPELLS,
+    completedBeats: CHAPTER_THREE_LEARNING_BEATS,
+    spellStats: { lumos: { casts: 2, masteryTier: 1 } },
+  }))
+  .register('ui-ch3-corridor-three-lumos-review', chapter3ReviewFixture({
+    id: 'ui-ch3-corridor-three-lumos-review',
+    description: 'The third night corridor in Lumos targeting mode, with armor, curtain, and reflected eyes remaining three distinct cozy hiding shapes.',
+    scene: 'ch3.scene.corridorThree',
+    room: 'ch3.corridorThree',
+    spawn: 'map',
+    questFlags: chapter3ClueFlags,
+    knownSpells: CHAPTER_THREE_SPELLS,
+    completedBeats: CHAPTER_THREE_LEARNING_BEATS,
+    spellStats: { lumos: { casts: 3, masteryTier: 1 } },
+  }))
+  .register('sp-ch3-trevor-reveal-review', chapter3ReviewFixture({
+    id: 'sp-ch3-trevor-reveal-review',
+    description: 'The third corridor staged for reflected eyes to resolve into the distinct Trevor identity after a valid Lumos cast.',
+    scene: 'ch3.scene.corridorThree',
+    room: 'ch3.corridorThree',
+    spawn: 'map',
+    questFlags: chapter3ClueFlags,
+    knownSpells: CHAPTER_THREE_SPELLS,
+    completedBeats: CHAPTER_THREE_LEARNING_BEATS,
+    spellStats: { lumos: { casts: 3, masteryTier: 1 } },
+    pet: { type: 'toad', name: 'Pebble' },
+    characterDependencies: [
+      'character.violet',
+      'character.toad',
+      'character.trevor',
+    ],
+  }))
+  .register('sp-ch3-trevor-found-review', chapter3ReviewFixture({
+    id: 'sp-ch3-trevor-found-review',
+    description: 'Revealed Trevor staged for his short hop, one indignant croak, and live Found Trevor celebration beside silent Violet.',
+    scene: 'ch3.scene.corridorThree',
+    room: 'ch3.corridorThree',
+    spawn: 'map',
+    questFlags: chapter3TrevorRevealedFlags,
+    knownSpells: CHAPTER_THREE_SPELLS,
+    completedBeats: CHAPTER_THREE_LEARNING_BEATS,
+    spellStats: { lumos: { casts: 4, masteryTier: 1 } },
+    characterDependencies: [
+      ...CHAPTER_THREE_PLAYER,
+      'character.trevor',
+    ],
+  }))
+  .register('sp-ch3-trevor-reunion-review', chapter3ReviewFixture({
+    id: 'sp-ch3-trevor-reunion-review',
+    description: 'Neville and Trevor staged for their relieved reunion, exactly ten new house points, and one restrained toad-token reward beat.',
+    scene: 'ch3.scene.returnTrevor',
+    room: 'ch3.corridorOne',
+    spawn: 'return',
+    questFlags: chapter3TrevorFoundFlags,
+    knownSpells: CHAPTER_THREE_SPELLS,
+    completedBeats: CHAPTER_THREE_LEARNING_BEATS,
+    spellStats: { lumos: { casts: 4, masteryTier: 1 } },
+    characterDependencies: [
+      ...CHAPTER_THREE_PLAYER,
+      'character.neville',
+      'character.trevor',
+    ],
+  }))
+  .register('room-ch3-friendly-ghost-review', chapter3ReviewFixture({
+    id: 'room-ch3-friendly-ghost-review',
+    description: 'The friendly unnamed ghost emerging beside his torn book in the first corridor after Trevor is safely returned.',
+    scene: 'ch3.scene.returnTrevor',
+    room: 'ch3.corridorOne',
+    spawn: 'return',
+    questFlags: chapter3TrevorReturnedFlags,
+    knownSpells: CHAPTER_THREE_SPELLS,
+    completedBeats: CHAPTER_THREE_LEARNING_BEATS,
+    spellStats: { lumos: { casts: 4, masteryTier: 1 } },
+    treasures: ['treasure.ch3.toad-token'],
+    housePoints: 20,
+    characterDependencies: [
+      ...CHAPTER_THREE_PLAYER,
+      'character.neville',
+      'character.friendly-ghost',
+    ],
+  }))
+  .register('ui-ch3-quest-journal-review', chapter3ReviewFixture({
+    id: 'ui-ch3-quest-journal-review',
+    description: 'The live quest journal after the ghost’s request, with the gold main chapter thread and sleeping silver Fix the book promise visibly separate.',
+    scene: 'ch3.scene.returnTrevor',
+    room: 'ch3.corridorOne',
+    spawn: 'return',
+    questFlags: chapter3GhostFlags,
+    knownSpells: CHAPTER_THREE_SPELLS,
+    completedBeats: CHAPTER_THREE_LEARNING_BEATS,
+    spellStats: { lumos: { casts: 4, masteryTier: 1 } },
+    cards: [...CHAPTER_THREE_BASE_CARDS, 'bertie-bott'],
+    treasures: ['treasure.ch3.toad-token'],
+    housePoints: 20,
+    characterDependencies: [
+      ...CHAPTER_THREE_PLAYER,
+      'character.neville',
+      'character.friendly-ghost',
+    ],
+  }))
+  .register('ui-ch3-cards-review', chapter3ReviewFixture({
+    id: 'ui-ch3-cards-review',
+    description: 'The live second card-album page showing the earned Circe and Bertie Bott paintings from Chapter Three.',
+    scene: 'ch3.scene.returnTrevor',
+    room: 'ch3.corridorOne',
+    spawn: 'return',
+    questFlags: {
+      ...chapter3GhostFlags,
+      'ch3.corridorCardFound': true,
+    },
+    knownSpells: CHAPTER_THREE_SPELLS,
+    completedBeats: CHAPTER_THREE_LEARNING_BEATS,
+    spellStats: { lumos: { casts: 4, masteryTier: 1 } },
+    cards: [...CHAPTER_THREE_BASE_CARDS, 'circe', 'bertie-bott'],
+    treasures: ['treasure.ch3.toad-token'],
+    housePoints: 20,
+  }))
+  .register('sp-ch3-chapter-close-review', chapter3ReviewFixture({
+    id: 'sp-ch3-chapter-close-review',
+    description: 'The autumn common room staged for Lumos and Leviosa to appear together beneath Violet’s First Spells before the flying preview.',
+    scene: 'ch3.scene.chapterClose',
+    room: 'ch3.commonRoom',
+    spawn: 'close',
+    questFlags: chapter3GhostFlags,
+    knownSpells: CHAPTER_THREE_SPELLS,
+    completedBeats: CHAPTER_THREE_LEARNING_BEATS,
+    spellStats: { lumos: { casts: 4, masteryTier: 1 } },
+    cards: [...CHAPTER_THREE_BASE_CARDS, 'circe', 'bertie-bott'],
+    treasures: ['treasure.ch3.toad-token'],
+    housePoints: 20,
+    characterDependencies: [
+      ...CHAPTER_THREE_PLAYER,
+      'character.narrator',
+    ],
+  }))
   .register('parent-panel', completedSurfaceFixture(
     'parent-panel',
     'The grown-up book on its safe chapter replay and yearbook page.',
@@ -698,6 +1066,22 @@ registry
   .register('violet-expression-review', characterReviewFixture(
     'violet-expression-review',
     'The owner-approved aligned Violet shown in every accepted neutral and facial-expression state, as both portraits and grounded full figures.',
+  ))
+  .register('flitwick-sprite-review', characterReviewFixture(
+    'flitwick-sprite-review',
+    'Professor Flitwick’s production dialogue portraits and full-body teaching, casting, and celebration actions.',
+  ))
+  .register('neville-sprite-review', characterReviewFixture(
+    'neville-sprite-review',
+    'Neville’s production dialogue portraits and full-body worried, relieved, and Trevor-reunion states.',
+  ))
+  .register('trevor-sprite-review', characterReviewFixture(
+    'trevor-sprite-review',
+    'Trevor’s production portrait, reflected-eye reveal, croak, hop, held, and reunion states.',
+  ))
+  .register('friendly-ghost-sprite-review', characterReviewFixture(
+    'friendly-ghost-sprite-review',
+    'The unnamed friendly ghost’s production portrait, emergence, dialogue, listening-reward, and delighted states.',
   ))
   .register('ui-dialogue-review', characterReviewFixture(
     'ui-dialogue-review',

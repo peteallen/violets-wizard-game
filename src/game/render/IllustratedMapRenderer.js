@@ -50,6 +50,7 @@ export function createIllustratedMapPresentation(
     frame = ARTBOARD,
     reducedMotion = false,
     quiet = false,
+    resolveVignetteAsset = null,
   } = {},
 ) {
   if (!mapState || !Array.isArray(mapState.locations) || !Array.isArray(mapState.routes)) {
@@ -58,7 +59,11 @@ export function createIllustratedMapPresentation(
   const normalizedFrame = frozenRect(frame);
   const transform = coordinateTransform(normalizedFrame);
   const field = transformRect(MAP_FIELD, transform);
-  const locations = mapState.locations.map((location) => locationPresentation(location, transform));
+  const locations = mapState.locations.map((location) => locationPresentation(location, transform, {
+    mapId: mapState.id,
+    chapterId: worldSnapshot?.chapterId ?? null,
+    resolveVignetteAsset,
+  }));
   const routes = mapState.routes.map((route) => routePresentation(route, transform));
   const hitTargets = locations.map((location) => Object.freeze({
     id: location.id,
@@ -79,6 +84,7 @@ export function createIllustratedMapPresentation(
     kind: ILLUSTRATED_MAP_RENDERER_STATUS,
     paintedAssetStatus: ILLUSTRATED_MAP_PAINTED_ASSET_STATUS,
     mapId: mapState.id,
+    backgroundAssetKey: mapState.asset ?? null,
     frame: normalizedFrame,
     field,
     locations: Object.freeze(locations),
@@ -96,6 +102,15 @@ export function drawIllustratedMapPresentation(
   context.save();
   if (showParchmentField) {
     drawParchmentField(context, presentation.field, stablePhase(presentation.mapId));
+  }
+  const backgroundImage = presentation.backgroundAssetKey
+    ? imageFor?.(presentation.backgroundAssetKey)
+    : null;
+  if (readyImage(backgroundImage)) {
+    drawPaintedMapBackground(context, presentation.field, backgroundImage, {
+      inset: showParchmentField ? 7 : 0,
+      phase: stablePhase(presentation.mapId),
+    });
   }
   for (const route of presentation.routes) drawQuillRoute(context, route);
   if (presentation.objective) drawObjectiveRoute(context, presentation);
@@ -115,17 +130,33 @@ export function drawIllustratedMapPresentation(
   context.restore();
 }
 
-function locationPresentation(location, transform) {
+function locationPresentation(location, transform, {
+  mapId,
+  chapterId,
+  resolveVignetteAsset,
+} = {}) {
   const vignette = transformRect(offsetRect(location.vignette, 0, MAP_CONTENT_OFFSET_Y), transform);
   const phase = stablePhase(location.id);
+  const knownKind = VIGNETTE_KINDS.has(location.icon) ? location.icon : null;
+  const registeredAsset = location.art ?? (typeof resolveVignetteAsset === 'function'
+    ? resolveVignetteAsset({
+        chapterId,
+        mapId,
+        locationId: location.id,
+        icon: location.icon,
+      })
+    : null);
   return Object.freeze({
     id: location.id,
     icon: location.icon,
     caption: location.caption,
-    kind: VIGNETTE_KINDS.has(location.icon) ? location.icon : 'street',
-    assetKey: VIGNETTE_ASSET_KEYS[VIGNETTE_KINDS.has(location.icon) ? location.icon : 'street'],
+    kind: knownKind ?? 'registered',
+    assetKey: registeredAsset ?? VIGNETTE_ASSET_KEYS[knownKind ?? 'street'],
     objectiveTarget: location.objectiveTarget
       ? Object.freeze({ ...location.objectiveTarget })
+      : null,
+    activeObjectiveTarget: location.activeObjectiveTarget
+      ? Object.freeze({ ...location.activeObjectiveTarget })
       : null,
     vignette,
     isCurrent: location.isCurrent,
@@ -165,11 +196,12 @@ function objectivePresentation(locations, thread, time, { reducedMotion }) {
   const mapTargetId = thread?.mapTargetId ?? null;
   const location = locations.find(
     (candidate) => mapTargetId
-      ? candidate.objectiveTarget?.hotspot === mapTargetId
+      ? (candidate.activeObjectiveTarget?.hotspot ?? candidate.objectiveTarget?.hotspot) === mapTargetId
       : candidate.isObjective,
   );
   if (!location) return null;
   const objectiveTargetId = mapTargetId
+    ?? location.activeObjectiveTarget?.hotspot
     ?? location.objectiveTarget?.hotspot
     ?? location.id;
 
@@ -213,6 +245,50 @@ function objectivePresentation(locations, thread, time, { reducedMotion }) {
     target,
     affordance,
   });
+}
+
+function drawPaintedMapBackground(context, field, image, { inset = 0, phase = 0 } = {}) {
+  const rect = insetRect(field, inset);
+  const targetAspect = rect.width / rect.height;
+  const imageAspect = image.naturalWidth / image.naturalHeight;
+  let sourceX = 0;
+  let sourceY = 0;
+  let sourceWidth = image.naturalWidth;
+  let sourceHeight = image.naturalHeight;
+  if (imageAspect > targetAspect) {
+    sourceWidth = image.naturalHeight * targetAspect;
+    sourceX = (image.naturalWidth - sourceWidth) / 2;
+  } else {
+    sourceHeight = image.naturalWidth / targetAspect;
+    sourceY = (image.naturalHeight - sourceHeight) / 2;
+  }
+  context.save();
+  traceOrganicRect(context, rect, phase + 0.23, 8);
+  context.clip();
+  context.drawImage(
+    image,
+    sourceX,
+    sourceY,
+    sourceWidth,
+    sourceHeight,
+    rect.x,
+    rect.y,
+    rect.width,
+    rect.height,
+  );
+  context.fillStyle = 'rgba(244,222,172,0.12)';
+  context.fill();
+  context.restore();
+  context.save();
+  context.strokeStyle = 'rgba(103,68,43,0.62)';
+  context.lineWidth = 2.4;
+  traceOrganicRect(context, rect, phase + 0.23, 8);
+  context.stroke();
+  context.restore();
+}
+
+function readyImage(image) {
+  return Boolean(image?.complete && image.naturalWidth > 0 && image.naturalHeight > 0);
 }
 
 function drawParchmentField(context, field, phase) {

@@ -1,0 +1,24 @@
+{
+  "schema_version": 1,
+  "prompt": {
+    "path": "art/chapters/ch3/props/edits/reflected-eyes-v2.prompt.md",
+    "section": "Prompt"
+  },
+  "references": [
+    {
+      "path": "art/chapters/ch3/props/batch/core-v1.png",
+      "role": "sole reference for the established prop-sheet gouache-and-watercolor finish, paper tooth, warm light, violet shadow material, soft dark-brown edge treatment, and flat cyan extraction field"
+    }
+  ],
+  "generation": {
+    "workflow": "Codex built-in image generation",
+    "tool": "image_gen.imagegen",
+    "call_count": 1,
+    "requested_composition": "one tiny connected pair of toad-like reflected eyes on a square flat-cyan source canvas"
+  },
+  "output": {
+    "source_image": "art/chapters/ch3/props/edits/reflected-eyes-v2.png",
+    "candidate_asset": "art/chapters/ch3/props/edits/reflected-eyes-v2.webp",
+    "metadata": "art/chapters/ch3/props/edits/reflected-eyes-v2.metadata.json"
+  }
+}

@@ -1,0 +1,45 @@
+{
+  "schema_version": 1,
+  "slug": "first-spells-native-v1",
+  "prompt": {
+    "path": "art/chapters/ch3/chapter-cards/first-spells-native-v1.prompt.md",
+    "section": "Prompt"
+  },
+  "references": [
+    {
+      "path": "art/raw/ch2-gryffindor-common-room-v2.png",
+      "role": "common-room material, palette, lighting, and atmosphere reference only"
+    },
+    {
+      "path": "art/raw/ch1-platform.png",
+      "role": "polished storybook finish, handcrafted surface, detail density, and luminous color-separation reference only"
+    }
+  ],
+  "generation": {
+    "workflow": "Codex built-in image generation",
+    "tool": "image_gen.imagegen",
+    "mode": "generate",
+    "model_identifier": null,
+    "seed": null,
+    "returned_model_or_seed_note": "The built-in workflow did not return a model identifier or seed."
+  },
+  "output": {
+    "generated_output_id": "exec-e2a1600c-5f69-41ad-87c0-e2998f6d111f",
+    "generated_output_path": "/Users/peteallen/.codex/generated_images/019f717f-ae86-7712-9cf3-200179c51a6a/exec-e2a1600c-5f69-41ad-87c0-e2998f6d111f.png",
+    "native_source": "art/raw/ch3-first-spells-native-v1.png",
+    "accepted_png": "art/raw/ch3-first-spells-v1.png",
+    "shipping_webp": "public/assets/art/chapter-cards/ch3-first-spells.webp",
+    "metadata": "art/chapters/ch3/chapter-cards/first-spells-native-v1.metadata.json"
+  },
+  "conversion": {
+    "native_width": 1672,
+    "native_height": 941,
+    "center_crop_width": 1672,
+    "center_crop_height": 940,
+    "width": 2048,
+    "height": 1152,
+    "webp_quality": 88,
+    "webp_method": 6,
+    "sharp_yuv": true
+  }
+}

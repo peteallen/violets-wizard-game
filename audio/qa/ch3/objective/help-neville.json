@@ -1,0 +1,72 @@
+{
+  "language_code": "eng",
+  "language_probability": 1,
+  "text": "Talk to Neville after class",
+  "words": [
+    {
+      "text": "Talk",
+      "start": 0.079,
+      "end": 0.219,
+      "type": "word",
+      "logprob": -0.0025798154529184103
+    },
+    {
+      "text": " ",
+      "start": 0.219,
+      "end": 0.299,
+      "type": "spacing",
+      "logprob": -0.0000017881377516459906
+    },
+    {
+      "text": "to",
+      "start": 0.299,
+      "end": 0.34,
+      "type": "word",
+      "logprob": -0.0000017881377516459906
+    },
+    {
+      "text": " ",
+      "start": 0.34,
+      "end": 0.419,
+      "type": "spacing",
+      "logprob": -0.00002658331868587993
+    },
+    {
+      "text": "Neville",
+      "start": 0.419,
+      "end": 0.659,
+      "type": "word",
+      "logprob": -0.00002658331868587993
+    },
+    {
+      "text": " ",
+      "start": 0.659,
+      "end": 0.719,
+      "type": "spacing",
+      "logprob": -0.000005364403477869928
+    },
+    {
+      "text": "after",
+      "start": 0.719,
+      "end": 0.979,
+      "type": "word",
+      "logprob": -0.000005364403477869928
+    },
+    {
+      "text": " ",
+      "start": 0.979,
+      "end": 1.019,
+      "type": "spacing",
+      "logprob": -0.0000023841830625315197
+    },
+    {
+      "text": "class",
+      "start": 1.019,
+      "end": 1.479,
+      "type": "word",
+      "logprob": -0.0000023841830625315197
+    }
+  ],
+  "transcription_id": "YDpyBvJIoODuhUA10izi",
+  "audio_duration_secs": 1.7183125
+}

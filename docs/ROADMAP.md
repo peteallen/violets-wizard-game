@@ -42,11 +42,16 @@ and logical set pieces resume idempotently across reloads, failed saves,
 reduced-motion variants, skips, and chapter handoffs. Presentation plumbing and
 the player-visible character, story, art, and audio pass remain active.
 
-After that pass, Chapter Three introduces the spellbook, casting, and the first
-incantation assemblies. That learning-layer debut remains the moment to watch
-Violet's reaction to letter tiles closely; the parent dial exists if they make
-the adventure feel like homework. **Gate: Violet playtest #2 on the polished
-Chapter Two route before Chapter Three production expands.**
+Chapter Three's native content and runtime foundation is now authored behind a
+`placeholder` catalog gate: the spellbook, Lumos and Leviosa ceremonies, five
+destination castle map, three-corridor Trevor route, sleeping ghost-book side
+quest, exact rewards, save repair, and minimal Chapter Four flying preview all
+have deterministic contracts. Production art, assembled harness captures, the
+human audio listening pass, and the full local build still gate live play. That
+learning-layer debut remains the moment to watch Violet's reaction to letter
+tiles closely; Off, Gentle, and Stretchy change assistance without changing her
+story or rewards. **Gate: Violet playtest #2 on the first fully assembled green
+Chapter Three build.**
 
 ### M4 — Chapters 4–5
 Minigame framework + broom flight; Alohomora optional doors; encounter framework v1 with the troll; Reparo & points celebrations. **Gate: does the troll fight land as exciting-not-scary? Violet playtest #3.**

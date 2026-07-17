@@ -1,16 +1,12 @@
 import { mkdir, stat, unlink, writeFile } from 'node:fs/promises';
 import { dirname, resolve } from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 import { analyzeAudio, masterAudio } from './audio_mastering.mjs';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
-const API_KEY = process.env.ELEVENLABS_API_KEY;
-const force = process.argv.includes('--force');
-const chapterFilter = parseChapterFilter(argumentValue('--chapter'));
 const SFX_TARGET_LUFS = -18;
-if (!API_KEY) throw new Error('ELEVENLABS_API_KEY is not set.');
 
-const effects = [
+export const soundEffects = Object.freeze([
   ['sfx/ch1/owlTap', 'Two gentle owl beak taps on a glass window, whimsical storybook sound, clean and close, no music', 1.2],
   ['sfx/ch1/owlFlap', 'Soft owl wings fluttering away, light feathers, magical friendly storybook sound, no hoot, no music', 1.8],
   ['sfx/ch1/paperSlide', 'A parchment envelope slides and unfolds with crisp soft paper rustles, magical storybook foley, no music', 1.7],
@@ -31,12 +27,31 @@ const effects = [
   ['sfx/ch2/sweet-reaction', 'A whimsical magical sweet pops open with a fizzy sparkle, one playful comic boing, and a delighted bright chime. Child-safe, clean isolated effect, no voices, no music', 1.7],
   ['sfx/ch2/gryffindor-cheer', 'A warm small group of schoolchildren cheering and applauding in a huge candlelit hall, joyful and welcoming, no intelligible words, no chanting, no music', 2.8],
   ['sfx/ch2/chapter-turn', 'A thick illustrated storybook page turns, settles with a soft parchment thump, then a brief warm golden bell shimmer. Cozy and triumphant, no voices, no music', 2.2],
-].filter(([key]) => !chapterFilter || key.startsWith(`sfx/ch${chapterFilter}/`));
+  ['sfx/ch3/rune-note-l', 'One clean magical celesta note, C5, warm round storybook tone, very short and immediate, isolated note with no melody, no voices, no ambience', 0.5],
+  ['sfx/ch3/rune-note-u', 'One clean magical celesta note, D5, warm round storybook tone, very short and immediate, isolated note with no melody, no voices, no ambience', 0.5],
+  ['sfx/ch3/rune-note-m', 'One clean magical celesta note, E5, warm round storybook tone, very short and immediate, isolated note with no melody, no voices, no ambience', 0.5],
+  ['sfx/ch3/rune-note-o', 'One clean magical celesta note, G5, warm round storybook tone, very short and immediate, isolated note with no melody, no voices, no ambience', 0.5],
+  ['sfx/ch3/rune-note-s', 'One clean magical celesta note, A5, warm round storybook tone with a tiny resolving sparkle, very short and immediate, isolated note with no melody, no voices, no ambience', 0.65],
+  ['sfx/ch3/comic-fizzle-1', 'A tiny friendly magic spell fizzle: soft puff, one hiccuping bubble, and a miniature wooden pop. Funny and gentle for a six-year-old, very short, no buzzer, no failure sting, no voices, no music', 0.8],
+  ['sfx/ch3/comic-fizzle-2', 'A tiny friendly magic spell fizzle: brief squeaky cork wobble, soft glittery sputter, and a harmless poof. Funny and gentle for a six-year-old, very short, no buzzer, no failure sting, no voices, no music', 0.8],
+  ['sfx/ch3/comic-fizzle-3', 'A tiny friendly magic spell fizzle: one rubbery chirrup, a soft puff of air, and two descending fairy plinks. Funny and gentle for a six-year-old, very short, no buzzer, no failure sting, no voices, no music', 0.9],
+  ['sfx/ch3/lumos-bloom', 'Warm white wand light blooming open: a soft breath of wordless choir, delicate glass shimmer, and one rounded golden bell. Magical, cozy, radiant, never sharp or explosive, no melody, no intelligible voice, no music bed', 2.8],
+  ['sfx/ch3/leviosa-harp', 'A graceful upward harp glissando lifting a feather, followed by a light golden ribbon shimmer and one delighted celesta twinkle. Airy, playful, child-safe, no impact, no voices, no music bed', 2.6],
+  ['sfx/ch3/trevor-croak-distant', 'One distant small toad croak echoing softly in a cozy stone school corridor at night. Curious and friendly, not eerie, isolated creature sound, no voices, no music', 1.2],
+  ['sfx/ch3/trevor-croak-near', 'Two nearby small toad croaks from a hidden alcove, slightly wet and comically impatient. Friendly storybook creature sound, clean and gentle, no voices, no music', 1.4],
+  ['sfx/ch3/trevor-croak-found', 'One indignant but adorable little toad croak at close range, followed by a tiny contented throat burble. Comic and friendly, clean isolated creature sound, no voices, no music', 1.2],
+  ['sfx/ch3/classroom-ambience', 'A quiet seamless classroom ambience in a cozy old stone magic school: soft page turns, feather-light quill scratches, subtle wooden chair movement, and distant warm room murmur with no intelligible words. Calm, bright, child-safe, no melody, no spell effects', 8],
+  ['sfx/ch4/flying-preview', 'A short exciting storybook flying preview: a gentle broom rush sweeps upward through open air, passes one sparkling star ring with a bright chime, then lands on a warm anticipatory shimmer. Soaring and playful, never fast or dangerous, no voices, no music bed', 3.5],
+]);
 
-for (const effect of effects) await generate(effect);
-console.log(`Sound-effect generation complete: ${effects.length} files.`);
+export function selectSoundEffects({ chapter = null, key = null } = {}) {
+  return soundEffects.filter(([assetKey]) => (
+    (!chapter || assetKey.startsWith(`sfx/ch${chapter}/`))
+    && (!key || assetKey === key)
+  ));
+}
 
-async function generate([key, text, duration]) {
+async function generate([key, text, duration], { apiKey, force }) {
   const output = resolve(ROOT, 'public/assets/audio', `${key}.mp3`);
   if (!force && await exists(output)) {
     console.log(`skip ${key}`);
@@ -46,7 +61,7 @@ async function generate([key, text, duration]) {
   const response = await fetch('https://api.elevenlabs.io/v1/sound-generation', {
     method: 'POST',
     headers: {
-      'xi-api-key': API_KEY,
+      'xi-api-key': apiKey,
       'content-type': 'application/json',
       accept: 'audio/mpeg',
     },
@@ -82,16 +97,31 @@ async function exists(path) {
   }
 }
 
-function argumentValue(name) {
-  const directIndex = process.argv.indexOf(name);
-  if (directIndex >= 0) return process.argv[directIndex + 1] ?? null;
+function argumentValue(name, args = process.argv) {
+  const directIndex = args.indexOf(name);
+  if (directIndex >= 0) return args[directIndex + 1] ?? null;
   const prefix = `${name}=`;
-  return process.argv.find((argument) => argument.startsWith(prefix))?.slice(prefix.length) ?? null;
+  return args.find((argument) => argument.startsWith(prefix))?.slice(prefix.length) ?? null;
 }
 
-function parseChapterFilter(value) {
+export function parseChapterFilter(value) {
   if (value == null) return null;
-  const match = String(value).match(/^(?:ch)?([12])$/u);
-  if (!match) throw new Error('--chapter must be 1, ch1, 2, or ch2.');
+  const match = String(value).match(/^(?:ch)?([1-4])$/u);
+  if (!match) throw new Error('--chapter must be a number from 1 through 4, optionally prefixed with ch.');
   return Number(match[1]);
 }
+
+async function main(args = process.argv) {
+  const apiKey = process.env.ELEVENLABS_API_KEY;
+  if (!apiKey) throw new Error('ELEVENLABS_API_KEY is not set.');
+  const force = args.includes('--force');
+  const chapter = parseChapterFilter(argumentValue('--chapter', args));
+  const key = argumentValue('--key', args);
+  const effects = selectSoundEffects({ chapter, key });
+  if (key && effects.length === 0) throw new Error(`Unknown sound-effect key ${key}.`);
+  for (const effect of effects) await generate(effect, { apiKey, force });
+  console.log(`Sound-effect generation complete: ${effects.length} files.`);
+}
+
+const isCli = process.argv[1] && import.meta.url === pathToFileURL(resolve(process.argv[1])).href;
+if (isCli) await main();

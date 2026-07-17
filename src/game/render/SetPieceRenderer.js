@@ -1,6 +1,7 @@
 import { easeInOutCubic, easeOutBack, easeOutCubic, lerp } from '../core/math.js';
 import { PALETTE, WORLD } from '../config.js';
 import { chapter1LetterLines } from '../content/chapters/ch1-letter.js';
+import { productionPresentationRegistry } from '../presentation/productionRoomVariantOverlays.js';
 import {
   LETTER_ENVELOPE_POSE,
   LETTER_READING_POSE,
@@ -129,10 +130,12 @@ function cubicBezier(a, b, c, d, time) {
 export class SetPieceRenderer {
   constructor({
     resolveAsset = () => null,
+    presentationRegistry = productionPresentationRegistry,
     imageFactory = defaultImageFactory,
     characterRenderer,
   } = {}) {
     this.resolveAsset = resolveAsset;
+    this.presentationRegistry = presentationRegistry;
     this.imageFactory = imageFactory;
     this.characterRenderer = requireCharacterRenderer(characterRenderer);
     this.imageRecords = new Map();
@@ -151,6 +154,10 @@ export class SetPieceRenderer {
       .split('.')
       .at(-1)
       ?.toLowerCase();
+    if (this.presentationRegistry.drawSetPiece(context, active, worldState, {
+      reducedMotion,
+      imageFor: (key) => this.readyImage(key),
+    })) return;
     if (normalized.includes('letter')) {
       this.drawLetter(context, active, {
         reducedMotion,

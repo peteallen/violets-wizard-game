@@ -1,0 +1,42 @@
+{
+  "schema_version": 1,
+  "slug": "flying-lesson-native-v2",
+  "prompt": {
+    "path": "art/chapters/ch4/chapter-cards/flying-lesson-native-v2.prompt.md",
+    "section": "Prompt"
+  },
+  "references": [
+    {
+      "path": "art/raw/ch4-flying-lesson-native-v1.png",
+      "role": "edit target; the visible built-in v1 output was supplied through num_last_images_to_include=1 and this stable local copy binds the same bytes"
+    }
+  ],
+  "generation": {
+    "workflow": "Codex built-in image generation",
+    "tool": "image_gen.imagegen",
+    "mode": "edit",
+    "image_inclusion": "num_last_images_to_include=1",
+    "model_identifier": null,
+    "seed": null,
+    "returned_model_or_seed_note": "The built-in workflow did not return a model identifier or seed."
+  },
+  "output": {
+    "generated_output_id": "exec-b77092b5-b243-468f-887c-0b50f304c66a",
+    "generated_output_path": "/Users/peteallen/.codex/generated_images/019f717f-ae86-7712-9cf3-200179c51a6a/exec-b77092b5-b243-468f-887c-0b50f304c66a.png",
+    "native_source": "art/raw/ch4-flying-lesson-native-v2.png",
+    "accepted_png": "art/raw/ch4-flying-lesson-v2.png",
+    "shipping_webp": "public/assets/art/chapter-cards/ch4-flying-lesson.webp",
+    "metadata": "art/chapters/ch4/chapter-cards/flying-lesson-native-v2.metadata.json"
+  },
+  "conversion": {
+    "native_width": 1672,
+    "native_height": 941,
+    "center_crop_width": 1672,
+    "center_crop_height": 940,
+    "width": 2048,
+    "height": 1152,
+    "webp_quality": 88,
+    "webp_method": 6,
+    "sharp_yuv": true
+  }
+}

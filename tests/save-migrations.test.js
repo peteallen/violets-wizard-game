@@ -117,6 +117,13 @@ function completedChapterTwoV2() {
   return save;
 }
 
+function completedChapterTwoV3() {
+  const save = completedChapterTwoV2();
+  save.schemaVersion = 3;
+  save.resume.dialogue = null;
+  return save;
+}
+
 describe('save schema migrations', () => {
   it('registers both ordered version steps to schema three', () => {
     expect(CURRENT_SAVE_SCHEMA_VERSION).toBe(3);
@@ -251,6 +258,29 @@ describe('save schema migrations', () => {
       expect(migrateSaveV2ToV3(save, migrationOptions()).resume)
         .toEqual({ ...CHAPTER_THREE_START, dialogue: null });
     }
+  });
+
+  it('repairs a current completed-chapter end marker without redirecting an in-progress replay', () => {
+    const stranded = completedChapterTwoV3();
+    const before = structuredClone(stranded);
+
+    const repaired = migrateSave(stranded, migrationOptions());
+
+    expect(repaired.resume).toEqual({ ...CHAPTER_THREE_START, dialogue: null });
+    expect(repaired.progress).toEqual(before.progress);
+    expect(stranded).toEqual(before);
+    expect(migrateSave(repaired, migrationOptions())).toEqual(repaired);
+
+    const replay = completedChapterTwoV3();
+    replay.resume = {
+      chapter: 'ch2',
+      scene: 'ch2.scene.commonRoomArrival',
+      room: 'ch2.gryffindorCommonRoom',
+      spawn: 'portraitDoor',
+      dialogue: null,
+    };
+
+    expect(migrateSave(replay, migrationOptions()).resume).toEqual(replay.resume);
   });
 
   it('does not cross chapters unless Chapter Two is complete and the resume is stranded', () => {

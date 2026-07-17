@@ -1,0 +1,184 @@
+{
+  "language_code": "eng",
+  "language_probability": 1,
+  "text": "Next time, flying lessons begin with bright star rings waiting above the lawn.",
+  "words": [
+    {
+      "text": "Next",
+      "start": 0.079,
+      "end": 0.259,
+      "type": "word",
+      "logprob": -0.00002276871418871451
+    },
+    {
+      "text": " ",
+      "start": 0.259,
+      "end": 0.339,
+      "type": "spacing",
+      "logprob": -7.152555099310121e-7
+    },
+    {
+      "text": "time,",
+      "start": 0.34,
+      "end": 0.639,
+      "type": "word",
+      "logprob": -0.0006654642520516063
+    },
+    {
+      "text": " ",
+      "start": 0.639,
+      "end": 1.12,
+      "type": "spacing",
+      "logprob": -0.000058410845667822286
+    },
+    {
+      "text": "flying",
+      "start": 1.12,
+      "end": 1.559,
+      "type": "word",
+      "logprob": -0.000058410845667822286
+    },
+    {
+      "text": " ",
+      "start": 1.559,
+      "end": 1.619,
+      "type": "spacing",
+      "logprob": -5.960462772236497e-7
+    },
+    {
+      "text": "lessons",
+      "start": 1.62,
+      "end": 2.059,
+      "type": "word",
+      "logprob": -5.960462772236497e-7
+    },
+    {
+      "text": " ",
+      "start": 2.059,
+      "end": 2.099,
+      "type": "spacing",
+      "logprob": -4.768370445162873e-7
+    },
+    {
+      "text": "begin",
+      "start": 2.099,
+      "end": 2.539,
+      "type": "word",
+      "logprob": -4.768370445162873e-7
+    },
+    {
+      "text": " ",
+      "start": 2.539,
+      "end": 2.96,
+      "type": "spacing",
+      "logprob": -0.03817681968212128
+    },
+    {
+      "text": "with",
+      "start": 2.96,
+      "end": 3.079,
+      "type": "word",
+      "logprob": -0.03817681968212128
+    },
+    {
+      "text": " ",
+      "start": 3.079,
+      "end": 3.179,
+      "type": "spacing",
+      "logprob": -0.0007101159426383674
+    },
+    {
+      "text": "bright",
+      "start": 3.179,
+      "end": 3.48,
+      "type": "word",
+      "logprob": -0.0007101159426383674
+    },
+    {
+      "text": " ",
+      "start": 3.48,
+      "end": 3.599,
+      "type": "spacing",
+      "logprob": -0.000018715683836489916
+    },
+    {
+      "text": "star",
+      "start": 3.599,
+      "end": 3.959,
+      "type": "word",
+      "logprob": -0.000018715683836489916
+    },
+    {
+      "text": " ",
+      "start": 3.959,
+      "end": 4.099,
+      "type": "spacing",
+      "logprob": -0.00009345571743324399
+    },
+    {
+      "text": "rings",
+      "start": 4.099,
+      "end": 4.46,
+      "type": "word",
+      "logprob": -0.00009345571743324399
+    },
+    {
+      "text": " ",
+      "start": 4.46,
+      "end": 4.5,
+      "type": "spacing",
+      "logprob": -0.000004887569048150908
+    },
+    {
+      "text": "waiting",
+      "start": 4.5,
+      "end": 4.799,
+      "type": "word",
+      "logprob": -0.000004887569048150908
+    },
+    {
+      "text": " ",
+      "start": 4.799,
+      "end": 4.819,
+      "type": "spacing",
+      "logprob": -3.576278118089249e-7
+    },
+    {
+      "text": "above",
+      "start": 4.819,
+      "end": 5.059,
+      "type": "word",
+      "logprob": -3.576278118089249e-7
+    },
+    {
+      "text": " ",
+      "start": 5.059,
+      "end": 5.119,
+      "type": "spacing",
+      "logprob": -1.1920928244535389e-7
+    },
+    {
+      "text": "the",
+      "start": 5.119,
+      "end": 5.179,
+      "type": "word",
+      "logprob": -1.1920928244535389e-7
+    },
+    {
+      "text": " ",
+      "start": 5.179,
+      "end": 5.259,
+      "type": "spacing",
+      "logprob": -0.000006318072337307967
+    },
+    {
+      "text": "lawn.",
+      "start": 5.259,
+      "end": 5.739,
+      "type": "word",
+      "logprob": -0.07739399073907408
+    }
+  ],
+  "transcription_id": "ZAUhAojRM4ZeaBZlqXFc",
+  "audio_duration_secs": 5.9443125
+}

@@ -91,6 +91,23 @@ describe('state fixtures', () => {
       'sp-ch2-sorting-reveal-review',
       'sp-ch2-common-room-arrival-review',
       'sp-ch2-chapter-card-review',
+      'sp-ch3-spellbook-reveal-review',
+      'learning-ch3-lumos-review',
+      'ui-ch3-spellbook-review',
+      'sp-ch3-lumos-bloom-review',
+      'learning-ch3-leviosa-review',
+      'sp-ch3-leviosa-feather-review',
+      'ui-ch3-map-review',
+      'sp-ch3-corridor-one-reveal-review',
+      'ui-ch3-corridor-two-lumos-review',
+      'ui-ch3-corridor-three-lumos-review',
+      'sp-ch3-trevor-reveal-review',
+      'sp-ch3-trevor-found-review',
+      'sp-ch3-trevor-reunion-review',
+      'room-ch3-friendly-ghost-review',
+      'ui-ch3-quest-journal-review',
+      'ui-ch3-cards-review',
+      'sp-ch3-chapter-close-review',
       'parent-panel',
       'parent-settings',
       'parent-save',
@@ -110,6 +127,10 @@ describe('state fixtures', () => {
       'menagerie-keeper-sprite-review',
       'menagerie-keeper-live-review',
       'violet-expression-review',
+      'flitwick-sprite-review',
+      'neville-sprite-review',
+      'trevor-sprite-review',
+      'friendly-ghost-sprite-review',
       'ui-dialogue-review',
       'ui-dialogue-night-review',
       'ui-dialogue-center-review',
@@ -287,6 +308,10 @@ describe('registered harness scenarios', () => {
       'menagerie-keeper-sprite-review',
       'menagerie-keeper-live-review',
       'violet-expression-review',
+      'flitwick-sprite-review',
+      'neville-sprite-review',
+      'trevor-sprite-review',
+      'friendly-ghost-sprite-review',
     ]) {
       expect(STATE_FIXTURE_IDS).toContain(id);
       expect(ACTION_FIXTURE_IDS).toContain(id);
@@ -351,7 +376,7 @@ describe('registered harness scenarios', () => {
     ]);
   });
 
-  it('registers the signature Chapter One and Chapter Two set pieces as direct deterministic review scenes', () => {
+  it('registers the signature Chapter One through Three set pieces as direct deterministic review scenes', () => {
     expect(SET_PIECE_REVIEW_SCENES).toEqual({
       'sp-letter-open-review': 'sp.letterOpen',
       'sp-brick-wall-review': 'sp.brickWall',
@@ -363,6 +388,14 @@ describe('registered harness scenarios', () => {
       'sp-ch2-sorting-reveal-review': 'ch2.setPiece.sortingReveal',
       'sp-ch2-common-room-arrival-review': 'ch2.setPiece.commonRoomArrival',
       'sp-ch2-chapter-card-review': 'ch2.setPiece.chapterCard',
+      'sp-ch3-spellbook-reveal-review': 'ch3.setPiece.spellbookReveal',
+      'sp-ch3-lumos-bloom-review': 'ch3.setPiece.lumosBloom',
+      'sp-ch3-leviosa-feather-review': 'ch3.setPiece.leviosaFeather',
+      'sp-ch3-corridor-one-reveal-review': 'ch3.setPiece.corridorOneReveal',
+      'sp-ch3-trevor-reveal-review': 'ch3.setPiece.trevorReveal',
+      'sp-ch3-trevor-found-review': 'ch3.setPiece.trevorFound',
+      'sp-ch3-trevor-reunion-review': 'ch3.setPiece.trevorReunion',
+      'sp-ch3-chapter-close-review': 'ch3.setPiece.chapterClose',
     });
     for (const id of Object.keys(SET_PIECE_REVIEW_SCENES)) {
       expect(parseHarnessRequest(`?scene=${id}`)).toMatchObject({ scene: id, state: id, actions: id });

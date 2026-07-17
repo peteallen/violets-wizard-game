@@ -1,3 +1,5 @@
+import { isSpellId } from './content/spells.js';
+
 // Compatibility alias for the contracts that remain on v1 during the chapter cutover.
 export const CONTRACT_VERSION = 1;
 export const LEGACY_CHAPTER_CONTRACT_VERSION = 1;
@@ -30,7 +32,10 @@ export const WORLD_EVENT_TYPES = Object.freeze([
   'hint.cleared',
   'reward.granted',
   'learning.started',
+  'learning.attempted',
+  'learning.hintChanged',
   'learning.completed',
+  'spellbook.stateChanged',
   'spell.cast',
   'encounter.phaseChanged',
   'setPiece.started',
@@ -387,6 +392,7 @@ export function validateAction(value, path = 'action') {
     case 'spell.learn':
       exactObject(value, path, ['type', 'spell']);
       ref(value.spell, `${path}.spell`);
+      if (!isSpellId(value.spell)) fail(`${path}.spell`, 'must reference a registered spell');
       break;
     case 'collection.add':
       exactObject(value, path, ['type', 'collection', 'id']);
@@ -470,8 +476,9 @@ export function validateHotspot(value, path = 'hotspot') {
   exactObject(value, path, [
     'id', 'kind', 'hitArea', 'approach', 'when', 'presentation',
     'requiredSpell', 'repeat', 'onInteract',
-  ]);
+  ], ['semanticId', 'spellEffect']);
   id(value.id, `${path}.id`);
+  if (value.semanticId !== undefined) id(value.semanticId, `${path}.semanticId`);
   oneOf(value.kind, ['inspect', 'talk', 'spellTarget', 'collectible', 'action'], `${path}.kind`);
   validateHitArea(value.hitArea, `${path}.hitArea`);
   if (value.approach !== null) {
@@ -485,11 +492,26 @@ export function validateHotspot(value, path = 'hotspot') {
   ref(value.presentation.icon, `${path}.presentation.icon`);
   ref(value.presentation.glow, `${path}.presentation.glow`);
   if (value.requiredSpell !== null) ref(value.requiredSpell, `${path}.requiredSpell`);
+  if (value.spellEffect !== undefined) validateSpellEffect(value.spellEffect, `${path}.spellEffect`);
   oneOf(value.repeat, ['always', 'once', 'until-condition'], `${path}.repeat`);
   validateActions(value.onInteract, `${path}.onInteract`, { min: 1 });
   if (value.kind === 'spellTarget' && value.requiredSpell === null) {
     fail(`${path}.requiredSpell`, 'is required for spellTarget hotspots');
   }
+  return value;
+}
+
+function validateSpellEffect(value, path) {
+  exactObjectV2(value, path, ['kind', 'radius', 'intensity']);
+  oneOf(value.kind, ['light'], `${path}.kind`);
+  number(value.radius, `${path}.radius`, { min: Number.EPSILON });
+  number(value.intensity, `${path}.intensity`, { min: 0, max: 1 });
+  return value;
+}
+
+function validateLighting(value, path) {
+  exactObjectV2(value, path, ['darkness']);
+  number(value.darkness, `${path}.darkness`, { min: 0, max: 1 });
   return value;
 }
 
@@ -607,7 +629,7 @@ export function validateRoom(value, path = 'room') {
   exactObject(value, path, [
     'id', 'size', 'background', 'walkBand', 'spawns', 'exits',
     'occupants', 'hotspots', 'ambientSetPieces',
-  ]);
+  ], ['lighting']);
   id(value.id, `${path}.id`);
   exactObject(value.size, `${path}.size`, ['width', 'height']);
   number(value.size.width, `${path}.size.width`, { min: 1 });
@@ -627,6 +649,7 @@ export function validateRoom(value, path = 'room') {
   array(value.occupants, `${path}.occupants`, validateOccupant);
   array(value.hotspots, `${path}.hotspots`, validateHotspot);
   stringArray(value.ambientSetPieces, `${path}.ambientSetPieces`, { unique: true });
+  if (value.lighting !== undefined) validateLighting(value.lighting, `${path}.lighting`);
   return value;
 }
 
@@ -926,6 +949,158 @@ export function validateLearningBeat(value, path = 'learningBeat') {
   return value;
 }
 
+function validateLearningUnitV2(value, path) {
+  exactObjectV2(value, path, ['id', 'glyph', 'voice']);
+  localId(value.id, `${path}.id`);
+  string(value.glyph, `${path}.glyph`, { max: 30 });
+  ref(value.voice, `${path}.voice`);
+}
+
+function validateAssemblyContentV2(value, path, { spellRequired = true } = {}) {
+  exactObjectV2(
+    value,
+    path,
+    spellRequired
+      ? ['spell', 'presentation', 'units', 'order', 'distractors']
+      : ['presentation', 'units', 'order', 'distractors'],
+    spellRequired ? [] : ['spell'],
+  );
+  if (value.spell !== undefined) {
+    ref(value.spell, `${path}.spell`);
+    if (!isSpellId(value.spell)) fail(`${path}.spell`, 'must reference a registered spell');
+  }
+  ref(value.presentation, `${path}.presentation`);
+  array(value.units, `${path}.units`, validateLearningUnitV2, { min: 1, unique: true });
+  const unitIds = new Set(value.units.map((unit) => unit.id));
+  if (unitIds.size !== value.units.length) {
+    const seen = new Set();
+    const duplicateIndex = value.units.findIndex((unit) => seen.has(unit.id) || !seen.add(unit.id));
+    fail(`${path}.units[${duplicateIndex}].id`, 'must be unique');
+  }
+  array(value.order, `${path}.order`, (entry, entryPath) => {
+    localId(entry, entryPath);
+    if (!unitIds.has(entry)) fail(entryPath, 'must reference a unit');
+  }, { min: 1, unique: true });
+  if (value.order.length !== value.units.length) {
+    fail(`${path}.order`, 'must include every unit exactly once');
+  }
+  const distractorIds = new Set();
+  array(value.distractors, `${path}.distractors`, (entry, entryPath) => {
+    validateLearningUnitV2(entry, entryPath);
+    if (unitIds.has(entry.id)) fail(`${entryPath}.id`, 'must differ from every ordered unit id');
+    if (distractorIds.has(entry.id)) fail(`${entryPath}.id`, 'must be unique');
+    distractorIds.add(entry.id);
+  }, { max: 20, unique: true });
+}
+
+function validateLearningContentV2(kind, value, path) {
+  if (kind === 'assembly') {
+    validateAssemblyContentV2(value, path);
+  } else if (kind === 'sequence') {
+    validateAssemblyContentV2(value, path, { spellRequired: false });
+  } else if (kind === 'wordTap') {
+    exactObjectV2(value, path, ['targets', 'correct']);
+    array(value.targets, `${path}.targets`, (entry, entryPath) => {
+      exactObjectV2(entry, entryPath, ['id', 'label', 'voice']);
+      localId(entry.id, `${entryPath}.id`);
+      string(entry.label, `${entryPath}.label`, { max: 40 });
+      ref(entry.voice, `${entryPath}.voice`);
+    }, { min: 1, unique: true });
+    localId(value.correct, `${path}.correct`);
+    if (!value.targets.some((target) => target.id === value.correct)) {
+      fail(`${path}.correct`, 'must reference a target');
+    }
+  } else if (kind === 'count') {
+    exactObjectV2(value, path, ['item', 'count', 'countVoicePack']);
+    ref(value.item, `${path}.item`);
+    number(value.count, `${path}.count`, { min: 1, max: 20, integer: true });
+    ref(value.countVoicePack, `${path}.countVoicePack`);
+  } else if (kind === 'match') {
+    exactObjectV2(value, path, ['pairs']);
+    array(value.pairs, `${path}.pairs`, (entry, entryPath) => {
+      exactObjectV2(entry, entryPath, ['word', 'icon', 'voice']);
+      string(entry.word, `${entryPath}.word`, { max: 40 });
+      ref(entry.icon, `${entryPath}.icon`);
+      ref(entry.voice, `${entryPath}.voice`);
+    }, { min: 1, unique: true });
+  }
+}
+
+function validateLearningModesV2(value, path) {
+  exactObjectV2(value, path, ['off', 'gentle', 'stretchy']);
+  exactObjectV2(value.off, `${path}.off`, ['interaction']);
+  oneOf(value.off.interaction, ['singleTap'], `${path}.off.interaction`);
+  for (const mode of ['gentle', 'stretchy']) {
+    exactObjectV2(value[mode], `${path}.${mode}`, [], [
+      'interaction', 'tileFace', 'distractorCount',
+    ]);
+    if (value[mode].interaction !== undefined) {
+      ref(value[mode].interaction, `${path}.${mode}.interaction`);
+    }
+    if (value[mode].tileFace !== undefined) {
+      oneOf(value[mode].tileFace, ['shown', 'adaptive', 'hidden'], `${path}.${mode}.tileFace`);
+    }
+    if (value[mode].distractorCount !== undefined) {
+      number(value[mode].distractorCount, `${path}.${mode}.distractorCount`, {
+        min: 0,
+        max: 20,
+        integer: true,
+      });
+    }
+  }
+}
+
+export function validateLearningBeatV2(value, path = 'learningBeat') {
+  exactObjectV2(
+    value,
+    path,
+    [
+      'id', 'kind', 'scene', 'skill', 'completionFlag', 'replayable',
+      'assistanceProfile', 'content', 'modes', 'onComplete',
+    ],
+    ['feedback'],
+  );
+  id(value.id, `${path}.id`);
+  oneOf(value.kind, ['assembly', 'wordTap', 'count', 'match', 'sequence'], `${path}.kind`);
+  id(value.scene, `${path}.scene`);
+  oneOf(value.skill, ['letters', 'phonics', 'counting', 'matching', 'sequence'], `${path}.skill`);
+  const skillsByKind = {
+    assembly: ['letters', 'phonics'],
+    wordTap: ['letters', 'phonics'],
+    count: ['counting'],
+    match: ['matching'],
+    sequence: ['phonics', 'sequence'],
+  };
+  if (!skillsByKind[value.kind].includes(value.skill)) {
+    fail(`${path}.skill`, `must match ${value.kind} learning`);
+  }
+  flagId(value.completionFlag, `${path}.completionFlag`);
+  boolean(value.replayable, `${path}.replayable`);
+  ref(value.assistanceProfile, `${path}.assistanceProfile`);
+  if (value.feedback !== undefined) {
+    exactObjectV2(value.feedback, `${path}.feedback`, ['wrongVoice', 'wrongCaption']);
+    ref(value.feedback.wrongVoice, `${path}.feedback.wrongVoice`);
+    caption(value.feedback.wrongCaption, `${path}.feedback.wrongCaption`, 3);
+  }
+  validateLearningContentV2(value.kind, value.content, `${path}.content`);
+  validateLearningModesV2(value.modes, `${path}.modes`);
+  validateActions(value.onComplete, `${path}.onComplete`, { min: 1 });
+  const completionAction = value.onComplete.some((action) => (
+    action.type === 'flag.set'
+    && action.flag === value.completionFlag
+    && action.value === true
+  ));
+  if (!completionAction) fail(`${path}.onComplete`, 'must set completionFlag to true');
+  if (value.content.spell !== undefined) {
+    if (value.replayable) fail(`${path}.replayable`, 'must be false for a first-learn spell ceremony');
+    const learnsSpell = value.onComplete.some((action) => (
+      action.type === 'spell.learn' && action.spell === value.content.spell
+    ));
+    if (!learnsSpell) fail(`${path}.onComplete`, 'must learn the content spell');
+  }
+  return value;
+}
+
 function validateTimelineTarget(value, path) {
   string(value, path, { max: 240 });
   if (!/^[A-Za-z$][A-Za-z0-9$_.-]*$/.test(value)) fail(path, 'must be a channel path');
@@ -1061,6 +1236,9 @@ function validateSceneLayerV2(value, path) {
     array(value[key], `${path}.${key}`, (entry, entryPath) => {
       object(entry, entryPath);
       jsonValue(entry, entryPath);
+      if (key === 'hotspots' && entry.spellEffect !== undefined) {
+        validateSpellEffect(entry.spellEffect, `${entryPath}.spellEffect`);
+      }
     });
   }
   stringArray(value.ambientSetPieces, `${path}.ambientSetPieces`, { unique: true });
@@ -1188,12 +1366,18 @@ function validatePackageMapLocationV2(value, path) {
     value,
     path,
     ['id', 'to', 'onSelect'],
-    ['icon', 'caption', 'alwaysUnlocked', 'objectiveTarget', 'vignette'],
+    [
+      'icon', 'caption', 'alwaysUnlocked', 'objectiveTarget', 'vignette',
+      'unlockWhen', 'completeWhen', 'art',
+    ],
   );
   id(value.id, `${path}.id`);
   if (value.icon !== undefined) ref(value.icon, `${path}.icon`);
   if (value.caption !== undefined) caption(value.caption, `${path}.caption`, 3);
   if (value.alwaysUnlocked !== undefined) boolean(value.alwaysUnlocked, `${path}.alwaysUnlocked`);
+  if (value.unlockWhen !== undefined) validateCondition(value.unlockWhen, `${path}.unlockWhen`);
+  if (value.completeWhen !== undefined) validateCondition(value.completeWhen, `${path}.completeWhen`);
+  if (value.art !== undefined) ref(value.art, `${path}.art`);
   exactObjectV2(value.to, `${path}.to`, ['room', 'spawn']);
   id(value.to.room, `${path}.to.room`);
   localId(value.to.spawn, `${path}.to.spawn`);
@@ -1344,6 +1528,53 @@ function validatePackageActionsV2(
   }
 }
 
+function forEachPackageAction(value, path, visit, visited = new WeakSet()) {
+  if (value === null || typeof value !== 'object' || visited.has(value)) return;
+  visited.add(value);
+  if (Array.isArray(value)) {
+    value.forEach((entry, index) => forEachPackageAction(entry, `${path}[${index}]`, visit, visited));
+    return;
+  }
+  for (const [key, entry] of Object.entries(value)) {
+    const entryPath = `${path}.${key}`;
+    if (PACKAGE_ACTION_ARRAY_KEYS.has(key) && Array.isArray(entry)) {
+      entry.forEach((action, index) => visit(action, `${entryPath}[${index}]`));
+    } else {
+      forEachPackageAction(entry, entryPath, visit, visited);
+    }
+  }
+}
+
+function validatePackageRuntimeReferencesV2(value, path) {
+  forEachPackageAction(value, path, (action, actionPath) => {
+    if (action.type === 'learning.start' && !Object.hasOwn(value.learningBeats, action.id)) {
+      fail(`${actionPath}.id`, 'must reference a learning beat');
+    }
+  });
+
+  const validateHotspots = (hotspots, hotspotsPath) => {
+    if (!Array.isArray(hotspots)) return;
+    hotspots.forEach((hotspot, index) => {
+      const hotspotPath = `${hotspotsPath}[${index}]`;
+      if (hotspot?.requiredSpell !== undefined && hotspot.requiredSpell !== null) {
+        ref(hotspot.requiredSpell, `${hotspotPath}.requiredSpell`);
+        if (!isSpellId(hotspot.requiredSpell)) {
+          fail(`${hotspotPath}.requiredSpell`, 'must reference a registered spell');
+        }
+      }
+      if (hotspot?.kind === 'spellTarget' && hotspot.requiredSpell == null) {
+        fail(`${hotspotPath}.requiredSpell`, 'is required for spellTarget hotspots');
+      }
+    });
+  };
+  for (const [roomId, room] of Object.entries(value.rooms)) {
+    validateHotspots(room.hotspots, `${path}.rooms.${roomId}.hotspots`);
+  }
+  for (const [sceneId, scene] of Object.entries(value.scenes)) {
+    validateHotspots(scene.layer?.hotspots, `${path}.scenes.${sceneId}.layer.hotspots`);
+  }
+}
+
 function validatePackageEntryV2(value, path) {
   object(value, path);
   id(value.id, `${path}.id`);
@@ -1359,6 +1590,15 @@ function validatePackageRoomV2(value, path) {
     object(spawn, `${path}.spawns.${spawnId}`);
     jsonValue(spawn, `${path}.spawns.${spawnId}`);
   }
+  if (value.lighting !== undefined) validateLighting(value.lighting, `${path}.lighting`);
+  if (value.hotspots !== undefined) {
+    array(value.hotspots, `${path}.hotspots`, (hotspot, hotspotPath) => {
+      object(hotspot, hotspotPath);
+      if (hotspot.spellEffect !== undefined) {
+        validateSpellEffect(hotspot.spellEffect, `${hotspotPath}.spellEffect`);
+      }
+    });
+  }
   return value;
 }
 
@@ -1369,9 +1609,11 @@ function packageIdOwnedByChapter(idValue, chapter, category) {
     return ['sp.', 'reduced.', 'fallback.', 'am.'].some((prefix) => idValue.startsWith(prefix));
   }
   if (category === 'maps' || category === 'mapLocations') {
-    return idValue.startsWith(`map.${chapter}.`);
+    return idValue.startsWith(`map.${chapter}.`) || idValue.startsWith(`${chapter}.map.`);
   }
-  if (category === 'mapRoutes') return idValue.startsWith(`route.${chapter}.`);
+  if (category === 'mapRoutes') {
+    return idValue.startsWith(`route.${chapter}.`) || idValue.startsWith(`${chapter}.route.`);
+  }
   return false;
 }
 
@@ -1446,7 +1688,7 @@ export function validateChapterV2(value, path = 'chapter') {
   validateIdMap(value.quests, `${path}.quests`, (quest, questPath) => (
     validateQuest(quest, questPath, { durableLifecycle: true })
   ));
-  validateIdMap(value.learningBeats, `${path}.learningBeats`, validatePackageEntryV2);
+  validateIdMap(value.learningBeats, `${path}.learningBeats`, validateLearningBeatV2);
   validateIdMap(value.setPieces, `${path}.setPieces`, validatePackageEntryV2);
   validateIdMap(value.encounters, `${path}.encounters`, validatePackageEntryV2);
   validateIdMap(value.minigames, `${path}.minigames`, validatePackageEntryV2);
@@ -1461,6 +1703,7 @@ export function validateChapterV2(value, path = 'chapter') {
     }
   });
   validatePackageActionsV2(value, path, value.id, new Set(value.yearbookMoments));
+  validatePackageRuntimeReferencesV2(value, path);
   validateIdMap(value.maps, `${path}.maps`, validatePackageMapV2);
   array(value.recaps, `${path}.recaps`, validateRecapV2);
   record(value.assets, `${path}.assets`, (asset, assetPath, key) => {
@@ -1500,6 +1743,24 @@ export function validateChapterV2(value, path = 'chapter') {
   const startScene = value.scenes[value.start.scene];
   if (startScene && startScene.room !== value.start.room) fail(`${path}.start.room`, 'must match the start scene room');
   if (startScene && startScene.spawn !== value.start.spawn) fail(`${path}.start.spawn`, 'must match the start scene spawn');
+
+  const learningScenes = new Map();
+  for (const [beatKey, beat] of Object.entries(value.learningBeats)) {
+    if (!beat.completionFlag.startsWith(`${value.id}.`)) {
+      fail(`${path}.learningBeats.${beatKey}.completionFlag`, `must belong to ${value.id}`);
+    }
+    if (!Object.hasOwn(value.scenes, beat.scene)) {
+      fail(`${path}.learningBeats.${beatKey}.scene`, 'must reference a scene');
+    }
+    const previousBeat = learningScenes.get(beat.scene);
+    if (previousBeat) {
+      fail(
+        `${path}.learningBeats.${beatKey}.scene`,
+        `must be the only learning beat in its scene; ${previousBeat} already uses it`,
+      );
+    }
+    learningScenes.set(beat.scene, beat.id);
+  }
 
   for (const [sceneKey, scene] of Object.entries(value.scenes)) {
     if (!Object.hasOwn(value.rooms, scene.room)) fail(`${path}.scenes.${sceneKey}.room`, 'must reference a room');
@@ -1603,7 +1864,12 @@ function payloadObject(value, path, required, optional = []) {
 
 function validateAudioPayload(value, path) {
   object(value, path);
-  if (value.command === 'sfx' || value.command === 'voice') {
+  if (value.command === 'sfx') {
+    payloadObject(value, path, ['command', 'key'], ['volume', 'pan']);
+    ref(value.key, `${path}.key`);
+    if (value.volume !== undefined) number(value.volume, `${path}.volume`, { min: 0, max: 1 });
+    if (value.pan !== undefined) number(value.pan, `${path}.pan`, { min: -1, max: 1 });
+  } else if (value.command === 'voice') {
     payloadObject(value, path, ['command', 'key'], ['volume']);
     ref(value.key, `${path}.key`);
     if (value.volume !== undefined) number(value.volume, `${path}.volume`, { min: 0, max: 1 });
@@ -1723,6 +1989,36 @@ export function validateWorldEventPayload(type, value, path = 'event.payload') {
     case 'learning.completed':
       payloadObject(value, path, ['beat']);
       id(value.beat, `${path}.beat`);
+      break;
+    case 'learning.attempted':
+      payloadObject(value, path, ['beat', 'unit', 'outcome', 'step'], ['voice', 'caption']);
+      id(value.beat, `${path}.beat`);
+      localId(value.unit, `${path}.unit`);
+      oneOf(value.outcome, ['correct', 'wrong', 'assisted'], `${path}.outcome`);
+      number(value.step, `${path}.step`, { min: 0, integer: true });
+      if ((value.voice === undefined) !== (value.caption === undefined)) {
+        fail(path, 'must provide voice and caption together');
+      }
+      if (value.voice !== undefined) {
+        if (value.outcome !== 'wrong') fail(`${path}.voice`, 'is only valid for a wrong attempt');
+        ref(value.voice, `${path}.voice`);
+        caption(value.caption, `${path}.caption`, 3);
+      }
+      break;
+    case 'learning.hintChanged':
+      payloadObject(value, path, ['beat', 'stage']);
+      id(value.beat, `${path}.beat`);
+      oneOf(value.stage, ['ready', 'nudge', 'focus', 'complete'], `${path}.stage`);
+      break;
+    case 'spellbook.stateChanged':
+      payloadObject(value, path, ['state', 'selectedSpellId']);
+      oneOf(value.state, ['closed', 'fan', 'targeting', 'casting'], `${path}.state`);
+      if (value.selectedSpellId !== null) {
+        ref(value.selectedSpellId, `${path}.selectedSpellId`);
+        if (!isSpellId(value.selectedSpellId)) {
+          fail(`${path}.selectedSpellId`, 'must reference a registered spell');
+        }
+      }
       break;
     case 'spell.cast':
       payloadObject(value, path, ['spell', 'target', 'masteryTier']);

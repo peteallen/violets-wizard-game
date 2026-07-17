@@ -1,0 +1,48 @@
+{
+  "schema_version": 1,
+  "slug": "ch3-destination-corridor-one-native-v1",
+  "prompt": {
+    "path": "art/chapters/ch3/maps/corridor-one-native-v1.prompt.md",
+    "section": "Prompt"
+  },
+  "references": [
+    {
+      "path": "public/assets/art/ui/satchel/destination-diagon-alley.webp",
+      "role": "exact destination-card silhouette, parchment border, plum-and-gold trim, and blank-label-band reference"
+    },
+    {
+      "path": "art/raw/ch2-great-hall-v4.png",
+      "role": "premium magical-school stone, candlelight, night palette, and painted finish reference"
+    }
+  ],
+  "generation": {
+    "workflow": "Codex built-in image generation",
+    "tool": "image_gen.imagegen",
+    "model_identifier": null,
+    "seed": null,
+    "returned_model_or_seed_note": "The built-in workflow did not return a model identifier or seed."
+  },
+  "output": {
+    "generated_output_id": "exec-0a66f3b0-d4dd-446b-ad30-2d6ad97c2a7d",
+    "generated_output_path": "/Users/peteallen/.codex/generated_images/019f7183-6ad4-7271-af63-4e295c819dcd/exec-0a66f3b0-d4dd-446b-ad30-2d6ad97c2a7d.png",
+    "native_chroma_source": "art/raw/ch3-destination-corridor-one-native-v1.png",
+    "accepted_alpha_png": "art/raw/ch3-destination-corridor-one-v1.png",
+    "shipping_webp": "public/assets/art/maps/ch3-destination-corridor-one.webp",
+    "metadata": "art/chapters/ch3/maps/corridor-one-native-v1.metadata.json"
+  },
+  "processing": {
+    "alpha_extraction": {
+      "tool": "${CODEX_HOME:-$HOME/.codex}/skills/.system/imagegen/scripts/remove_chroma_key.py",
+      "arguments": ["--auto-key", "border", "--soft-matte", "--transparent-threshold", "12", "--opaque-threshold", "220", "--despill", "--edge-contract", "1"]
+    },
+    "aspect_normalization": {
+      "tool": "sips",
+      "operation": "resize from 1149x1368 to 420x500; no crop",
+      "arguments": ["-s", "format", "png", "-z", "500", "420"]
+    },
+    "shipping_encode": {
+      "tool": "cwebp",
+      "arguments": ["-q", "88", "-alpha_q", "100", "-m", "6", "-sharp_yuv"]
+    }
+  }
+}

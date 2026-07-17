@@ -1,0 +1,128 @@
+{
+  "language_code": "eng",
+  "language_probability": 1,
+  "text": "Up she goes. That feather could not be happier.",
+  "words": [
+    {
+      "text": "Up",
+      "start": 0.079,
+      "end": 0.199,
+      "type": "word",
+      "logprob": -0.016474643722176552
+    },
+    {
+      "text": " ",
+      "start": 0.199,
+      "end": 0.259,
+      "type": "spacing",
+      "logprob": -0.00003516612196108326
+    },
+    {
+      "text": "she",
+      "start": 0.259,
+      "end": 0.379,
+      "type": "word",
+      "logprob": -0.00003516612196108326
+    },
+    {
+      "text": " ",
+      "start": 0.379,
+      "end": 0.399,
+      "type": "spacing",
+      "logprob": -0.000002861018856492592
+    },
+    {
+      "text": "goes.",
+      "start": 0.399,
+      "end": 0.799,
+      "type": "word",
+      "logprob": -0.002714824114445946
+    },
+    {
+      "text": " ",
+      "start": 0.799,
+      "end": 1.079,
+      "type": "spacing",
+      "logprob": -0.000006318072337307967
+    },
+    {
+      "text": "That",
+      "start": 1.079,
+      "end": 1.22,
+      "type": "word",
+      "logprob": -0.000006318072337307967
+    },
+    {
+      "text": " ",
+      "start": 1.22,
+      "end": 1.319,
+      "type": "spacing",
+      "logprob": -0.0060030873864889145
+    },
+    {
+      "text": "feather",
+      "start": 1.319,
+      "end": 1.579,
+      "type": "word",
+      "logprob": -0.0060030873864889145
+    },
+    {
+      "text": " ",
+      "start": 1.579,
+      "end": 1.619,
+      "type": "spacing",
+      "logprob": -0.0000014305104514278355
+    },
+    {
+      "text": "could",
+      "start": 1.62,
+      "end": 1.74,
+      "type": "word",
+      "logprob": -0.0000014305104514278355
+    },
+    {
+      "text": " ",
+      "start": 1.74,
+      "end": 1.779,
+      "type": "spacing",
+      "logprob": 0
+    },
+    {
+      "text": "not",
+      "start": 1.779,
+      "end": 1.919,
+      "type": "word",
+      "logprob": 0
+    },
+    {
+      "text": " ",
+      "start": 1.919,
+      "end": 1.959,
+      "type": "spacing",
+      "logprob": -1.1920928244535389e-7
+    },
+    {
+      "text": "be",
+      "start": 1.959,
+      "end": 2.059,
+      "type": "word",
+      "logprob": -1.1920928244535389e-7
+    },
+    {
+      "text": " ",
+      "start": 2.059,
+      "end": 2.099,
+      "type": "spacing",
+      "logprob": -0.000005602820692729438
+    },
+    {
+      "text": "happier.",
+      "start": 2.099,
+      "end": 2.5,
+      "type": "word",
+      "logprob": -0.04046512393750845
+    }
+  ],
+  "transcription_id": "47qsFyxhf49w14DB5Ize",
+  "audio_duration_secs": 2.863
+}

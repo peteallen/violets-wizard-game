@@ -1,0 +1,142 @@
+{
+  "language_code": "eng",
+  "language_probability": 1,
+  "text": "Remember the friendly ghost torn book when you learn Reparo.",
+  "words": [
+    {
+      "text": "Remember",
+      "start": 0.099,
+      "end": 0.419,
+      "type": "word",
+      "logprob": -0.00039426659350283444
+    },
+    {
+      "text": " ",
+      "start": 0.419,
+      "end": 0.439,
+      "type": "spacing",
+      "logprob": -0.00010191874753218144
+    },
+    {
+      "text": "the",
+      "start": 0.439,
+      "end": 0.56,
+      "type": "word",
+      "logprob": -0.00010191874753218144
+    },
+    {
+      "text": " ",
+      "start": 0.56,
+      "end": 0.579,
+      "type": "spacing",
+      "logprob": -0.20208989083766937
+    },
+    {
+      "text": "friendly",
+      "start": 0.579,
+      "end": 0.919,
+      "type": "word",
+      "logprob": -0.20208989083766937
+    },
+    {
+      "text": " ",
+      "start": 0.919,
+      "end": 0.979,
+      "type": "spacing",
+      "logprob": -0.0004164305282756686
+    },
+    {
+      "text": "ghost",
+      "start": 0.979,
+      "end": 1.24,
+      "type": "word",
+      "logprob": -0.0004164305282756686
+    },
+    {
+      "text": " ",
+      "start": 1.24,
+      "end": 1.36,
+      "type": "spacing",
+      "logprob": -0.3810989558696747
+    },
+    {
+      "text": "torn",
+      "start": 1.36,
+      "end": 1.62,
+      "type": "word",
+      "logprob": -0.3810989558696747
+    },
+    {
+      "text": " ",
+      "start": 1.62,
+      "end": 1.699,
+      "type": "spacing",
+      "logprob": -0.000007748573807475623
+    },
+    {
+      "text": "book",
+      "start": 1.699,
+      "end": 1.939,
+      "type": "word",
+      "logprob": -0.000007748573807475623
+    },
+    {
+      "text": " ",
+      "start": 1.939,
+      "end": 2.179,
+      "type": "spacing",
+      "logprob": -0.00003790783375734463
+    },
+    {
+      "text": "when",
+      "start": 2.18,
+      "end": 2.319,
+      "type": "word",
+      "logprob": -0.00003790783375734463
+    },
+    {
+      "text": " ",
+      "start": 2.319,
+      "end": 2.359,
+      "type": "spacing",
+      "logprob": -3.576278118089249e-7
+    },
+    {
+      "text": "you",
+      "start": 2.359,
+      "end": 2.46,
+      "type": "word",
+      "logprob": -3.576278118089249e-7
+    },
+    {
+      "text": " ",
+      "start": 2.46,
+      "end": 2.5,
+      "type": "spacing",
+      "logprob": -0.000013232143828645349
+    },
+    {
+      "text": "learn",
+      "start": 2.5,
+      "end": 2.679,
+      "type": "word",
+      "logprob": -0.000013232143828645349
+    },
+    {
+      "text": " ",
+      "start": 2.679,
+      "end": 2.719,
+      "type": "spacing",
+      "logprob": -0.004242824390530586
+    },
+    {
+      "text": "Reparo.",
+      "start": 2.72,
+      "end": 3.279,
+      "type": "word",
+      "logprob": -0.06741729629824736
+    }
+  ],
+  "transcription_id": "dpEvg4DkC1nULO4kRpSu",
+  "audio_duration_secs": 3.6541875
+}

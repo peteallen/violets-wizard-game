@@ -1,0 +1,36 @@
+{
+  "schema_version": 1,
+  "slug": "flying-lesson-native-v1",
+  "prompt": {
+    "path": "art/chapters/ch4/chapter-cards/flying-lesson-native-v1.prompt.md",
+    "section": "Prompt"
+  },
+  "references": [
+    {
+      "path": "art/raw/ch2-lake-vista-v2.png",
+      "role": "original distant castle continuity and magical blue-violet atmosphere reference only"
+    },
+    {
+      "path": "art/raw/ch1-platform.png",
+      "role": "polished storybook finish, dimensional light, and luminous-gold accent reference only"
+    }
+  ],
+  "generation": {
+    "workflow": "Codex built-in image generation",
+    "tool": "image_gen.imagegen",
+    "mode": "generate",
+    "model_identifier": null,
+    "seed": null,
+    "returned_model_or_seed_note": "The built-in workflow did not return a model identifier or seed."
+  },
+  "output": {
+    "status": "rejected after source inspection",
+    "rejection_reason": "The otherwise safe painting contained five golden star rings rather than the requested three or four.",
+    "generated_output_id": "exec-75134036-dcb4-4047-81ed-2bab60281ce4",
+    "generated_output_path": "/Users/peteallen/.codex/generated_images/019f717f-ae86-7712-9cf3-200179c51a6a/exec-75134036-dcb4-4047-81ed-2bab60281ce4.png",
+    "native_source": "art/raw/ch4-flying-lesson-native-v1.png",
+    "accepted_png": null,
+    "shipping_webp": null,
+    "metadata": "art/chapters/ch4/chapter-cards/flying-lesson-native-v1.metadata.json"
+  }
+}

@@ -35,6 +35,24 @@ export const cards = Object.freeze([
     text: 'Jocunda Sykes flew across the Atlantic on a broomstick.',
     caption: 'Jocunda Sykes',
   }),
+  Object.freeze({
+    id: 'circe',
+    chapter: 3,
+    name: 'Circe',
+    portraitAsset: 'cards/circe/portrait',
+    voice: 'voice/ch3/card/circe',
+    text: 'Circe was a powerful witch whose magic could transform anything she touched.',
+    caption: 'Circe',
+  }),
+  Object.freeze({
+    id: 'bertie-bott',
+    chapter: 3,
+    name: 'Bertie Bott',
+    portraitAsset: 'cards/bertie-bott/portrait',
+    voice: 'voice/ch3/card/bertie-bott',
+    text: 'Bertie Bott invented beans with every flavor, including a few surprising ones.',
+    caption: 'Bertie Bott',
+  }),
 ]);
 
 export const cardsById = Object.freeze(Object.fromEntries(cards.map((card) => [card.id, card])));

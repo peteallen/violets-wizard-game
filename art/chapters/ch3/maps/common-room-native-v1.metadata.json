@@ -1,0 +1,103 @@
+{
+  "schema_version": 1,
+  "kind": "codex-built-in-map-destination-image-generation",
+  "slug": "ch3-destination-common-room-native-v1",
+  "generated_at": "2026-07-17",
+  "workflow": {
+    "name": "Codex built-in image generation",
+    "tool": "image_gen.imagegen",
+    "model_identifier": null,
+    "provider_route": null,
+    "seed": null,
+    "note": "The built-in workflow did not return a model identifier, provider route, or seed."
+  },
+  "timestamps": {
+    "generation_started_at": "2026-07-17T19:21:41.122Z",
+    "generation_completed_at": "2026-07-17T19:23:03.103Z",
+    "duration_ms": 81981
+  },
+  "request_spec": {
+    "path": "art/chapters/ch3/maps/common-room-native-v1.request.json",
+    "bytes": 2133,
+    "sha256": "535bba5a6bdd7d8b51c5679200406868512b71a86419fc16372135b3fed27d87"
+  },
+  "prompt": {
+    "path": "art/chapters/ch3/maps/common-room-native-v1.prompt.md",
+    "section": "Accepted built-in prompt",
+    "document_bytes": 4004,
+    "document_sha256": "2dccaebe566ef8a788053dafcf19a25e68a72894364d3afcbb5f3d21dbdf6c85"
+  },
+  "references": [
+    {
+      "index": 1,
+      "path": "public/assets/art/ui/satchel/destination-diagon-alley.webp",
+      "role": "exact destination-card family, silhouette, rim, portrait geometry, and blank-label-band reference",
+      "bytes": 94950,
+      "sha256": "d13787aab1525c552e63663b540bb98307c6fcee54366b2ed982ed1ce00949e1",
+      "dimensions": { "width": 420, "height": 500 }
+    },
+    {
+      "index": 2,
+      "path": "art/raw/ch2-gryffindor-common-room-v2.png",
+      "role": "common-room place identity, scarlet seating, hearth, materials, and painterly detail only",
+      "bytes": 3635015,
+      "sha256": "e05275fdf21456cf91a92c1e963a2f02ee8ae81fc90005a943c532cd97b319dd",
+      "dimensions": { "width": 2048, "height": 1152 }
+    }
+  ],
+  "generation_output": {
+    "id": "exec-d709de50-cf2a-46a1-953a-d4d9f22d5993",
+    "original_path": "/Users/peteallen/.codex/generated_images/019f7183-d655-79c3-8eae-91a6bf9bf959/exec-d709de50-cf2a-46a1-953a-d4d9f22d5993.png",
+    "copied_to": "art/raw/ch3-destination-common-room-native-v1.png",
+    "copy_note": "Copied byte-for-byte without image edits before deterministic chroma extraction.",
+    "media_type": "image/png",
+    "bytes": 2898481,
+    "sha256": "fda4fd1ca70b83c465db39cb0e71724d2b7714e556425bb787f9e8274cb5ec14",
+    "dimensions": { "width": 1148, "height": 1371 }
+  },
+  "derivatives": {
+    "accepted_alpha_png": {
+      "path": "art/raw/ch3-destination-common-room-v1.png",
+      "bytes": 3127050,
+      "sha256": "1cce9706920ed243c785ef91347f38a36b0179c5457af9fc67a66a57810059b1",
+      "dimensions": { "width": 1148, "height": 1371 },
+      "has_alpha": true
+    },
+    "shipping_webp": {
+      "path": "public/assets/art/maps/ch3-destination-common-room.webp",
+      "bytes": 70314,
+      "sha256": "bb40a70c96b3228a0b8540915a6e45c8e5473c4421cf841e16f610e8a064d61e",
+      "dimensions": { "width": 420, "height": 500 },
+      "has_alpha": true
+    }
+  },
+  "processing": {
+    "alpha_extraction": {
+      "tool": "${CODEX_HOME:-$HOME/.codex}/skills/.system/imagegen/scripts/remove_chroma_key.py",
+      "arguments": ["--auto-key", "border", "--soft-matte", "--transparent-threshold", "12", "--opaque-threshold", "220", "--despill"],
+      "sampled_key_color": "#02fb02",
+      "transparent_pixels": 168638,
+      "partially_transparent_pixels": 4905,
+      "total_pixels": 1573908
+    },
+    "aspect_normalization": {
+      "tool": "ffmpeg",
+      "input_dimensions": { "width": 1148, "height": 1371 },
+      "padded_dimensions": { "width": 1155, "height": 1375 },
+      "filter": "pad=1155:1375:(ow-iw)/2:(oh-ih)/2:color=0x00000000",
+      "note": "Transparent padding only established the exact 21:25 canvas ratio; the accepted art was neither cropped nor distorted."
+    },
+    "shipping_encode": {
+      "tool": "cwebp",
+      "arguments": ["-q", "88", "-alpha_q", "100", "-m", "6", "-sharp_yuv", "-resize", "420", "500"]
+    }
+  },
+  "validation": {
+    "transparent_corner_alpha": [0, 0, 0, 0],
+    "outer_border_fully_transparent": true,
+    "visible_chroma_fringe": false,
+    "neon_green_pixels_with_nonzero_alpha": 0,
+    "visual_brief": "Passed: one broad family-matched card with scarlet seating, hearth, autumn window, and a completely blank lower label band.",
+    "unsafe_output": false
+  }
+}

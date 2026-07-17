@@ -1,3 +1,5 @@
+import { conditionMatches } from './conditions.js';
+
 export const MAP_FOG_STATES = Object.freeze({
   clear: 'clear',
   soft: 'soft',
@@ -12,8 +14,38 @@ function sameObjectiveTarget(left, right) {
   );
 }
 
+function objectiveLocationFor(locations, objectiveTarget) {
+  if (!objectiveTarget) return null;
+  const exact = locations.find((location) => (
+    sameObjectiveTarget(location.objectiveTarget, objectiveTarget)
+  ));
+  if (exact) return exact;
+  const roomMatches = locations.filter((location) => (
+    location.objectiveTarget?.room === objectiveTarget.room
+  ));
+  return roomMatches.length === 1 ? roomMatches[0] : null;
+}
+
 function freezePoint(point) {
   return Object.freeze({ x: point.x, y: point.y });
+}
+
+function conditionSave(snapshot) {
+  if (snapshot.conditionState) return snapshot.conditionState;
+  const known = snapshot.knownSpells
+    ?? snapshot.spellbook?.known?.map((spell) => (typeof spell === 'string' ? spell : spell.id))
+    ?? [];
+  return {
+    progress: { questFlags: snapshot.questFlags ?? {} },
+    character: snapshot.character ?? {
+      house: snapshot.house ?? null,
+      pet: snapshot.pet ?? { type: null, name: null },
+      appearance: { robeTrim: snapshot.player?.robeTrim ?? null },
+      wandId: snapshot.hasWand ? 'known' : null,
+    },
+    spellbook: { known },
+    settings: { learning: snapshot.learningMode ?? 'gentle' },
+  };
 }
 
 export function buildMapState(map, snapshot = {}) {
@@ -23,25 +55,39 @@ export function buildMapState(map, snapshot = {}) {
 
   const unlockedRooms = new Set(snapshot.unlockedRooms ?? []);
   const objectiveTarget = snapshot.objective?.mapStar ?? null;
+  const objectiveLocation = objectiveLocationFor(map.locations, objectiveTarget);
+  const conditions = conditionSave(snapshot);
   const locationStates = map.locations.map((location) => {
-    const isObjective = sameObjectiveTarget(location.objectiveTarget, objectiveTarget);
+    const isObjective = location === objectiveLocation;
+    const conditionUnlocked = location.unlockWhen === undefined
+      ? null
+      : conditionMatches(location.unlockWhen, conditions);
     const unlocked = Boolean(
-      location.alwaysUnlocked
+      (conditionUnlocked ?? (
+        location.alwaysUnlocked
+        || unlockedRooms.has(location.to.room)
+      ))
       || location.to.room === snapshot.roomId
-      || unlockedRooms.has(location.to.room)
       || isObjective,
     );
+    const completed = unlocked && (location.completeWhen !== undefined
+      ? conditionMatches(location.completeWhen, conditions)
+      : !isObjective && location.to.room !== snapshot.roomId);
     return Object.freeze({
       id: location.id,
       icon: location.icon,
       caption: location.caption,
+      art: location.art ?? null,
       to: Object.freeze({ ...location.to }),
       objectiveTarget: location.objectiveTarget
         ? Object.freeze({ ...location.objectiveTarget })
         : null,
+      activeObjectiveTarget: isObjective && objectiveTarget
+        ? Object.freeze({ ...objectiveTarget })
+        : null,
       vignette: Object.freeze({ ...location.vignette }),
       isCurrent: location.to.room === snapshot.roomId,
-      completed: unlocked && !isObjective && location.to.room !== snapshot.roomId,
+      completed,
       unlocked,
       isObjective,
       fogState: unlocked ? MAP_FOG_STATES.clear : MAP_FOG_STATES.soft,
@@ -64,11 +110,12 @@ export function buildMapState(map, snapshot = {}) {
       fogState: unlocked ? MAP_FOG_STATES.clear : MAP_FOG_STATES.soft,
     });
   });
-  const objectiveLocation = locationStates.find((location) => location.isObjective) ?? null;
+  const objectiveLocationState = locationStates.find((location) => location.isObjective) ?? null;
 
   return Object.freeze({
     id: map.id,
-    objectiveLocationId: objectiveLocation?.id ?? null,
+    asset: map.asset ?? null,
+    objectiveLocationId: objectiveLocationState?.id ?? null,
     locations: Object.freeze(locationStates),
     routes: Object.freeze(routes),
   });

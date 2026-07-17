@@ -1,0 +1,37 @@
+{
+  "schema_version": 1,
+  "slug": "common-room-autumn-native-v1",
+  "prompt": {
+    "path": "art/chapters/ch3/rooms/common-room-autumn-native-v1.prompt.md",
+    "section": "Prompt"
+  },
+  "references": [
+    {
+      "path": "art/raw/ch2-gryffindor-common-room-v2.png",
+      "role": "stable accepted same-room identity and architecture reference"
+    },
+    {
+      "path": "art/raw/ch1-bedroom.png",
+      "role": "bright autumn-morning window light, warm wood, and calm gameplay-floor reference"
+    },
+    {
+      "path": "art/guides/ch1-room-style-triptych.png",
+      "role": "consolidated Chapter One finish and staging reference"
+    }
+  ],
+  "generation": {
+    "workflow": "Codex built-in image generation",
+    "tool": "image_gen.imagegen",
+    "model_identifier": null,
+    "seed": null,
+    "returned_model_or_seed_note": "The built-in workflow did not return a model identifier or seed."
+  },
+  "output": {
+    "generated_output_id": "exec-b99d0101-5669-4c70-bea0-bf044e2b071c",
+    "generated_output_path": "/Users/peteallen/.codex/generated_images/019f717f-2a8a-7bb0-8623-a1c4b20b10fe/exec-b99d0101-5669-4c70-bea0-bf044e2b071c.png",
+    "native_source": "art/raw/ch3-common-room-autumn-native-v1.png",
+    "accepted_png": "art/raw/ch3-common-room-autumn-v1.png",
+    "shipping_webp": "public/assets/art/rooms/ch3-common-room-autumn.webp",
+    "metadata": "art/chapters/ch3/rooms/common-room-autumn-native-v1.metadata.json"
+  }
+}

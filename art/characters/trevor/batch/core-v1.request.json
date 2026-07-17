@@ -1,0 +1,25 @@
+{
+  "schema_version": 1,
+  "prompt": {
+    "path": "art/characters/trevor/batch/core-v1.prompt.md",
+    "section": "Prompt"
+  },
+  "references": [
+    {
+      "path": "art/guides/ch1-room-style-triptych.png",
+      "role": "the game's painterly storybook texture, warm key light, violet-blue shadow color, and soft dark-brown edge treatment only"
+    },
+    {
+      "path": "art/guides/flat-cyan-chroma.png",
+      "role": "the exact flat extraction background"
+    }
+  ],
+  "generation": {
+    "aspect_ratio": "4:3",
+    "resolution": "4K"
+  },
+  "output": {
+    "image": "art/characters/trevor/batch/core-v1.png",
+    "provenance": "art/characters/trevor/batch/core-v1.metadata.json"
+  }
+}

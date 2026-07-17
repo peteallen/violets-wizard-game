@@ -1,0 +1,170 @@
+{
+  "schema_version": 1,
+  "kind": "codex-built-in-single-character-pose-image-generation",
+  "slug": "trevor-held-v2",
+  "status": "accepted production replacement",
+  "workflow": {
+    "name": "Codex built-in image generation",
+    "tool": "image_gen.imagegen",
+    "call_count": 1,
+    "model_identifier": null,
+    "provider_route": null,
+    "seed": null,
+    "note": "The built-in workflow did not return a model identifier, provider route, or seed. One built-in call used only the authored Trevor batch image as its reference. No CLI or API fallback was used."
+  },
+  "timestamps": {
+    "generation_completed_at": "2026-07-17T20:21:06Z",
+    "workspace_copy_completed_at": "2026-07-17T20:21:20Z",
+    "candidate_frame_completed_at": "2026-07-17T20:22:23Z",
+    "metadata_completed_at": "2026-07-17T20:23:21Z",
+    "note": "Generation, copy, and frame times are filesystem birth times; the built-in workflow did not return a generation-start timestamp."
+  },
+  "repository": {
+    "commit": "93953021eea52f2591f3c3ae7d6b3f80c73742b5",
+    "dirty": true
+  },
+  "request_spec": {
+    "path": "art/characters/trevor/edits/held-v2.request.json",
+    "bytes": 987,
+    "sha256": "807ead880069aae2c0ced862b7b5b6ac1f19b2a66bd590f70a482eeb20939b44",
+    "schema_version": 1
+  },
+  "prompt": {
+    "path": "art/characters/trevor/edits/held-v2.prompt.md",
+    "section": "Prompt",
+    "document_bytes": 4390,
+    "document_sha256": "5f6c168fd4a1e817089c5675bef1dca0a3dcb2944a879ada1e9d9d5ae836fcb7",
+    "normalization": "The authored Prompt section was passed with Markdown line wrapping normalized and code formatting removed from the cyan hex value. Its wording and creative constraints were otherwise unchanged."
+  },
+  "references": [
+    {
+      "index": 1,
+      "path": "art/characters/trevor/batch/core-v1.png",
+      "role": "sole reference for Trevor's established identity, proportions, anatomy, palette, skin texture, storybook painting style, and flat cyan extraction field",
+      "bytes": 2227445,
+      "sha256": "59723d3960b4f868f2fcf1eb601d8197acc6e2c6b106564f3c8580da115e5cec",
+      "dimensions": {
+        "width": 1536,
+        "height": 1024
+      }
+    }
+  ],
+  "generation_output": {
+    "id": "exec-69e31680-6688-492c-9563-19bdd3e9061c",
+    "original_path": "/Users/peteallen/.codex/generated_images/019f71b8-3bc5-7c51-aa55-4cffe913d0fd/exec-69e31680-6688-492c-9563-19bdd3e9061c.png",
+    "copied_to": "art/characters/trevor/edits/held-v2.png",
+    "copy_note": "Copied byte-for-byte without image edits before deterministic normalization and cyan extraction.",
+    "media_type": "image/png",
+    "bytes": 1514902,
+    "sha256": "dae83177f02e6bcf2d06c6292cf152d9350d48e621e5807095c9058c0bb9404c",
+    "rgba_sha256": "c8b07d340e31f976350f349149242d3c69a51aab56a5a33fadf43abfd1172096",
+    "dimensions": {
+      "width": 1254,
+      "height": 1254
+    },
+    "png": {
+      "bit_depth": 8,
+      "color_type": 2,
+      "has_color": true,
+      "has_alpha": false,
+      "interlaced": false
+    },
+    "border_key_validation": {
+      "pixels": 5012,
+      "rgb_min": [0, 234, 249],
+      "rgb_max": [8, 243, 254],
+      "rgb_mean": [1.12829209896249, 240.06364724660813, 252.69353551476456],
+      "within_layout_key_tolerance": 5012,
+      "within_layout_key_fraction": 1
+    }
+  },
+  "deterministic_processing": {
+    "normalization": {
+      "algorithm": "premultiplied-rgba-box-rational-v1",
+      "scale": {
+        "numerator": 256,
+        "denominator": 627
+      },
+      "output": {
+        "path": "art/characters/trevor/edits/held-v2-cell.png",
+        "bytes": 293165,
+        "sha256": "2f095a07a421059543ab5c9b7f47f8ecb6f91fbde67745d968d1748e792bb447",
+        "rgba_sha256": "b5db8e468175c6aae38a26ae14ebd3b5738ba2edb49f16b5863df1c9c8f92703",
+        "dimensions": {
+          "width": 512,
+          "height": 512
+        }
+      }
+    },
+    "layout": {
+      "path": "art/characters/trevor/edits/held-v2.layout.json",
+      "bytes": 1217,
+      "sha256": "5d8d706d648edb0e02349c99f607f64cfb1145cd35388db4b4156cd0cb7e069b"
+    },
+    "provenance": {
+      "path": "art/characters/trevor/edits/held-v2-frame.provenance.json",
+      "bytes": 4395,
+      "sha256": "30076a77f2850617c4d7269b4f11751a4bfa23f208de68d287520c74d01791fe"
+    },
+    "algorithm": "cyan-flood-aligned-character-sheet-v1",
+    "deterministic": true,
+    "output_canvas": {
+      "width": 896,
+      "height": 1200,
+      "center_x": 448,
+      "ground_y": 1132
+    },
+    "common_scale": {
+      "numerator": 8,
+      "denominator": 5
+    },
+    "components": {
+      "found": 1,
+      "kept": 1,
+      "removed": 0,
+      "selected_pixels": 58763
+    },
+    "frame": {
+      "path": "art/characters/trevor/edits/held-v2-frame.png",
+      "bytes": 332332,
+      "sha256": "f4113af0392bf2b2df21f35f3f021e08bdab91e4adfd6823d6c89db035a52f22",
+      "rgba_sha256": "9d12f033c41753428ed4245452faee274a7086c04ba590c74469d946405e19b9",
+      "dimensions": {
+        "width": 896,
+        "height": 1200
+      },
+      "png": {
+        "bit_depth": 8,
+        "color_type": 6,
+        "has_color": true,
+        "has_alpha": true,
+        "interlaced": false
+      },
+      "alpha": {
+        "transparent_pixels": 923745,
+        "soft_pixels": 2209,
+        "opaque_pixels": 149246
+      },
+      "visible_bounds": {
+        "x": 210,
+        "y": 680,
+        "width": 477,
+        "height": 453,
+        "max_y": 1132
+      }
+    }
+  },
+  "review": {
+    "completed_at": "2026-07-17T20:27:46Z",
+    "result": "accepted",
+    "method": "single compressed comparison sheet showing the production neutral frame beside the replacement on dark and light backings",
+    "findings": "Trevor identity and storybook finish are preserved; the held pose has coherent toad anatomy, the pale crescent is attached to the brow, and the alpha edge is clean without cyan residue."
+  },
+  "promotion": {
+    "source": "art/characters/trevor/edits/held-v2-frame.png",
+    "path": "public/assets/art/characters/trevor/default/held.png",
+    "bytes": 332332,
+    "sha256": "f4113af0392bf2b2df21f35f3f021e08bdab91e4adfd6823d6c89db035a52f22",
+    "promoted_at": "2026-07-17T20:27:46Z"
+  }
+}

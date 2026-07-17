@@ -1,0 +1,44 @@
+{
+  "language_code": "eng",
+  "language_probability": 1,
+  "text": "Swish and flick",
+  "words": [
+    {
+      "text": "Swish",
+      "start": 0.079,
+      "end": 0.379,
+      "type": "word",
+      "logprob": -0.0010717616385136353
+    },
+    {
+      "text": " ",
+      "start": 0.379,
+      "end": 0.399,
+      "type": "spacing",
+      "logprob": -0.000008583032467868179
+    },
+    {
+      "text": "and",
+      "start": 0.399,
+      "end": 0.579,
+      "type": "word",
+      "logprob": -0.000008583032467868179
+    },
+    {
+      "text": " ",
+      "start": 0.579,
+      "end": 0.599,
+      "type": "spacing",
+      "logprob": -0.0019357530400156975
+    },
+    {
+      "text": "flick",
+      "start": 0.599,
+      "end": 0.919,
+      "type": "word",
+      "logprob": -0.0019357530400156975
+    }
+  ],
+  "transcription_id": "T5R3LaaWnizOvZEH0TkX",
+  "audio_duration_secs": 1.2386875
+}

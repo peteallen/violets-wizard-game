@@ -1,0 +1,403 @@
+{
+  "schema_version": 1,
+  "algorithm": {
+    "id": "cyan-flood-aligned-character-sheet-v1",
+    "component_connectivity": 8,
+    "scale_filter": "premultiplied-rgba-box-rational-v1",
+    "output_color_type": 6,
+    "output_bit_depth": 8,
+    "deterministic": true
+  },
+  "slice_spec": {
+    "path": "art/characters/friendly-ghost/batch/core-v1.layout.json",
+    "bytes": 1803,
+    "sha256": "f64218fff0bc8a78de39730ea5cf899b5d1e922dc4ce1ad977ded82c1653d271",
+    "schema_version": 1,
+    "id": "friendly-ghost.core-v1"
+  },
+  "source": {
+    "path": "art/characters/friendly-ghost/batch/core-v1.png",
+    "bytes": 1954171,
+    "expected_sha256": "16c271cdd45fedfbd70cf759b20b7e3bd4a1da0a4a0811bb0067b66e67eee640",
+    "sha256": "16c271cdd45fedfbd70cf759b20b7e3bd4a1da0a4a0811bb0067b66e67eee640",
+    "rgba_sha256": "fffe6cbddcb2bab34a018d61e1a148c34cec4bf5af1d84851899085a213832d4",
+    "dimensions": {
+      "width": 1536,
+      "height": 1024
+    }
+  },
+  "controls": {
+    "output_canvas": {
+      "width": 896,
+      "height": 1200,
+      "center_x": 448,
+      "ground_y": 1132
+    },
+    "common_scale": {
+      "numerator": 2,
+      "denominator": 1
+    },
+    "key": {
+      "color": {
+        "red": 1,
+        "green": 251,
+        "blue": 253
+      },
+      "tolerance": 28,
+      "alpha": {
+        "opaque_cyan_excess": 50,
+        "transparent_cyan_excess": 90,
+        "edge_spill_radius": 8,
+        "edge_spill_opaque_cyan_excess": 30,
+        "edge_spill_max_green_blue_delta": 70,
+        "matte_low_alpha": 170,
+        "matte_high_alpha": 245,
+        "edge_color_radius": 0
+      }
+    },
+    "components": {
+      "detail_min_pixels": 8,
+      "detail_max_pixels": 5000,
+      "detail_max_distance": 48
+    }
+  },
+  "outputs": [
+    {
+      "name": "ambient",
+      "path": "public/assets/art/characters/friendly-ghost/default/ambient.png",
+      "media_type": "image/png",
+      "bytes": 251752,
+      "sha256": "fd5e508e18aab79c7cb71e7f0eddea4e83584bc64036ac7489b0cc67c686fc6c",
+      "rgba_sha256": "b8ab9111e2dca994da14cad1463579ac42e50c1ccf3138a4e8682901a1734e3d",
+      "dimensions": {
+        "width": 896,
+        "height": 1200
+      },
+      "crop": {
+        "x": 0,
+        "y": 0,
+        "width": 512,
+        "height": 512
+      },
+      "source_content_bounds": {
+        "x": 135,
+        "y": 17,
+        "width": 277,
+        "height": 469
+      },
+      "scaled_dimensions": {
+        "width": 554,
+        "height": 938
+      },
+      "placement": {
+        "x": 171,
+        "y": 195,
+        "width": 554,
+        "height": 938,
+        "center_x": 448,
+        "ground_y": 1132
+      },
+      "flood": {
+        "background_pixels": 181993,
+        "non_background_pixels": 80151,
+        "background_fraction": 0.6942481994628906
+      },
+      "components": {
+        "found": 1,
+        "dominant_pixels": 78827,
+        "kept": 1,
+        "removed": 0,
+        "selected_pixels": 78827,
+        "details": []
+      },
+      "alpha": {
+        "transparent_pixels": 183317,
+        "soft_pixels": 144,
+        "opaque_pixels": 78683
+      },
+      "edge_artifacts_repaired": 0
+    },
+    {
+      "name": "talk-a",
+      "path": "public/assets/art/characters/friendly-ghost/default/talk-a.png",
+      "media_type": "image/png",
+      "bytes": 265063,
+      "sha256": "0b9898962380f41a34b7c94fb3d4913d1597df498c6e7c0e4a53f17f51df8e1b",
+      "rgba_sha256": "298d9906451e8f96dd16ef9e08a94a05eae6041e84c019e28aeda8258359370e",
+      "dimensions": {
+        "width": 896,
+        "height": 1200
+      },
+      "crop": {
+        "x": 512,
+        "y": 0,
+        "width": 512,
+        "height": 512
+      },
+      "source_content_bounds": {
+        "x": 94,
+        "y": 20,
+        "width": 363,
+        "height": 463
+      },
+      "scaled_dimensions": {
+        "width": 726,
+        "height": 926
+      },
+      "placement": {
+        "x": 85,
+        "y": 207,
+        "width": 726,
+        "height": 926,
+        "center_x": 448,
+        "ground_y": 1132
+      },
+      "flood": {
+        "background_pixels": 177859,
+        "non_background_pixels": 84285,
+        "background_fraction": 0.6784782409667969
+      },
+      "components": {
+        "found": 1,
+        "dominant_pixels": 82701,
+        "kept": 1,
+        "removed": 0,
+        "selected_pixels": 82701,
+        "details": []
+      },
+      "alpha": {
+        "transparent_pixels": 179443,
+        "soft_pixels": 180,
+        "opaque_pixels": 82521
+      },
+      "edge_artifacts_repaired": 0
+    },
+    {
+      "name": "talk-b",
+      "path": "public/assets/art/characters/friendly-ghost/default/talk-b.png",
+      "media_type": "image/png",
+      "bytes": 255936,
+      "sha256": "c1395c78f2cb7fc1e7b79bf4e3c92241a12e8141ecc6c635aa4175f5c2c7187f",
+      "rgba_sha256": "86e0c58cf17d390a027293a2beab36daa41625918dc6df9a8a987ea5e10fe9f6",
+      "dimensions": {
+        "width": 896,
+        "height": 1200
+      },
+      "crop": {
+        "x": 1024,
+        "y": 0,
+        "width": 512,
+        "height": 512
+      },
+      "source_content_bounds": {
+        "x": 47,
+        "y": 26,
+        "width": 310,
+        "height": 459
+      },
+      "scaled_dimensions": {
+        "width": 620,
+        "height": 918
+      },
+      "placement": {
+        "x": 138,
+        "y": 215,
+        "width": 620,
+        "height": 918,
+        "center_x": 448,
+        "ground_y": 1132
+      },
+      "flood": {
+        "background_pixels": 180649,
+        "non_background_pixels": 81495,
+        "background_fraction": 0.6891212463378906
+      },
+      "components": {
+        "found": 1,
+        "dominant_pixels": 79986,
+        "kept": 1,
+        "removed": 0,
+        "selected_pixels": 79986,
+        "details": []
+      },
+      "alpha": {
+        "transparent_pixels": 182158,
+        "soft_pixels": 171,
+        "opaque_pixels": 79815
+      },
+      "edge_artifacts_repaired": 0
+    },
+    {
+      "name": "emerge",
+      "path": "public/assets/art/characters/friendly-ghost/default/emerge.png",
+      "media_type": "image/png",
+      "bytes": 289931,
+      "sha256": "a997eb3fce78518102c6ac002de51eb625c7beb3946c42a16d6a77a28b03b917",
+      "rgba_sha256": "394a52cfb046475105650f7cca3e70107fc9aaffd1891b3d5830d4c521bc9444",
+      "dimensions": {
+        "width": 896,
+        "height": 1200
+      },
+      "crop": {
+        "x": 0,
+        "y": 512,
+        "width": 544,
+        "height": 512
+      },
+      "source_content_bounds": {
+        "x": 98,
+        "y": 7,
+        "width": 418,
+        "height": 423
+      },
+      "scaled_dimensions": {
+        "width": 836,
+        "height": 846
+      },
+      "placement": {
+        "x": 30,
+        "y": 287,
+        "width": 836,
+        "height": 846,
+        "center_x": 448,
+        "ground_y": 1132
+      },
+      "flood": {
+        "background_pixels": 185159,
+        "non_background_pixels": 93369,
+        "background_fraction": 0.6647769703584558
+      },
+      "components": {
+        "found": 1,
+        "dominant_pixels": 91780,
+        "kept": 1,
+        "removed": 0,
+        "selected_pixels": 91780,
+        "details": []
+      },
+      "alpha": {
+        "transparent_pixels": 186748,
+        "soft_pixels": 191,
+        "opaque_pixels": 91589
+      },
+      "edge_artifacts_repaired": 0
+    },
+    {
+      "name": "listening-reward",
+      "path": "public/assets/art/characters/friendly-ghost/default/listening-reward.png",
+      "media_type": "image/png",
+      "bytes": 290540,
+      "sha256": "e087e3d0d47aa1ae4ad09733c0de8e998cf056a6cf4e610d5c6a92eb74ae4ae7",
+      "rgba_sha256": "b77cbc5b77fee794781fb28ff2191392a87362b081164aa329cec5297895f507",
+      "dimensions": {
+        "width": 896,
+        "height": 1200
+      },
+      "crop": {
+        "x": 512,
+        "y": 512,
+        "width": 512,
+        "height": 512
+      },
+      "source_content_bounds": {
+        "x": 69,
+        "y": 1,
+        "width": 411,
+        "height": 471
+      },
+      "scaled_dimensions": {
+        "width": 822,
+        "height": 942
+      },
+      "placement": {
+        "x": 37,
+        "y": 191,
+        "width": 822,
+        "height": 942,
+        "center_x": 448,
+        "ground_y": 1132
+      },
+      "flood": {
+        "background_pixels": 167383,
+        "non_background_pixels": 94761,
+        "background_fraction": 0.6385154724121094
+      },
+      "components": {
+        "found": 2,
+        "dominant_pixels": 92928,
+        "kept": 1,
+        "removed": 1,
+        "selected_pixels": 92928,
+        "details": [
+          {
+            "pixels": 143,
+            "distance_from_dominant": 66,
+            "kept": false
+          }
+        ]
+      },
+      "alpha": {
+        "transparent_pixels": 169216,
+        "soft_pixels": 153,
+        "opaque_pixels": 92775
+      },
+      "edge_artifacts_repaired": 4
+    },
+    {
+      "name": "delighted",
+      "path": "public/assets/art/characters/friendly-ghost/default/delighted.png",
+      "media_type": "image/png",
+      "bytes": 254067,
+      "sha256": "abbc2a659469f240f51cc70690b7d4512b104389fbb0f1c05d23b906340b3f3e",
+      "rgba_sha256": "54b08247e2a57a14c9c03fa57e6612f6f21ca9ef778efa2a0d610698dd854c75",
+      "dimensions": {
+        "width": 896,
+        "height": 1200
+      },
+      "crop": {
+        "x": 1024,
+        "y": 512,
+        "width": 512,
+        "height": 512
+      },
+      "source_content_bounds": {
+        "x": 75,
+        "y": 7,
+        "width": 278,
+        "height": 465
+      },
+      "scaled_dimensions": {
+        "width": 556,
+        "height": 930
+      },
+      "placement": {
+        "x": 170,
+        "y": 203,
+        "width": 556,
+        "height": 930,
+        "center_x": 448,
+        "ground_y": 1132
+      },
+      "flood": {
+        "background_pixels": 180389,
+        "non_background_pixels": 81755,
+        "background_fraction": 0.6881294250488281
+      },
+      "components": {
+        "found": 1,
+        "dominant_pixels": 80500,
+        "kept": 1,
+        "removed": 0,
+        "selected_pixels": 80500,
+        "details": []
+      },
+      "alpha": {
+        "transparent_pixels": 181644,
+        "soft_pixels": 164,
+        "opaque_pixels": 80336
+      },
+      "edge_artifacts_repaired": 0
+    }
+  ],
+  "provenance_path": "art/characters/friendly-ghost/batch/core-v1.slice-provenance.json"
+}

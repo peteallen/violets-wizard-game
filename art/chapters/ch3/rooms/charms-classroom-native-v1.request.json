@@ -1,0 +1,37 @@
+{
+  "schema_version": 1,
+  "slug": "charms-classroom-native-v1",
+  "prompt": {
+    "path": "art/chapters/ch3/rooms/charms-classroom-native-v1.prompt.md",
+    "section": "Prompt"
+  },
+  "references": [
+    {
+      "path": "public/assets/art/rooms/ch2-great-hall.webp",
+      "role": "magical-school stone architecture and warm gold-light reference"
+    },
+    {
+      "path": "art/raw/ch1-ollivanders.png",
+      "role": "bookish classroom depth and blue-violet shadow reference"
+    },
+    {
+      "path": "art/guides/ch1-room-style-triptych.png",
+      "role": "consolidated Chapter One finish and staging reference"
+    }
+  ],
+  "generation": {
+    "workflow": "Codex built-in image generation",
+    "tool": "image_gen.imagegen",
+    "model_identifier": null,
+    "seed": null,
+    "returned_model_or_seed_note": "The built-in workflow did not return a model identifier or seed."
+  },
+  "output": {
+    "generated_output_id": "exec-6ac3592e-d50b-4557-824c-a7204b057d80",
+    "generated_output_path": "/Users/peteallen/.codex/generated_images/019f717f-2a8a-7bb0-8623-a1c4b20b10fe/exec-6ac3592e-d50b-4557-824c-a7204b057d80.png",
+    "native_source": "art/raw/ch3-charms-classroom-native-v1.png",
+    "accepted_png": "art/raw/ch3-charms-classroom-v1.png",
+    "shipping_webp": "public/assets/art/rooms/ch3-charms-classroom.webp",
+    "metadata": "art/chapters/ch3/rooms/charms-classroom-native-v1.metadata.json"
+  }
+}

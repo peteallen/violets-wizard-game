@@ -6,15 +6,19 @@ import {
 } from '../src/game/characters/productionCatalog.js';
 import { chapter1CharacterIds } from '../src/game/content/chapters/ch1.js';
 import { chapter2CharacterIds } from '../src/game/content/chapters/ch2.js';
+import { chapter3CharacterIds } from '../src/game/content/chapters/ch3.js';
 import { assetManifest } from '../src/game/core/assetManifest.js';
 
 describe('production character catalog', () => {
   it('contains every declared identity once without loading a runtime', () => {
-    const chapterCharacterIds = [...new Set([...chapter1CharacterIds, ...chapter2CharacterIds])];
+    const chapterCharacterIds = [
+      ...new Set([...chapter1CharacterIds, ...chapter2CharacterIds, ...chapter3CharacterIds]),
+    ];
     expect(productionCharacterCatalog.ids()).toEqual(chapterCharacterIds);
     expect(productionCharacterModules.map(({ id }) => id)).toEqual(chapterCharacterIds);
-    expect(new Set(productionCharacterCatalog.ids()).size).toBe(18);
+    expect(new Set(productionCharacterCatalog.ids()).size).toBe(22);
     expect(chapter2CharacterIds.every((id) => productionCharacterCatalog.registry.has(id))).toBe(true);
+    expect(chapter3CharacterIds.every((id) => productionCharacterCatalog.registry.has(id))).toBe(true);
     expect(titleCharacterDependencies).toEqual(['character.violet', 'character.post-owl']);
     expect(productionCharacterCatalog.ids().every(
       (id) => !productionCharacterCatalog.registry.isLoaded(id),
@@ -29,10 +33,14 @@ describe('production character catalog', () => {
 
   it('keeps shared review participation separate from unique registration ownership', () => {
     expect(Object.keys(productionCharacterCatalog.reviews).sort()).toEqual([
+      'flitwick-sprite-review',
+      'friendly-ghost-sprite-review',
       'hagrid-sprite-review',
       'madam-malkin-sprite-review',
       'menagerie-keeper-sprite-review',
+      'neville-sprite-review',
       'owl-motion-review',
+      'trevor-sprite-review',
       'violet-expression-review',
       'wandmaker-sprite-review',
     ]);

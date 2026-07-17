@@ -1,0 +1,423 @@
+{
+  "schema_version": 1,
+  "algorithm": {
+    "id": "cyan-flood-aligned-character-sheet-v1",
+    "component_connectivity": 8,
+    "scale_filter": "premultiplied-rgba-box-rational-v1",
+    "output_color_type": 6,
+    "output_bit_depth": 8,
+    "deterministic": true
+  },
+  "slice_spec": {
+    "path": "art/characters/trevor/batch/core-v1.layout.json",
+    "bytes": 1826,
+    "sha256": "e13e775184b01f2c198a1328fe8e7982dde9dbdd1ee28d9feba53c8f7b943222",
+    "schema_version": 1,
+    "id": "trevor.core-v1"
+  },
+  "source": {
+    "path": "art/characters/trevor/batch/core-v1.png",
+    "bytes": 2227445,
+    "expected_sha256": "59723d3960b4f868f2fcf1eb601d8197acc6e2c6b106564f3c8580da115e5cec",
+    "sha256": "59723d3960b4f868f2fcf1eb601d8197acc6e2c6b106564f3c8580da115e5cec",
+    "rgba_sha256": "ce8a1a59a4dbf562f473a0500d6489ba028392e0d2e4c6207f44d661009b5388",
+    "dimensions": {
+      "width": 1536,
+      "height": 1024
+    }
+  },
+  "controls": {
+    "output_canvas": {
+      "width": 896,
+      "height": 1200,
+      "center_x": 448,
+      "ground_y": 1132
+    },
+    "common_scale": {
+      "numerator": 8,
+      "denominator": 5
+    },
+    "key": {
+      "color": {
+        "red": 1,
+        "green": 244,
+        "blue": 253
+      },
+      "tolerance": 28,
+      "alpha": {
+        "opaque_cyan_excess": 50,
+        "transparent_cyan_excess": 90,
+        "edge_spill_radius": 8,
+        "edge_spill_opaque_cyan_excess": 30,
+        "edge_spill_max_green_blue_delta": 70,
+        "matte_low_alpha": 170,
+        "matte_high_alpha": 245,
+        "edge_color_radius": 0
+      }
+    },
+    "components": {
+      "detail_min_pixels": 8,
+      "detail_max_pixels": 5000,
+      "detail_max_distance": 18
+    }
+  },
+  "outputs": [
+    {
+      "name": "neutral",
+      "path": "public/assets/art/characters/trevor/default/neutral.png",
+      "media_type": "image/png",
+      "bytes": 611559,
+      "sha256": "88abc941b76f276cfb705ee0e9be6b8a6c8c6dc70a1e5124d05f767dce8b549e",
+      "rgba_sha256": "3cd152501faf0468a437b351b2ab83d0f6a85155b9504b8ae04695c4ae15bea4",
+      "dimensions": {
+        "width": 896,
+        "height": 1200
+      },
+      "crop": {
+        "x": 0,
+        "y": 0,
+        "width": 512,
+        "height": 512
+      },
+      "source_content_bounds": {
+        "x": 74,
+        "y": 102,
+        "width": 430,
+        "height": 354
+      },
+      "scaled_dimensions": {
+        "width": 688,
+        "height": 567
+      },
+      "placement": {
+        "x": 104,
+        "y": 566,
+        "width": 688,
+        "height": 567,
+        "center_x": 448,
+        "ground_y": 1132
+      },
+      "flood": {
+        "background_pixels": 154475,
+        "non_background_pixels": 107669,
+        "background_fraction": 0.5892753601074219
+      },
+      "components": {
+        "found": 1,
+        "dominant_pixels": 106293,
+        "kept": 1,
+        "removed": 0,
+        "selected_pixels": 106293,
+        "details": []
+      },
+      "alpha": {
+        "transparent_pixels": 155851,
+        "soft_pixels": 160,
+        "opaque_pixels": 106133
+      },
+      "edge_artifacts_repaired": 0
+    },
+    {
+      "name": "hidden-eyes",
+      "path": "public/assets/art/characters/trevor/default/hidden-eyes.png",
+      "media_type": "image/png",
+      "bytes": 451142,
+      "sha256": "95ab5d2af5a604df55e639f52a01d0bfb74ecea5ac0f944c8b9e8557cbdf6f00",
+      "rgba_sha256": "f197f6e3a4b4b78c62ee9b5291f187ad43a9443456e207095a8dc789460d7067",
+      "dimensions": {
+        "width": 896,
+        "height": 1200
+      },
+      "crop": {
+        "x": 512,
+        "y": 0,
+        "width": 512,
+        "height": 512
+      },
+      "source_content_bounds": {
+        "x": 58,
+        "y": 123,
+        "width": 419,
+        "height": 328
+      },
+      "scaled_dimensions": {
+        "width": 671,
+        "height": 525
+      },
+      "placement": {
+        "x": 113,
+        "y": 608,
+        "width": 671,
+        "height": 525,
+        "center_x": 448,
+        "ground_y": 1132
+      },
+      "flood": {
+        "background_pixels": 162190,
+        "non_background_pixels": 99954,
+        "background_fraction": 0.6187057495117188
+      },
+      "components": {
+        "found": 1,
+        "dominant_pixels": 98829,
+        "kept": 1,
+        "removed": 0,
+        "selected_pixels": 98829,
+        "details": []
+      },
+      "alpha": {
+        "transparent_pixels": 163315,
+        "soft_pixels": 175,
+        "opaque_pixels": 98654
+      },
+      "edge_artifacts_repaired": 0
+    },
+    {
+      "name": "croak",
+      "path": "public/assets/art/characters/trevor/default/croak.png",
+      "media_type": "image/png",
+      "bytes": 593122,
+      "sha256": "49300640bd4e0c0e8ab676b950e6a27640a1bf491dc1d110404646f89471a9e0",
+      "rgba_sha256": "6499d9d212ffe107a72db8f6d25a0c4dcc93da1f414c454443150b05707bcc18",
+      "dimensions": {
+        "width": 896,
+        "height": 1200
+      },
+      "crop": {
+        "x": 1024,
+        "y": 0,
+        "width": 512,
+        "height": 512
+      },
+      "source_content_bounds": {
+        "x": 10,
+        "y": 98,
+        "width": 419,
+        "height": 360
+      },
+      "scaled_dimensions": {
+        "width": 671,
+        "height": 576
+      },
+      "placement": {
+        "x": 113,
+        "y": 557,
+        "width": 671,
+        "height": 576,
+        "center_x": 448,
+        "ground_y": 1132
+      },
+      "flood": {
+        "background_pixels": 155758,
+        "non_background_pixels": 106386,
+        "background_fraction": 0.5941696166992188
+      },
+      "components": {
+        "found": 1,
+        "dominant_pixels": 105220,
+        "kept": 1,
+        "removed": 0,
+        "selected_pixels": 105220,
+        "details": []
+      },
+      "alpha": {
+        "transparent_pixels": 156924,
+        "soft_pixels": 142,
+        "opaque_pixels": 105078
+      },
+      "edge_artifacts_repaired": 1
+    },
+    {
+      "name": "hop",
+      "path": "public/assets/art/characters/trevor/default/hop.png",
+      "media_type": "image/png",
+      "bytes": 439055,
+      "sha256": "d6527b01a01c215b8171350056aa737290188f4901bc02747d1a167e1952ca55",
+      "rgba_sha256": "e2840cc2a18995cf47c10e2584637dd36441ab8fc73d3e42418a6597fe21c0a9",
+      "dimensions": {
+        "width": 896,
+        "height": 1200
+      },
+      "crop": {
+        "x": 0,
+        "y": 512,
+        "width": 608,
+        "height": 512
+      },
+      "source_content_bounds": {
+        "x": 41,
+        "y": 29,
+        "width": 545,
+        "height": 310
+      },
+      "scaled_dimensions": {
+        "width": 872,
+        "height": 496
+      },
+      "placement": {
+        "x": 12,
+        "y": 637,
+        "width": 872,
+        "height": 496,
+        "center_x": 448,
+        "ground_y": 1132
+      },
+      "flood": {
+        "background_pixels": 235965,
+        "non_background_pixels": 75331,
+        "background_fraction": 0.758008454975329
+      },
+      "components": {
+        "found": 1,
+        "dominant_pixels": 73777,
+        "kept": 1,
+        "removed": 0,
+        "selected_pixels": 73777,
+        "details": []
+      },
+      "alpha": {
+        "transparent_pixels": 237519,
+        "soft_pixels": 182,
+        "opaque_pixels": 73595
+      },
+      "edge_artifacts_repaired": 8
+    },
+    {
+      "name": "held",
+      "path": "public/assets/art/characters/trevor/default/held.png",
+      "media_type": "image/png",
+      "bytes": 488114,
+      "sha256": "673a18a46ddfda69ee604b9ceca4064860fb2750aaf2ade6650950d87515a0f7",
+      "rgba_sha256": "2e0213f565eb786a2a4b47397c48e9495a8ab031b427be04acd394b9a72680d3",
+      "dimensions": {
+        "width": 896,
+        "height": 1200
+      },
+      "crop": {
+        "x": 512,
+        "y": 512,
+        "width": 512,
+        "height": 512
+      },
+      "source_content_bounds": {
+        "x": 101,
+        "y": 63,
+        "width": 340,
+        "height": 334
+      },
+      "scaled_dimensions": {
+        "width": 544,
+        "height": 535
+      },
+      "placement": {
+        "x": 176,
+        "y": 598,
+        "width": 544,
+        "height": 535,
+        "center_x": 448,
+        "ground_y": 1132
+      },
+      "flood": {
+        "background_pixels": 173788,
+        "non_background_pixels": 88356,
+        "background_fraction": 0.6629486083984375
+      },
+      "components": {
+        "found": 6,
+        "dominant_pixels": 84560,
+        "kept": 1,
+        "removed": 5,
+        "selected_pixels": 84560,
+        "details": [
+          {
+            "pixels": 10,
+            "distance_from_dominant": 121,
+            "kept": false
+          },
+          {
+            "pixels": 289,
+            "distance_from_dominant": 102,
+            "kept": false
+          },
+          {
+            "pixels": 2317,
+            "distance_from_dominant": 37,
+            "kept": false
+          },
+          {
+            "pixels": 87,
+            "distance_from_dominant": 69,
+            "kept": false
+          },
+          {
+            "pixels": 51,
+            "distance_from_dominant": 74,
+            "kept": false
+          }
+        ]
+      },
+      "alpha": {
+        "transparent_pixels": 177584,
+        "soft_pixels": 72,
+        "opaque_pixels": 84488
+      },
+      "edge_artifacts_repaired": 0
+    },
+    {
+      "name": "reunion",
+      "path": "public/assets/art/characters/trevor/default/reunion.png",
+      "media_type": "image/png",
+      "bytes": 567257,
+      "sha256": "b3ba1068e64bdd4882437355607fefc4fb81a71a6c964fca0f8db92404f57f9c",
+      "rgba_sha256": "c0004a21927610d8ec2a5db54bbc980d0f80f4b70ff62612ada8704b6b2c1cc0",
+      "dimensions": {
+        "width": 896,
+        "height": 1200
+      },
+      "crop": {
+        "x": 992,
+        "y": 512,
+        "width": 544,
+        "height": 512
+      },
+      "source_content_bounds": {
+        "x": 27,
+        "y": 15,
+        "width": 473,
+        "height": 393
+      },
+      "scaled_dimensions": {
+        "width": 757,
+        "height": 629
+      },
+      "placement": {
+        "x": 70,
+        "y": 504,
+        "width": 757,
+        "height": 629,
+        "center_x": 448,
+        "ground_y": 1132
+      },
+      "flood": {
+        "background_pixels": 179117,
+        "non_background_pixels": 99411,
+        "background_fraction": 0.6430843577665442
+      },
+      "components": {
+        "found": 1,
+        "dominant_pixels": 97998,
+        "kept": 1,
+        "removed": 0,
+        "selected_pixels": 97998,
+        "details": []
+      },
+      "alpha": {
+        "transparent_pixels": 180530,
+        "soft_pixels": 177,
+        "opaque_pixels": 97821
+      },
+      "edge_artifacts_repaired": 3
+    }
+  ],
+  "provenance_path": "art/characters/trevor/batch/core-v1.slice-provenance.json"
+}

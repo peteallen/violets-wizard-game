@@ -1,0 +1,135 @@
+{
+  "schema_version": 1,
+  "kind": "codex-built-in-character-sheet-image-generation",
+  "slug": "trevor-core-v1",
+  "workflow": {
+    "name": "Codex built-in image generation",
+    "tool": "image_gen.imagegen",
+    "call_count": 1,
+    "model_identifier": null,
+    "provider_route": null,
+    "seed": null,
+    "note": "The built-in workflow did not return a model identifier, provider route, or seed. The existing Prompt section was passed verbatim, with its two authored references in request order. No OpenRouter or CLI fallback was used."
+  },
+  "timestamps": {
+    "generation_completed_at": "2026-07-17T20:08:05.000Z",
+    "workspace_copy_completed_at": "2026-07-17T20:08:14.000Z",
+    "note": "Completion times are the filesystem birth times of the generated original and byte-for-byte workspace copy; the built-in workflow did not return a generation-start timestamp."
+  },
+  "repository": {
+    "commit": "93953021eea52f2591f3c3ae7d6b3f80c73742b5",
+    "dirty": true
+  },
+  "request_spec": {
+    "path": "art/characters/trevor/batch/core-v1.request.json",
+    "bytes": 692,
+    "sha256": "fb1e5c3b9902dd2a1d073d091613c8521c234f32288432ae54f11695cacd6bf3",
+    "schema_version": 1
+  },
+  "prompt": {
+    "path": "art/characters/trevor/batch/core-v1.prompt.md",
+    "section": "Prompt",
+    "document_bytes": 4502,
+    "document_sha256": "27f5e34bef3ae88b22046bec9e8522bfdd87d89f8cd26694cee9b2a719156615",
+    "normalization": "None. The existing Prompt section was used verbatim without additional creative or execution instructions."
+  },
+  "references": [
+    {
+      "index": 1,
+      "path": "art/guides/ch1-room-style-triptych.png",
+      "role": "the game's painterly storybook texture, warm key light, violet-blue shadow color, and soft dark-brown edge treatment only",
+      "bytes": 683274,
+      "sha256": "ce0628710e9add1a8641c869ce6df94303457faac6434fcb188733b096450a07",
+      "dimensions": { "width": 1536, "height": 288 }
+    },
+    {
+      "index": 2,
+      "path": "art/guides/flat-cyan-chroma.png",
+      "role": "the exact flat extraction background",
+      "bytes": 15860,
+      "sha256": "be13115e6b358a8d99ef4c4c4a8a82d917ee826d0b57c4a9457e046fe776ea46",
+      "dimensions": { "width": 768, "height": 1024 }
+    }
+  ],
+  "generation_output": {
+    "id": "exec-e760d911-d3e3-48c6-b502-c4af83a21c97",
+    "original_path": "/Users/peteallen/.codex/generated_images/019f71ae-9e2c-73c3-aedc-8b9f33ea31f4/exec-e760d911-d3e3-48c6-b502-c4af83a21c97.png",
+    "copied_to": "art/characters/trevor/batch/core-v1.png",
+    "copy_note": "Copied byte-for-byte without image edits before deterministic cyan extraction and slicing.",
+    "media_type": "image/png",
+    "bytes": 2227445,
+    "sha256": "59723d3960b4f868f2fcf1eb601d8197acc6e2c6b106564f3c8580da115e5cec",
+    "dimensions": { "width": 1536, "height": 1024 },
+    "png": {
+      "bit_depth": 8,
+      "color_type": 2,
+      "has_color": true,
+      "has_alpha": false,
+      "interlaced": false
+    }
+  },
+  "deterministic_extraction": {
+    "layout": {
+      "path": "art/characters/trevor/batch/core-v1.layout.json",
+      "bytes": 1826,
+      "sha256": "e13e775184b01f2c198a1328fe8e7982dde9dbdd1ee28d9feba53c8f7b943222"
+    },
+    "provenance": {
+      "path": "art/characters/trevor/batch/core-v1.slice-provenance.json",
+      "bytes": 10674,
+      "sha256": "9813bd23f8aab2d8da1808c5d3fa3c23803a98953d6e25016b29397ac08f60f1"
+    },
+    "algorithm": "cyan-flood-aligned-character-sheet-v1",
+    "deterministic": true,
+    "output_canvas": {
+      "width": 896,
+      "height": 1200,
+      "center_x": 448,
+      "ground_y": 1132
+    },
+    "frames": [
+      {
+        "name": "neutral",
+        "path": "public/assets/art/characters/trevor/default/neutral.png",
+        "bytes": 611559,
+        "sha256": "88abc941b76f276cfb705ee0e9be6b8a6c8c6dc70a1e5124d05f767dce8b549e",
+        "dimensions": { "width": 896, "height": 1200 }
+      },
+      {
+        "name": "hidden-eyes",
+        "path": "public/assets/art/characters/trevor/default/hidden-eyes.png",
+        "bytes": 451142,
+        "sha256": "95ab5d2af5a604df55e639f52a01d0bfb74ecea5ac0f944c8b9e8557cbdf6f00",
+        "dimensions": { "width": 896, "height": 1200 }
+      },
+      {
+        "name": "croak",
+        "path": "public/assets/art/characters/trevor/default/croak.png",
+        "bytes": 593122,
+        "sha256": "49300640bd4e0c0e8ab676b950e6a27640a1bf491dc1d110404646f89471a9e0",
+        "dimensions": { "width": 896, "height": 1200 }
+      },
+      {
+        "name": "hop",
+        "path": "public/assets/art/characters/trevor/default/hop.png",
+        "bytes": 439055,
+        "sha256": "d6527b01a01c215b8171350056aa737290188f4901bc02747d1a167e1952ca55",
+        "dimensions": { "width": 896, "height": 1200 }
+      },
+      {
+        "name": "held",
+        "path": "public/assets/art/characters/trevor/default/held.png",
+        "bytes": 488114,
+        "sha256": "673a18a46ddfda69ee604b9ceca4064860fb2750aaf2ade6650950d87515a0f7",
+        "dimensions": { "width": 896, "height": 1200 }
+      },
+      {
+        "name": "reunion",
+        "path": "public/assets/art/characters/trevor/default/reunion.png",
+        "bytes": 567257,
+        "sha256": "b3ba1068e64bdd4882437355607fefc4fb81a71a6c964fca0f8db92404f57f9c",
+        "dimensions": { "width": 896, "height": 1200 }
+      }
+    ]
+  }
+}

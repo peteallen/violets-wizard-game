@@ -5,7 +5,12 @@ import { chapter1Map } from '../src/game/content/chapters/ch1.js';
 import { contentRegistry } from '../src/game/content/index.js';
 import { resolveAsset } from '../src/game/core/assetManifest.js';
 import { buildMapState, MAP_FOG_STATES } from '../src/game/core/MapState.js';
-import { buildCardAlbumEntries, UIRenderer, UI_RECTS } from '../src/game/render/UIRenderer.js';
+import {
+  buildCardAlbumEntries,
+  cardAlbumPresentation,
+  UIRenderer,
+  UI_RECTS,
+} from '../src/game/render/UIRenderer.js';
 import { createSaveV1 } from '../src/game/systems/Save.js';
 import { World } from '../src/game/world/World.js';
 
@@ -41,12 +46,16 @@ function gameStub() {
 
 describe('satchel card album', () => {
   it('lays out earned and locked production cards as large touch targets', () => {
-    const entries = buildCardAlbumEntries(cards, ['morgana']);
+    const firstPage = buildCardAlbumEntries(cards, ['morgana'], 0);
+    const secondPage = buildCardAlbumEntries(cards, ['morgana'], 1);
+    const entries = [...firstPage, ...secondPage];
     expect(entries.map(({ id, earned }) => ({ id, earned }))).toEqual([
       { id: 'morgana', earned: true },
       { id: 'dumbledore', earned: false },
       { id: 'merlin', earned: false },
       { id: 'jocunda-sykes', earned: false },
+      { id: 'circe', earned: false },
+      { id: 'bertie-bott', earned: false },
     ]);
     for (const entry of entries) {
       expect(entry.__rect.width).toBeGreaterThanOrEqual(88);
@@ -54,10 +63,14 @@ describe('satchel card album', () => {
       expect(entry.__rect.y + entry.__rect.height).toBeLessThanOrEqual(652);
       expect(resolveAsset(entry.portraitAsset)).toContain('/assets/art/cards/');
     }
-    expect(entries.slice(0, 2).every((entry) => entry.__rect.x + entry.__rect.width < 640)).toBe(true);
-    expect(entries.slice(2).every((entry) => entry.__rect.x > 640)).toBe(true);
+    expect(firstPage.slice(0, 2).every((entry) => entry.__rect.x + entry.__rect.width < 640)).toBe(true);
+    expect(firstPage.slice(2).every((entry) => entry.__rect.x > 640)).toBe(true);
+    expect(secondPage[0].__rect.x + secondPage[0].__rect.width).toBeLessThan(640);
+    expect(secondPage[1].__rect.x).toBeGreaterThan(640);
     expect(UI_RECTS.satchelMapTab.height).toBeGreaterThanOrEqual(88);
     expect(UI_RECTS.satchelCardsTab.height).toBeGreaterThanOrEqual(88);
+    expect(UI_RECTS.satchelCardsPrevious.height).toBeGreaterThanOrEqual(88);
+    expect(UI_RECTS.satchelCardsNext.height).toBeGreaterThanOrEqual(88);
     expect(UI_RECTS.satchelStartOver.width).toBeGreaterThanOrEqual(88);
     expect(UI_RECTS.satchelStartOver.height).toBeGreaterThanOrEqual(88);
   });
@@ -87,6 +100,52 @@ describe('satchel card album', () => {
     expect(game.sound.playSfx).toHaveBeenLastCalledWith('sfx/ui/locked', 'fizzle');
   });
 
+  it('turns between four-card spreads and exposes only the visible cards', () => {
+    const game = gameStub();
+    const firstState = {
+      targets: [],
+      cameraX: 0,
+      dialogue: null,
+      overlay: { surface: 'satchel', tab: 'cards', page: 0 },
+      __cardAlbum: cardAlbumPresentation(cards, ['morgana', 'circe'], 0),
+    };
+    firstState.__cardSlots = firstState.__cardAlbum.entries;
+    game.screen = 'playing';
+    game.lastRenderState = firstState;
+    game.shouldShowDebugReset = () => false;
+    game.shouldShowReplayExit = () => false;
+
+    expect(game.semanticTargets(firstState).map(({ id }) => id)).toEqual(expect.arrayContaining([
+      'satchel.cards.previous',
+      'satchel.cards.next',
+      'satchel.card.morgana',
+      'satchel.card.jocunda-sykes',
+    ]));
+    expect(game.semanticTargets(firstState).map(({ id }) => id)).not.toContain('satchel.card.circe');
+
+    game.handleOverlayTap(center(UI_RECTS.satchelCardsNext), firstState);
+    expect(game.world.overlay).toEqual({ surface: 'satchel', tab: 'cards', page: 1 });
+    expect(game.sound.playSfx).toHaveBeenLastCalledWith('sfx/ui/page', 'tap');
+
+    const secondState = {
+      ...firstState,
+      overlay: { surface: 'satchel', tab: 'cards', page: 1 },
+      __cardAlbum: cardAlbumPresentation(cards, ['morgana', 'circe'], 1),
+    };
+    secondState.__cardSlots = secondState.__cardAlbum.entries;
+    expect(game.semanticTargets(secondState).map(({ id }) => id)).toEqual(expect.arrayContaining([
+      'satchel.card.circe',
+      'satchel.card.bertie-bott',
+    ]));
+    expect(game.semanticTargets(secondState).map(({ id }) => id)).not.toContain('satchel.card.morgana');
+
+    game.handleOverlayTap(center(secondState.__cardSlots[0].__rect), secondState);
+    expect(game.sound.speak).toHaveBeenCalledWith(cards[4].voice, cards[4].text);
+
+    game.handleOverlayTap(center(UI_RECTS.satchelCardsPrevious), secondState);
+    expect(game.world.overlay).toEqual({ surface: 'satchel', tab: 'cards', page: 0 });
+  });
+
   it('offers Start fresh on every satchel tab and resets only after confirmation', () => {
     const game = gameStub();
     game.startOverPreservingSettings = vi.fn();
@@ -108,8 +167,13 @@ describe('satchel card album', () => {
     expect(game.startOverPreservingSettings).not.toHaveBeenCalled();
 
     game.handleOverlayTap(center(UI_RECTS.satchelStartOver), {
-      overlay: { surface: 'satchel', tab: 'cards' },
+      overlay: { surface: 'satchel', tab: 'cards', page: 1 },
     });
+    expect(game.world.overlay.returnPage).toBe(1);
+    game.handleParentPanelTap(center(UI_RECTS.parentCancelConfirm), game.world.overlay);
+    expect(game.world.overlay).toEqual({ surface: 'satchel', tab: 'cards', page: 1 });
+
+    game.handleOverlayTap(center(UI_RECTS.satchelStartOver), { overlay: game.world.overlay });
     game.handleParentPanelTap(center(UI_RECTS.parentAcceptConfirm), game.world.overlay);
     expect(game.startOverPreservingSettings).toHaveBeenCalledTimes(1);
   });
@@ -347,7 +411,7 @@ describe('satchel map model', () => {
       chapter1Map.locations.find((location) => location.id === 'map.ch1.malkins').vignette,
     );
     expect(model.routes.at(-1)).toMatchObject({ unlocked: false, fogState: MAP_FOG_STATES.soft });
-    expect(model).not.toHaveProperty('asset');
+    expect(model.asset).toBe(chapter1Map.asset);
     expect(Object.isFrozen(model.locations)).toBe(true);
     expect(buildMapState(chapter1Map, snapshot)).toEqual(model);
   });

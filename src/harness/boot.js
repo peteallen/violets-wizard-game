@@ -6,6 +6,7 @@ import {
   titleCharacterDependencies,
 } from '../game/characters/productionCatalog.js';
 import { loadChapterPackage } from '../game/content/index.js';
+import { getAsset } from '../game/core/assetManifest.js';
 import { loadGameFonts } from '../game/core/loadFonts.js';
 import { validateSaveV1 } from '../game/systems/Save.js';
 import { RegisteredCharacterRenderer } from '../game/render/RegisteredCharacterRenderer.js';
@@ -37,6 +38,14 @@ export const SET_PIECE_REVIEW_SCENES = Object.freeze({
   'sp-ch2-sorting-reveal-review': 'ch2.setPiece.sortingReveal',
   'sp-ch2-common-room-arrival-review': 'ch2.setPiece.commonRoomArrival',
   'sp-ch2-chapter-card-review': 'ch2.setPiece.chapterCard',
+  'sp-ch3-spellbook-reveal-review': 'ch3.setPiece.spellbookReveal',
+  'sp-ch3-lumos-bloom-review': 'ch3.setPiece.lumosBloom',
+  'sp-ch3-leviosa-feather-review': 'ch3.setPiece.leviosaFeather',
+  'sp-ch3-corridor-one-reveal-review': 'ch3.setPiece.corridorOneReveal',
+  'sp-ch3-trevor-reveal-review': 'ch3.setPiece.trevorReveal',
+  'sp-ch3-trevor-found-review': 'ch3.setPiece.trevorFound',
+  'sp-ch3-trevor-reunion-review': 'ch3.setPiece.trevorReunion',
+  'sp-ch3-chapter-close-review': 'ch3.setPiece.chapterClose',
 });
 
 export const WORLD_AFFORDANCE_REVIEW_SCENES = Object.freeze({
@@ -186,6 +195,48 @@ async function preloadVisibleRoom(game) {
   await game.roomRenderer.preload([...new Set(keys)]);
 }
 
+async function decodeHarnessImage(image) {
+  if (!image) return null;
+  if (typeof image.decode === 'function') {
+    try {
+      await image.decode();
+    } catch {
+      return null;
+    }
+    return image;
+  }
+  if (image.complete) return image;
+  await new Promise((resolve) => {
+    image.addEventListener('load', resolve, { once: true });
+    image.addEventListener('error', resolve, { once: true });
+  });
+  return image.complete ? image : null;
+}
+
+export async function preloadHarnessChapterImages(game) {
+  const assets = game.world?.chapter?.assets ?? {};
+  const imageKeys = Object.entries(assets)
+    .filter(([, asset]) => asset?.kind === 'image')
+    .map(([key]) => key);
+  await Promise.all(imageKeys.map((key) => (
+    decodeHarnessImage(game.uiRenderer?.imageFor?.(key))
+  )));
+
+  const active = game.world?.setPieces?.active;
+  const activeAssets = [...new Set([
+    ...(active?.descriptor?.assets ?? []),
+    ...(active?.logicalDescriptor?.assets ?? []),
+  ])];
+  const setPieceImageKeys = activeAssets.filter(
+    (key) => (assets[key] ?? getAsset(key))?.kind === 'image',
+  );
+  await Promise.all(setPieceImageKeys.map((key) => game.setPieceRenderer?.loadImage?.(key)));
+  return Object.freeze({
+    ui: Object.freeze(imageKeys),
+    setPiece: Object.freeze(setPieceImageKeys),
+  });
+}
+
 export async function prepareSetPieceReview(game, scene) {
   const setPieceId = SET_PIECE_REVIEW_SCENES[scene];
   if (!setPieceId || !game.world) return false;
@@ -199,6 +250,14 @@ export async function prepareSetPieceReview(game, scene) {
     'sp-ch2-sweet-reaction-review': { x: 410, facing: 'left' },
     'sp-ch2-sorting-reveal-review': { x: 640, facing: 'right' },
     'sp-ch2-common-room-arrival-review': { x: 590, facing: 'right' },
+    'sp-ch3-spellbook-reveal-review': { x: 520, facing: 'right' },
+    'sp-ch3-lumos-bloom-review': { x: 500, facing: 'right' },
+    'sp-ch3-leviosa-feather-review': { x: 430, facing: 'right' },
+    'sp-ch3-corridor-one-reveal-review': { x: 820, facing: 'right' },
+    'sp-ch3-trevor-reveal-review': { x: 820, facing: 'right' },
+    'sp-ch3-trevor-found-review': { x: 900, facing: 'right' },
+    'sp-ch3-trevor-reunion-review': { x: 690, facing: 'right' },
+    'sp-ch3-chapter-close-review': { x: 640, facing: 'right' },
   }[scene];
   if (stagedPlayer) {
     game.world.player.x = stagedPlayer.x;
@@ -334,6 +393,7 @@ export async function bootHarness({
       hud: Boolean(game.world),
       satchel: request.scene.startsWith('ui-satchel-') || Boolean(worldSnapshot?.hasSatchel),
     });
+    await preloadHarnessChapterImages(game);
     if (request.scene === 'pet-name-dialog') void game.petNameDialog?.open('Moonbeam');
     await preloadVisibleRoom(game);
     game.render();

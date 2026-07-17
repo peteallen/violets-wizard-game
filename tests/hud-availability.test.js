@@ -1,10 +1,12 @@
-import { describe, expect, it, vi } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { Game } from '../src/game/Game.js';
 import { UI_RECTS } from '../src/game/render/UIRenderer.js';
 
 function center(rect) {
   return { x: rect.x + rect.width / 2, y: rect.y + rect.height / 2 };
 }
+
+afterEach(() => vi.unstubAllGlobals());
 
 function gameStub(state) {
   const game = Object.create(Game.prototype);
@@ -86,5 +88,25 @@ describe('earned HUD availability', () => {
     game.handleTap(center(UI_RECTS.wand));
     expect(game.sound.playSfx).toHaveBeenLastCalledWith('sfx/ui/locked', 'fizzle');
     expect(game.world.dialogue.open).not.toHaveBeenCalled();
+  });
+
+  it('keeps the wand fallback usable when no browser status document exists', () => {
+    vi.stubGlobal('document', undefined);
+    const state = {
+      targets: [],
+      cameraX: 0,
+      roomId: 'ch1.diagonStreet',
+      screen: 'playing',
+      dialogue: null,
+      setPiece: null,
+      overlay: null,
+      hasSatchel: true,
+      hasWand: true,
+    };
+    const game = gameStub(state);
+
+    expect(() => game.handleTap(center(UI_RECTS.wand))).not.toThrow();
+    expect(game.sound.playSfx).toHaveBeenLastCalledWith('sfx/ui/locked', 'fizzle');
+    expect(game.world.tap).not.toHaveBeenCalled();
   });
 });

@@ -41,6 +41,28 @@ describe('voice transcription QA', () => {
       .toBe(normalizeSpokenText('Jocunda Sykes'));
     expect(normalizeSpokenText('Ahem, Violet.'))
       .toBe(normalizeSpokenText('Hmm. Violet.'));
+    expect(normalizeSpokenText('Open the spell book.'))
+      .toBe(normalizeSpokenText('Open the spellbook.'));
+  });
+
+  it('keeps isolated learning-pack transcript aliases scoped to their authored line', () => {
+    const expected = [{
+      key: 'voice/ch3/learning/leviosa/sa',
+      role: 'learning',
+      text: 'SA',
+      acceptableTexts: ['SA', 'Saa', 'So'],
+    }];
+
+    expect(auditVoiceQa(expected, [{
+      key: 'voice/ch3/learning/leviosa/sa',
+      text: 'So',
+      file: 'ch3/learning/leviosa/sa.json',
+    }]).passed).toBe(true);
+    expect(auditVoiceQa(expected, [{
+      key: 'voice/ch3/learning/leviosa/sa',
+      text: 'No',
+      file: 'ch3/learning/leviosa/sa.json',
+    }]).passed).toBe(false);
   });
 
   it('reports missing, mismatched, and unexpected transcripts separately', () => {
@@ -69,8 +91,9 @@ describe('voice transcription QA', () => {
     const result = await runVoiceQa();
 
     expect(result.issues).toEqual([]);
-    expect(result.totals).toMatchObject({ expected: 69, present: 69, matched: 69, missing: 0, mismatched: 0 });
+    expect(result.totals).toMatchObject({ expected: 117, present: 117, matched: 117, missing: 0, mismatched: 0 });
     expect(result.roles.guide).toMatchObject({ expected: 6, present: 6, matched: 6, missing: 0 });
+    expect(result.roles.learning).toMatchObject({ expected: 13, present: 13, matched: 13, missing: 0 });
     expect(result.passed).toBe(true);
   });
 

@@ -1,0 +1,16 @@
+{
+  "language_code": "eng",
+  "language_probability": 1,
+  "text": "Mm-hmm.",
+  "words": [
+    {
+      "text": "Mm-hmm.",
+      "start": 0.099,
+      "end": 0.179,
+      "type": "word",
+      "logprob": -0.07794223262577102
+    }
+  ],
+  "transcription_id": "KANsaFTe8KqQgzpFYcIH",
+  "audio_duration_secs": 0.6300625
+}

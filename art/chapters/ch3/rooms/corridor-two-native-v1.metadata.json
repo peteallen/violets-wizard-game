@@ -1,0 +1,83 @@
+{
+  "schema_version": 1,
+  "kind": "codex-built-in-room-image-generation",
+  "slug": "corridor-two-native-v1",
+  "workflow": {
+    "name": "Codex built-in image generation",
+    "tool": "image_gen.imagegen",
+    "model_identifier": null,
+    "seed": null,
+    "note": "The built-in workflow did not return a model identifier or seed."
+  },
+  "timestamps": {
+    "generation_started_at": "2026-07-17T19:22:35.904Z",
+    "generation_completed_at": "2026-07-17T19:23:40.390Z",
+    "duration_ms": 64486
+  },
+  "request_spec": {
+    "path": "art/chapters/ch3/rooms/corridor-two-native-v1.request.json",
+    "bytes": 1408,
+    "sha256": "65c7b4dd640122c0432f1e6eb54a04acd58cf4ba5482b6bf94fea492563b9c24"
+  },
+  "prompt": {
+    "path": "art/chapters/ch3/rooms/corridor-two-native-v1.prompt.md",
+    "section": "Prompt",
+    "bytes": 3585,
+    "sha256": "02110826cfc9345dd33473cd6ba1d04f8658d02933a52da199d06bc27504c09c"
+  },
+  "references": [
+    {
+      "index": 1,
+      "path": "art/raw/ch1-courtyard.png",
+      "role": "readable old-stone staging and calm gameplay-floor reference",
+      "bytes": 2988006,
+      "sha256": "1d52de7f7002bf8286207e9b77d0da2e640d99b47fe4cec56290fb6f75425068",
+      "dimensions": { "width": 1672, "height": 941 }
+    },
+    {
+      "index": 2,
+      "path": "public/assets/art/rooms/ch2-great-hall.webp",
+      "role": "magical-school scale, candlelit night color, and dimensional stone reference",
+      "bytes": 452810,
+      "sha256": "e976d3ec5f7b6e21429812b480467d1123989fb9f70e4607256115b3e58eba75",
+      "dimensions": { "width": 2048, "height": 1152 }
+    },
+    {
+      "index": 3,
+      "path": "art/guides/ch1-room-style-triptych.png",
+      "role": "consolidated Chapter One finish and staging reference",
+      "bytes": 683274,
+      "sha256": "ce0628710e9add1a8641c869ce6df94303457faac6434fcb188733b096450a07",
+      "dimensions": { "width": 1536, "height": 288 }
+    }
+  ],
+  "generation_output": {
+    "id": "exec-8fde7246-1cb3-4f3e-80ca-ac25e369d1f6",
+    "original_path": "/Users/peteallen/.codex/generated_images/019f717f-2a8a-7bb0-8623-a1c4b20b10fe/exec-8fde7246-1cb3-4f3e-80ca-ac25e369d1f6.png",
+    "copied_to": "art/raw/ch3-corridor-two-native-v1.png",
+    "media_type": "image/png",
+    "bytes": 2655485,
+    "sha256": "8a96f54f40facecde0e527db06596cb635527ae3b14b4f6afdd78a4d43b3f1a2",
+    "dimensions": { "width": 1672, "height": 941 }
+  },
+  "derivatives": {
+    "accepted_png": {
+      "path": "art/raw/ch3-corridor-two-v1.png",
+      "bytes": 3575441,
+      "sha256": "05888749570d5a48844a940d37c755d2a7da17a892bfb1270a9fe22de49fc4b0",
+      "dimensions": { "width": 2048, "height": 1152 }
+    },
+    "shipping_webp": {
+      "path": "public/assets/art/rooms/ch3-corridor-two.webp",
+      "bytes": 355938,
+      "sha256": "da20c0a68c4c661d945103808168cb2900a5634af7efe5de79f0386fb0e3f2f0",
+      "dimensions": { "width": 2048, "height": 1152 }
+    }
+  },
+  "conversion": {
+    "crop": "sips -s format png -c 940 1672",
+    "resize": "sips -s format png -z 1152 2048",
+    "shipping": "cwebp -q 88 -m 6 -sharp_yuv",
+    "note": "The 1672x941 native PNG was center-cropped by one pixel to 1672x940, resized once to 2048x1152, then encoded as WebP."
+  }
+}

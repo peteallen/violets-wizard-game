@@ -1,0 +1,16 @@
+{
+  "language_code": "eng",
+  "language_probability": 1,
+  "text": "Oh",
+  "words": [
+    {
+      "text": "Oh",
+      "start": 0.14,
+      "end": 0.159,
+      "type": "word",
+      "logprob": -0.00003564294092939235
+    }
+  ],
+  "transcription_id": "C9AOpJDmlikCvjOJQkIy",
+  "audio_duration_secs": 0.531125
+}

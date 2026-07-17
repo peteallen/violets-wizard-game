@@ -1,0 +1,156 @@
+{
+  "language_code": "eng",
+  "language_probability": 1,
+  "text": "A little light may help you see where Trevor has been.",
+  "words": [
+    {
+      "text": "A",
+      "start": 0.059,
+      "end": 0.14,
+      "type": "word",
+      "logprob": -0.00020489977032411844
+    },
+    {
+      "text": " ",
+      "start": 0.14,
+      "end": 0.179,
+      "type": "spacing",
+      "logprob": -0.0000046491513785440475
+    },
+    {
+      "text": "little",
+      "start": 0.179,
+      "end": 0.419,
+      "type": "word",
+      "logprob": -0.0000046491513785440475
+    },
+    {
+      "text": " ",
+      "start": 0.419,
+      "end": 0.459,
+      "type": "spacing",
+      "logprob": -0.000004291525328881107
+    },
+    {
+      "text": "light",
+      "start": 0.459,
+      "end": 0.659,
+      "type": "word",
+      "logprob": -0.000004291525328881107
+    },
+    {
+      "text": " ",
+      "start": 0.659,
+      "end": 0.759,
+      "type": "spacing",
+      "logprob": -0.000007033323527139146
+    },
+    {
+      "text": "may",
+      "start": 0.759,
+      "end": 0.899,
+      "type": "word",
+      "logprob": -0.000007033323527139146
+    },
+    {
+      "text": " ",
+      "start": 0.899,
+      "end": 0.959,
+      "type": "spacing",
+      "logprob": 0
+    },
+    {
+      "text": "help",
+      "start": 0.959,
+      "end": 1.139,
+      "type": "word",
+      "logprob": 0
+    },
+    {
+      "text": " ",
+      "start": 1.139,
+      "end": 1.179,
+      "type": "spacing",
+      "logprob": -0.000003576272320060525
+    },
+    {
+      "text": "you",
+      "start": 1.179,
+      "end": 1.319,
+      "type": "word",
+      "logprob": -0.000003576272320060525
+    },
+    {
+      "text": " ",
+      "start": 1.319,
+      "end": 1.379,
+      "type": "spacing",
+      "logprob": -0.0000011920922133867862
+    },
+    {
+      "text": "see",
+      "start": 1.379,
+      "end": 1.559,
+      "type": "word",
+      "logprob": -0.0000011920922133867862
+    },
+    {
+      "text": " ",
+      "start": 1.559,
+      "end": 1.579,
+      "type": "spacing",
+      "logprob": -0.0000015497195136049413
+    },
+    {
+      "text": "where",
+      "start": 1.579,
+      "end": 1.74,
+      "type": "word",
+      "logprob": -0.0000015497195136049413
+    },
+    {
+      "text": " ",
+      "start": 1.74,
+      "end": 1.779,
+      "type": "spacing",
+      "logprob": -0.00015567521040793508
+    },
+    {
+      "text": "Trevor",
+      "start": 1.779,
+      "end": 2.059,
+      "type": "word",
+      "logprob": -0.00015567521040793508
+    },
+    {
+      "text": " ",
+      "start": 2.059,
+      "end": 2.099,
+      "type": "spacing",
+      "logprob": -7.152555099310121e-7
+    },
+    {
+      "text": "has",
+      "start": 2.099,
+      "end": 2.24,
+      "type": "word",
+      "logprob": -7.152555099310121e-7
+    },
+    {
+      "text": " ",
+      "start": 2.24,
+      "end": 2.299,
+      "type": "spacing",
+      "logprob": -0.000006198863957251888
+    },
+    {
+      "text": "been.",
+      "start": 2.299,
+      "end": 2.579,
+      "type": "word",
+      "logprob": -0.03221913276574924
+    }
+  ],
+  "transcription_id": "4Tv2mLYXfny8XTSVwFzY",
+  "audio_duration_secs": 2.9096875
+}

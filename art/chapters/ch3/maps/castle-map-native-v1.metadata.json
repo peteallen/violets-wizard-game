@@ -1,0 +1,75 @@
+{
+  "schema_version": 1,
+  "kind": "codex-built-in-map-image-generation",
+  "slug": "castle-map-native-v1",
+  "workflow": {
+    "name": "Codex built-in image generation",
+    "tool": "image_gen.imagegen",
+    "model_identifier": null,
+    "seed": null,
+    "note": "The built-in workflow did not return a model identifier or seed."
+  },
+  "timestamps": {
+    "generation_started_at": "2026-07-17T19:20:36.000Z",
+    "generation_completed_at": "2026-07-17T19:22:13.000Z",
+    "duration_ms": 97000
+  },
+  "request_spec": {
+    "path": "art/chapters/ch3/maps/castle-map-native-v1.request.json",
+    "bytes": 1270,
+    "sha256": "b60b2e0f6c7703bc1af3617b9de5a9d7c7a76106838d39b8895d89f52d8fc7d4"
+  },
+  "prompt": {
+    "path": "art/chapters/ch3/maps/castle-map-native-v1.prompt.md",
+    "section": "Prompt",
+    "bytes": 3969,
+    "sha256": "3a41baf9f298e2a02d21ed0bd35ef84b52dba53aac7c72749cb143623b14d888"
+  },
+  "references": [
+    {
+      "index": 1,
+      "path": "art/raw/ch2-lake-vista-v2.png",
+      "role": "established original castle identity, twilight lighting, and premium painted finish reference",
+      "bytes": 3680689,
+      "sha256": "9c16e29df4adf2f606e4d26b472fa395d84fe2a6d16a782edd1fa162275a999c",
+      "dimensions": { "width": 2048, "height": 1152 }
+    },
+    {
+      "index": 2,
+      "path": "art/ui/satchel/source/spread-v2.png",
+      "role": "warm parchment, gold, plum, and Field Kit material-finish reference",
+      "bytes": 2751733,
+      "sha256": "c5217ab11def5062ff8bcd466da3448f239d6d1d9eaa3e2560bd33da7f5e1937",
+      "dimensions": { "width": 1643, "height": 957 }
+    }
+  ],
+  "generation_output": {
+    "id": "exec-bdea3d58-5d35-4f8f-8f15-a16897e1aa93",
+    "original_path": "/Users/peteallen/.codex/generated_images/019f7183-6ad4-7271-af63-4e295c819dcd/exec-bdea3d58-5d35-4f8f-8f15-a16897e1aa93.png",
+    "copied_to": "art/raw/ch3-castle-map-native-v1.png",
+    "media_type": "image/png",
+    "bytes": 2888853,
+    "sha256": "c7c8863b8744fbda6e2bfe0ecb99b843273740b5d9cb56b9fd96299f3296b36e",
+    "dimensions": { "width": 1672, "height": 941 }
+  },
+  "derivatives": {
+    "accepted_png": {
+      "path": "art/raw/ch3-castle-map-v1.png",
+      "bytes": 3842720,
+      "sha256": "402b638fb1e881705d4949135b425514f1920d7bdb02daff80d0f7b17e220df7",
+      "dimensions": { "width": 2048, "height": 1152 }
+    },
+    "shipping_webp": {
+      "path": "public/assets/art/maps/ch3-castle.webp",
+      "bytes": 430696,
+      "sha256": "f97a1547bafa9a0c1c694b31beb5654a969c87c928f1cfa10bef1cd7109675b8",
+      "dimensions": { "width": 2048, "height": 1152 }
+    }
+  },
+  "conversion": {
+    "crop": "sips -s format png -c 940 1672",
+    "resize": "sips -s format png -z 1152 2048",
+    "shipping": "cwebp -q 88 -m 6 -sharp_yuv",
+    "note": "The opaque 1672x941 native PNG was center-cropped by one pixel to 1672x940, resized once to 2048x1152, then encoded as WebP."
+  }
+}

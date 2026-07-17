@@ -1,0 +1,103 @@
+{
+  "schema_version": 1,
+  "kind": "codex-built-in-map-destination-image-generation",
+  "slug": "ch3-destination-corridor-three-native-v1",
+  "generated_at": "2026-07-17",
+  "workflow": {
+    "name": "Codex built-in image generation",
+    "tool": "image_gen.imagegen",
+    "model_identifier": null,
+    "provider_route": null,
+    "seed": null,
+    "note": "The built-in workflow did not return a model identifier, provider route, or seed."
+  },
+  "timestamps": {
+    "generation_started_at": "2026-07-17T19:30:32.424Z",
+    "generation_completed_at": "2026-07-17T19:31:47.528Z",
+    "duration_ms": 75104
+  },
+  "request_spec": {
+    "path": "art/chapters/ch3/maps/corridor-three-native-v1.request.json",
+    "bytes": 2143,
+    "sha256": "b2ff62dd3a76f45aaca92286b1e31a7f0f416165e1acb5ac47c152c43a784373"
+  },
+  "prompt": {
+    "path": "art/chapters/ch3/maps/corridor-three-native-v1.prompt.md",
+    "section": "Accepted built-in prompt",
+    "document_bytes": 4692,
+    "document_sha256": "e112a621698693e33992be3956527678b8c8ae49e5a138bffb1adfcf32aed332"
+  },
+  "references": [
+    {
+      "index": 1,
+      "path": "public/assets/art/ui/satchel/destination-diagon-alley.webp",
+      "role": "exact destination-card family, silhouette, rim, portrait geometry, and blank-label-band reference",
+      "bytes": 94950,
+      "sha256": "d13787aab1525c552e63663b540bb98307c6fcee54366b2ed982ed1ce00949e1",
+      "dimensions": { "width": 420, "height": 500 }
+    },
+    {
+      "index": 2,
+      "path": "art/raw/ch2-great-hall-v4.png",
+      "role": "magical-school stone, timber, arched architecture, candlelit depth, and painterly finish only",
+      "bytes": 3836559,
+      "sha256": "47794a3e7c7341cc258f5393d8a98bb405957e786418a2ae46b04a2a9acfd5b8",
+      "dimensions": { "width": 2048, "height": 1152 }
+    }
+  ],
+  "generation_output": {
+    "id": "exec-3534ce2a-3fbb-45fc-b749-46f5de35cf75",
+    "original_path": "/Users/peteallen/.codex/generated_images/019f7183-d655-79c3-8eae-91a6bf9bf959/exec-3534ce2a-3fbb-45fc-b749-46f5de35cf75.png",
+    "copied_to": "art/raw/ch3-destination-corridor-three-native-v1.png",
+    "copy_note": "Copied byte-for-byte without image edits before deterministic chroma extraction.",
+    "media_type": "image/png",
+    "bytes": 2880162,
+    "sha256": "7bbf4fcb9fbf86b5463b7b01494050cf76cd1e5067f8e347445b17071e72ad22",
+    "dimensions": { "width": 1149, "height": 1369 }
+  },
+  "derivatives": {
+    "accepted_alpha_png": {
+      "path": "art/raw/ch3-destination-corridor-three-v1.png",
+      "bytes": 3090781,
+      "sha256": "dd42827f65282065dbea9ee22c35647e30880be50139012e36bd43064fce0156",
+      "dimensions": { "width": 1149, "height": 1369 },
+      "has_alpha": true
+    },
+    "shipping_webp": {
+      "path": "public/assets/art/maps/ch3-destination-corridor-three.webp",
+      "bytes": 71310,
+      "sha256": "e15d0c0e2073acdca6479a10b070da9fda284a4d17dab42754f4ae9da8c0a4ab",
+      "dimensions": { "width": 420, "height": 500 },
+      "has_alpha": true
+    }
+  },
+  "processing": {
+    "alpha_extraction": {
+      "tool": "${CODEX_HOME:-$HOME/.codex}/skills/.system/imagegen/scripts/remove_chroma_key.py",
+      "arguments": ["--auto-key", "border", "--soft-matte", "--transparent-threshold", "12", "--opaque-threshold", "220", "--despill"],
+      "sampled_key_color": "#02fb02",
+      "transparent_pixels": 192759,
+      "partially_transparent_pixels": 5112,
+      "total_pixels": 1572981
+    },
+    "aspect_normalization": {
+      "tool": "ffmpeg",
+      "input_dimensions": { "width": 1149, "height": 1369 },
+      "padded_dimensions": { "width": 1155, "height": 1375 },
+      "filter": "pad=1155:1375:(ow-iw)/2:(oh-ih)/2:color=0x00000000",
+      "note": "Transparent padding only established the exact 21:25 canvas ratio; the accepted art was neither cropped nor distorted."
+    },
+    "shipping_encode": {
+      "tool": "cwebp",
+      "arguments": ["-q", "88", "-alpha_q", "100", "-m", "6", "-sharp_yuv", "-resize", "420", "500"]
+    }
+  },
+  "validation": {
+    "transparent_corner_alpha": [0, 0, 0, 0],
+    "outer_border_fully_transparent": true,
+    "visible_chroma_fringe": false,
+    "neon_green_pixels_with_nonzero_alpha": 0,
+    "visual_brief": "Passed: one broad family-matched corridor card with exactly one plain closed-visor armor suit, one heavy burgundy curtain, one separate empty dark alcove, and a completely blank lower label band.",
+    "unsafe_output": false
+  }
+}

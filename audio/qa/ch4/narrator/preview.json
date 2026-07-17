@@ -1,0 +1,212 @@
+{
+  "language_code": "eng",
+  "language_probability": 1,
+  "text": "Flying lessons are coming soon. Violet will glide through bright star rings above the lawn.",
+  "words": [
+    {
+      "text": "Flying",
+      "start": 0.079,
+      "end": 0.479,
+      "type": "word",
+      "logprob": -0.007061760872602463
+    },
+    {
+      "text": " ",
+      "start": 0.479,
+      "end": 0.539,
+      "type": "spacing",
+      "logprob": -0.000005602820692729438
+    },
+    {
+      "text": "lessons",
+      "start": 0.539,
+      "end": 0.899,
+      "type": "word",
+      "logprob": -0.000005602820692729438
+    },
+    {
+      "text": " ",
+      "start": 0.899,
+      "end": 0.939,
+      "type": "spacing",
+      "logprob": -1.1920928244535389e-7
+    },
+    {
+      "text": "are",
+      "start": 0.939,
+      "end": 1.019,
+      "type": "word",
+      "logprob": -1.1920928244535389e-7
+    },
+    {
+      "text": " ",
+      "start": 1.019,
+      "end": 1.079,
+      "type": "spacing",
+      "logprob": -5.960462772236497e-7
+    },
+    {
+      "text": "coming",
+      "start": 1.079,
+      "end": 1.319,
+      "type": "word",
+      "logprob": -5.960462772236497e-7
+    },
+    {
+      "text": " ",
+      "start": 1.319,
+      "end": 1.439,
+      "type": "spacing",
+      "logprob": -0.0000017881377516459906
+    },
+    {
+      "text": "soon.",
+      "start": 1.439,
+      "end": 1.899,
+      "type": "word",
+      "logprob": -0.000035044703872699755
+    },
+    {
+      "text": " ",
+      "start": 1.899,
+      "end": 2.819,
+      "type": "spacing",
+      "logprob": -0.00012766500003635883
+    },
+    {
+      "text": "Violet",
+      "start": 2.819,
+      "end": 3.24,
+      "type": "word",
+      "logprob": -0.00012766500003635883
+    },
+    {
+      "text": " ",
+      "start": 3.24,
+      "end": 3.299,
+      "type": "spacing",
+      "logprob": 0
+    },
+    {
+      "text": "will",
+      "start": 3.299,
+      "end": 3.5,
+      "type": "word",
+      "logprob": 0
+    },
+    {
+      "text": " ",
+      "start": 3.5,
+      "end": 3.539,
+      "type": "spacing",
+      "logprob": -0.0000066756979322235566
+    },
+    {
+      "text": "glide",
+      "start": 3.539,
+      "end": 3.959,
+      "type": "word",
+      "logprob": -0.0000066756979322235566
+    },
+    {
+      "text": " ",
+      "start": 3.959,
+      "end": 4.019,
+      "type": "spacing",
+      "logprob": -3.576278118089249e-7
+    },
+    {
+      "text": "through",
+      "start": 4.019,
+      "end": 4.219,
+      "type": "word",
+      "logprob": -3.576278118089249e-7
+    },
+    {
+      "text": " ",
+      "start": 4.219,
+      "end": 4.359,
+      "type": "spacing",
+      "logprob": -0.00012361239350866526
+    },
+    {
+      "text": "bright",
+      "start": 4.36,
+      "end": 4.639,
+      "type": "word",
+      "logprob": -0.00012361239350866526
+    },
+    {
+      "text": " ",
+      "start": 4.639,
+      "end": 4.719,
+      "type": "spacing",
+      "logprob": -0.000003933898824470816
+    },
+    {
+      "text": "star",
+      "start": 4.719,
+      "end": 5.019,
+      "type": "word",
+      "logprob": -0.000003933898824470816
+    },
+    {
+      "text": " ",
+      "start": 5.019,
+      "end": 5.139,
+      "type": "spacing",
+      "logprob": -0.00007998623186722398
+    },
+    {
+      "text": "rings",
+      "start": 5.139,
+      "end": 5.5,
+      "type": "word",
+      "logprob": -0.00007998623186722398
+    },
+    {
+      "text": " ",
+      "start": 5.5,
+      "end": 5.599,
+      "type": "spacing",
+      "logprob": -0.0000014305104514278355
+    },
+    {
+      "text": "above",
+      "start": 5.599,
+      "end": 5.759,
+      "type": "word",
+      "logprob": -0.0000014305104514278355
+    },
+    {
+      "text": " ",
+      "start": 5.759,
+      "end": 5.819,
+      "type": "spacing",
+      "logprob": -1.1920928244535389e-7
+    },
+    {
+      "text": "the",
+      "start": 5.819,
+      "end": 5.879,
+      "type": "word",
+      "logprob": -1.1920928244535389e-7
+    },
+    {
+      "text": " ",
+      "start": 5.879,
+      "end": 5.959,
+      "type": "spacing",
+      "logprob": -0.000013828182090946939
+    },
+    {
+      "text": "lawn.",
+      "start": 5.96,
+      "end": 6.439,
+      "type": "word",
+      "logprob": -0.07889292232503067
+    }
+  ],
+  "transcription_id": "BOGPLZl3LIhw8xQlrdwc",
+  "audio_duration_secs": 6.687375
+}

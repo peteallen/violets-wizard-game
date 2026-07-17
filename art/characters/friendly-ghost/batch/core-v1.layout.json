@@ -1,0 +1,72 @@
+{
+  "schema_version": 1,
+  "id": "friendly-ghost.core-v1",
+  "source": {
+    "path": "art/characters/friendly-ghost/batch/core-v1.png",
+    "sha256": "16c271cdd45fedfbd70cf759b20b7e3bd4a1da0a4a0811bb0067b66e67eee640"
+  },
+  "output": {
+    "directory": "public/assets/art/characters/friendly-ghost/default",
+    "provenance": "art/characters/friendly-ghost/batch/core-v1.slice-provenance.json",
+    "canvas": {
+      "width": 896,
+      "height": 1200,
+      "center_x": 448,
+      "ground_y": 1132
+    }
+  },
+  "scale": {
+    "numerator": 2,
+    "denominator": 1
+  },
+  "key": {
+    "color": {
+      "red": 1,
+      "green": 251,
+      "blue": 253
+    },
+    "tolerance": 28,
+    "alpha": {
+      "opaque_cyan_excess": 50,
+      "transparent_cyan_excess": 90,
+      "edge_spill_radius": 8,
+      "edge_spill_opaque_cyan_excess": 30,
+      "edge_spill_max_green_blue_delta": 70,
+      "matte_low_alpha": 170,
+      "matte_high_alpha": 245,
+      "edge_color_radius": 0
+    }
+  },
+  "components": {
+    "detail_min_pixels": 8,
+    "detail_max_pixels": 5000,
+    "detail_max_distance": 48
+  },
+  "frames": [
+    {
+      "name": "ambient",
+      "crop": { "x": 0, "y": 0, "width": 512, "height": 512 }
+    },
+    {
+      "name": "talk-a",
+      "crop": { "x": 512, "y": 0, "width": 512, "height": 512 }
+    },
+    {
+      "name": "talk-b",
+      "crop": { "x": 1024, "y": 0, "width": 512, "height": 512 }
+    },
+    {
+      "name": "emerge",
+      "crop": { "x": 0, "y": 512, "width": 512, "height": 512 },
+      "overlap": { "top": 0, "right": 32, "bottom": 0, "left": 0 }
+    },
+    {
+      "name": "listening-reward",
+      "crop": { "x": 512, "y": 512, "width": 512, "height": 512 }
+    },
+    {
+      "name": "delighted",
+      "crop": { "x": 1024, "y": 512, "width": 512, "height": 512 }
+    }
+  ]
+}

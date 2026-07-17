@@ -17,7 +17,7 @@ Original characters-shaped-like-the-books, voiced with distinct, instantly tella
 | **Headmaster** | Soft, amused, twinkly; gravity without weight | Sorting feast, Mirror scene |
 | **Sorting Hat** | Theatrical, ancient, kind; relishes the drama | Ch. 2 |
 | **Harry / Ron / Hermione** | Bright London kids: earnest / cheeky / precise | Ch. 2 onward |
-| **Neville-shaped classmate** | Small, wobbly, sweet | Ch. 3 |
+| **Neville** | Small, wobbly, sweet | Ch. 3 |
 | **Draco-shaped rival** | Posh, huffy, harmless | Ch. 7 |
 | **Quirrell** | Nervous stammer, comic | Ch. 8 phase 1 |
 | **Voldemort** | Dry rasping whisper — *wants* to be terrifying, lands at beatable-menacing; hammy relish over horror | Ch. 8 |

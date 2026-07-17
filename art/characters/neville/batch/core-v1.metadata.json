@@ -1,0 +1,132 @@
+{
+  "schema_version": 1,
+  "kind": "codex-built-in-character-image-generation",
+  "slug": "neville",
+  "workflow": {
+    "name": "Codex built-in image generation",
+    "tool": "image_gen.imagegen",
+    "model_identifier": null,
+    "provider_route": null,
+    "seed": null,
+    "note": "The built-in workflow did not return a model identifier, provider route, or seed. No OpenRouter or CLI fallback was used."
+  },
+  "timestamps": {
+    "generation_started_at": "2026-07-17T20:01:05.500Z",
+    "generation_completed_at": "2026-07-17T20:02:15.000Z",
+    "duration_ms": 69500
+  },
+  "repository": {
+    "commit": "93953021eea52f2591f3c3ae7d6b3f80c73742b5",
+    "dirty": true
+  },
+  "request_spec": {
+    "path": "art/characters/neville/batch/core-v1.request.json",
+    "bytes": 695,
+    "sha256": "f5598c23898499b4d332680e8c2a8cd57c6bf99731d40bd16f6506a3a0973f50",
+    "schema_version": 1
+  },
+  "prompt": {
+    "path": "art/characters/neville/batch/core-v1.prompt.md",
+    "section": "Prompt",
+    "document_bytes": 4615,
+    "document_sha256": "299c88b8f94c4b27b9147764fd2abb386be8cf45bc90857bb0f0b279ae32395d",
+    "normalization": {
+      "use_case": "stylized-concept",
+      "input_roles": "Image 1 supplied storybook texture and lighting only; Image 2 supplied the flat cyan extraction background only.",
+      "execution_controls": "OpenRouter-only model, provider, endpoint, explicit resolution, and output-path controls were not passed to the built-in tool.",
+      "content_note": "The authored identity, clothing, six-pose order, hand-anatomy constraints, cyan-background constraints, and avoid list were retained."
+    }
+  },
+  "references": [
+    {
+      "index": 1,
+      "path": "art/guides/ch1-room-style-triptych.png",
+      "role": "the game's painterly storybook texture, warm key light, violet-blue shadow color, and soft dark-brown edge treatment only",
+      "bytes": 683274,
+      "sha256": "ce0628710e9add1a8641c869ce6df94303457faac6434fcb188733b096450a07",
+      "dimensions": { "width": 1536, "height": 288 }
+    },
+    {
+      "index": 2,
+      "path": "art/guides/flat-cyan-chroma.png",
+      "role": "the exact flat extraction background",
+      "bytes": 15860,
+      "sha256": "be13115e6b358a8d99ef4c4c4a8a82d917ee826d0b57c4a9457e046fe776ea46",
+      "dimensions": { "width": 768, "height": 1024 }
+    }
+  ],
+  "generation_output": {
+    "id": "exec-6e527652-40fd-4d60-a737-5652dfe14c02",
+    "original_path": "/Users/peteallen/.codex/generated_images/019f71a9-5a53-70b0-9913-356d5879cbbe/exec-6e527652-40fd-4d60-a737-5652dfe14c02.png",
+    "copied_to": "art/characters/neville/batch/core-v1.png",
+    "copy_note": "Copied byte-for-byte without image edits before deterministic cyan extraction and slicing.",
+    "bytes": 1640252,
+    "sha256": "f24899f4dc82ac51ce1c783431f1043d0bf495b681d04dd2868907495b0bee51",
+    "dimensions": { "width": 1448, "height": 1086 },
+    "png": {
+      "bit_depth": 8,
+      "color_type": 2,
+      "has_color": true,
+      "has_alpha": false,
+      "interlaced": false
+    }
+  },
+  "extraction": {
+    "layout": {
+      "path": "art/characters/neville/batch/core-v1.layout.json",
+      "bytes": 1698,
+      "sha256": "d25d4b745579489c287da4be5e7a3ab1c73bc5c93bc621f01e19331756e9b60c"
+    },
+    "provenance": {
+      "path": "art/characters/neville/batch/core-v1.slice-provenance.json",
+      "bytes": 10951,
+      "sha256": "b9006888ecf31500ffb7cfbbe925a4dbc03f5e92f484f2f9e7d66446d8ed6d56"
+    },
+    "algorithm": "cyan-flood-aligned-character-sheet-v1",
+    "deterministic": true
+  },
+  "shipping_derivatives": [
+    {
+      "name": "neutral",
+      "path": "public/assets/art/characters/neville/default/neutral.png",
+      "bytes": 397646,
+      "sha256": "4eb03dde04a3faa2a27e978134d90259c68d3371106e0d7cd2288dca8a94e556",
+      "dimensions": { "width": 896, "height": 1200 }
+    },
+    {
+      "name": "talk-a",
+      "path": "public/assets/art/characters/neville/default/talk-a.png",
+      "bytes": 433902,
+      "sha256": "21a0bd5868accd15510fdbc16d3d1004648b3481ec4b55acd132d1f6774d3cd5",
+      "dimensions": { "width": 896, "height": 1200 }
+    },
+    {
+      "name": "talk-b",
+      "path": "public/assets/art/characters/neville/default/talk-b.png",
+      "bytes": 405670,
+      "sha256": "b047add739de33539f9890a10902ed01eea1c407040f24a5c198aaa5f11b0005",
+      "dimensions": { "width": 896, "height": 1200 }
+    },
+    {
+      "name": "tearful",
+      "path": "public/assets/art/characters/neville/default/tearful.png",
+      "bytes": 402692,
+      "sha256": "cb85008574046a61c7bb3ad4d7bed712c96adb0ef3f8fb8610336bd9b2343b71",
+      "dimensions": { "width": 896, "height": 1200 }
+    },
+    {
+      "name": "relieved",
+      "path": "public/assets/art/characters/neville/default/relieved.png",
+      "bytes": 411259,
+      "sha256": "dfd609c7b77b7dd30c3ecaaf69819abc663e1161f1390d82bd930b4d07e501d1",
+      "dimensions": { "width": 896, "height": 1200 }
+    },
+    {
+      "name": "reunion",
+      "path": "public/assets/art/characters/neville/default/reunion.png",
+      "bytes": 468804,
+      "sha256": "5b22d71547376229ccef778b7700260f9fca7e2e11d2a2eeba3765cd40bc4c2b",
+      "dimensions": { "width": 896, "height": 1200 }
+    }
+  ]
+}

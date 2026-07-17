@@ -1,0 +1,137 @@
+{
+  "schema_version": 1,
+  "kind": "codex-built-in-character-sheet-image-generation",
+  "slug": "flitwick-core-v1",
+  "workflow": {
+    "name": "Codex built-in image generation",
+    "tool": "image_gen.imagegen",
+    "call_count": 1,
+    "model_identifier": null,
+    "seed": null,
+    "note": "The built-in workflow did not return a model identifier or seed. The existing prompt was normalized into built-in prompt scaffolding without adding characters, props, poses, or story requirements. No fallback generator was used."
+  },
+  "timestamps": {
+    "generation_completed_at": "2026-07-17T20:02:30.000Z",
+    "workspace_copy_completed_at": "2026-07-17T20:02:41.000Z",
+    "note": "Completion times are the filesystem birth times of the generated original and byte-for-byte workspace copy; the built-in workflow did not return a generation-start timestamp."
+  },
+  "request_spec": {
+    "path": "art/characters/flitwick/batch/core-v1.request.json",
+    "bytes": 698,
+    "sha256": "2668841c361f626dc8ef6fe0c606ef058a78d6cbff5879618209e5d1bb82cd07"
+  },
+  "prompt": {
+    "path": "art/characters/flitwick/batch/core-v1.prompt.md",
+    "section": "Prompt",
+    "document_bytes": 4625,
+    "document_sha256": "6ecc894253c9cabf5fb38cace5e537443ff452a6761e111184cd54976f97d037",
+    "normalization": "The built-in call labeled the use case as stylized-concept, labeled the two image roles explicitly, and retained the prompt's exact six-pose order, character design, cyan-field, anatomy, separation, and avoid constraints."
+  },
+  "references": [
+    {
+      "index": 1,
+      "path": "art/guides/ch1-room-style-triptych.png",
+      "role": "the game's painterly storybook texture, warm key light, violet-blue shadow color, and soft dark-brown edge treatment only",
+      "bytes": 683274,
+      "sha256": "ce0628710e9add1a8641c869ce6df94303457faac6434fcb188733b096450a07",
+      "dimensions": {
+        "width": 1536,
+        "height": 288
+      }
+    },
+    {
+      "index": 2,
+      "path": "art/guides/flat-cyan-chroma.png",
+      "role": "the exact flat extraction background",
+      "bytes": 15860,
+      "sha256": "be13115e6b358a8d99ef4c4c4a8a82d917ee826d0b57c4a9457e046fe776ea46",
+      "dimensions": {
+        "width": 768,
+        "height": 1024
+      }
+    }
+  ],
+  "generation_output": {
+    "id": "exec-ad80c269-2976-4e22-b54b-50eaafa65967",
+    "original_path": "/Users/peteallen/.codex/generated_images/019f71a9-2a13-71b3-b507-a945fe238dfb/exec-ad80c269-2976-4e22-b54b-50eaafa65967.png",
+    "copied_to": "art/characters/flitwick/batch/core-v1.png",
+    "copy_note": "Copied byte-for-byte without image edits before deterministic chroma extraction.",
+    "media_type": "image/png",
+    "bytes": 2088622,
+    "sha256": "1951f7f610c09461105560f2703c52c4578b9b133fc4c89fbd396dc0660ed6ac",
+    "dimensions": {
+      "width": 1536,
+      "height": 1024
+    },
+    "png": {
+      "bit_depth": 8,
+      "color_type": 2,
+      "has_color": true,
+      "has_alpha": false,
+      "interlaced": false
+    }
+  },
+  "deterministic_extraction": {
+    "layout": {
+      "path": "art/characters/flitwick/batch/core-v1.layout.json",
+      "bytes": 1913,
+      "sha256": "f68566360ec3125bc2e08322a41aa18f629d1e0a387c505ac1b8c841c3b07af9"
+    },
+    "provenance": {
+      "path": "art/characters/flitwick/batch/core-v1.slice-provenance.json",
+      "bytes": 14542,
+      "sha256": "09a31c972d2e4bc75c148f8aee6703ff26ee7edd1b6cf23111d18748d074f886"
+    },
+    "algorithm": "cyan-flood-aligned-character-sheet-v1",
+    "output_canvas": {
+      "width": 896,
+      "height": 1200,
+      "center_x": 448,
+      "ground_y": 1132
+    },
+    "frames": [
+      {
+        "name": "neutral",
+        "path": "public/assets/art/characters/flitwick/default/neutral.png",
+        "bytes": 264312,
+        "sha256": "a4ed0a38c3582075ef09f1b2d2c71a8d3b2c31f122ee7bda64f8ede933184279",
+        "dimensions": { "width": 896, "height": 1200 }
+      },
+      {
+        "name": "talk-a",
+        "path": "public/assets/art/characters/flitwick/default/talk-a.png",
+        "bytes": 273618,
+        "sha256": "5a01f6c1babfdc8e9ca73f6a4672b5defb8ee222ff3f60459c859a0f9456d10d",
+        "dimensions": { "width": 896, "height": 1200 }
+      },
+      {
+        "name": "talk-b",
+        "path": "public/assets/art/characters/flitwick/default/talk-b.png",
+        "bytes": 263955,
+        "sha256": "661d23b2113dd4133df7115364f2f9b3e4b61014a1a7ae68e535fe9e2cc0b472",
+        "dimensions": { "width": 896, "height": 1200 }
+      },
+      {
+        "name": "demonstrate",
+        "path": "public/assets/art/characters/flitwick/default/demonstrate.png",
+        "bytes": 319670,
+        "sha256": "2955072924b26c8c55a494f0c27277e375351e5172c2d621d544fb3624ad4fe8",
+        "dimensions": { "width": 896, "height": 1200 }
+      },
+      {
+        "name": "wand-cast",
+        "path": "public/assets/art/characters/flitwick/default/wand-cast.png",
+        "bytes": 291168,
+        "sha256": "238753edb9bf8fd97cd172df5ea5a432b4778316e275840beb32e514c42f4e8a",
+        "dimensions": { "width": 896, "height": 1200 }
+      },
+      {
+        "name": "celebrate",
+        "path": "public/assets/art/characters/flitwick/default/celebrate.png",
+        "bytes": 291496,
+        "sha256": "c72ad84a9990c440cacb4cb39ca4b81e18f6aa97d8391c71fd2f7a70c7741dd0",
+        "dimensions": { "width": 896, "height": 1200 }
+      }
+    ]
+  }
+}

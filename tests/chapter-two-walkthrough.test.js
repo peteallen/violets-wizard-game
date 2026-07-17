@@ -411,13 +411,13 @@ describe('Chapter Two headless walkthrough', () => {
       'ch2.scene.feast',
       'ch2.scene.commonRoomArrival',
       'ch2.scene.chapterCard',
-      'ch3.scene.preview',
+      'ch3.scene.spellbookParcel',
     ]);
     expect(first.world).toEqual({
       chapter: 'ch3',
-      scene: 'ch3.scene.preview',
-      room: 'ch3.previewRoom',
-      dialogueActive: true,
+      scene: 'ch3.scene.spellbookParcel',
+      room: 'ch3.commonRoom',
+      dialogueActive: false,
       setPieceActive: false,
     });
     expect(first.openingSnapshot).toEqual({

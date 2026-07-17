@@ -8,15 +8,18 @@ import {
 } from './chapters/ch1.js';
 import { chapter2, chapter2AssetKeys } from './chapters/ch2.js';
 import { chapter3 } from './chapters/ch3.js';
+import { chapter4 } from './chapters/ch4.js';
 import { chapterCatalog, chapterDescriptors } from '../chapters/catalog.js';
 import { chapter1ContentPackage } from '../chapters/ch1/content.js';
 import { chapter2ContentPackage } from '../chapters/ch2/content.js';
 import { chapter3ContentPackage } from '../chapters/ch3/content.js';
+import { chapter4ContentPackage } from '../chapters/ch4/content.js';
 
 const chapterContentPackages = Object.freeze([
   chapter1ContentPackage,
   chapter2ContentPackage,
   chapter3ContentPackage,
+  chapter4ContentPackage,
 ]);
 
 export const chapterMaps = Object.freeze(Object.fromEntries(
@@ -27,6 +30,7 @@ export const contentRegistry = Object.freeze({
   ch1: chapter1,
   ch2: chapter2,
   ch3: chapter3,
+  ch4: chapter4,
 });
 
 export const chapters = Object.freeze(Object.values(contentRegistry));
@@ -38,12 +42,14 @@ export const chapterAssetKeys = Object.freeze({
   ch1: chapter1AssetKeys,
   ch2: chapter2AssetKeys,
   ch3: Object.freeze(Object.keys(chapter3.assets)),
+  ch4: Object.freeze(Object.keys(chapter4.assets)),
 });
 export const maps = Object.freeze({ [chapter1Map.id]: validateMap(chapter1Map) });
 export const resumeRecaps = Object.freeze({
   ch1: chapter1ResumeRecaps,
   ch2: chapter2.recaps,
   ch3: chapter3.recaps,
+  ch4: chapter4.recaps,
 });
 
 export const content = Object.freeze({

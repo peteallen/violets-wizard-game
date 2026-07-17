@@ -1,0 +1,40 @@
+{
+  "schema_version": 1,
+  "prompt": {
+    "path": "art/chapters/ch3/props/batch/core-v1.prompt.md",
+    "section": "Prompt"
+  },
+  "references": [
+    {
+      "path": "art/guides/ch1-room-style-triptych.png",
+      "role": "the game's painterly storybook texture, warm key light, violet-blue shadow color, and soft dark-brown edge treatment only"
+    },
+    {
+      "path": "art/guides/flat-cyan-chroma.png",
+      "role": "the exact flat extraction background"
+    }
+  ],
+  "generation": {
+    "aspect_ratio": "4:3",
+    "count": 1
+  },
+  "output": {
+    "image": "art/chapters/ch3/props/batch/core-v1.png",
+    "provenance": "art/chapters/ch3/props/batch/core-v1.metadata.json"
+  },
+  "layout": {
+    "columns": 3,
+    "rows": 3,
+    "order": [
+      "spellbook-parcel",
+      "lantern",
+      "feather",
+      "wet-footprints",
+      "ribbon-clue",
+      "reflected-eyes",
+      "torn-book",
+      "toad-token",
+      "sleeping-star"
+    ]
+  }
+}

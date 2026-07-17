@@ -6,6 +6,7 @@ import { cards } from '../src/game/content/cards.js';
 import { chapter1, chapter1ResumeRecaps } from '../src/game/content/chapters/ch1.js';
 import { chapter2 } from '../src/game/content/chapters/ch2.js';
 import { masterAudio } from './audio_mastering.mjs';
+import { chapter3VoiceManifest } from './chapter3_voice_manifest.mjs';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const API_KEY = process.env.ELEVENLABS_API_KEY;
@@ -13,6 +14,7 @@ const force = process.argv.includes('--force');
 const qaEnabled = process.argv.includes('--qa');
 const roleFilter = argumentValue('--role');
 const chapterFilter = parseChapterFilter(argumentValue('--chapter'));
+const keyFilter = argumentValue('--key');
 const VOICE_TARGET_LUFS = -16;
 const QA_DIRECTORY = resolve(ROOT, 'audio/qa');
 const QA_MANIFEST_FILE = resolve(QA_DIRECTORY, 'manifest.json');
@@ -50,6 +52,31 @@ const VOICE_PROFILES = Object.freeze({
     preFilters: pitchFilters(0.94),
   }),
   headmaster: profile('j9jfwdrw7BRfcR43Qohk', { stability: 0.66, similarityBoost: 0.78, style: 0.24 }),
+  home: profile('pFZP5JQG7iQjIQuC4Bku', { stability: 0.66, similarityBoost: 0.78, style: 0.24 }),
+  flitwick: profile('JBFqnCBsd6RMkjVDRZzb', {
+    stability: 0.48,
+    similarityBoost: 0.76,
+    style: 0.5,
+    preFilters: pitchFilters(1.14),
+  }),
+  learning: profile('JBFqnCBsd6RMkjVDRZzb', {
+    stability: 0.66,
+    similarityBoost: 0.78,
+    style: 0.28,
+    preFilters: pitchFilters(1.14),
+  }),
+  neville: profile('Sun6GPdivU7N4kTmYtDw', {
+    stability: 0.64,
+    similarityBoost: 0.74,
+    style: 0.16,
+    preFilters: [...pitchFilters(1.08), 'atempo=0.96'],
+  }),
+  ghost: profile('onwK4e9ZLuTAKqWW03F9', {
+    stability: 0.6,
+    similarityBoost: 0.76,
+    style: 0.3,
+    preFilters: [...pitchFilters(1.03), 'aecho=0.8:0.3:45:0.06'],
+  }),
 });
 
 if (roleFilter && !Object.hasOwn(VOICE_PROFILES, roleFilter)) {
@@ -59,7 +86,9 @@ if (roleFilter && !Object.hasOwn(VOICE_PROFILES, roleFilter)) {
 const lines = collectLines().filter((line) => (
   (!roleFilter || line.role === roleFilter)
   && (!chapterFilter || line.chapter === chapterFilter)
+  && (!keyFilter || line.key === keyFilter)
 ));
+if (keyFilter && lines.length === 0) throw new Error(`Unknown voice key ${keyFilter}.`);
 const outputs = [];
 for (const line of lines) outputs.push(await generate(line));
 if (qaEnabled) await transcribeAndRecord(outputs);
@@ -105,7 +134,16 @@ function collectLines() {
     text: card.text,
     role: 'narrator',
   });
-  return [...new Map(collected.map((line) => [line.key, line])).values()];
+  collected.push(...chapter3VoiceManifest);
+  const unique = new Map();
+  for (const line of collected) {
+    const previous = unique.get(line.key);
+    if (previous && (previous.text !== line.text || previous.role !== line.role)) {
+      throw new Error(`${line.key} is assigned conflicting spoken text or roles.`);
+    }
+    unique.set(line.key, line);
+  }
+  return [...unique.values()];
 }
 
 function roleFor(speaker) {
@@ -143,7 +181,7 @@ async function generate(line) {
       accept: 'audio/mpeg',
     },
     body: JSON.stringify({
-      text: line.text,
+      text: line.generationText ?? line.text,
       model_id: 'eleven_multilingual_v2',
       voice_settings: voiceSettings(profile),
     }),
@@ -192,7 +230,7 @@ async function transcribeAndRecord(outputs) {
   }
 
   const selectedKeys = new Set(outputs.map(({ line }) => line.key));
-  if (chapterFilter && !roleFilter) {
+  if (chapterFilter && !roleFilter && !keyFilter) {
     const prefix = `voice/ch${chapterFilter}/`;
     for (const [key, binding] of Object.entries(manifest.transcripts)) {
       if (!key.startsWith(prefix) || selectedKeys.has(key)) continue;
@@ -261,8 +299,8 @@ function argumentValue(name) {
 
 function parseChapterFilter(value) {
   if (value == null) return null;
-  const match = String(value).match(/^(?:ch)?([12])$/u);
-  if (!match) throw new Error('--chapter must be 1, ch1, 2, or ch2.');
+  const match = String(value).match(/^(?:ch)?([1-4])$/u);
+  if (!match) throw new Error('--chapter must be a number from 1 through 4, optionally prefixed with ch.');
   return Number(match[1]);
 }
 

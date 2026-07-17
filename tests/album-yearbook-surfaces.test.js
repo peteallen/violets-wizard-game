@@ -4,6 +4,7 @@ import { WORLD } from '../src/game/config.js';
 import {
   albumCardLayout,
   buildCardAlbumEntries,
+  cardAlbumPresentation,
   drawYearbookPageDots,
   satchelControlLabelRect,
   UIRenderer,
@@ -156,33 +157,69 @@ describe('storybook satchel card album', () => {
   });
 
   it('keeps the exact earned entries and large card targets clear of satchel controls', () => {
-    const entries = buildCardAlbumEntries(cards, ['morgana']);
-    expect(entries.map(({ id, earned }) => ({ id, earned }))).toEqual([
+    const pages = [
+      cardAlbumPresentation(cards, ['morgana'], 0),
+      cardAlbumPresentation(cards, ['morgana'], 1),
+    ];
+    expect(pages.map(({ page, pageCount, entries }) => ({
+      page,
+      pageCount,
+      entries: entries.length,
+    }))).toEqual([
+      { page: 0, pageCount: 2, entries: 4 },
+      { page: 1, pageCount: 2, entries: 2 },
+    ]);
+    expect(pages.flatMap(({ entries }) => entries)
+      .map(({ id, earned }) => ({ id, earned }))).toEqual([
       { id: 'morgana', earned: true },
       { id: 'dumbledore', earned: false },
       { id: 'merlin', earned: false },
       { id: 'jocunda-sykes', earned: false },
+      { id: 'circe', earned: false },
+      { id: 'bertie-bott', earned: false },
     ]);
 
-    const cardTargets = entries.map(({ __rect }) => __rect);
-    expectGenerousDisjointTargets(cardTargets);
-    for (const entry of entries) {
-      const layout = albumCardLayout(entry);
-      expect(layout.card).toEqual(entry.__rect);
-      expect(layout.card.x).toBeGreaterThanOrEqual(0);
-      expect(layout.card.y).toBeGreaterThanOrEqual(0);
-      expect(layout.card.x + layout.card.width).toBeLessThanOrEqual(WORLD.width);
-      expect(layout.card.y + layout.card.height).toBeLessThanOrEqual(WORLD.height);
-      expect(overlaps(layout.portrait, layout.nameplate)).toBe(false);
-      for (const control of [
-        UI_RECTS.satchelMapTab,
-        UI_RECTS.satchelCardsTab,
-        UI_RECTS.satchelKeyhole,
-        UI_RECTS.close,
-      ]) {
-        expect(overlaps(layout.card, control)).toBe(false);
+    for (const { entries } of pages) {
+      expectGenerousDisjointTargets(entries.map(({ __rect }) => __rect));
+      for (const entry of entries) {
+        const layout = albumCardLayout(entry);
+        expect(layout.card).toEqual(entry.__rect);
+        expect(layout.card.x).toBeGreaterThanOrEqual(0);
+        expect(layout.card.y).toBeGreaterThanOrEqual(0);
+        expect(layout.card.x + layout.card.width).toBeLessThanOrEqual(WORLD.width);
+        expect(layout.card.y + layout.card.height).toBeLessThanOrEqual(WORLD.height);
+        expect(overlaps(layout.portrait, layout.nameplate)).toBe(false);
+        for (const control of [
+          UI_RECTS.satchelMapTab,
+          UI_RECTS.satchelCardsTab,
+          UI_RECTS.satchelKeyhole,
+          UI_RECTS.satchelCardsPrevious,
+          UI_RECTS.satchelCardsNext,
+          UI_RECTS.close,
+        ]) {
+          expect(overlaps(layout.card, control)).toBe(false);
+        }
       }
     }
+  });
+
+  it('clamps a growing collection to four cards per spread with labelled page turns', () => {
+    const renderer = new UIRenderer({ characterRenderer: { draw: () => {} } });
+    const state = {
+      overlay: { surface: 'satchel', tab: 'cards', page: 99 },
+      cards: ['morgana', 'circe'],
+    };
+    const context = recordingContext();
+
+    renderer.drawSatchel(context, state, cards, { map: null });
+
+    expect(state.__cardAlbum).toMatchObject({ page: 1, pageCount: 2 });
+    expect(state.__cardSlots.map(({ id }) => id)).toEqual(['circe', 'bertie-bott']);
+    expectGenerousDisjointTargets([
+      UI_RECTS.satchelCardsPrevious,
+      UI_RECTS.satchelCardsNext,
+    ]);
+    expect(context.texts).toEqual(expect.arrayContaining(['Back', 'Next']));
   });
 
   it('renders earned and closed-pocket states as deterministic, visibly different materials', () => {

@@ -1,0 +1,82 @@
+{
+  "version": 1,
+  "clips": {
+    "voice/ch3/learning/leviosa/dium": {
+      "authoredText": "DIUM",
+      "generationText": "Dee-umm",
+      "transcriptionAliases": [
+        "D, um"
+      ]
+    },
+    "voice/ch3/learning/leviosa/gar": {
+      "authoredText": "GAR",
+      "generationText": "Gahr",
+      "transcriptionAliases": [
+        "Ga"
+      ]
+    },
+    "voice/ch3/learning/leviosa/levi": {
+      "authoredText": "LEVI",
+      "generationText": "Leh-vee",
+      "transcriptionAliases": [
+        "Levy"
+      ]
+    },
+    "voice/ch3/learning/leviosa/o": {
+      "authoredText": "O",
+      "generationText": "Oh",
+      "transcriptionAliases": []
+    },
+    "voice/ch3/learning/leviosa/sa": {
+      "authoredText": "SA",
+      "generationText": "Saa",
+      "transcriptionAliases": [
+        "So"
+      ]
+    },
+    "voice/ch3/learning/leviosa/win": {
+      "authoredText": "WIN",
+      "generationText": "Win",
+      "transcriptionAliases": []
+    },
+    "voice/ch3/learning/lumos/a": {
+      "authoredText": "A",
+      "generationText": "ah",
+      "transcriptionAliases": []
+    },
+    "voice/ch3/learning/lumos/e": {
+      "authoredText": "E",
+      "generationText": "Ehh",
+      "transcriptionAliases": [
+        "Eh"
+      ]
+    },
+    "voice/ch3/learning/lumos/l": {
+      "authoredText": "L",
+      "generationText": "Luh",
+      "transcriptionAliases": []
+    },
+    "voice/ch3/learning/lumos/m": {
+      "authoredText": "M",
+      "generationText": "mmm",
+      "transcriptionAliases": [
+        "Mm-hmm."
+      ]
+    },
+    "voice/ch3/learning/lumos/o": {
+      "authoredText": "O",
+      "generationText": "oh",
+      "transcriptionAliases": []
+    },
+    "voice/ch3/learning/lumos/s": {
+      "authoredText": "S",
+      "generationText": "sss",
+      "transcriptionAliases": []
+    },
+    "voice/ch3/learning/lumos/u": {
+      "authoredText": "U",
+      "generationText": "uh",
+      "transcriptionAliases": []
+    }
+  }
+}

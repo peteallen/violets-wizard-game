@@ -1,0 +1,73 @@
+{
+  "schema_version": 1,
+  "kind": "codex-built-in-chapter-card-image-edit",
+  "slug": "flying-lesson-native-v2",
+  "workflow": {
+    "name": "Codex built-in image generation",
+    "tool": "image_gen.imagegen",
+    "mode": "edit",
+    "image_inclusion": "num_last_images_to_include=1",
+    "model_identifier": null,
+    "seed": null,
+    "note": "The built-in workflow did not return a model identifier or seed."
+  },
+  "timestamps": {
+    "generation_started_at": "2026-07-17T19:25:39.702Z",
+    "generation_completed_at": "2026-07-17T19:26:28.814Z",
+    "duration_ms": 49112
+  },
+  "request_spec": {
+    "path": "art/chapters/ch4/chapter-cards/flying-lesson-native-v2.request.json",
+    "bytes": 1546,
+    "sha256": "a81d08d05aaa03ee1f2692d4d8c69dc243369197bcda6989caaf18419fae086f"
+  },
+  "prompt": {
+    "path": "art/chapters/ch4/chapter-cards/flying-lesson-native-v2.prompt.md",
+    "section": "Prompt",
+    "bytes": 1264,
+    "sha256": "3aea66a0ebf083f81b735e36c99425529e8c570c56450d99a50c4e655a82e8c0"
+  },
+  "references": [
+    {
+      "index": 1,
+      "path": "art/raw/ch4-flying-lesson-native-v1.png",
+      "role": "edit target; the visible built-in v1 output was supplied through num_last_images_to_include=1 and this stable local copy binds the same bytes",
+      "bytes": 3055927,
+      "sha256": "e5de523dccb48023e175bbcff85587ee5f38e0341318dbe0b26db34469e7dc0a",
+      "dimensions": { "width": 1672, "height": 941 }
+    }
+  ],
+  "generation_output": {
+    "id": "exec-b77092b5-b243-468f-887c-0b50f304c66a",
+    "original_path": "/Users/peteallen/.codex/generated_images/019f717f-ae86-7712-9cf3-200179c51a6a/exec-b77092b5-b243-468f-887c-0b50f304c66a.png",
+    "copied_to": "art/raw/ch4-flying-lesson-native-v2.png",
+    "media_type": "image/png",
+    "bytes": 2950852,
+    "sha256": "4c76e7d5e6ee0dace9a92de76bad46a927e3dcb2fa7513f6646a2e8789b39cd6",
+    "dimensions": { "width": 1672, "height": 941 }
+  },
+  "derivatives": {
+    "accepted_png": {
+      "path": "art/raw/ch4-flying-lesson-v2.png",
+      "bytes": 3969167,
+      "sha256": "dac20196ba3e5d6e3f633f8f3d180c55ef574dedd5f580d9eed3860aa3cbff11",
+      "dimensions": { "width": 2048, "height": 1152 }
+    },
+    "shipping_webp": {
+      "path": "public/assets/art/chapter-cards/ch4-flying-lesson.webp",
+      "bytes": 459278,
+      "sha256": "97517d689f514bbbb3888eff2bc770aa7915c920c8ae69a947def1371a5518fb",
+      "dimensions": { "width": 2048, "height": 1152 }
+    }
+  },
+  "conversion": {
+    "crop": "sips -s format png -c 940 1672",
+    "resize": "sips -s format png -z 1152 2048",
+    "shipping": "cwebp -q 88 -m 6 -sharp_yuv",
+    "note": "The 1672x941 corrected native PNG was center-cropped by one pixel to 1672x940, resized once to 2048x1152, then encoded as WebP."
+  },
+  "visual_inspection": {
+    "source": "Accepted: truthful textless autumn flying preview with one riderless school broom, exactly four golden star rings, distant original castle, adventurous safe tone, no people or creatures, and calm upper and lower runtime zones.",
+    "shipping": "Accepted at 2048x1152: the crop and encode retain the single broom, exact four-ring path, distant castle, title and action space, bright blue-violet sky, and painterly texture without a visible conversion defect."
+  }
+}
