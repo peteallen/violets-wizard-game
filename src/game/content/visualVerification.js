@@ -176,7 +176,8 @@ const REVIEW_SCENE_ILLUSION_CHECKS = Object.freeze({
     'Cards, Grown-ups, and Start fresh remain centered in their painted label areas, and the close seal remains the only X.',
   ],
   'ui-objective-review': [
-    'Exactly one objective icon and one three-word-or-shorter caption are visible, with zero decorative owl filler.',
+    'The real Chapter One street remains readable beneath a light veil while the compact reminder stays along the upper edge instead of replacing the room with a full-screen page.',
+    'Exactly one detailed brass quest compass, one live three-word-or-shorter caption, and one wax close seal remain mutually separate on the painted leather-backed parchment, with zero decorative owl filler.',
   ],
   'ui-chapter-card-review': [
     'One chapter painting, one title, and one 88px-or-larger action remain readable and mutually non-overlapping, with zero decorative owl filler.',

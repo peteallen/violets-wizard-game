@@ -147,6 +147,19 @@ describe('state fixtures', () => {
     expect(getStateFixture('ch1-wand-chosen').save.progress.questFlags['ch1.wandChosen']).toBe(true);
   });
 
+  it('opens the objective review from a real post-satchel Chapter One state', () => {
+    const fixture = getStateFixture('ui-objective-review');
+    expect(fixture.entry).toEqual({ chapter: 1, scene: 'ch1.diagonArrival' });
+    expect(fixture.save.resume).toEqual({
+      chapter: 'ch1',
+      scene: 'ch1.diagonArrival',
+      room: 'ch1.diagonStreet',
+      spawn: 'west',
+    });
+    expect(fixture.save.progress.questFlags['ch1.satchelReceived']).toBe(true);
+    expect(fixture.save.progress.questFlags['ch1.mapUsed']).not.toBe(true);
+  });
+
   it('declares exact, resolvable character dependencies for shared harness scenes', () => {
     expect(getStateFixture('foundation').characterDependencies).toEqual(
       titleCharacterDependencies,
@@ -204,6 +217,9 @@ describe('action fixtures', () => {
       target: 'satchel.grownups',
       durationFrames: 180,
     });
+    expect(getActionFixture('ui-objective-review').actions).toEqual([
+      { frame: 30, type: 'tap', target: 'hud.quest' },
+    ]);
   });
 
   it('rejects coordinate-like targets and non-monotonic scripts', () => {

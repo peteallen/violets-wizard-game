@@ -13,6 +13,13 @@ const LEATHER_DARK = '#3f2b23';
 const HUD_CONTACT_SHADOW_SOFT = 'rgba(27, 18, 28, 0.17)';
 const HUD_CONTACT_SHADOW_CORE = 'rgba(27, 18, 28, 0.34)';
 const HUD_GLASS_LIGHT = 'rgba(222, 241, 239, 0.34)';
+const PAINTED_HUD_ARTBOARD_SIZE = 512;
+const PAINTED_COMPASS_BASE_CENTER = Object.freeze({ x: 254.5, y: 290.5 });
+const PAINTED_COMPASS_NEEDLE_BOSS = Object.freeze({ x: 255.4, y: 307 });
+const PAINTED_COMPASS_NEEDLE_SCALE = 0.54;
+const COMPASS_NEEDLE_ANGLE = -0.12;
+const WAND_HOLSTER_ANGLE = -0.57;
+const PAINTED_WAND_PROTRUSION = 0.16;
 const ICON_CREAM = '#f7e7c2';
 const ICON_LIGHT = '#ffe3a0';
 const ICON_MID = '#b98448';
@@ -1198,7 +1205,11 @@ function drawBookmarkStitches(context, rect, active) {
   context.restore();
 }
 
-export function drawLeatherSatchel(context, rect, { open = false, muted = false } = {}) {
+export function drawLeatherSatchel(context, rect, {
+  open = false,
+  muted = false,
+  image = null,
+} = {}) {
   context.save();
   context.globalAlpha = muted ? 0.55 : 1;
 
@@ -1208,6 +1219,12 @@ export function drawLeatherSatchel(context, rect, { open = false, muted = false 
     radiusY: 0.072,
     phase: 0.68,
   });
+
+  if (!open && isReadyPaintedHudImage(image)) {
+    drawPaintedHudArtboard(context, image, rect);
+    context.restore();
+    return;
+  }
 
   context.fillStyle = LEATHER_DARK;
   traceSatchelHandle(context, rect, 0.21);
@@ -1291,7 +1308,11 @@ export function drawLeatherSatchel(context, rect, { open = false, muted = false 
   context.restore();
 }
 
-export function drawCompassQuest(context, rect, time = 0, { pulse = false } = {}) {
+export function drawCompassQuest(context, rect, time = 0, {
+  pulse = false,
+  baseImage = null,
+  needleImage = null,
+} = {}) {
   const x = rect.x + rect.width / 2;
   const y = rect.y + rect.height / 2;
   const radius = Math.min(rect.width, rect.height) * 0.39;
@@ -1305,6 +1326,33 @@ export function drawCompassQuest(context, rect, time = 0, { pulse = false } = {}
   });
   context.translate(x, y);
   context.scale(breathe, breathe);
+
+  if (
+    isReadyPaintedHudImage(baseImage)
+    && isReadyPaintedHudImage(needleImage)
+  ) {
+    const artboardSize = Math.min(rect.width, rect.height);
+    context.drawImage(
+      baseImage,
+      -(PAINTED_COMPASS_BASE_CENTER.x / PAINTED_HUD_ARTBOARD_SIZE) * artboardSize,
+      -(PAINTED_COMPASS_BASE_CENTER.y / PAINTED_HUD_ARTBOARD_SIZE) * artboardSize,
+      artboardSize,
+      artboardSize,
+    );
+    const needleSize = artboardSize * PAINTED_COMPASS_NEEDLE_SCALE;
+    context.save();
+    context.rotate(COMPASS_NEEDLE_ANGLE);
+    context.drawImage(
+      needleImage,
+      -(PAINTED_COMPASS_NEEDLE_BOSS.x / PAINTED_HUD_ARTBOARD_SIZE) * needleSize,
+      -(PAINTED_COMPASS_NEEDLE_BOSS.y / PAINTED_HUD_ARTBOARD_SIZE) * needleSize,
+      needleSize,
+      needleSize,
+    );
+    context.restore();
+    context.restore();
+    return;
+  }
 
   context.fillStyle = BRASS_DARK;
   traceCompassBail(context, radius);
@@ -1366,7 +1414,7 @@ export function drawCompassQuest(context, rect, time = 0, { pulse = false } = {}
   }
 
   context.save();
-  context.rotate(-0.12);
+  context.rotate(COMPASS_NEEDLE_ANGLE);
   context.fillStyle = '#a86f36';
   traceCompassSouthNeedle(context, radius);
   context.fill();
@@ -1403,7 +1451,12 @@ export function drawCompassQuest(context, rect, time = 0, { pulse = false } = {}
   context.restore();
 }
 
-export function drawBrassWandHolster(context, rect, { enabled = true, time = 0 } = {}) {
+export function drawBrassWandHolster(context, rect, {
+  enabled = true,
+  time = 0,
+  holsterImage = null,
+  wandImage = null,
+} = {}) {
   const { x, y, width, height } = rect;
   const size = Math.min(width, height);
   context.save();
@@ -1415,6 +1468,32 @@ export function drawBrassWandHolster(context, rect, { enabled = true, time = 0 }
     phase: 0.83,
   });
   context.translate(x + width / 2, y + height / 2);
+
+  if (
+    isReadyPaintedHudImage(holsterImage)
+    && isReadyPaintedHudImage(wandImage)
+  ) {
+    if (enabled) {
+      context.save();
+      context.rotate(WAND_HOLSTER_ANGLE);
+      context.translate(0, -size * PAINTED_WAND_PROTRUSION);
+      context.drawImage(wandImage, -width / 2, -height / 2, width, height);
+      context.restore();
+    }
+    context.drawImage(holsterImage, -width / 2, -height / 2, width, height);
+    context.save();
+    context.rotate(WAND_HOLSTER_ANGLE);
+    if (enabled) drawWandSparkEffect(context, size, time, PAINTED_WAND_PROTRUSION);
+    else {
+      context.strokeStyle = '#a5977f';
+      context.lineWidth = Math.max(1.8, size * 0.022);
+      traceEmptyHolsterMark(context, size);
+      context.stroke();
+    }
+    context.restore();
+    context.restore();
+    return;
+  }
 
   context.fillStyle = BRASS_DARK;
   traceHolsterBackplate(context, 0, 0, width * 0.42, height * 0.43, 0.16);
@@ -1438,7 +1517,7 @@ export function drawBrassWandHolster(context, rect, { enabled = true, time = 0 }
   traceHolsterPlateShade(context, width, height);
   context.fill();
 
-  context.rotate(-0.57);
+  context.rotate(WAND_HOLSTER_ANGLE);
 
   if (enabled) {
     context.fillStyle = '#3c2822';
@@ -1497,21 +1576,49 @@ export function drawBrassWandHolster(context, rect, { enabled = true, time = 0 }
   traceWandSheathBandLight(context, size);
   context.fill();
 
-  if (enabled) {
-    const glow = size * (0.062 + (Math.sin(time * 3.1) + 1) * 0.009);
-    context.fillStyle = PALETTE.interactive;
-    traceWandSpark(context, 0, -size * 0.455, glow, time * 0.17);
-    context.fill();
-    context.fillStyle = '#fff1b8';
-    traceWandSpark(context, -size * 0.012, -size * 0.465, glow * 0.48, 0.63);
-    context.fill();
-  } else {
+  if (enabled) drawWandSparkEffect(context, size, time);
+  else {
     context.strokeStyle = '#a5977f';
     context.lineWidth = Math.max(1.8, size * 0.022);
     traceEmptyHolsterMark(context, size);
     context.stroke();
   }
   context.restore();
+}
+
+function isReadyPaintedHudImage(image) {
+  return Boolean(
+    image?.complete
+    && image.naturalWidth > 0
+    && image.naturalHeight > 0
+  );
+}
+
+function drawPaintedHudArtboard(context, image, rect) {
+  const size = Math.min(rect.width, rect.height);
+  context.drawImage(
+    image,
+    rect.x + (rect.width - size) / 2,
+    rect.y + (rect.height - size) / 2,
+    size,
+    size,
+  );
+}
+
+function drawWandSparkEffect(context, size, time, protrusion = 0) {
+  const glow = size * (0.062 + (Math.sin(time * 3.1) + 1) * 0.009);
+  context.fillStyle = PALETTE.interactive;
+  traceWandSpark(context, 0, -size * (0.455 + protrusion), glow, time * 0.17);
+  context.fill();
+  context.fillStyle = '#fff1b8';
+  traceWandSpark(
+    context,
+    -size * 0.012,
+    -size * (0.465 + protrusion),
+    glow * 0.48,
+    0.63,
+  );
+  context.fill();
 }
 
 function drawHudContactShadow(context, rect, {

@@ -1,4 +1,10 @@
-import { describe, expect, it } from 'vitest';
+import {
+  afterEach,
+  describe,
+  expect,
+  it,
+  vi,
+} from 'vitest';
 import {
   chapterCardLayout,
   objectiveOverlayLayout,
@@ -16,7 +22,7 @@ function recordingContext() {
   let depth = 0;
   const methods = new Set([
     'arc', 'arcTo', 'beginPath', 'bezierCurveTo', 'clip', 'closePath', 'ellipse', 'fill',
-    'fillRect', 'fillText', 'lineTo', 'moveTo', 'quadraticCurveTo', 'rect', 'restore',
+    'drawImage', 'fillRect', 'fillText', 'lineTo', 'moveTo', 'quadraticCurveTo', 'rect', 'restore',
     'rotate', 'roundRect', 'save', 'scale', 'setLineDash', 'stroke', 'strokeRect',
     'strokeText', 'translate',
   ]);
@@ -69,7 +75,9 @@ function expectOrganicFiniteSurface(context, minimumBezierCurves = 25) {
 }
 
 describe('remaining generic Storybook UI surfaces', () => {
-  it('renders one organic compass and caption without decorative owl filler', () => {
+  afterEach(() => vi.unstubAllGlobals());
+
+  it('renders one detailed compass and live caption in a compact upper-edge reminder', () => {
     const renderer = new UIRenderer({ characterRenderer: { draw: () => {} } });
     const first = recordingContext();
     const replayed = recordingContext();
@@ -90,7 +98,34 @@ describe('remaining generic Storybook UI surfaces', () => {
       ['fillRect', 0, 0, 1280, 720],
     ]);
     expect(new Set(first.texts)).toEqual(new Set(['Choose a pet']));
+    expect(first.calls.some(([name]) => name === 'drawImage')).toBe(false);
+
+    const layout = objectiveOverlayLayout();
+    expect(layout.panel).toEqual({ x: 160, y: 8, width: 960, height: 300 });
+    expect(layout.compass.width).toBe(200);
+    expect(layout.compass.height).toBe(200);
+    expect(overlaps(layout.compass, layout.caption)).toBe(false);
     expectOrganicFiniteSurface(first);
+  });
+
+  it('uses the painted reminder prop when its decoded image is ready', () => {
+    vi.stubGlobal('Image', class TestImage {});
+    const renderer = new UIRenderer({ characterRenderer: { draw: () => {} } });
+    const image = {
+      complete: true,
+      naturalWidth: 1840,
+      naturalHeight: 620,
+    };
+    renderer.images.set('ui/objective/reminder-v2', image);
+    const context = recordingContext();
+
+    renderer.drawObjective(context, { caption: 'Find your wand!' }, 2.5);
+
+    const { panel } = objectiveOverlayLayout();
+    expect(context.calls.filter(([name]) => name === 'drawImage')).toEqual([
+      ['drawImage', image, panel.x, panel.y, panel.width, panel.height],
+    ]);
+    expect(new Set(context.texts)).toEqual(new Set(['Find your wand!']));
   });
 
   it('composes Chapter One as a platform ticket with a separate generous action', () => {

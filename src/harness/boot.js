@@ -328,13 +328,12 @@ export async function bootHarness({
       });
     }
     game.start();
-    if (
-      request.scene.startsWith('foundation')
-      || request.scene.startsWith('ui-satchel-')
-      || game.world?.snapshot().hasSatchel
-    ) {
-      await game.uiRenderer.preloadSatchelImages();
-    }
+    const worldSnapshot = game.world?.snapshot();
+    await game.uiRenderer.preloadUiImages({
+      title: request.scene.startsWith('foundation'),
+      hud: Boolean(game.world),
+      satchel: request.scene.startsWith('ui-satchel-') || Boolean(worldSnapshot?.hasSatchel),
+    });
     if (request.scene === 'pet-name-dialog') void game.petNameDialog?.open('Moonbeam');
     await preloadVisibleRoom(game);
     game.render();

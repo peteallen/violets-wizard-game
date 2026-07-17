@@ -22,6 +22,12 @@ const IMAGE_PATHS = Object.freeze({
 const UI_IMAGE_PATHS = Object.freeze({
   'ui/title/backdrop-v2': 'assets/art/ui/title/title-backdrop-v2.webp',
   'ui/title/return-envelope-v2': 'assets/art/ui/title/return-envelope-v2.webp',
+  'ui/objective/reminder-v2': 'assets/art/ui/objective/objective-reminder-v2.webp',
+  'ui/hud/satchel-closed': 'assets/art/ui/hud/satchel-closed.webp',
+  'ui/hud/quest-compass-base': 'assets/art/ui/hud/quest-compass-base.webp',
+  'ui/hud/quest-compass-needle': 'assets/art/ui/hud/quest-compass-needle.webp',
+  'ui/hud/wand-holster': 'assets/art/ui/hud/wand-holster.webp',
+  'ui/hud/wands/violet-first-wand': 'assets/art/ui/hud/wand-violet-first-wand.webp',
   'ui/satchel/spread-v2': 'assets/art/ui/satchel/spread-v2.webp',
   'ui/satchel/card-frame-v2': 'assets/art/ui/satchel/card-frame-v2.webp',
   'ui/satchel/card-pocket-v2': 'assets/art/ui/satchel/card-pocket-v2.webp',

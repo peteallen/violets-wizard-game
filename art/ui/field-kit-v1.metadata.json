@@ -29,6 +29,23 @@
         "bytes": 666688,
         "sha256": "b56d7f03c8cba9e20b7295f74d74cf159e05ad3ab9c5bdea84e33f82bd12fc4d"
       }
+    },
+    {
+      "id": "exec-bd8f7133-daea-4cad-aac8-fb131717db51",
+      "source": {
+        "path": "art/ui/objective/source/objective-reminder-v2-chroma.png",
+        "width": 1983,
+        "height": 793,
+        "bytes": 2188142,
+        "sha256": "9c48259f8ee254e8e8087fb5899e74a4fb6ca5ec173eebbe1e5d821407ae4ec2"
+      },
+      "shipping": {
+        "path": "public/assets/art/ui/objective/objective-reminder-v2.webp",
+        "width": 1840,
+        "height": 620,
+        "bytes": 227924,
+        "sha256": "77df17a6fe00bf934120ad5848a3e2631ef8f9c331b391c387afb2a90bb81ad7"
+      }
     }
   ]
 }

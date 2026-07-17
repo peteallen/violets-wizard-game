@@ -38,9 +38,19 @@ export { isAllowedChildFacingUiText } from '../content/playerVisibleCopy.js';
 
 const STORY_GRADIENTS = new WeakMap();
 const NIGHT_DIALOGUE_GRADIENTS = new WeakMap();
-const SATCHEL_IMAGE_KEYS = Object.freeze([
+const TITLE_IMAGE_KEYS = Object.freeze([
   'ui/title/backdrop-v2',
   'ui/title/return-envelope-v2',
+]);
+const HUD_IMAGE_KEYS = Object.freeze([
+  'ui/objective/reminder-v2',
+  'ui/hud/satchel-closed',
+  'ui/hud/quest-compass-base',
+  'ui/hud/quest-compass-needle',
+  'ui/hud/wand-holster',
+  'ui/hud/wands/violet-first-wand',
+]);
+const SATCHEL_IMAGE_KEYS = Object.freeze([
   'ui/satchel/spread-v2',
   'ui/satchel/card-frame-v2',
   'ui/satchel/card-pocket-v2',
@@ -71,7 +81,6 @@ export const UI_REVIEW_SCENES = Object.freeze([
   'ui-satchel-cards-review',
   'ui-satchel-ch2-cards-review',
   'ui-satchel-ch3-cards-review',
-  'ui-objective-review',
   'ui-chapter-card-review',
 ]);
 
@@ -493,9 +502,9 @@ export function titleForegroundLayout(presentation) {
 
 export function objectiveOverlayLayout() {
   return Object.freeze({
-    panel: Object.freeze({ x: 250, y: 150, width: 780, height: 420 }),
-    compass: Object.freeze({ x: 520, y: 188, width: 240, height: 184 }),
-    caption: Object.freeze({ x: 350, y: 390, width: 580, height: 92 }),
+    panel: Object.freeze({ x: 160, y: 8, width: 960, height: 300 }),
+    compass: Object.freeze({ x: 220, y: 48, width: 200, height: 200 }),
+    caption: Object.freeze({ x: 470, y: 68, width: 500, height: 145 }),
   });
 }
 
@@ -772,13 +781,6 @@ export class UIRenderer {
       ], {
         map: scene === 'ui-satchel-cards-review' ? chapter1Map : null,
       });
-    } else if (scene === 'ui-objective-review') {
-      this.drawObjective(
-        context,
-        { caption: 'Choose a pet', text: 'Visit the Magical Menagerie with Hagrid.' },
-        time,
-        { reducedMotion },
-      );
     } else {
       this.drawChapterCard(context, {
         title: 'Platform Nine and Three-Quarters',
@@ -791,15 +793,33 @@ export class UIRenderer {
   drawHud(context, state, time, reducedMotion = false) {
     if (state.overlay || state.dialogue || state.selection || state.screen !== 'playing') return;
     const animationTime = reducedMotion ? 0 : time;
-    drawQuestButton(context, UI_RECTS.quest, animationTime, Boolean(state.newObjective) && !reducedMotion);
+    drawQuestButton(
+      context,
+      UI_RECTS.quest,
+      animationTime,
+      Boolean(state.newObjective) && !reducedMotion,
+      {
+        baseImage: this.imageFor('ui/hud/quest-compass-base'),
+        needleImage: this.imageFor('ui/hud/quest-compass-needle'),
+      },
+    );
     if (state.hasSatchel) {
-      drawSatchelButton(context, UI_RECTS.satchel);
+      drawSatchelButton(
+        context,
+        UI_RECTS.satchel,
+        this.imageFor('ui/hud/satchel-closed'),
+      );
       drawAffordancePresentation(
         context,
         hudGoldenThreadPresentation(state, time, { reducedMotion }),
       );
     }
-    if (state.hasWand) drawWandButton(context, UI_RECTS.wand, true, animationTime);
+    if (state.hasWand) {
+      drawWandButton(context, UI_RECTS.wand, true, animationTime, {
+        holsterImage: this.imageFor('ui/hud/wand-holster'),
+        wandImage: this.imageFor('ui/hud/wands/violet-first-wand'),
+      });
+    }
     return Object.freeze({
       quest: true,
       satchel: Boolean(state.hasSatchel),
@@ -1135,11 +1155,25 @@ export class UIRenderer {
     return image;
   }
 
-  async preloadSatchelImages() {
-    await Promise.all(SATCHEL_IMAGE_KEYS.map((key) => {
+  async preloadUiImages({ title = true, hud = true, satchel = true } = {}) {
+    const keys = new Set([
+      ...(title ? TITLE_IMAGE_KEYS : []),
+      ...(hud ? HUD_IMAGE_KEYS : []),
+      ...(satchel ? SATCHEL_IMAGE_KEYS : []),
+    ]);
+    await Promise.all([...keys].map(async (key) => {
       const image = this.imageFor(key);
-      if (!image || image.complete) return undefined;
-      return new Promise((resolve) => {
+      if (!image) return;
+      if (typeof image.decode === 'function') {
+        try {
+          await image.decode();
+        } catch {
+          // The renderer retains its vector fallback when a UI image cannot decode.
+        }
+        return;
+      }
+      if (image.complete) return;
+      await new Promise((resolve) => {
         image.addEventListener('load', resolve, { once: true });
         image.addEventListener('error', resolve, { once: true });
       });
@@ -1176,21 +1210,44 @@ export class UIRenderer {
 
   drawObjective(context, objective, time = 0, { reducedMotion = false } = {}) {
     const layout = objectiveOverlayLayout();
-    context.fillStyle = 'rgba(20,17,38,0.74)';
+    context.fillStyle = 'rgba(20,17,38,0.28)';
     context.fillRect(0, 0, WORLD.width, WORLD.height);
-    drawDeckledParchment(context, layout.panel, { ornament: false });
-    drawObjectiveCompass(context, layout.compass, reducedMotion ? 0 : time, { reducedMotion });
+    const reminderImage = this.imageFor('ui/objective/reminder-v2');
+    if (
+      reminderImage?.complete
+      && reminderImage.naturalWidth > 0
+      && reminderImage.naturalHeight > 0
+    ) {
+      context.drawImage(
+        reminderImage,
+        layout.panel.x,
+        layout.panel.y,
+        layout.panel.width,
+        layout.panel.height,
+      );
+    } else {
+      drawDeckledParchment(context, layout.panel, { ornament: false });
+    }
+    drawCompassQuest(context, layout.compass, reducedMotion ? 0 : time, {
+      pulse: !reducedMotion,
+      baseImage: this.imageFor('ui/hud/quest-compass-base'),
+      needleImage: this.imageFor('ui/hud/quest-compass-needle'),
+    });
     context.textAlign = 'center';
     context.fillStyle = '#382a24';
-    context.font = '700 42px "Andika", "Trebuchet MS", sans-serif';
+    context.font = '700 48px "Andika", "Trebuchet MS", sans-serif';
     fitText(
       context,
       childFacingUiText(objective?.caption ?? 'Explore!', 'caption'),
       layout.caption.x + layout.caption.width / 2,
-      layout.caption.y + layout.caption.height * 0.66,
+      layout.caption.y + layout.caption.height * 0.62,
       layout.caption.width,
     );
-    drawClose(context);
+    drawSatchelClose(
+      context,
+      UI_RECTS.close,
+      this.imageFor('ui/satchel/close-seal'),
+    );
     return layout;
   }
 
@@ -2733,12 +2790,12 @@ function drawDevelopingPhoto(context, rect, phase) {
   context.restore();
 }
 
-function drawQuestButton(context, rect, time, pulse) {
-  drawCompassQuest(context, rect, time, { pulse });
+function drawQuestButton(context, rect, time, pulse, { baseImage, needleImage } = {}) {
+  drawCompassQuest(context, rect, time, { pulse, baseImage, needleImage });
 }
 
-function drawSatchelButton(context, rect) {
-  drawLeatherSatchel(context, rect);
+function drawSatchelButton(context, rect, image = null) {
+  drawLeatherSatchel(context, rect, { image });
 }
 
 export function hudGoldenThreadPresentation(state, time, { reducedMotion = false } = {}) {
@@ -2763,8 +2820,19 @@ export function hudGoldenThreadPresentation(state, time, { reducedMotion = false
   }, time, { reducedMotion });
 }
 
-function drawWandButton(context, rect, enabled, time = 0) {
-  drawBrassWandHolster(context, rect, { enabled, time });
+function drawWandButton(
+  context,
+  rect,
+  enabled,
+  time = 0,
+  { holsterImage, wandImage } = {},
+) {
+  drawBrassWandHolster(context, rect, {
+    enabled,
+    time,
+    holsterImage,
+    wandImage,
+  });
 }
 
 function drawClose(context) {
@@ -2912,164 +2980,6 @@ function drawChoiceEmblem(context, rect, icon, accent) {
 
 function choiceAccent(_icon, index) {
   return ['#6e4b68', '#4f6c75', '#89663f', '#5d6750'][index % 4];
-}
-
-function drawObjectiveCompass(context, rect, time, { reducedMotion = false } = {}) {
-  const centerX = rect.x + rect.width / 2;
-  const centerY = rect.y + rect.height / 2;
-  const pulse = reducedMotion ? 1 : 1 + Math.sin(time * 1.7) * 0.018;
-  context.save();
-  context.translate(centerX, centerY);
-  context.scale(pulse, pulse);
-  context.translate(-centerX, -centerY);
-
-  context.fillStyle = 'rgba(54,35,29,0.28)';
-  traceCompassBody(context, centerX + 7, centerY + 9, 94, 76);
-  context.fill();
-  context.fillStyle = '#b48545';
-  traceCompassBody(context, centerX, centerY, 94, 76);
-  context.fill();
-  context.strokeStyle = '#5f402b';
-  context.lineWidth = 5;
-  context.stroke();
-
-  context.fillStyle = '#e6d3a5';
-  traceCompassBody(context, centerX - 2, centerY - 1, 75, 60);
-  context.fill();
-  context.strokeStyle = '#8d6537';
-  context.lineWidth = 2.4;
-  context.stroke();
-  context.fillStyle = 'rgba(255,244,210,0.35)';
-  traceCompassLight(context, centerX, centerY, 72, 57);
-  context.fill();
-  context.fillStyle = 'rgba(93,58,39,0.16)';
-  traceCompassShade(context, centerX, centerY, 73, 58);
-  context.fill();
-
-  context.strokeStyle = 'rgba(105,72,43,0.58)';
-  context.lineWidth = 2.5;
-  context.lineCap = 'round';
-  context.beginPath();
-  context.moveTo(centerX - 52, centerY + 2);
-  context.quadraticCurveTo(centerX - 61, centerY, centerX - 67, centerY - 2);
-  context.moveTo(centerX + 52, centerY - 1);
-  context.quadraticCurveTo(centerX + 60, centerY + 2, centerX + 66, centerY + 1);
-  context.moveTo(centerX - 1, centerY - 44);
-  context.quadraticCurveTo(centerX + 1, centerY - 52, centerX + 3, centerY - 58);
-  context.moveTo(centerX + 2, centerY + 44);
-  context.quadraticCurveTo(centerX - 1, centerY + 51, centerX - 2, centerY + 57);
-  context.stroke();
-
-  drawCompassNeedle(context, centerX, centerY, -7, -55, '#d7a942', '#f4d58d');
-  drawCompassNeedle(context, centerX, centerY, 8, 52, '#66405f', '#9d6f98');
-  context.fillStyle = '#6d452d';
-  traceOrganicSpot(context, centerX, centerY, 10, 9, 0.13);
-  context.fill();
-  context.fillStyle = '#f0cb70';
-  traceOrganicSpot(context, centerX - 2, centerY - 2, 4.2, 3.5, -0.18);
-  context.fill();
-  context.restore();
-}
-
-function traceCompassBody(context, x, y, radiusX, radiusY) {
-  context.beginPath();
-  context.moveTo(x - radiusX * 0.96, y - radiusY * 0.08);
-  context.bezierCurveTo(
-    x - radiusX * 0.78,
-    y - radiusY * 0.79,
-    x - radiusX * 0.24,
-    y - radiusY * 1.04,
-    x + radiusX * 0.09,
-    y - radiusY * 0.96,
-  );
-  context.bezierCurveTo(
-    x + radiusX * 0.68,
-    y - radiusY * 0.91,
-    x + radiusX * 1.02,
-    y - radiusY * 0.38,
-    x + radiusX * 0.95,
-    y + radiusY * 0.08,
-  );
-  context.bezierCurveTo(
-    x + radiusX * 0.86,
-    y + radiusY * 0.69,
-    x + radiusX * 0.26,
-    y + radiusY * 1.02,
-    x - radiusX * 0.12,
-    y + radiusY * 0.94,
-  );
-  context.bezierCurveTo(
-    x - radiusX * 0.7,
-    y + radiusY * 0.88,
-    x - radiusX * 1.03,
-    y + radiusY * 0.4,
-    x - radiusX * 0.96,
-    y - radiusY * 0.08,
-  );
-  context.closePath();
-}
-
-function traceCompassLight(context, x, y, radiusX, radiusY) {
-  context.beginPath();
-  context.moveTo(x - radiusX * 0.78, y - radiusY * 0.2);
-  context.bezierCurveTo(
-    x - radiusX * 0.58,
-    y - radiusY * 0.83,
-    x - radiusX * 0.08,
-    y - radiusY * 0.88,
-    x + radiusX * 0.24,
-    y - radiusY * 0.7,
-  );
-  context.bezierCurveTo(
-    x - radiusX * 0.02,
-    y - radiusY * 0.42,
-    x - radiusX * 0.34,
-    y - radiusY * 0.2,
-    x - radiusX * 0.78,
-    y - radiusY * 0.2,
-  );
-  context.closePath();
-}
-
-function traceCompassShade(context, x, y, radiusX, radiusY) {
-  context.beginPath();
-  context.moveTo(x - radiusX * 0.18, y + radiusY * 0.76);
-  context.bezierCurveTo(
-    x + radiusX * 0.34,
-    y + radiusY * 0.94,
-    x + radiusX * 0.82,
-    y + radiusY * 0.57,
-    x + radiusX * 0.84,
-    y + radiusY * 0.06,
-  );
-  context.bezierCurveTo(
-    x + radiusX * 0.55,
-    y + radiusY * 0.36,
-    x + radiusX * 0.2,
-    y + radiusY * 0.57,
-    x - radiusX * 0.18,
-    y + radiusY * 0.76,
-  );
-  context.closePath();
-}
-
-function drawCompassNeedle(context, x, y, tipX, tipY, fill, highlight) {
-  context.fillStyle = fill;
-  context.beginPath();
-  context.moveTo(x - 5, y + 4);
-  context.bezierCurveTo(x - 8, y - 8, x + tipX * 0.46, y + tipY * 0.55, x + tipX, y + tipY);
-  context.bezierCurveTo(x + tipX * 0.3, y + tipY * 0.68, x + 8, y + 8, x - 5, y + 4);
-  context.closePath();
-  context.fill();
-  context.strokeStyle = '#5f402b';
-  context.lineWidth = 1.8;
-  context.stroke();
-  context.strokeStyle = highlight;
-  context.lineWidth = 1.2;
-  context.beginPath();
-  context.moveTo(x - 1, y);
-  context.quadraticCurveTo(x + tipX * 0.43, y + tipY * 0.48, x + tipX * 0.82, y + tipY * 0.82);
-  context.stroke();
 }
 
 function drawPlatformTicket(context, rect, illustration, time, { reducedMotion = false } = {}) {

@@ -252,7 +252,8 @@ registry
     'Hold the Chapter Three cards-only satchel with all four keepsakes.',
   ))
   .register('ui-objective-review', createFixture(
-    'Hold the illustrated quest-compass objective page.',
+    'Open the compact objective reminder from the live Chapter One quest compass.',
+    [{ frame: 30, type: 'tap', target: 'hud.quest' }],
   ))
   .register('ui-chapter-card-review', createFixture(
     'Hold the illustrated Chapter One completion page.',

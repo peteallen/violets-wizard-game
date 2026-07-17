@@ -1,0 +1,102 @@
+{
+  "schema_version": 1,
+  "kind": "codex-built-in-ui-image-generation",
+  "slug": "violets-field-kit-hud-v1",
+  "generated_at": "2026-07-17",
+  "request_spec": "art/ui/hud-v1.request.json",
+  "prompt": "art/ui/hud-v1.prompts.md",
+  "processing": "art/ui/process-hud-v1.mjs",
+  "workflow": {
+    "name": "Codex built-in image generation",
+    "tool": "image_gen.imagegen",
+    "model_identifier": null,
+    "seed": null
+  },
+  "artifacts": [
+    {
+      "id": "exec-4a548467-4ef7-4ab6-9ec9-188210da0a2c",
+      "source": {
+        "path": "art/ui/hud/source/satchel-closed-chroma.png",
+        "width": 1254,
+        "height": 1254,
+        "bytes": 2428644,
+        "sha256": "7ddd53168b581a6d9b818dede5d1a73a2b129e5ea0c3dabdcaf2590034ec639f"
+      },
+      "shipping": {
+        "path": "public/assets/art/ui/hud/satchel-closed.webp",
+        "width": 512,
+        "height": 512,
+        "bytes": 58996,
+        "sha256": "bfe60fe37074584964e28d6c9c51a743e688a357574ccb890982ead451042019"
+      }
+    },
+    {
+      "id": "exec-a3b63b56-ec95-4a0d-affc-f31a8e1ea152",
+      "source": {
+        "path": "art/ui/hud/source/quest-compass-base-chroma.png",
+        "width": 1254,
+        "height": 1254,
+        "bytes": 2238709,
+        "sha256": "f86b885513427de62ec86e8d77744b63c4a98de95d5ea37b0ad31d8dbdc90ede"
+      },
+      "shipping": {
+        "path": "public/assets/art/ui/hud/quest-compass-base.webp",
+        "width": 512,
+        "height": 512,
+        "bytes": 57314,
+        "sha256": "745934e5ad808cbd71c07b97baeebd29e0bfb36454568975cf37ff7e22d67090"
+      }
+    },
+    {
+      "id": "exec-0fa3e935-c57c-4478-a79a-57d4e31d1591",
+      "source": {
+        "path": "art/ui/hud/source/quest-compass-needle-chroma.png",
+        "width": 1254,
+        "height": 1254,
+        "bytes": 1172121,
+        "sha256": "a4420ab1d40cdfca227e2e01f18269cf0ac657e5a0b5ecc3e912334915e49bae"
+      },
+      "shipping": {
+        "path": "public/assets/art/ui/hud/quest-compass-needle.webp",
+        "width": 512,
+        "height": 512,
+        "bytes": 12744,
+        "sha256": "10d4c4a74c5abca3faed4752578deca0aac8c67b719ab3c6978741248a2f6630"
+      }
+    },
+    {
+      "id": "exec-48e71278-d603-45f5-b821-30c1b9563d10",
+      "source": {
+        "path": "art/ui/hud/source/wand-holster-chroma.png",
+        "width": 1254,
+        "height": 1254,
+        "bytes": 2444375,
+        "sha256": "7194c995dcf1830f5c3537a6588a2ccff3738fea6595aa8edd35c3fdcc2c7624"
+      },
+      "shipping": {
+        "path": "public/assets/art/ui/hud/wand-holster.webp",
+        "width": 512,
+        "height": 512,
+        "bytes": 59428,
+        "sha256": "afb4a659fbffe3ad02462a89c5818539f365d2b36b065b31f5c31f88ecadde4c"
+      }
+    },
+    {
+      "id": "exec-e99747c1-6dfd-43f4-a21e-a57979447501",
+      "source": {
+        "path": "art/ui/hud/source/wand-violet-first-wand-chroma.png",
+        "width": 1254,
+        "height": 1254,
+        "bytes": 1082384,
+        "sha256": "0d4bf4a2bd31266efb95137ae93bc40731751b0cc7e5294f088d7e079e76c7a6"
+      },
+      "shipping": {
+        "path": "public/assets/art/ui/hud/wand-violet-first-wand.webp",
+        "width": 512,
+        "height": 512,
+        "bytes": 9674,
+        "sha256": "1b4c6f68b33d1f2f537ccf5d97b2688afde08e1f8fdd9839b91678a5909efce3"
+      }
+    }
+  ]
+}

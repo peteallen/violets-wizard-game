@@ -15,6 +15,12 @@
       "prompt_section": "Painted title backdrop",
       "source": "art/ui/title/source/title-backdrop-v2.png",
       "shipping": "public/assets/art/ui/title/title-backdrop-v2.webp"
+    },
+    {
+      "id": "objective-reminder-v2",
+      "prompt_section": "Objective reminder",
+      "source": "art/ui/objective/source/objective-reminder-v2-chroma.png",
+      "shipping": "public/assets/art/ui/objective/objective-reminder-v2.webp"
     }
   ]
 }

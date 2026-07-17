@@ -1,0 +1,44 @@
+{
+  "schema_version": 1,
+  "kind": "codex-built-in-ui-image-generation-request",
+  "slug": "violets-field-kit-hud-v1",
+  "generated_at": "2026-07-17",
+  "workflow": {
+    "name": "Codex built-in image generation",
+    "tool": "image_gen.imagegen",
+    "model_identifier": null,
+    "seed": null
+  },
+  "assets": [
+    {
+      "id": "satchel-closed",
+      "prompt_section": "Closed satchel",
+      "source": "art/ui/hud/source/satchel-closed-chroma.png",
+      "shipping": "public/assets/art/ui/hud/satchel-closed.webp"
+    },
+    {
+      "id": "quest-compass-base",
+      "prompt_section": "Quest compass base",
+      "source": "art/ui/hud/source/quest-compass-base-chroma.png",
+      "shipping": "public/assets/art/ui/hud/quest-compass-base.webp"
+    },
+    {
+      "id": "quest-compass-needle",
+      "prompt_section": "Quest compass needle",
+      "source": "art/ui/hud/source/quest-compass-needle-chroma.png",
+      "shipping": "public/assets/art/ui/hud/quest-compass-needle.webp"
+    },
+    {
+      "id": "wand-holster",
+      "prompt_section": "Empty wand holster",
+      "source": "art/ui/hud/source/wand-holster-chroma.png",
+      "shipping": "public/assets/art/ui/hud/wand-holster.webp"
+    },
+    {
+      "id": "wand-violet-first-wand",
+      "prompt_section": "Violet's first wand",
+      "source": "art/ui/hud/source/wand-violet-first-wand-chroma.png",
+      "shipping": "public/assets/art/ui/hud/wand-violet-first-wand.webp"
+    }
+  ]
+}

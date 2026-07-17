@@ -772,9 +772,26 @@ registry
     'ui-satchel-ch3-cards-review',
     'The Chapter Three cards-only satchel with the complete four-card collection and no misleading Map bookmark.',
   ))
-  .register('ui-objective-review', characterReviewFixture(
-    'ui-objective-review',
-    'The enchanted-compass objective page with owl ornament.',
+  .register('ui-objective-review', createFixture(
+    'The compact objective reminder opened over the live Chapter One street after Violet receives her satchel.',
+    { chapter: 1, scene: 'ch1.diagonArrival' },
+    createSave({
+      scene: 'ch1.diagonArrival',
+      room: 'ch1.diagonStreet',
+      spawn: 'west',
+      questFlags: {
+        'ch1.owlTapped': true,
+        'ch1.letterOpened': true,
+        'ch1.letterRead': true,
+        'ch1.guideMet': true,
+        'ch1.leakyReached': true,
+        'ch1.courtyardReached': true,
+        'ch1.wallOpened': true,
+        'ch1.diagonReached': true,
+        'ch1.satchelReceived': true,
+      },
+    }),
+    ['character.violet', 'character.hagrid'],
   ))
   .register('ui-chapter-card-review', characterReviewFixture(
     'ui-chapter-card-review',
