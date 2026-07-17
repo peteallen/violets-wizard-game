@@ -86,6 +86,15 @@ describe('Violet production full-frame rig', () => {
     draw.mockRestore();
   });
 
+  it('keeps Violet child-sized in the world without shrinking dialogue close-ups', () => {
+    const { placement } = violetFullFrameCharacterManifest.fullFrame;
+    const alignedWorldHeight = violetFullFrameCharacterManifest.bounds.world.height;
+
+    expect(placement.world.scale * alignedWorldHeight).toBe(185);
+    expect(placement.portrait.scale * alignedWorldHeight).toBe(235);
+    expect(placement.world.scale).toBeLessThan(placement.portrait.scale);
+  });
+
   it('uses the approved casual expressions and mirrors one coherent profile walk', () => {
     for (const expression of ['neutral', 'blink', 'talk-a', 'talk-b', 'wonder', 'proud', 'curious']) {
       expect(sampledPath({ appearance: 'casual', pose: 'idle', expression })).toBe(

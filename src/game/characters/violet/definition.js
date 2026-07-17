@@ -3,6 +3,9 @@ import { characterImageAssets, defineCharacterReview } from '../packageSupport.j
 
 const CASUAL = 'casual';
 const ROBES = 'robes';
+const ALIGNED_GROUND_Y = 1132;
+const VIOLET_WORLD_HEIGHT = 185;
+const VIOLET_PORTRAIT_HEIGHT = 235;
 
 function still(path) {
   return Object.freeze({ fps: 1, frames: Object.freeze([path]) });
@@ -40,9 +43,16 @@ export const violetFullFrameCharacterDefinition = Object.freeze({
   canvas: Object.freeze({
     width: 896,
     height: 1200,
-    ground: Object.freeze({ x: 448, y: 1132 }),
+    ground: Object.freeze({ x: 448, y: ALIGNED_GROUND_Y }),
   }),
-  worldHeight: 235,
+  // Violet is the youngest human in the cast. Keep her physically smaller in
+  // rooms and set pieces without shrinking the face-first dialogue cameo.
+  worldHeight: VIOLET_WORLD_HEIGHT,
+  placement: Object.freeze({
+    portrait: Object.freeze({
+      scale: VIOLET_PORTRAIT_HEIGHT / ALIGNED_GROUND_Y,
+    }),
+  }),
   defaultAppearance: CASUAL,
   appearances: Object.freeze({
     [CASUAL]: Object.freeze({

@@ -191,6 +191,7 @@ const REVIEW_SCENE_ILLUSION_CHECKS = Object.freeze({
   ],
   'character-cast-review': [
     'Exactly five labeled, full-body cast members remain visually separated and readable at gameplay scale.',
+    'Violet reads as the youngest and smallest human, clearly shorter than the Wandmaker, Madam Malkin, the Keeper, and the deliberately towering Hagrid.',
     'Each cast member has two readable eyes with iris, pupil, catch-light, and lid shapes; hair and clothing remain distinct masses.',
     'Every cast member has articulated limbs, readable thumbs/hands and shoes, layered base-shadow-highlight material planes, and a visible floor-planted contact shadow beneath the feet.',
     'Hagrid retains visible arms, broad boots, a shaped coat, and separate shaded hair, moustache, and beard masses instead of one dark silhouette.',
