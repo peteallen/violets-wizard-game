@@ -1,0 +1,26 @@
+{
+  "schema_version": 1,
+  "kind": "codex-built-in-ui-image-generation-request",
+  "slug": "violets-field-kit-dom-browser-v1",
+  "generated_at": "2026-07-17",
+  "workflow": {
+    "name": "Codex built-in image generation",
+    "tool": "image_gen.imagegen",
+    "model_identifier": null,
+    "seed": null
+  },
+  "assets": [
+    {
+      "id": "dialog-folio-v2",
+      "prompt_section": "Dialog folio",
+      "source": "art/ui/dom/source/dialog-folio-v2-chroma.png",
+      "shipping": "public/assets/art/ui/dom/dialog-folio-v2.webp"
+    },
+    {
+      "id": "owl-clasp-icon-v2",
+      "prompt_section": "Owl clasp browser icon",
+      "source": "art/ui/browser/source/owl-clasp-icon-v2.png",
+      "shipping": "public/assets/art/ui/browser/owl-clasp-icon-v2.webp"
+    }
+  ]
+}

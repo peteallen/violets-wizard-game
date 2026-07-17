@@ -2,6 +2,7 @@ import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 
 const html = readFileSync(new URL('../index.html', import.meta.url), 'utf8');
+const harnessHtml = readFileSync(new URL('../harness.html', import.meta.url), 'utf8');
 const css = readFileSync(new URL('../src/style.css', import.meta.url), 'utf8');
 const visualVerification = readFileSync(
   new URL('../src/game/content/visualVerification.js', import.meta.url),
@@ -16,6 +17,18 @@ const saveTransferChecklist = visualVerification.match(
 const petNameCss = css.match(/\.pet-name-dialog\s*\{[\s\S]*?\.pet-name-owl\s*\{/u)?.[0] ?? '';
 
 describe('DOM Storybook surfaces', () => {
+  it('uses the painted owl favicon in both browser entrypoints', () => {
+    const favicon = '<link rel="icon" type="image/png" sizes="64x64" href="./assets/art/ui/browser/owl-clasp-icon-v2-64.png" />';
+    expect(html).toContain(favicon);
+    expect(harnessHtml).toContain(favicon);
+  });
+
+  it('uses the painted owl iPad icon with its versioned PNG path', () => {
+    expect(html).toContain(
+      '<link rel="apple-touch-icon" type="image/png" sizes="180x180" href="./assets/art/ui/browser/owl-clasp-icon-v2-180.png" />',
+    );
+  });
+
   it('builds the update owl entirely from layered organic paths', () => {
     const owl = html.match(/<svg class="version-reload-owl"[\s\S]*?<\/svg>/u)?.[0] ?? '';
     expect(owl).not.toBe('');

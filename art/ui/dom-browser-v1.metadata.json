@@ -1,0 +1,221 @@
+{
+  "schema_version": 1,
+  "kind": "codex-built-in-ui-image-generation",
+  "slug": "violets-field-kit-dom-browser-v1",
+  "generated_at": "2026-07-17",
+  "request_spec": "art/ui/dom-browser-v1.request.json",
+  "prompt": "art/ui/dom-browser-v1.prompts.md",
+  "processing": "art/ui/process-dom-browser-v1.mjs",
+  "processing_command": "node art/ui/process-dom-browser-v1.mjs",
+  "workflow": {
+    "name": "Codex built-in image generation",
+    "tool": "image_gen.imagegen",
+    "model_identifier": null,
+    "seed": null
+  },
+  "processing_environment": {
+    "python": "3.14.6",
+    "pillow": "12.3.0",
+    "cwebp": "1.6.0"
+  },
+  "artifacts": [
+    {
+      "id": "exec-28185515-6872-4ccc-8acd-9d95e8fe2813",
+      "source": {
+        "path": "art/ui/dom/source/dialog-folio-v2-chroma.png",
+        "width": 1254,
+        "height": 1254,
+        "bytes": 2829422,
+        "sha256": "3ebb8a02935909ed00f40ab3a27fb6123a97e4115347559474793a900d64935a"
+      },
+      "shipping": {
+        "path": "public/assets/art/ui/dom/dialog-folio-v2.webp",
+        "width": 1024,
+        "height": 1024,
+        "bytes": 320470,
+        "sha256": "f3030926cc88bce0e28e9edc4fe85195debb6587a06363a94264ded1895f2bd3"
+      },
+      "processing_steps": [
+        {
+          "tool": "skills/.system/imagegen/scripts/remove_chroma_key.py",
+          "arguments": [
+            "--auto-key",
+            "border",
+            "--soft-matte",
+            "--transparent-threshold",
+            "12",
+            "--opaque-threshold",
+            "220",
+            "--despill",
+            "--force"
+          ],
+          "sampled_key_color": "#03fa02"
+        },
+        {
+          "tool": "Pillow",
+          "operation": "Premultiplied-alpha RGBa resize, then RGBA conversion",
+          "filter": "Image.Resampling.LANCZOS",
+          "width": 1024,
+          "height": 1024
+        },
+        {
+          "tool": "cwebp",
+          "arguments": [
+            "-quiet",
+            "-q",
+            "90",
+            "-alpha_q",
+            "100"
+          ]
+        }
+      ],
+      "validation": {
+        "alpha_extrema": [
+          0,
+          255
+        ],
+        "transparent_pixels": 145206,
+        "partially_transparent_pixels": 13222,
+        "opaque_pixels": 890148,
+        "corner_patch_width": 16,
+        "corner_patch_height": 16,
+        "corner_alpha_extrema": {
+          "top_left": [
+            0,
+            0
+          ],
+          "top_right": [
+            0,
+            0
+          ],
+          "bottom_left": [
+            0,
+            0
+          ],
+          "bottom_right": [
+            0,
+            0
+          ]
+        },
+        "visible_fringe_alpha_floor": 12,
+        "green_excess_threshold": 12,
+        "visible_fringe_pixels_above_threshold": 0,
+        "maximum_visible_fringe_green_excess": 11,
+        "maximum_alpha_weighted_green_excess_above_threshold": 0.549,
+        "visual_fringe_inspection": "Passed on light parchment and deep plum backgrounds with no visible green halo.",
+        "nine_slice_inspection": "Passed: the complete front-on perimeter, consistent corners and edges, and quiet uninterrupted parchment center remain intact."
+      }
+    },
+    {
+      "id": "exec-7fa0fb28-a17b-486c-85ed-641fc47eded0",
+      "source": {
+        "path": "art/ui/browser/source/owl-clasp-icon-v2.png",
+        "width": 1254,
+        "height": 1254,
+        "bytes": 3244456,
+        "sha256": "743e6047c195a3e403482d1c5074df141f1e1a55c71a33ad1716f0714d4a0edc"
+      },
+      "shipping": {
+        "path": "public/assets/art/ui/browser/owl-clasp-icon-v2.webp",
+        "width": 512,
+        "height": 512,
+        "bytes": 101182,
+        "sha256": "7999079ca2a2e1e087676bab8fbdec723991f4d208d961f52e4690efe5f0c632"
+      },
+      "shipping_derivatives": [
+        {
+          "path": "public/assets/art/ui/browser/owl-clasp-icon-v2-180.png",
+          "width": 180,
+          "height": 180,
+          "bytes": 66755,
+          "sha256": "2a9e3f19c566d41ff93b5e54083f32646301001d8e5ef8dc6f627575c4f22911"
+        },
+        {
+          "path": "public/assets/art/ui/browser/owl-clasp-icon-v2-64.png",
+          "width": 64,
+          "height": 64,
+          "bytes": 9304,
+          "sha256": "0273bc76ab03f3161ce63d467c5dba3ca98f9c330b5d980cb2637ad4824461ba"
+        }
+      ],
+      "processing_steps": [
+        {
+          "tool": "Pillow",
+          "operation": "RGB resize from the opaque source for the iPad-safe shipping sizes",
+          "filter": "Image.Resampling.LANCZOS",
+          "sizes": [
+            512,
+            180
+          ]
+        },
+        {
+          "tool": "Pillow",
+          "operation": "Centered crop of the 512-pixel RGB intermediate, followed by favicon resize",
+          "source_width": 512,
+          "source_height": 512,
+          "crop": {
+            "left": 46,
+            "top": 46,
+            "width": 420,
+            "height": 420
+          },
+          "filter": "Image.Resampling.LANCZOS",
+          "target": "public/assets/art/ui/browser/owl-clasp-icon-v2-64.png",
+          "width": 64,
+          "height": 64
+        },
+        {
+          "tool": "cwebp",
+          "target": "public/assets/art/ui/browser/owl-clasp-icon-v2.webp",
+          "arguments": [
+            "-quiet",
+            "-q",
+            "90"
+          ]
+        },
+        {
+          "tool": "Pillow",
+          "targets": [
+            "public/assets/art/ui/browser/owl-clasp-icon-v2-180.png",
+            "public/assets/art/ui/browser/owl-clasp-icon-v2-64.png"
+          ],
+          "format": "PNG",
+          "compress_level": 9,
+          "optimize": false
+        }
+      ],
+      "validation": {
+        "source_mode": "RGB",
+        "source_alpha_extrema": [
+          255,
+          255
+        ],
+        "shipping_alpha_extrema": {
+          "webp_512": [
+            255,
+            255
+          ],
+          "png_180": [
+            255,
+            255
+          ],
+          "png_64": [
+            255,
+            255
+          ]
+        },
+        "small_size_inspection": {
+          "180_css_pixels": "Passed: brass owl silhouette, paired eyes, heart brow, and material detail are clear.",
+          "64_css_pixels": "Passed: the centered crop remains unclipped, and the bright clasp silhouette occupies about 73 percent of the favicon width.",
+          "32_css_pixels": "Passed from the 64-pixel favicon derivative: the owl head, paired bright eyes, and heart brow remain immediately recognizable.",
+          "16_css_pixels": "Passed from the 64-pixel favicon derivative: the gold owl occupies about 12 pixels, with a clear compact silhouette and paired eyes."
+        },
+        "creative_edits": "None; processing uses only RGB conversion, a centered favicon crop, and Lanczos resampling."
+      }
+    }
+  ],
+  "determinism": {
+    "consecutive_processing_runs_compared": 2,
+    "byte_identical_shipping_outputs": true
+  }
+}
