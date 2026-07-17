@@ -80,8 +80,12 @@ export const chapter2SetPieceDefinitions = Object.freeze([
     params: {
       preloadRoomVariant: 'platform',
       revealRoomVariantAt: 0.68,
+      revealSpawn: 'platform',
     },
-    onComplete: [flagSet('ch2.barrierCrossed')],
+    onComplete: [
+      flagSet('ch2.barrierCrossed'),
+      travel('ch2.kingsCross', 'platform', 'none'),
+    ],
     checklist: [
       'Comic hesitation reads before Violet commits to the run.',
       'The opaque whoosh fully covers the platform room-variant swap.',

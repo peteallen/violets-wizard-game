@@ -540,6 +540,53 @@ describe('set-piece room variant handoff', () => {
     };
     expect(roomStateDuringSetPiece(duringReveal).roomVariant).toBe('gryffindor');
   });
+
+  it('projects Violet and her companion to the authored spawn only on the opaque reveal frame', () => {
+    const room = {
+      spawns: { platform: { x: 220, y: 620, facing: 'right' } },
+    };
+    const state = {
+      roomVariant: 'base',
+      player: { x: 760, y: 620, targetX: 760, targetY: 620, facing: 'right' },
+      pet: { type: 'cat', x: 695, y: 620, facing: 'right' },
+      actors: [
+        {
+          actorId: 'ch2.npc.violet',
+          characterId: 'character.violet',
+          depth: 620,
+          renderState: { x: 760, y: 620, facing: 'right', action: 'barrier-run' },
+        },
+        {
+          actorId: 'ch2.npc.pet.cat',
+          characterId: 'character.cat',
+          depth: 621,
+          renderState: { x: 695, y: 620, facing: 'right' },
+        },
+      ],
+      setPiece: {
+        time: 1.4 * 0.68,
+        descriptor: { duration: 1.4 },
+        params: {
+          preloadRoomVariant: 'platform',
+          revealRoomVariantAt: 0.68,
+          revealSpawn: 'platform',
+        },
+      },
+    };
+
+    const revealed = roomStateDuringSetPiece(state, room);
+
+    expect(revealed).toMatchObject({
+      roomVariant: 'platform',
+      player: { x: 220, y: 620, targetX: 220, targetY: 620 },
+      pet: { x: 155, y: 620 },
+    });
+    expect(revealed.actors).toEqual([
+      expect.objectContaining({ renderState: expect.objectContaining({ x: 220, y: 620, action: 'barrier-run' }) }),
+      expect.objectContaining({ renderState: expect.objectContaining({ x: 155, y: 620 }) }),
+    ]);
+    expect(state.player.x).toBe(760);
+  });
 });
 
 describe('Game chapter handoff', () => {

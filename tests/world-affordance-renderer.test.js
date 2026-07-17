@@ -379,4 +379,67 @@ describe('world interaction salience rendering', () => {
     expect(order.indexOf('affordances')).toBeGreaterThan(order.indexOf('props'));
     expect(order.indexOf('affordances')).toBeLessThan(order.indexOf('actors'));
   });
+
+  it('draws the barrier destination painting, cast, and effect from one projected reveal state', () => {
+    const state = {
+      roomId: 'ch2.kingsCross',
+      roomVariant: 'base',
+      cameraX: 0,
+      setPiece: {
+        requestedId: 'ch2.setPiece.barrierRun',
+        time: 1.4 * 0.68,
+        descriptor: { duration: 1.4 },
+        params: {
+          preloadRoomVariant: 'platform',
+          revealRoomVariantAt: 0.68,
+          revealSpawn: 'platform',
+        },
+      },
+      occupants: [],
+      player: { x: 760, y: 620, targetX: 760, targetY: 620, facing: 'right' },
+      pet: { type: 'cat', x: 695, y: 620, facing: 'right' },
+      actors: [{
+        actorId: 'ch2.npc.violet',
+        characterId: 'character.violet',
+        depth: 620,
+        renderState: { x: 760, y: 620, facing: 'right' },
+      }],
+      targets: [],
+      overlay: null,
+      dialogue: null,
+      screen: 'playing',
+    };
+    const room = { spawns: { platform: { x: 220, y: 620, facing: 'right' } } };
+    const game = Object.create(Game.prototype);
+    Object.assign(game, {
+      world: { chapter: { id: 'ch2' }, room, flags: {}, snapshot: () => state },
+      simTime: 0,
+      reducedMotion: false,
+      roomRenderer: { draw: vi.fn() },
+      worldPropRenderer: { draw: vi.fn() },
+      guideFootprintRenderer: { draw: vi.fn() },
+      setPieceRenderer: { draw: vi.fn() },
+      drawWorldTargets: vi.fn(),
+      drawCharacters: vi.fn(),
+      particles: { draw: vi.fn() },
+      uiRenderer: { drawHud: vi.fn() },
+      resumeRecap: null,
+      saveData: { settings: { muted: true } },
+      roomTransition: null,
+      transitionAlpha: 0,
+    });
+    game.shouldShowReplayExit = () => false;
+
+    game.renderWorld({});
+
+    const presentedState = game.drawCharacters.mock.calls[0][1];
+    expect(presentedState).toMatchObject({
+      roomVariant: 'platform',
+      player: { x: 220, y: 620 },
+      pet: { x: 155, y: 620 },
+    });
+    expect(game.roomRenderer.draw.mock.calls[0][2]).toBe(presentedState);
+    expect(game.worldPropRenderer.draw.mock.calls[0][1]).toBe(presentedState);
+    expect(game.setPieceRenderer.draw.mock.calls[0][2]).toBe(presentedState);
+  });
 });

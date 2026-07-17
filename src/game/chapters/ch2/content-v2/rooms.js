@@ -85,7 +85,7 @@ export const greatHallRoom = room({
   hotspots: [
     actionHotspot({
       id: 'ch2.greatHall.card',
-      hitArea: circle(1110, 410, 92),
+      hitArea: circle(400, 475, 92),
       when: noCondition,
       icon: 'frog-card',
       kind: 'collectible',

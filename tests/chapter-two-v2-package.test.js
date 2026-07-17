@@ -122,6 +122,7 @@ describe('Chapter Two native v2 grey-box package', () => {
     expect(chapter2V2.setPieces['ch2.setPiece.barrierRun'].params).toMatchObject({
       preloadRoomVariant: 'platform',
       revealRoomVariantAt: 0.68,
+      revealSpawn: 'platform',
     });
     expect(chapter2V2.setPieces['ch2.setPiece.sortingReveal'].params).toMatchObject({
       preloadRoomVariant: 'gryffindor',

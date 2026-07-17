@@ -333,6 +333,67 @@ describe('Chapter Two headless walkthrough', () => {
     )))).toBe(false);
   });
 
+  it('keeps the feast card and Headmaster as separate pointer targets', () => {
+    const save = createChapterTwoSave();
+    save.resume = {
+      chapter: 'ch2',
+      scene: 'ch2.scene.feast',
+      room: 'ch2.greatHall',
+      spawn: 'table',
+    };
+    Object.assign(save.progress.questFlags, {
+      'ch2.barrierCrossed': true,
+      'ch2.boardedTrain': true,
+      'ch2.friendsMet': true,
+      'ch2.sweetChosen': true,
+      'ch2.sweetReactionSeen': true,
+      'ch2.trainComplete': true,
+      'ch2.lakeSeen': true,
+      'ch2.greatHallEntered': true,
+      'ch2.sortedGryffindor': true,
+    });
+
+    const world = new World({ chapters: { ch2: chapter2V2 }, save, seed: 42, clock: () => NOW });
+
+    expect(world.tap({ x: 400, y: 475 }).id).toBe('ch2.greatHall.card');
+    expect(world.flags['ch2.feastAwarded']).not.toBe(true);
+    expect(world.tap({ x: 1080, y: 450 }).id).toBe('ch2.greatHall.headmaster');
+    expect(world.dialogue.scriptId).toBe('ch2.dialogue.feast');
+  });
+
+  it.each([false, true])(
+    'lands normal and reduced-motion barrier runs at the same durable platform spawn (reduced motion: %s)',
+    (reducedMotion) => {
+      const save = createChapterTwoSave();
+      save.settings.reducedMotion = reducedMotion;
+      const world = new World({ chapters: { ch2: chapter2V2 }, save, seed: 42, clock: () => NOW });
+
+      world.interactSemantic('ch2.kingsCross.barrier');
+      settleUntil(world, () => world.flags['ch2.barrierCrossed'] === true, () => {});
+
+      expect(world.currentSceneId).toBe('ch2.scene.barrierPlatform');
+      expect(world.roomId).toBe('ch2.kingsCross');
+      expect(world.player).toMatchObject({ x: 220, y: 620, targetX: 220, targetY: 620, facing: 'right' });
+      expect(save.resume).toEqual({
+        chapter: 'ch2',
+        scene: 'ch2.scene.barrierPlatform',
+        room: 'ch2.kingsCross',
+        spawn: 'platform',
+      });
+
+      const reconstructed = new World({
+        chapters: { ch2: chapter2V2 },
+        save: structuredClone(save),
+        seed: 42,
+        clock: () => NOW,
+      });
+      expect(reconstructed.currentSceneId).toBe(world.currentSceneId);
+      expect(reconstructed.roomId).toBe(world.roomId);
+      expect(reconstructed.player).toEqual(world.player);
+      expect(reconstructed.snapshot().pet).toEqual(world.snapshot().pet);
+    },
+  );
+
   it('plays Violet into Gryffindor and hands the completed story to Chapter Three deterministically', () => {
     const first = runChapterTwoWalkthrough();
     const second = runChapterTwoWalkthrough();

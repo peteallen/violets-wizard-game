@@ -1733,7 +1733,7 @@ export class Game {
     const state = this.world.snapshot();
     this.lastRenderState = state;
     const room = this.world.room;
-    const roomRenderState = roomStateDuringSetPiece(state);
+    const presentedState = roomStateDuringSetPiece(state, room);
     const setPieceId = String(state.setPiece?.requestedId ?? state.setPiece?.id ?? '').toLowerCase();
     const brickWallActive = setPieceId.includes('brick');
     const behindCastSetPieceActive = brickWallActive || setPieceId.includes('wandchaos') || setPieceId.includes('wand-chaos');
@@ -1743,7 +1743,7 @@ export class Game {
       this.roomRenderer.draw(
         context,
         room,
-        roomRenderState,
+        presentedState,
         this.simTime,
         { x: 0 },
         { reducedMotion: this.reducedMotion },
@@ -1767,18 +1767,18 @@ export class Game {
       this.roomRenderer.draw(
         context,
         room,
-        roomRenderState,
+        presentedState,
         this.simTime,
         { x: state.cameraX },
         { reducedMotion: this.reducedMotion },
       );
-      this.worldPropRenderer.draw(context, state, this.simTime, { reducedMotion: this.reducedMotion });
-      this.guideFootprintRenderer.draw(context, state, this.simTime, { reducedMotion: this.reducedMotion });
+      this.worldPropRenderer.draw(context, presentedState, this.simTime, { reducedMotion: this.reducedMotion });
+      this.guideFootprintRenderer.draw(context, presentedState, this.simTime, { reducedMotion: this.reducedMotion });
       if (behindCastSetPieceActive) {
-        this.setPieceRenderer.draw(context, state.setPiece, state, { reducedMotion: this.reducedMotion });
+        this.setPieceRenderer.draw(context, state.setPiece, presentedState, { reducedMotion: this.reducedMotion });
       }
-      if (!state.setPiece) this.drawWorldTargets(context, state);
-      this.drawCharacters(context, state);
+      if (!state.setPiece) this.drawWorldTargets(context, presentedState);
+      this.drawCharacters(context, presentedState);
       this.particles.draw(context);
       if (brickWallActive) {
         this.setPieceRenderer.drawBrickWallCover(
@@ -1790,7 +1790,7 @@ export class Game {
     }
 
     if (!behindCastSetPieceActive) {
-      this.setPieceRenderer.draw(context, state.setPiece, state, { reducedMotion: this.reducedMotion });
+      this.setPieceRenderer.draw(context, state.setPiece, presentedState, { reducedMotion: this.reducedMotion });
     }
     if (!state.setPiece) this.uiRenderer.drawHud(context, state, this.simTime, this.reducedMotion);
     if (this.resumeRecap) {
@@ -2130,7 +2130,7 @@ export class Game {
   }
 }
 
-export function roomStateDuringSetPiece(state) {
+export function roomStateDuringSetPiece(state, room = null) {
   const active = state?.setPiece;
   const variant = setPieceParam(active, 'preloadRoomVariant');
   const revealAt = setPieceParam(active, 'revealRoomVariantAt');
@@ -2138,7 +2138,64 @@ export function roomStateDuringSetPiece(state) {
   const duration = Math.max(0.1, active?.descriptor?.duration ?? 1);
   const progress = clamp((active?.time ?? 0) / duration, 0, 1);
   if (progress + Number.EPSILON < clamp(revealAt, 0, 1)) return state;
-  return { ...state, roomVariant: variant };
+  const revealed = { ...state, roomVariant: variant };
+  const revealSpawn = setPieceParam(active, 'revealSpawn');
+  const spawn = typeof revealSpawn === 'string' ? room?.spawns?.[revealSpawn] : null;
+  return spawn ? projectCompanionsToRevealSpawn(revealed, spawn) : revealed;
+}
+
+function projectCompanionsToRevealSpawn(state, spawn) {
+  if (!state?.player || !Number.isFinite(spawn?.x) || !Number.isFinite(spawn?.y)) return state;
+  const deltaX = spawn.x - state.player.x;
+  const deltaY = spawn.y - state.player.y;
+  const facing = spawn.facing ?? state.player.facing;
+  const pet = state.pet ? {
+    ...state.pet,
+    x: state.pet.x + deltaX,
+    y: state.pet.y + deltaY,
+    facing,
+  } : null;
+  const petActorSuffix = state.pet?.type ? `.npc.pet.${state.pet.type}` : null;
+  const actors = Array.isArray(state.actors) ? state.actors.map((actor) => {
+    if (actor.characterId === 'character.violet') {
+      return {
+        ...actor,
+        depth: actor.depth + deltaY,
+        renderState: {
+          ...actor.renderState,
+          x: spawn.x,
+          y: spawn.y,
+          facing,
+        },
+      };
+    }
+    const isPet = petActorSuffix
+      && (actor.actorId === petActorSuffix.slice(1) || actor.actorId.endsWith(petActorSuffix));
+    if (!isPet) return actor;
+    return {
+      ...actor,
+      depth: actor.depth + deltaY,
+      renderState: {
+        ...actor.renderState,
+        x: actor.renderState.x + deltaX,
+        y: actor.renderState.y + deltaY,
+        facing,
+      },
+    };
+  }) : state.actors;
+  return {
+    ...state,
+    player: {
+      ...state.player,
+      x: spawn.x,
+      y: spawn.y,
+      targetX: spawn.x,
+      targetY: spawn.y,
+      facing,
+    },
+    pet,
+    actors,
+  };
 }
 
 function setPieceParam(active, key) {
