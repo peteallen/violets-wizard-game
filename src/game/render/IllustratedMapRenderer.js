@@ -7,17 +7,24 @@ import {
 
 const TAU = Math.PI * 2;
 const ARTBOARD = Object.freeze({ x: 0, y: 0, width: WORLD.width, height: WORLD.height });
-// The satchel's leather tabs and brass keyhole end at y=237. The extra space
-// keeps even the field's irregular painted edge visually clear of those controls.
-const MAP_FIELD = Object.freeze({ x: 88, y: 264, width: 1104, height: 366 });
-const MAP_CONTENT_OFFSET_Y = 48;
+// The fold-out begins below the satchel navigation and keeps its irregular edge
+// clear of every 88px control. Location art sits lower to leave a calm heading
+// band inside the parchment.
+const MAP_FIELD = Object.freeze({ x: 88, y: 214, width: 1104, height: 366 });
+const MAP_CONTENT_OFFSET_Y = 0;
 const VIGNETTE_KINDS = new Set(['street', 'wand-shop', 'robes-shop', 'pet-shop']);
+const VIGNETTE_ASSET_KEYS = Object.freeze({
+  street: 'ui/satchel/destination-diagon-alley',
+  'wand-shop': 'ui/satchel/destination-ollivanders',
+  'robes-shop': 'ui/satchel/destination-malkins',
+  'pet-shop': 'ui/satchel/destination-menagerie',
+});
 
-// The deterministic VU-05 composition is integrated into the live satchel.
-// The shared painted map asset remains paused for Pete's review, so this
-// status describes the code-only map without claiming that painting.
-export const ILLUSTRATED_MAP_RENDERER_STATUS = 'code-only-integrated';
-export const ILLUSTRATED_MAP_PAINTED_ASSET_STATUS = 'paused-for-pete-review';
+// The parchment, paths, state markers, and exact labels remain deterministic
+// Canvas drawing. Each destination uses a generated textless painting so the
+// places feel specific without baking copy or progress state into pixels.
+export const ILLUSTRATED_MAP_RENDERER_STATUS = 'painted-destinations-integrated';
+export const ILLUSTRATED_MAP_PAINTED_ASSET_STATUS = 'destination-panels-shipping';
 
 export class IllustratedMapRenderer {
   draw(context, mapState, worldSnapshot, time = 0, options = {}) {
@@ -27,7 +34,9 @@ export class IllustratedMapRenderer {
       time,
       options,
     );
-    drawIllustratedMapPresentation(context, presentation);
+    drawIllustratedMapPresentation(context, presentation, {
+      imageFor: options.imageFor,
+    });
     return presentation;
   }
 }
@@ -78,13 +87,22 @@ export function createIllustratedMapPresentation(
   });
 }
 
-export function drawIllustratedMapPresentation(context, presentation) {
+export function drawIllustratedMapPresentation(context, presentation, { imageFor = null } = {}) {
   context.save();
   drawParchmentField(context, presentation.field, stablePhase(presentation.mapId));
   for (const route of presentation.routes) drawQuillRoute(context, route);
-  for (const location of presentation.locations) drawLocationVignette(context, location);
+  if (presentation.objective) drawObjectiveRoute(context, presentation);
+  for (const location of presentation.locations) {
+    drawLocationVignette(context, location, imageFor?.(location.assetKey));
+  }
+  for (const location of presentation.locations) {
+    if (location.isCurrent) drawCurrentLocationMarker(context, location);
+    else if (location.completed) drawCompletedLocationMarker(context, location);
+    else if (!location.unlocked) drawLockedLocationMarker(context, location);
+  }
   if (presentation.objective) {
     drawPaintedObjectiveStar(context, presentation.objective.marker);
+    drawObjectiveNextTag(context, presentation.objective.marker);
     drawAffordancePresentation(context, presentation.objective.affordance);
   }
   context.restore();
@@ -98,10 +116,14 @@ function locationPresentation(location, transform) {
     icon: location.icon,
     caption: location.caption,
     kind: VIGNETTE_KINDS.has(location.icon) ? location.icon : 'street',
+    assetKey: VIGNETTE_ASSET_KEYS[VIGNETTE_KINDS.has(location.icon) ? location.icon : 'street'],
     objectiveTarget: location.objectiveTarget
       ? Object.freeze({ ...location.objectiveTarget })
       : null,
     vignette,
+    isCurrent: location.isCurrent,
+    isObjective: location.isObjective,
+    completed: location.completed,
     unlocked: location.unlocked,
     fogState: location.fogState,
     travelIntent: location.travelIntent
@@ -134,22 +156,26 @@ function routePresentation(route, transform) {
 
 function objectivePresentation(locations, thread, time, { reducedMotion }) {
   const mapTargetId = thread?.mapTargetId ?? null;
-  if (!mapTargetId) return null;
   const location = locations.find(
-    (candidate) => candidate.objectiveTarget?.hotspot === mapTargetId,
+    (candidate) => mapTargetId
+      ? candidate.objectiveTarget?.hotspot === mapTargetId
+      : candidate.isObjective,
   );
   if (!location) return null;
+  const objectiveTargetId = mapTargetId
+    ?? location.objectiveTarget?.hotspot
+    ?? location.id;
 
   const shortSide = Math.min(location.vignette.width, location.vignette.height);
   const marker = Object.freeze({
     x: location.vignette.x + location.vignette.width * 0.82,
     y: location.vignette.y + location.vignette.height * 0.19,
     radius: shortSide * 0.105,
-    phase: stablePhase(mapTargetId),
+    phase: stablePhase(objectiveTargetId),
   });
   const target = Object.freeze({
-    id: mapTargetId,
-    semanticId: mapTargetId,
+    id: objectiveTargetId,
+    semanticId: objectiveTargetId,
     kind: 'map-objective',
     hitArea: Object.freeze({
       shape: 'circle',
@@ -161,7 +187,7 @@ function objectivePresentation(locations, thread, time, { reducedMotion }) {
     salience: Object.freeze({
       tier: 'thread',
       visible: 'thread',
-      intensity: thread.intensity ?? 'normal',
+      intensity: thread?.intensity ?? 'normal',
       glint: null,
     }),
   });
@@ -174,7 +200,7 @@ function objectivePresentation(locations, thread, time, { reducedMotion }) {
     quiet: false,
   });
   return Object.freeze({
-    targetId: mapTargetId,
+    targetId: objectiveTargetId,
     locationId: location.id,
     marker,
     target,
@@ -185,15 +211,15 @@ function objectivePresentation(locations, thread, time, { reducedMotion }) {
 function drawParchmentField(context, field, phase) {
   context.save();
 
-  context.fillStyle = 'rgba(39, 26, 25, 0.35)';
-  traceOrganicRect(context, offsetRect(field, 9, 12), phase + 0.31, 12);
+  context.fillStyle = 'rgba(39, 26, 25, 0.24)';
+  traceOrganicRect(context, offsetRect(field, 7, 9), phase + 0.31, 9);
   context.fill();
 
   context.fillStyle = '#d8bc83';
   traceOrganicRect(context, field, phase, 13);
   context.fill();
-  context.strokeStyle = '#5f402b';
-  context.lineWidth = 6;
+  context.strokeStyle = '#775135';
+  context.lineWidth = 3.5;
   context.lineJoin = 'round';
   context.stroke();
 
@@ -215,10 +241,35 @@ function drawParchmentField(context, field, phase) {
   drawMapLandforms(context, field, phase);
   context.restore();
 
-  context.strokeStyle = '#9a6d3f';
-  context.lineWidth = 2.2;
+  drawParchmentFolds(context, field, phase);
+
+  context.strokeStyle = 'rgba(154,109,63,0.72)';
+  context.lineWidth = 1.8;
   traceOrganicRect(context, insetRect(field, 13), phase + 0.17, 7);
   context.stroke();
+  context.restore();
+}
+
+function drawParchmentFolds(context, field, phase) {
+  context.save();
+  context.strokeStyle = 'rgba(108, 74, 45, 0.13)';
+  context.lineWidth = 2;
+  context.lineCap = 'round';
+  for (const progress of [0.33, 0.67]) {
+    const x = field.x + field.width * progress;
+    const lean = Math.sin(phase * 31 + progress * 9) * 4;
+    context.beginPath();
+    context.moveTo(x + lean, field.y + 18);
+    context.bezierCurveTo(
+      x - lean,
+      field.y + field.height * 0.34,
+      x + lean * 0.7,
+      field.y + field.height * 0.68,
+      x - lean * 0.4,
+      field.y + field.height - 18,
+    );
+    context.stroke();
+  }
   context.restore();
 }
 
@@ -261,10 +312,57 @@ function drawMapLandforms(context, field, phase) {
 function drawQuillRoute(context, route) {
   if (route.points.length < 2) return;
   context.save();
-  context.globalAlpha = route.fogState === MAP_FOG_STATES.soft ? 0.36 : 0.78;
+  context.globalAlpha = route.fogState === MAP_FOG_STATES.soft ? 0.1 : 0.24;
   for (const mark of sampleQuillRouteMarks(route.points, route.phase, { scale: route.markScale })) {
     drawQuillMark(context, mark);
   }
+  context.restore();
+}
+
+function drawObjectiveRoute(context, presentation) {
+  const current = presentation.locations.find(({ isCurrent }) => isCurrent);
+  if (!current) return;
+  const start = {
+    x: current.vignette.x + current.vignette.width * 0.16,
+    y: current.vignette.y + current.vignette.height * 0.16,
+  };
+  const end = presentation.objective.marker;
+  if (Math.hypot(end.x - start.x, end.y - start.y) < 36) return;
+  const middle = {
+    x: (start.x + end.x) / 2,
+    y: Math.min(start.y, end.y) - 34,
+  };
+  const marks = sampleQuillRouteMarks(
+    [start, middle, { x: end.x - 18, y: end.y + 4 }],
+    presentation.objective.marker.phase,
+  );
+  context.save();
+  for (let index = 0; index < marks.length; index += 2) {
+    drawGoldenRouteMark(context, marks[index], index === marks.length - 1);
+  }
+  context.restore();
+}
+
+function drawGoldenRouteMark(context, mark, final) {
+  context.save();
+  context.translate(mark.x, mark.y);
+  context.rotate(mark.angle);
+  const length = mark.length * (final ? 1.35 : 0.86);
+  const width = mark.width * (final ? 1.2 : 0.72);
+  context.fillStyle = 'rgba(85, 54, 31, 0.28)';
+  context.beginPath();
+  context.moveTo(-length / 2 + 2, 3);
+  context.quadraticCurveTo(2, 3 - width, length / 2 + 2, 3);
+  context.quadraticCurveTo(2, 3 + width, -length / 2 + 2, 3);
+  context.closePath();
+  context.fill();
+  context.fillStyle = final ? '#f4cf70' : '#d6a84e';
+  context.beginPath();
+  context.moveTo(-length / 2, 0);
+  context.quadraticCurveTo(0, -width, length / 2, 0);
+  context.quadraticCurveTo(0, width, -length / 2, 0);
+  context.closePath();
+  context.fill();
   context.restore();
 }
 
@@ -390,18 +488,29 @@ function drawQuillMark(context, mark) {
   context.restore();
 }
 
-function drawLocationVignette(context, location) {
+function drawLocationVignette(context, location, image = null) {
   const rect = location.vignette;
+  const painted = Boolean(image?.complete && image.naturalWidth > 0);
   context.save();
-  context.fillStyle = 'rgba(55, 35, 29, 0.31)';
-  traceVignetteShape(context, offsetRect(rect, 5, 8), location.phase + 0.11);
+  if (painted) context.drawImage(image, rect.x, rect.y, rect.width, rect.height);
+  else drawFallbackLocationVignette(context, location);
+
+  for (const wisp of location.fogWisps) drawFogWisp(context, wisp);
+  drawLocationLabel(context, location, { painted });
+  context.restore();
+}
+
+function drawFallbackLocationVignette(context, location) {
+  const rect = location.vignette;
+  context.fillStyle = 'rgba(55, 35, 29, 0.2)';
+  traceVignetteShape(context, offsetRect(rect, 4, 6), location.phase + 0.11);
   context.fill();
 
-  context.fillStyle = '#caa66c';
+  context.fillStyle = '#d2b77d';
   traceVignetteShape(context, rect, location.phase);
   context.fill();
-  context.strokeStyle = '#523629';
-  context.lineWidth = 5.4;
+  context.strokeStyle = '#674630';
+  context.lineWidth = 3.4;
   context.stroke();
 
   context.save();
@@ -414,12 +523,158 @@ function drawLocationVignette(context, location) {
   else drawStreet(context, rect, location.phase);
   context.restore();
 
-  context.strokeStyle = '#b48145';
-  context.lineWidth = 2;
+  context.strokeStyle = 'rgba(180,129,69,0.82)';
+  context.lineWidth = 1.8;
   traceVignetteShape(context, insetRect(rect, 10), location.phase + 0.19);
   context.stroke();
+}
 
-  for (const wisp of location.fogWisps) drawFogWisp(context, wisp);
+export function destinationLabelRect(rect) {
+  return Object.freeze({
+    x: rect.x + 14,
+    y: rect.y + rect.height * 0.7,
+    width: rect.width - 28,
+    height: rect.height * 0.23,
+  });
+}
+
+function drawLocationLabel(context, location, { painted = false } = {}) {
+  const rect = location.vignette;
+  const labelRect = destinationLabelRect(rect);
+  if (!painted) {
+    context.fillStyle = 'rgba(48, 30, 29, 0.24)';
+    traceOrganicRect(context, offsetRect(labelRect, 2, 3), location.phase + 0.37, 2);
+    context.fill();
+    context.fillStyle = location.unlocked ? '#f2dfb5' : '#ddd2b7';
+    traceOrganicRect(context, labelRect, location.phase + 0.23, 2);
+    context.fill();
+    context.strokeStyle = location.unlocked ? '#805735' : '#8c7a66';
+    context.lineWidth = 1.8;
+    context.stroke();
+  }
+  context.fillStyle = location.unlocked ? '#3f2d25' : '#5f554c';
+  context.textAlign = 'center';
+  context.textBaseline = 'middle';
+  const fontSize = location.caption.length > 12 ? 16 : location.caption.length > 10 ? 18 : 20;
+  context.font = `700 ${fontSize}px "Andika", "Trebuchet MS", sans-serif`;
+  context.fillText(
+    location.caption,
+    labelRect.x + labelRect.width / 2,
+    labelRect.y + labelRect.height / 2,
+  );
+}
+
+function drawCurrentLocationMarker(context, location) {
+  const rect = location.vignette;
+  const tag = {
+    x: rect.x + 10,
+    y: rect.y + 12,
+    width: 72,
+    height: 30,
+  };
+  const dot = {
+    x: tag.x + 16,
+    y: tag.y + tag.height / 2,
+    radius: 6,
+  };
+  const labelRect = {
+    x: tag.x + 25,
+    y: tag.y,
+    width: tag.width - 29,
+    height: tag.height,
+  };
+  context.save();
+  context.fillStyle = 'rgba(48, 28, 40, 0.25)';
+  traceOrganicRect(context, offsetRect(tag, 2, 3), location.phase + 0.2, 2);
+  context.fill();
+  context.fillStyle = '#70415f';
+  traceOrganicRect(context, tag, location.phase, 2);
+  context.fill();
+  context.strokeStyle = '#432b38';
+  context.lineWidth = 2.2;
+  context.stroke();
+  context.fillStyle = '#f1c86d';
+  traceOrganicSpot(context, dot.x, dot.y, dot.radius, location.phase + 0.43);
+  context.fill();
+  context.fillStyle = '#fff0c7';
+  context.textAlign = 'center';
+  context.textBaseline = 'middle';
+  context.font = '700 15px "Andika", "Trebuchet MS", sans-serif';
+  context.fillText(
+    'Here',
+    labelRect.x + labelRect.width / 2,
+    labelRect.y + labelRect.height / 2,
+  );
+  context.restore();
+}
+
+function drawCompletedLocationMarker(context, location) {
+  const rect = location.vignette;
+  const x = rect.x + rect.width * 0.85;
+  const y = rect.y + rect.height * 0.16;
+  const radius = Math.min(rect.width, rect.height) * 0.075;
+  context.save();
+  context.fillStyle = 'rgba(50, 31, 27, 0.24)';
+  traceOrganicSpot(context, x + 2, y + 3, radius * 1.08, location.phase + 0.27);
+  context.fill();
+  context.fillStyle = '#d6aa4f';
+  traceOrganicSpot(context, x, y, radius, location.phase + 0.11);
+  context.fill();
+  context.strokeStyle = '#684328';
+  context.lineWidth = 2;
+  context.stroke();
+  context.strokeStyle = '#fff0b6';
+  context.lineWidth = 3.2;
+  context.lineCap = 'round';
+  context.lineJoin = 'round';
+  context.beginPath();
+  context.moveTo(x - radius * 0.48, y);
+  context.lineTo(x - radius * 0.12, y + radius * 0.36);
+  context.lineTo(x + radius * 0.52, y - radius * 0.42);
+  context.stroke();
+  context.restore();
+}
+
+function drawLockedLocationMarker(context, location) {
+  const rect = location.vignette;
+  const x = rect.x + rect.width * 0.84;
+  const y = rect.y + rect.height * 0.15;
+  const radius = Math.min(rect.width, rect.height) * 0.075;
+  context.save();
+  context.fillStyle = 'rgba(47, 35, 42, 0.28)';
+  traceOrganicSpot(context, x + 2, y + 3, radius * 1.12, location.phase + 0.19);
+  context.fill();
+  context.fillStyle = '#6f5967';
+  traceOrganicSpot(context, x, y, radius, location.phase + 0.07);
+  context.fill();
+  context.strokeStyle = '#463642';
+  context.lineWidth = 2;
+  context.stroke();
+  context.strokeStyle = '#d8b55f';
+  context.lineWidth = 3;
+  context.lineCap = 'round';
+  context.beginPath();
+  context.moveTo(x - radius * 0.38, y - radius * 0.08);
+  context.bezierCurveTo(
+    x - radius * 0.36,
+    y - radius * 0.82,
+    x + radius * 0.36,
+    y - radius * 0.82,
+    x + radius * 0.38,
+    y - radius * 0.08,
+  );
+  context.stroke();
+  context.fillStyle = '#e4c56f';
+  traceOrganicRect(context, {
+    x: x - radius * 0.5,
+    y: y - radius * 0.12,
+    width: radius,
+    height: radius * 0.82,
+  }, location.phase + 0.31, 1.2);
+  context.fill();
+  context.fillStyle = '#5a443b';
+  traceOrganicSpot(context, x, y + radius * 0.16, radius * 0.14, location.phase + 0.43);
+  context.fill();
   context.restore();
 }
 
@@ -619,15 +874,15 @@ function traceCrookedFacade(context, rect, phase) {
 }
 
 function createFogWisps(rect, phase) {
-  return Array.from({ length: 4 }, (_, index) => {
-    const lane = (index + 0.5) / 4;
+  return Array.from({ length: 3 }, (_, index) => {
+    const lane = (index + 0.5) / 3;
     const drift = Math.sin(phase * 37 + index * 1.83) * rect.width * 0.055;
     return Object.freeze({
       x: rect.x - rect.width * 0.08 + drift,
-      y: rect.y + rect.height * (0.14 + lane * 0.7),
+      y: rect.y + rect.height * (0.16 + lane * 0.48),
       width: rect.width * (1.13 - (index % 2) * 0.08),
-      height: rect.height * (0.18 + (index % 3) * 0.025),
-      alpha: 0.64 + (index % 2) * 0.1,
+      height: rect.height * (0.14 + (index % 2) * 0.025),
+      alpha: 0.43 + (index % 2) * 0.08,
       phase: phase + index * 0.17,
     });
   });
@@ -706,6 +961,31 @@ function drawPaintedObjectiveStar(context, marker) {
   context.restore();
 }
 
+function drawObjectiveNextTag(context, marker) {
+  const rect = {
+    x: marker.x - 76,
+    y: marker.y - 37,
+    width: 58,
+    height: 29,
+  };
+  context.save();
+  context.fillStyle = 'rgba(55, 35, 29, 0.24)';
+  traceOrganicRect(context, offsetRect(rect, 2, 3), marker.phase + 0.31, 1.5);
+  context.fill();
+  context.fillStyle = '#f1d58e';
+  traceOrganicRect(context, rect, marker.phase + 0.17, 1.5);
+  context.fill();
+  context.strokeStyle = '#80562f';
+  context.lineWidth = 1.8;
+  context.stroke();
+  context.fillStyle = '#493126';
+  context.textAlign = 'center';
+  context.textBaseline = 'middle';
+  context.font = '700 16px "Andika", "Trebuchet MS", sans-serif';
+  context.fillText('Next', rect.x + rect.width / 2, rect.y + rect.height / 2);
+  context.restore();
+}
+
 function traceOrganicStar(context, x, y, radius, phase) {
   const points = [];
   for (let index = 0; index < 10; index += 1) {
@@ -721,18 +1001,7 @@ function traceOrganicStar(context, x, y, radius, phase) {
 }
 
 function traceVignetteShape(context, rect, phase) {
-  const points = [];
-  const centerX = rect.x + rect.width / 2;
-  const centerY = rect.y + rect.height / 2;
-  for (let index = 0; index < 14; index += 1) {
-    const angle = index * TAU / 14;
-    const wobble = 0.96 + Math.sin(phase * 23 + index * 1.73) * 0.045;
-    points.push({
-      x: centerX + Math.cos(angle) * rect.width * 0.5 * wobble,
-      y: centerY + Math.sin(angle) * rect.height * 0.5 * (2 - wobble),
-    });
-  }
-  traceOrganicLoop(context, points);
+  traceOrganicRect(context, rect, phase, Math.min(rect.width, rect.height) * 0.035);
 }
 
 function traceOrganicSpot(context, x, y, radius, phase) {

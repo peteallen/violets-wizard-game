@@ -49,7 +49,7 @@ describe('direct Diagon Alley shop travel', () => {
       channel: 'hud',
     });
     expect(world.snapshot().targets.some(({ id }) => id === 'street.guide')).toBe(false);
-    expect(world.snapshot().occupants.find(({ npc }) => npc === 'npc.guide')?.x).toBe(470);
+    expect(world.snapshot().occupants.find(({ npc }) => npc === 'npc.guide')?.x).toBe(490);
 
     const tapped = world.tap({ x: 295, y: 455 });
 

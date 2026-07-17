@@ -728,7 +728,7 @@ registry
       },
       wandId: 'violet-first-wand',
       robeTrim: 'purple',
-      pet: { type: 'cat', name: 'Biscuit' },
+      pet: { type: 'owl', name: 'Moonbeam' },
     }),
   ))
   .register('ui-letter-reading-review', characterReviewFixture(
@@ -752,13 +752,25 @@ registry
     'Three authored companion choice cards without font-glyph stand-ins.',
     PET_CHARACTERS,
   ))
+  .register('ui-satchel-map-early-review', characterReviewFixture(
+    'ui-satchel-map-early-review',
+    'The early Chapter One travel journal with painted destinations, two softly fogged shops, and Ollivanders marked Next.',
+  ))
   .register('ui-satchel-map-review', characterReviewFixture(
     'ui-satchel-map-review',
-    'The open storybook satchel with the code-only illustrated Diagon Alley map, soft locked-place fog, and its D31 objective shimmer.',
+    'The late Chapter One travel journal with four painted destinations, completed stops, and Menagerie marked Next.',
   ))
   .register('ui-satchel-cards-review', characterReviewFixture(
     'ui-satchel-cards-review',
-    'The satchel card album with its grown-up brass keyhole above the keepsakes.',
+    'The Chapter One card album with Map navigation and its grown-up brass keyhole beside the keepsakes.',
+  ))
+  .register('ui-satchel-ch2-cards-review', characterReviewFixture(
+    'ui-satchel-ch2-cards-review',
+    'The Chapter Two cards-only satchel with three earned keepsakes and no misleading Map bookmark.',
+  ))
+  .register('ui-satchel-ch3-cards-review', characterReviewFixture(
+    'ui-satchel-ch3-cards-review',
+    'The Chapter Three cards-only satchel with the complete four-card collection and no misleading Map bookmark.',
   ))
   .register('ui-objective-review', characterReviewFixture(
     'ui-objective-review',

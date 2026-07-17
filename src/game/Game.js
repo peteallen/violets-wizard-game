@@ -704,7 +704,10 @@ export class Game {
       }
       return;
     }
-    if (pointInUiRect(point, UI_RECTS.close)) {
+    const closeRect = state.overlay.surface === 'satchel'
+      ? UI_RECTS.satchelClose
+      : UI_RECTS.close;
+    if (pointInUiRect(point, closeRect)) {
       if (state.overlay.surface === 'yearbook') this.openParentPanel('play');
       else this.world.closeOverlay();
       this.sound.playSfx('sfx/ui/close', 'tap');
@@ -733,16 +736,15 @@ export class Game {
         });
         return;
       }
-      if (pointInUiRect(point, UI_RECTS.satchelMapTab)) {
-        if (!mapAvailable) {
-          this.world.overlay = { surface: 'satchel', tab: 'cards' };
-          return;
-        }
+      if (mapAvailable && pointInUiRect(point, UI_RECTS.satchelMapTab)) {
         this.world.overlay = { surface: 'satchel', tab: 'map' };
         this.sound.playSfx('sfx/ui/parchment', 'tap');
         return;
       }
-      if (pointInUiRect(point, UI_RECTS.satchelCardsTab)) {
+      const cardsTabRect = mapAvailable
+        ? UI_RECTS.satchelCardsTab
+        : UI_RECTS.satchelCardsOnlyTab;
+      if (pointInUiRect(point, cardsTabRect)) {
         this.world.overlay = { surface: 'satchel', tab: 'cards' };
         this.sound.playSfx('sfx/ui/parchment', 'tap');
         return;
@@ -1947,10 +1949,14 @@ export class Game {
           y: UI_RECTS.satchelMapTab.y + UI_RECTS.satchelMapTab.height / 2,
         });
       }
+      const cardsTabRect = mapAvailable
+        ? UI_RECTS.satchelCardsTab
+        : UI_RECTS.satchelCardsOnlyTab;
       targets.push(
-        { id: 'satchel.cards', x: UI_RECTS.satchelCardsTab.x + UI_RECTS.satchelCardsTab.width / 2, y: UI_RECTS.satchelCardsTab.y + UI_RECTS.satchelCardsTab.height / 2 },
+        { id: 'satchel.cards', x: cardsTabRect.x + cardsTabRect.width / 2, y: cardsTabRect.y + cardsTabRect.height / 2 },
         semanticRect('satchel.grownups', UI_RECTS.satchelKeyhole),
         semanticRect('satchel.startOver', UI_RECTS.satchelStartOver),
+        semanticRect('overlay.close', UI_RECTS.satchelClose),
       );
       if (state.overlay.tab === 'cards') {
         for (const slot of state.__cardSlots ?? []) {

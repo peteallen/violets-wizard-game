@@ -117,8 +117,11 @@ describe('state fixtures', () => {
       'ui-letter-reading-review',
       'ui-robe-picker-review',
       'ui-choices-review',
+      'ui-satchel-map-early-review',
       'ui-satchel-map-review',
       'ui-satchel-cards-review',
+      'ui-satchel-ch2-cards-review',
+      'ui-satchel-ch3-cards-review',
       'ui-objective-review',
       'ui-chapter-card-review',
     ]);

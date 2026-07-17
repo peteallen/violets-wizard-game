@@ -19,6 +19,18 @@ const IMAGE_PATHS = Object.freeze({
   'cards/dumbledore/portrait': 'assets/art/cards/dumbledore.webp',
 });
 
+const UI_IMAGE_PATHS = Object.freeze({
+  'ui/satchel/map-tab': 'assets/art/ui/satchel/map-tab.webp',
+  'ui/satchel/cards-tab': 'assets/art/ui/satchel/cards-tab.webp',
+  'ui/satchel/grown-ups': 'assets/art/ui/satchel/grown-ups.webp',
+  'ui/satchel/start-fresh': 'assets/art/ui/satchel/start-fresh.webp',
+  'ui/satchel/close-seal': 'assets/art/ui/satchel/close-seal.webp',
+  'ui/satchel/destination-diagon-alley': 'assets/art/ui/satchel/destination-diagon-alley.webp',
+  'ui/satchel/destination-ollivanders': 'assets/art/ui/satchel/destination-ollivanders.webp',
+  'ui/satchel/destination-malkins': 'assets/art/ui/satchel/destination-malkins.webp',
+  'ui/satchel/destination-menagerie': 'assets/art/ui/satchel/destination-menagerie.webp',
+});
+
 const AMBIENCE_ALIASES = Object.freeze({
   'ambience/ch1/bedroom': 'assets/audio/music/ch1/violetTheme.mp3',
   'ambience/ch1/leaky': 'assets/audio/music/ch1/violetTheme.mp3',
@@ -43,6 +55,11 @@ const characterAssetEntries = Object.fromEntries(Object.entries(productionCharac
   Object.freeze({ ...asset, chapter: null }),
 ]));
 
+const uiAssetEntries = Object.fromEntries(Object.entries(UI_IMAGE_PATHS).map(([key, path]) => [
+  key,
+  Object.freeze({ path, kind: 'image', chapter: null }),
+]));
+
 const packagedChapterAssetEntries = Object.fromEntries(
   chapters
     .filter((chapter) => chapter.contractVersion === 2)
@@ -62,6 +79,7 @@ export const assetManifest = Object.freeze({
   ...chapterAssetEntries,
   ...packagedChapterAssetEntries,
   ...characterAssetEntries,
+  ...uiAssetEntries,
 });
 
 export function getAsset(key) {

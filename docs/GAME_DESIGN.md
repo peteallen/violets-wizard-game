@@ -152,14 +152,14 @@ localStorage, autosaved on every flag mutation (debounced), written through on s
 
 ## The parent panel (also the dev panel)
 
-Long-press the small gear (3 seconds) → panel for dad: chapter select and scene skip/replay, volume controls, reduced-motion toggle, the learning dial (Off/Gentle/Stretchy), save export/import, guarded new game. This doubles as the debug menu during development.
+Hold the labeled grown-up keyhole in Violet’s satchel for 3 seconds → panel for dad: chapter select and scene skip/replay, volume controls, reduced-motion toggle, the learning dial (Off/Gentle/Stretchy), save export/import, and the guarded new-game confirmation. This doubles as the debug menu during development.
 
 ## HUD: uncluttered, highly stylized
 
 Exactly three persistent elements, all corners, all icon-only (see [ART_DIRECTION.md](ART_DIRECTION.md) for the look):
 
 - **Wand button** (bottom-right) — opens the spellbook fan.
-- **Satchel** (bottom-left) — opens a full-screen spread containing the castle map, the chocolate-frog card album, and the small settings gear.
+- **Satchel** (bottom-left) — opens a full-screen travel-journal spread. Chapter One offers its Diagon Alley Map and the Magic cards album; chapters without an authored travel map open directly to Cards and do not show a dead Map bookmark. The labeled grown-up keyhole and permanent Start fresh tag are quiet utilities on every page.
 - **Quest star** (top-left) — tap to re-hear the objective; pulses gently when a new objective arrives.
 
 Nothing else lives on screen during play. Hearts appear only during encounters; house points appear only when awarded (a shimmer of points flying to a corner tally, then gone).

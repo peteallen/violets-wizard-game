@@ -53,8 +53,8 @@ export const diagonStreetRoom = freezePureData({
   occupants: [
     { npc: 'npc.violet', x: 180, y: 610, facing: 'right', pose: 'idle', when: noCondition },
     { npc: 'npc.guide', x: 260, y: 610, facing: 'right', pose: 'idle', when: when({ noFlags: ['ch1.satchelReceived'] }), render: { layoutBounds: hagridLayoutBounds } },
-    { npc: 'npc.guide', x: 470, y: 610, facing: 'right', pose: 'idle', when: when({ allFlags: ['ch1.satchelReceived'], noFlags: ['ch1.petNamed'] }), render: { layoutBounds: hagridLayoutBounds } },
-    { npc: 'npc.guide', x: 260, y: 610, facing: 'right', pose: 'idle', when: when({ allFlags: ['ch1.petNamed'] }), render: { layoutBounds: hagridLayoutBounds } },
+    { npc: 'npc.guide', x: 490, y: 610, facing: 'right', pose: 'idle', when: when({ allFlags: ['ch1.satchelReceived'], noFlags: ['ch1.petNamed'] }), render: { layoutBounds: hagridLayoutBounds } },
+    { npc: 'npc.guide', x: 490, y: 610, facing: 'right', pose: 'idle', when: when({ allFlags: ['ch1.petNamed'] }), render: { layoutBounds: hagridLayoutBounds } },
   ],
   hotspots: [
     {
@@ -71,8 +71,8 @@ export const diagonStreetRoom = freezePureData({
     {
       id: 'street.guideTicket',
       kind: 'talk',
-      hitArea: circle(260, 465, 95),
-      approach: { x: 370, y: 610, facing: 'left' },
+      hitArea: circle(490, 465, 95),
+      approach: { x: 600, y: 610, facing: 'left' },
       when: when({ allFlags: ['ch1.petNamed'], noFlags: ['ch1.ticketReceived'] }),
       presentation: { icon: 'ticket', glow: 'objective' },
       repeat: 'once',

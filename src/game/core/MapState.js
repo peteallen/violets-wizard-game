@@ -40,6 +40,8 @@ export function buildMapState(map, snapshot = {}) {
         ? Object.freeze({ ...location.objectiveTarget })
         : null,
       vignette: Object.freeze({ ...location.vignette }),
+      isCurrent: location.to.room === snapshot.roomId,
+      completed: unlocked && !isObjective && location.to.room !== snapshot.roomId,
       unlocked,
       isObjective,
       fogState: unlocked ? MAP_FOG_STATES.clear : MAP_FOG_STATES.soft,

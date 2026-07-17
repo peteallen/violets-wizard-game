@@ -5,6 +5,7 @@ import {
   albumCardLayout,
   buildCardAlbumEntries,
   drawYearbookPageDots,
+  satchelControlLabelRect,
   UIRenderer,
   UI_RECTS,
   yearbookLayout,
@@ -121,6 +122,39 @@ function loadedImage({ width = 1280, height = 720, src = '' } = {}) {
 }
 
 describe('storybook satchel card album', () => {
+  it('centers every painted satchel-control label on both axes of its blank label area', () => {
+    vi.stubGlobal('Image', class TestImage {});
+    const renderer = new UIRenderer({ characterRenderer: { draw: () => {} } });
+    for (const key of [
+      'ui/satchel/map-tab',
+      'ui/satchel/cards-tab',
+      'ui/satchel/grown-ups',
+      'ui/satchel/start-fresh',
+      'ui/satchel/close-seal',
+    ]) renderer.images.set(key, loadedImage({ width: 720, height: 240 }));
+
+    const context = recordingContext();
+    renderer.drawSatchel(context, {
+      overlay: { surface: 'satchel', tab: 'cards' },
+      cards: [],
+    });
+
+    const expected = [
+      ['Map', UI_RECTS.satchelMapTab, 'tab'],
+      ['Cards', UI_RECTS.satchelCardsTab, 'tab'],
+      ['Grown-ups', UI_RECTS.satchelKeyhole, 'grown-ups'],
+      ['Start fresh', UI_RECTS.satchelStartOver, 'start-fresh'],
+    ];
+    for (const [label, controlRect, kind] of expected) {
+      const call = context.calls.find(([name, text]) => name === 'fillText' && text === label);
+      const labelRect = satchelControlLabelRect(controlRect, kind);
+      expect(call?.[2]).toBeCloseTo(labelRect.x + labelRect.width / 2);
+      expect(call?.[3]).toBeCloseTo(labelRect.y + labelRect.height / 2);
+    }
+    expect(context.assignments).toContainEqual(['textAlign', 'center']);
+    expect(context.assignments).toContainEqual(['textBaseline', 'middle']);
+  });
+
   it('keeps the exact earned entries and large card targets clear of satchel controls', () => {
     const entries = buildCardAlbumEntries(cards, ['morgana']);
     expect(entries.map(({ id, earned }) => ({ id, earned }))).toEqual([

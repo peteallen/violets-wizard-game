@@ -503,12 +503,10 @@ function runChapterOneWalkthrough() {
 
   interactAndSettle(world, 'bedroom.guide');
   finishDialogueLines(world);
-  settleUntil(world, () => world.targets().some(({ id }) => id === 'bedroom.exit'));
   recorder.record('hagrid-met');
 
   interactAndSettle(world, 'bedroom.exit');
   finishDialogueLines(world);
-  settleUntil(world, () => world.targets().some(({ id }) => id === 'leaky.courtyardDoor'));
   recorder.record('leaky-cauldron');
 
   interactAndSettle(world, 'leaky.courtyardDoor');

@@ -146,9 +146,13 @@ describe('satchel card album', () => {
       UI_RECTS.satchelCardsTab,
       UI_RECTS.satchelKeyhole,
       UI_RECTS.satchelStartOver,
-      UI_RECTS.close,
+      UI_RECTS.satchelClose,
     ];
-    const headerBottom = Math.max(...controls.map((rect) => rect.y + rect.height));
+    const headerBottom = Math.max(
+      UI_RECTS.satchelMapTab.y + UI_RECTS.satchelMapTab.height,
+      UI_RECTS.satchelCardsTab.y + UI_RECTS.satchelCardsTab.height,
+      UI_RECTS.satchelClose.y + UI_RECTS.satchelClose.height,
+    );
 
     expect(presentation.field.y).toBeGreaterThan(headerBottom);
     for (const control of controls) {
@@ -161,6 +165,25 @@ describe('satchel card album', () => {
         expect(rectsOverlap(target.hitArea, control)).toBe(false);
       }
     }
+  });
+
+  it('keeps the painted satchel seal and generic overlay seal aligned with separate hit targets', () => {
+    const game = gameStub();
+    const satchelState = { overlay: { surface: 'satchel', tab: 'map' } };
+
+    game.handleOverlayTap(center(UI_RECTS.close), satchelState);
+    expect(game.world.closeOverlay).not.toHaveBeenCalled();
+
+    game.handleOverlayTap(center(UI_RECTS.satchelClose), satchelState);
+    expect(game.world.closeOverlay).toHaveBeenCalledOnce();
+
+    game.world.closeOverlay.mockClear();
+    const parentState = { overlay: { surface: 'parent', page: 'play' } };
+    game.handleOverlayTap(center(UI_RECTS.satchelClose), parentState);
+    expect(game.world.closeOverlay).not.toHaveBeenCalled();
+
+    game.handleOverlayTap(center(UI_RECTS.close), parentState);
+    expect(game.world.closeOverlay).toHaveBeenCalledOnce();
   });
 
   it('keeps softly fogged map destinations non-travelling but still tappable', () => {
@@ -276,6 +299,12 @@ describe('satchel card album', () => {
     const semanticIds = game.semanticTargets(world.snapshot()).map(({ id }) => id);
     expect(semanticIds).not.toContain('satchel.map');
     expect(semanticIds.some((id) => id.startsWith('satchel.map.ch1.'))).toBe(false);
+    const cardsTarget = game.semanticTargets(world.snapshot())
+      .find(({ id }) => id === 'satchel.cards');
+    expect(cardsTarget).toEqual({
+      id: 'satchel.cards',
+      ...center(UI_RECTS.satchelCardsOnlyTab),
+    });
   });
 });
 
@@ -296,15 +325,21 @@ describe('satchel map model', () => {
     expect(snapshot).toEqual(originalSnapshot);
     expect(model.objectiveLocationId).toBe('map.ch1.malkins');
     expect(locations['map.ch1.diagonStreet'].fogState).toBe(MAP_FOG_STATES.clear);
+    expect(locations['map.ch1.diagonStreet'].completed).toBe(true);
+    expect(locations['map.ch1.ollivanders'].isCurrent).toBe(true);
+    expect(locations['map.ch1.ollivanders'].completed).toBe(false);
+    expect(Object.values(locations).filter(({ isCurrent }) => isCurrent)).toHaveLength(1);
     expect(locations['map.ch1.malkins']).toMatchObject({
       unlocked: true,
       isObjective: true,
+      completed: false,
       fogState: MAP_FOG_STATES.clear,
       travelIntent: { type: 'travel.request', room: 'ch1.malkins', spawn: 'entry' },
     });
     expect(locations['map.ch1.menagerie']).toMatchObject({
       unlocked: false,
       isObjective: false,
+      completed: false,
       fogState: MAP_FOG_STATES.soft,
       travelIntent: null,
     });

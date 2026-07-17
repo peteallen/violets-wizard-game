@@ -3,6 +3,7 @@ import { chapter1Map } from '../src/game/content/chapters/ch1.js';
 import { buildMapState, MAP_FOG_STATES } from '../src/game/core/MapState.js';
 import {
   createIllustratedMapPresentation,
+  destinationLabelRect,
   ILLUSTRATED_MAP_PAINTED_ASSET_STATUS,
   ILLUSTRATED_MAP_RENDERER_STATUS,
   IllustratedMapRenderer,
@@ -14,7 +15,7 @@ function recordingContext() {
   const assignments = [];
   let depth = 0;
   const methods = new Set([
-    'arc', 'beginPath', 'bezierCurveTo', 'clip', 'closePath', 'ellipse', 'fill',
+    'arc', 'beginPath', 'bezierCurveTo', 'clip', 'closePath', 'drawImage', 'ellipse', 'fill',
     'fillRect', 'fillText', 'lineTo', 'moveTo', 'quadraticCurveTo', 'rect', 'restore',
     'rotate', 'roundRect', 'save', 'scale', 'setLineDash', 'stroke', 'strokeRect',
     'translate',
@@ -78,7 +79,7 @@ function worldSnapshot({
   };
 }
 
-describe('code-only illustrated map renderer foundation', () => {
+describe('illustrated satchel map renderer', () => {
   it('builds a deterministic frozen presentation and stable hit targets without snapshot mutation', () => {
     const snapshot = mapSnapshot();
     const originalSnapshot = structuredClone(snapshot);
@@ -90,16 +91,22 @@ describe('code-only illustrated map renderer foundation', () => {
     const first = createIllustratedMapPresentation(model, state, 3.25);
     const replayed = createIllustratedMapPresentation(model, state, 3.25);
 
-    expect(ILLUSTRATED_MAP_RENDERER_STATUS).toBe('code-only-integrated');
-    expect(ILLUSTRATED_MAP_PAINTED_ASSET_STATUS).toBe('paused-for-pete-review');
+    expect(ILLUSTRATED_MAP_RENDERER_STATUS).toBe('painted-destinations-integrated');
+    expect(ILLUSTRATED_MAP_PAINTED_ASSET_STATUS).toBe('destination-panels-shipping');
     expect(first).toEqual(replayed);
-    expect(first.kind).toBe('code-only-integrated');
-    expect(first.paintedAssetStatus).toBe('paused-for-pete-review');
+    expect(first.kind).toBe('painted-destinations-integrated');
+    expect(first.paintedAssetStatus).toBe('destination-panels-shipping');
     expect(first.locations).toHaveLength(chapter1Map.locations.length);
     expect(first.routes).toHaveLength(chapter1Map.routes.length);
     expect(new Set(first.locations.map(({ kind }) => kind))).toEqual(
       new Set(['street', 'wand-shop', 'robes-shop', 'pet-shop']),
     );
+    expect(first.locations.map(({ assetKey }) => assetKey)).toEqual([
+      'ui/satchel/destination-diagon-alley',
+      'ui/satchel/destination-ollivanders',
+      'ui/satchel/destination-malkins',
+      'ui/satchel/destination-menagerie',
+    ]);
     expect(first.hitTargets).toHaveLength(first.locations.length);
     for (const target of first.hitTargets) {
       const location = first.locations.find(({ id }) => id === target.id);
@@ -111,7 +118,7 @@ describe('code-only illustrated map renderer foundation', () => {
     }
     expect(first.locations
       .filter(({ fogState }) => fogState === MAP_FOG_STATES.soft)
-      .every(({ fogWisps }) => fogWisps.length === 4)).toBe(true);
+      .every(({ fogWisps }) => fogWisps.length === 3)).toBe(true);
     expect(first.locations
       .filter(({ fogState }) => fogState === MAP_FOG_STATES.clear)
       .every(({ fogWisps }) => fogWisps.length === 0)).toBe(true);
@@ -147,7 +154,11 @@ describe('code-only illustrated map renderer foundation', () => {
       4.5,
     );
     expect(model.objectiveLocationId).toBe('map.ch1.malkins');
-    expect(noMapThread.objective).toBeNull();
+    expect(noMapThread.objective).toMatchObject({
+      targetId: 'street.malkinsDoor',
+      locationId: 'map.ch1.malkins',
+      target: { salience: { intensity: 'normal' } },
+    });
 
     const unknownMapThread = createIllustratedMapPresentation(
       model,
@@ -233,15 +244,25 @@ describe('code-only illustrated map renderer foundation', () => {
     expect(lockedContext.calls.filter(([name]) => name === 'quadraticCurveTo').length)
       .toBeGreaterThan(120);
     expect(lockedContext.calls.some(([name]) => name === 'bezierCurveTo')).toBe(true);
-    expect(lockedContext.calls.filter(([name]) => name === 'translate').length).toBeGreaterThan(35);
-    expect(lockedContext.calls.filter(([name]) => name === 'rotate').length).toBeGreaterThan(35);
+    expect(lockedContext.calls.filter(([name]) => name === 'translate').length).toBeGreaterThan(30);
+    expect(lockedContext.calls.filter(([name]) => name === 'rotate').length).toBeGreaterThan(30);
     expect(lockedContext.calls.filter(([name]) => name === 'fill').length)
       .toBeGreaterThan(unlockedContext.calls.filter(([name]) => name === 'fill').length);
 
     const forbidden = new Set([
-      'arc', 'ellipse', 'fillRect', 'fillText', 'rect', 'roundRect', 'setLineDash', 'strokeRect',
+      'arc', 'ellipse', 'fillRect', 'rect', 'roundRect', 'setLineDash', 'strokeRect',
     ]);
     expect(lockedContext.calls.some(([name]) => forbidden.has(name))).toBe(false);
+    expect(lockedContext.calls
+      .filter(([name]) => name === 'fillText')
+      .map(([, label]) => label)).toEqual([
+        'Diagon Alley',
+        'Ollivanders',
+        'Madam Malkin’s',
+        'Menagerie',
+        'Here',
+        'Next',
+      ]);
     expect(lockedContext.calls
       .flatMap(([, ...args]) => args)
       .filter((value) => typeof value === 'number')
@@ -249,6 +270,38 @@ describe('code-only illustrated map renderer foundation', () => {
     expect(lockedContext.depth).toBe(0);
     expect(replayedContext.depth).toBe(0);
     expect(unlockedContext.depth).toBe(0);
+  });
+
+  it('draws all four generated destination paintings and centers each name in its label band', () => {
+    const model = buildMapState(chapter1Map, mapSnapshot({
+      unlockedRooms: chapter1Map.locations.map(({ to }) => to.room),
+    }));
+    const context = recordingContext();
+    const images = new Map();
+    const renderer = new IllustratedMapRenderer();
+    const presentation = renderer.draw(context, model, worldSnapshot(), 1, {
+      imageFor: (key) => {
+        if (!images.has(key)) images.set(key, { complete: true, naturalWidth: 420, key });
+        return images.get(key);
+      },
+    });
+
+    const imageCalls = context.calls.filter(([name]) => name === 'drawImage');
+    expect(imageCalls).toHaveLength(4);
+    expect(imageCalls.map(([, image]) => image.key)).toEqual(
+      presentation.locations.map(({ assetKey }) => assetKey),
+    );
+
+    const labelCalls = context.calls
+      .filter(([name, text]) => name === 'fillText' && presentation.locations.some(({ caption }) => caption === text));
+    expect(labelCalls).toHaveLength(4);
+    for (const [, text, x, y] of labelCalls) {
+      const location = presentation.locations.find(({ caption }) => caption === text);
+      const labelRect = destinationLabelRect(location.vignette);
+      expect(x).toBeCloseTo(labelRect.x + labelRect.width / 2);
+      expect(y).toBeCloseTo(labelRect.y + labelRect.height / 2);
+    }
+    expect(context.assignments).toContainEqual(['textBaseline', 'middle']);
   });
 
   it('scales authored hit layouts without changing their identity or travel intent', () => {

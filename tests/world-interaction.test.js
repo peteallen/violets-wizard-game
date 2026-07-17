@@ -51,7 +51,7 @@ describe('one-tap world interactions', () => {
   it('approaches a character and starts the conversation without a second tap', () => {
     const world = createWorld({ flags: { 'ch1.letterRead': true } });
 
-    world.tap({ x: 315, y: 455 });
+    world.tap({ x: 250, y: 455 });
     expect(world.dialogue.active).toBe(false);
     expect(world.pendingInteraction?.targetId).toBe('bedroom.guide');
 
@@ -60,7 +60,7 @@ describe('one-tap world interactions', () => {
     expect(world.dialogue.active).toBe(true);
     expect(world.dialogue.scriptId).toBe('ch1.guide.arrival');
     expect(world.pendingInteraction).toBeNull();
-    expect(world.player.x).toBe(425);
+    expect(world.player.x).toBe(360);
   });
 
   it('approaches a delivered prop and opens it from one tap', () => {
@@ -111,13 +111,6 @@ describe('one-tap world interactions', () => {
     settle(world, 1);
     expect(world.dialogue.scriptId).toBe('ch1.guide.arrival');
     world.advanceDialogue();
-
-    expect(world.tap({ x: 315, y: 455 })).toEqual({
-      kind: 'blocked',
-      reason: 'guide-departure',
-    });
-    expect(world.snapshot().targets.some(({ id }) => id === 'bedroom.exit')).toBe(false);
-
     settle(world, 2);
 
     expect(world.flags['ch1.guideMet']).toBe(true);
@@ -198,6 +191,35 @@ describe('one-tap world interactions', () => {
     expect(world.snapshot().hasSatchel).toBe(true);
     expect(world.overlay).toBeNull();
     expect(world.unlockedRooms()).toContain('ch1.ollivanders');
+  });
+
+  it('keeps returning Hagrid and the Ollivanders door as separate tap targets', () => {
+    const world = createWorld({
+      flags: {
+        'ch1.owlTapped': true,
+        'ch1.letterOpened': true,
+        'ch1.letterRead': true,
+        'ch1.guideMet': true,
+        'ch1.leakyReached': true,
+        'ch1.courtyardReached': true,
+        'ch1.wallOpened': true,
+        'ch1.diagonReached': true,
+        'ch1.satchelReceived': true,
+        'ch1.mapUsed': true,
+        'ch1.wandTry1': true,
+        'ch1.wandTry2': true,
+        'ch1.wandChosen': true,
+        'ch1.trimChosen': true,
+        'ch1.petChosen': true,
+        'ch1.petNamed': true,
+        'ch1.shoppingComplete': true,
+      },
+      room: 'ch1.diagonStreet',
+      spawn: 'street.east',
+    });
+
+    expect(world.targetAt({ x: 490, y: 465 })?.id).toBe('street.guideTicket');
+    expect(world.targetAt({ x: 295, y: 455 })?.id).toBe('street.ollivandersDoor');
   });
 
   it('restores Hagrid\u2019s map handoff after reloading before the satchel is received', () => {

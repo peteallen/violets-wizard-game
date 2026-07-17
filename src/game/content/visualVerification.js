@@ -133,6 +133,7 @@ const REVIEW_SCENE_ILLUSION_CHECKS = Object.freeze({
   ],
   'ui-dialogue-night-live-review': [
     'The live dusk-street dialogue keeps Hagrid, his portrait, one warm-dark parchment caption, and two 88×88 controls mutually separate and legible.',
+    'Hagrid stands between storefronts instead of covering the Ollivanders entrance, and his ticket interaction remains visually distinct from every shop door.',
   ],
   'ui-letter-reading-review': [
     'The complete invitation remains visible beside Violet and above two distinct, non-overlapping 88px-or-larger reading actions; paper and actions cover no part of her puppet.',
@@ -147,12 +148,32 @@ const REVIEW_SCENE_ILLUSION_CHECKS = Object.freeze({
   'ui-choices-review': [
     'Exactly three pet choices appear as distinct, non-overlapping targets that are each at least 88×88.',
   ],
+  'ui-satchel-map-early-review': [
+    'Exactly four painted destination panels appear in one readable journey, with Diagon Alley marked Here, Ollivanders marked Next, and the two later shops visibly softened by mist plus one small brass lock without becoming illegible.',
+    'Every destination name is code-rendered and centered within its own blank parchment label band, while Map, Cards, Grown-ups, and Start fresh remain centered in the intentional blank label area of their painted props.',
+    'The close seal is the only X on the spread, and every visible control remains separate from every 88px-or-larger destination target.',
+  ],
   'ui-satchel-map-review': [
-    'Exactly one objective star marks the current destination, while every unlocked location remains a distinct 88px-or-larger target.',
-    'The map, leather bookmarks, brass keyhole, permanent Start fresh action, and close control remain mutually non-overlapping.',
+    'Exactly four readable painted destination panels appear, one plum Here marker identifies Violet’s current place, completed stops carry small gold check marks, and exactly one gold objective star with a readable Next tag is visibly attached to the intended destination.',
+    'Every unlocked location remains a distinct 88px-or-larger target, while one gold trail links Here directly to Next and the older route marks stay quiet enough not to imply a different destination.',
+    'Every destination name is code-rendered and centered within its own blank parchment label band, while Map, Cards, Grown-ups, and Start fresh remain centered in the intentional blank label area of their painted props.',
+    'The close seal is the only X on the spread; Start fresh uses a circular return arrow, and both remain visually distinct from the Map and Cards navigation.',
+    'The fold-out map, painted leather bookmarks, bottom-edge grown-up and Start fresh utilities, and close control remain mutually non-overlapping.',
   ],
   'ui-satchel-cards-review': [
-    'The earned and unearned card states are visually distinct, and every card target remains at least 88×88 without covering the tabs, permanent Start fresh action, or close control.',
+    'Exactly four production card slots appear as two earned painted keepsakes and two quieter closed pockets, with every state recognizable at thumbnail scale.',
+    'Every card target remains at least 88×88 without crossing the book gutter or covering the tabs, labeled grown-up keyhole, permanent Start fresh action, or close control.',
+    'The close seal is the only X on the spread, while Start fresh keeps its separate circular return arrow.',
+  ],
+  'ui-satchel-ch2-cards-review': [
+    'The Chapter Two satchel opens directly to Cards, shows exactly one Cards bookmark, and contains no Map bookmark or empty navigation gap that suggests a missing page.',
+    'Exactly four production slots appear as three earned painted keepsakes and one quieter closed pocket, with every state recognizable at thumbnail scale.',
+    'Cards, Grown-ups, and Start fresh remain centered in their painted label areas, and every card and control remains a distinct 88px-or-larger target.',
+  ],
+  'ui-satchel-ch3-cards-review': [
+    'The Chapter Three satchel opens directly to Cards, shows exactly one Cards bookmark, and contains no Map bookmark or empty navigation gap that suggests a missing page.',
+    'All four production cards appear as earned painted keepsakes, with no closed pocket and no control overlapping a card.',
+    'Cards, Grown-ups, and Start fresh remain centered in their painted label areas, and the close seal remains the only X.',
   ],
   'ui-objective-review': [
     'Exactly one objective icon and one three-word-or-shorter caption are visible, with zero decorative owl filler.',
@@ -162,7 +183,7 @@ const REVIEW_SCENE_ILLUSION_CHECKS = Object.freeze({
   ],
   'ch1-follow-hagrid-review': [
     'Hagrid visibly walks out through the bedroom doorway after his introduction, leaves no stationary second Hagrid interaction behind, and the sparkle footprints point from Violet to that door.',
-    'Violet remains inside the bedroom, Hagrid never hides the whole doorway, and the door’s golden thread waits until he has visibly cleared it.',
+    'Violet remains inside the bedroom while the departing Hagrid and the golden-threaded door stay visually distinct.',
   ],
   'ch1-follow-hagrid-leaky-review': [
     'Hagrid visibly walks out through the Leaky Cauldron courtyard door after “This way!”, leaves no stationary Hagrid interaction behind, and the sparkle footprints point from Violet to that door.',

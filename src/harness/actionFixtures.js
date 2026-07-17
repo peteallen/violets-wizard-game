@@ -236,11 +236,20 @@ registry
   .register('ui-choices-review', createFixture(
     'Hold a complete set of authored vector choice cards.',
   ))
+  .register('ui-satchel-map-early-review', createFixture(
+    'Hold the early painted satchel map with soft fog and Ollivanders marked Next.',
+  ))
   .register('ui-satchel-map-review', createFixture(
-    'Hold the code-only illustrated satchel map with soft fog and a D31 objective destination.',
+    'Hold the late painted satchel map with completed stops and Menagerie marked Next.',
   ))
   .register('ui-satchel-cards-review', createFixture(
-    'Hold the card album with the grown-up brass keyhole above the keepsakes.',
+    'Hold the Chapter One card album with Map and Cards navigation.',
+  ))
+  .register('ui-satchel-ch2-cards-review', createFixture(
+    'Hold the Chapter Two cards-only satchel with three earned keepsakes.',
+  ))
+  .register('ui-satchel-ch3-cards-review', createFixture(
+    'Hold the Chapter Three cards-only satchel with all four keepsakes.',
   ))
   .register('ui-objective-review', createFixture(
     'Hold the illustrated quest-compass objective page.',

@@ -328,6 +328,9 @@ export async function bootHarness({
       });
     }
     game.start();
+    if (request.scene.startsWith('ui-satchel-') || game.world?.snapshot().hasSatchel) {
+      await game.uiRenderer.preloadSatchelImages();
+    }
     if (request.scene === 'pet-name-dialog') void game.petNameDialog?.open('Moonbeam');
     await preloadVisibleRoom(game);
     game.render();

@@ -38,6 +38,21 @@ export { isAllowedChildFacingUiText } from '../content/playerVisibleCopy.js';
 
 const STORY_GRADIENTS = new WeakMap();
 const NIGHT_DIALOGUE_GRADIENTS = new WeakMap();
+const SATCHEL_IMAGE_KEYS = Object.freeze([
+  'ui/satchel/map-tab',
+  'ui/satchel/cards-tab',
+  'ui/satchel/grown-ups',
+  'ui/satchel/start-fresh',
+  'ui/satchel/close-seal',
+  'ui/satchel/destination-diagon-alley',
+  'ui/satchel/destination-ollivanders',
+  'ui/satchel/destination-malkins',
+  'ui/satchel/destination-menagerie',
+  'cards/morgana/portrait',
+  'cards/dumbledore/portrait',
+  'cards/merlin/portrait',
+  'cards/jocunda-sykes/portrait',
+]);
 
 export const UI_REVIEW_SCENES = Object.freeze([
   'ui-dialogue-review',
@@ -46,8 +61,11 @@ export const UI_REVIEW_SCENES = Object.freeze([
   'ui-letter-reading-review',
   'ui-robe-picker-review',
   'ui-choices-review',
+  'ui-satchel-map-early-review',
   'ui-satchel-map-review',
   'ui-satchel-cards-review',
+  'ui-satchel-ch2-cards-review',
+  'ui-satchel-ch3-cards-review',
   'ui-objective-review',
   'ui-chapter-card-review',
 ]);
@@ -61,10 +79,12 @@ export const UI_RECTS = Object.freeze({
   letterContinue: { x: 360, y: 594, width: 280, height: 96 },
   robeConfirm: { x: 742, y: 548, width: 338, height: 102 },
   debugReset: { x: 510, y: 18, width: 260, height: 88 },
-  satchelMapTab: { x: 205, y: 145, width: 210, height: 88 },
-  satchelCardsTab: { x: 435, y: 145, width: 210, height: 88 },
-  satchelKeyhole: { x: 698, y: 141, width: 96, height: 96 },
-  satchelStartOver: { x: 804, y: 145, width: 220, height: 88 },
+  satchelMapTab: { x: 112, y: 112, width: 250, height: 94 },
+  satchelCardsTab: { x: 378, y: 112, width: 250, height: 94 },
+  satchelCardsOnlyTab: { x: 245, y: 112, width: 250, height: 94 },
+  satchelKeyhole: { x: 112, y: 586, width: 220, height: 88 },
+  satchelStartOver: { x: 936, y: 586, width: 232, height: 88 },
+  satchelClose: { x: 1092, y: 54, width: 88, height: 88 },
   close: { x: 1046, y: 76, width: 88, height: 88 },
   replayExit: { x: 430, y: 18, width: 420, height: 88 },
   parentPlayTab: { x: 175, y: 142, width: 230, height: 88 },
@@ -683,12 +703,41 @@ export class UIRenderer {
       this.drawRobePicker(context, {
         overlay: { surface: 'robe-picker', selectedTrim: 'gold' },
       }, time, reducedMotion);
+    } else if (scene === 'ui-satchel-map-early-review') {
+      this.drawSatchel(context, {
+        overlay: { surface: 'satchel', tab: 'map' },
+        roomId: chapter1Map.locations[0].to.room,
+        unlockedRooms: chapter1Map.locations.slice(1, 2).map(({ to }) => to.room),
+        objective: {
+          mapStar: {
+            room: chapter1Map.locations[0].to.room,
+            hotspot: 'street.ollivandersDoor',
+          },
+        },
+        affordances: {
+          quiet: false,
+          worldSuppressed: true,
+          thread: {
+            targetId: 'street.ollivandersDoor',
+            worldTargetId: 'street.ollivandersDoor',
+            mapTargetId: 'street.ollivandersDoor',
+            channel: 'world',
+            intensity: 'normal',
+          },
+        },
+        cards: [],
+      }, [], { time, reducedMotion });
     } else if (scene === 'ui-satchel-map-review') {
       this.drawSatchel(context, {
         overlay: { surface: 'satchel', tab: 'map' },
-        roomId: 'ch1.diagonStreet',
-        unlockedRooms: ['ch1.ollivanders', 'ch1.malkins', 'ch1.menagerie'],
-        objective: { mapStar: { room: 'ch1.diagonStreet', hotspot: 'street.menagerieDoor' } },
+        roomId: chapter1Map.locations[0].to.room,
+        unlockedRooms: chapter1Map.locations.slice(1).map(({ to }) => to.room),
+        objective: {
+          mapStar: {
+            room: chapter1Map.locations[0].to.room,
+            hotspot: 'street.menagerieDoor',
+          },
+        },
         affordances: {
           quiet: false,
           worldSuppressed: true,
@@ -702,18 +751,27 @@ export class UIRenderer {
         },
         cards: [],
       }, [], { time, reducedMotion });
-    } else if (scene === 'ui-satchel-cards-review') {
+    } else if (
+      scene === 'ui-satchel-cards-review'
+      || scene === 'ui-satchel-ch2-cards-review'
+      || scene === 'ui-satchel-ch3-cards-review'
+    ) {
+      const cardsByScene = {
+        'ui-satchel-cards-review': ['morgana', 'dumbledore'],
+        'ui-satchel-ch2-cards-review': ['morgana', 'dumbledore', 'merlin'],
+        'ui-satchel-ch3-cards-review': ['morgana', 'dumbledore', 'merlin', 'jocunda-sykes'],
+      };
       this.drawSatchel(context, {
         overlay: { surface: 'satchel', tab: 'cards' },
-        unlockedRooms: ['ch1.ollivanders', 'ch1.malkins', 'ch1.menagerie'],
-        objective: { mapStar: { room: 'ch1.diagonStreet', hotspot: 'street.menagerieDoor' } },
-        cards: ['morgana', 'merlin'],
+        cards: cardsByScene[scene],
       }, [
         { id: 'morgana', name: 'Morgana', portraitAsset: 'cards/morgana/portrait' },
         { id: 'dumbledore', name: 'Dumbledore', portraitAsset: 'cards/dumbledore/portrait' },
         { id: 'merlin', name: 'Merlin', portraitAsset: 'cards/merlin/portrait' },
         { id: 'jocunda-sykes', name: 'Jocunda Sykes', portraitAsset: 'cards/jocunda-sykes/portrait' },
-      ]);
+      ], {
+        map: scene === 'ui-satchel-cards-review' ? chapter1Map : null,
+      });
     } else if (scene === 'ui-objective-review') {
       this.drawObjective(
         context,
@@ -904,39 +962,56 @@ export class UIRenderer {
   } = {}) {
     const activeTab = state.overlay?.tab === 'cards' || !map ? 'cards' : 'map';
     drawStorybookSpread(context, { x: 72, y: 32, width: 1136, height: 652 }, {
-      title: childFacingUiText('Violet’s Satchel', 'proper-name'),
+      title: '',
+      cornerFlourishes: false,
     });
+    drawSatchelOwnerMark(context);
 
     const content = activeTab === 'cards'
       ? this.drawCardAlbumContent(context, state, cardDefinitions)
       : this.drawMapContent(context, state, time, { map, reducedMotion });
 
-    // Leather tabs, the grown-up keyhole, and the close seal belong to the
-    // satchel itself, so they stay above the illustrated page content.
+    drawSatchelPageHeading(
+      context,
+      activeTab === 'map'
+        ? childFacingUiText('Choose a place', 'caption')
+        : childFacingUiText('Magic cards', 'caption'),
+    );
+
+    // Navigation stays together at the top. Lower-frequency utilities sit on
+    // the book's bottom edge, outside the travel and keepsake content.
     if (map) {
       drawSatchelTab(
         context,
         UI_RECTS.satchelMapTab,
-        'map',
+        this.imageFor('ui/satchel/map-tab'),
         childFacingUiText('Map', 'caption'),
         activeTab === 'map',
       );
     }
     drawSatchelTab(
       context,
-      UI_RECTS.satchelCardsTab,
-      'cards',
+      map ? UI_RECTS.satchelCardsTab : UI_RECTS.satchelCardsOnlyTab,
+      this.imageFor('ui/satchel/cards-tab'),
       childFacingUiText('Cards', 'caption'),
       activeTab === 'cards',
     );
-    drawBrassKeyhole(context, UI_RECTS.satchelKeyhole, { progress: parentGateProgress });
-    drawParchmentAction(context, UI_RECTS.satchelStartOver, {
-      label: childFacingUiText('Start fresh', 'action'),
-      icon: vectorControlIcon('close'),
-      danger: true,
-      compact: true,
-    });
-    drawClose(context);
+    drawSatchelGrownUpsControl(
+      context,
+      UI_RECTS.satchelKeyhole,
+      this.imageFor('ui/satchel/grown-ups'),
+      parentGateProgress,
+    );
+    drawSatchelStartFreshControl(
+      context,
+      UI_RECTS.satchelStartOver,
+      this.imageFor('ui/satchel/start-fresh'),
+    );
+    drawSatchelClose(
+      context,
+      UI_RECTS.satchelClose,
+      this.imageFor('ui/satchel/close-seal'),
+    );
     return content;
   }
 
@@ -949,7 +1024,10 @@ export class UIRenderer {
     reducedMotion = false,
   } = {}) {
     const mapState = buildMapState(map, state);
-    return this.mapRenderer.draw(context, mapState, state, time, { reducedMotion });
+    return this.mapRenderer.draw(context, mapState, state, time, {
+      reducedMotion,
+      imageFor: (key) => this.imageFor(key),
+    });
   }
 
   mapPresentation(state, time = 0, {
@@ -1013,6 +1091,17 @@ export class UIRenderer {
     this.images.set(key, image);
     image.src = path;
     return image;
+  }
+
+  async preloadSatchelImages() {
+    await Promise.all(SATCHEL_IMAGE_KEYS.map((key) => {
+      const image = this.imageFor(key);
+      if (!image || image.complete) return undefined;
+      return new Promise((resolve) => {
+        image.addEventListener('load', resolve, { once: true });
+        image.addEventListener('error', resolve, { once: true });
+      });
+    }));
   }
 
   drawSelection(context, selection) {
@@ -2318,17 +2407,198 @@ function traceLooseRibbonLight(context, x, y, width, height, phase) {
   context.closePath();
 }
 
-function drawSatchelTab(context, rect, icon, label, active) {
+function drawSatchelTab(context, rect, image, label, active) {
   context.save();
-  drawLeatherBookmark(context, rect, { active });
-  drawVectorIcon(context, icon, rect.x + 47, rect.y + rect.height / 2, 51, {
-    color: active ? '#fff8e8' : '#30261f',
-    secondary: active ? '#f4d58d' : '#c8a876',
+  if (image?.complete && image.naturalWidth > 0) {
+    context.drawImage(image, rect.x, rect.y, rect.width, rect.height);
+  } else {
+    drawLeatherBookmark(context, rect, { active });
+  }
+  drawCenteredSatchelText(context, label, satchelControlLabelRect(rect, 'tab'), {
+    color: '#fff4d5',
+    font: '700 30px "Andika", "Trebuchet MS", sans-serif',
   });
-  context.fillStyle = active ? '#fff8e8' : '#30261f';
+  if (active) drawSatchelSelectedTabMarker(context, rect);
+  context.restore();
+}
+
+function drawSatchelSelectedTabMarker(context, rect) {
+  const y = rect.y + rect.height - 3;
+  context.strokeStyle = '#efc86e';
+  context.lineWidth = 4;
+  context.lineCap = 'round';
+  context.beginPath();
+  context.moveTo(rect.x + rect.width * 0.43, y);
+  context.bezierCurveTo(
+    rect.x + rect.width * 0.55,
+    y + 5,
+    rect.x + rect.width * 0.7,
+    y - 4,
+    rect.x + rect.width * 0.84,
+    y + 1,
+  );
+  context.stroke();
+  context.fillStyle = '#f7dc91';
+  for (const x of [rect.x + rect.width * 0.48, rect.x + rect.width * 0.8]) {
+    context.beginPath();
+    context.moveTo(x, y - 5);
+    context.lineTo(x + 4, y);
+    context.lineTo(x, y + 5);
+    context.lineTo(x - 3, y);
+    context.closePath();
+    context.fill();
+  }
+}
+
+function drawSatchelOwnerMark(context) {
+  context.save();
+  context.fillStyle = '#4b3328';
   context.textAlign = 'center';
-  context.font = '700 29px "Andika", "Trebuchet MS", sans-serif';
-  context.fillText(label, rect.x + 130, rect.y + 56);
+  context.font = '700 32px "Andika", "Trebuchet MS", sans-serif';
+  context.fillText(
+    childFacingUiText('Violet’s Satchel', 'proper-name'),
+    332,
+    84,
+  );
+  context.strokeStyle = 'rgba(141, 94, 51, 0.45)';
+  context.lineWidth = 2.2;
+  context.lineCap = 'round';
+  context.beginPath();
+  context.moveTo(205, 98);
+  context.bezierCurveTo(278, 91, 374, 104, 452, 96);
+  context.stroke();
+  context.restore();
+}
+
+function drawSatchelPageHeading(context, label) {
+  context.save();
+  context.fillStyle = '#5a3b2b';
+  context.textAlign = 'center';
+  context.font = '700 24px "Andika", "Trebuchet MS", sans-serif';
+  context.fillText(label, WORLD.width / 2, 242);
+  context.strokeStyle = 'rgba(128, 87, 49, 0.42)';
+  context.lineWidth = 2;
+  context.lineCap = 'round';
+  for (const direction of [-1, 1]) {
+    context.beginPath();
+    context.moveTo(WORLD.width / 2 + direction * 90, 235);
+    context.quadraticCurveTo(
+      WORLD.width / 2 + direction * 126,
+      229 + direction * 2,
+      WORLD.width / 2 + direction * 156,
+      237,
+    );
+    context.stroke();
+  }
+  context.restore();
+}
+
+function drawSatchelGrownUpsControl(context, rect, image, progress) {
+  context.save();
+  if (image?.complete && image.naturalWidth > 0) {
+    context.drawImage(image, rect.x, rect.y, rect.width, rect.height);
+  } else {
+    drawBrassKeyhole(context, { x: rect.x, y: rect.y, width: 88, height: 88 }, { progress });
+  }
+  drawCenteredSatchelText(
+    context,
+    childFacingUiText('Grown-ups', 'caption'),
+    satchelControlLabelRect(rect, 'grown-ups'),
+    {
+      color: '#3c2a23',
+      font: '700 19px "Andika", "Trebuchet MS", sans-serif',
+    },
+  );
+  if (progress > 0) drawSatchelHoldProgress(context, rect, progress);
+  context.restore();
+}
+
+function drawSatchelHoldProgress(context, rect, progress) {
+  const safeProgress = Math.max(0, Math.min(1, progress));
+  context.strokeStyle = '#fff0b8';
+  context.lineWidth = 5;
+  context.lineCap = 'round';
+  context.beginPath();
+  context.moveTo(rect.x + 42, rect.y + rect.height - 7);
+  context.quadraticCurveTo(
+    rect.x + rect.width * 0.5,
+    rect.y + rect.height - 1,
+    rect.x + 42 + (rect.width - 76) * safeProgress,
+    rect.y + rect.height - 7,
+  );
+  context.stroke();
+}
+
+function drawSatchelStartFreshControl(context, rect, image) {
+  context.save();
+  if (image?.complete && image.naturalWidth > 0) {
+    context.drawImage(image, rect.x, rect.y, rect.width, rect.height);
+  } else {
+    drawParchmentAction(context, rect, {
+      label: childFacingUiText('Start fresh', 'action'),
+      icon: vectorControlIcon('replay'),
+      danger: true,
+      compact: true,
+    });
+    context.restore();
+    return;
+  }
+  drawCenteredSatchelText(
+    context,
+    childFacingUiText('Start fresh', 'action'),
+    satchelControlLabelRect(rect, 'start-fresh'),
+    {
+      color: '#fff0d1',
+      font: '700 19px "Andika", "Trebuchet MS", sans-serif',
+    },
+  );
+  context.restore();
+}
+
+export function satchelControlLabelRect(rect, kind) {
+  const geometry = kind === 'tab'
+    ? { x: 0.39, y: 0.18, width: 0.56, height: 0.62 }
+    : { x: 0.38, y: 0.18, width: 0.57, height: 0.62 };
+  return Object.freeze({
+    x: rect.x + rect.width * geometry.x,
+    y: rect.y + rect.height * geometry.y,
+    width: rect.width * geometry.width,
+    height: rect.height * geometry.height,
+  });
+}
+
+function drawCenteredSatchelText(context, text, labelRect, { color, font }) {
+  context.fillStyle = color;
+  context.textAlign = 'center';
+  context.textBaseline = 'middle';
+  context.font = font;
+  context.fillText(
+    text,
+    labelRect.x + labelRect.width / 2,
+    labelRect.y + labelRect.height / 2,
+  );
+}
+
+function drawSatchelClose(context, rect, image) {
+  context.save();
+  if (image?.complete && image.naturalWidth > 0) {
+    context.drawImage(image, rect.x, rect.y, rect.width, rect.height);
+  } else {
+    drawWaxIcon(context, rect.x + rect.width / 2, rect.y + rect.height / 2, 45, 'close');
+    context.restore();
+    return;
+  }
+  const centerX = rect.x + rect.width / 2;
+  const centerY = rect.y + rect.height / 2;
+  context.strokeStyle = '#fff0c5';
+  context.lineWidth = 7;
+  context.lineCap = 'round';
+  context.beginPath();
+  context.moveTo(centerX - 17, centerY - 17);
+  context.lineTo(centerX + 17, centerY + 17);
+  context.moveTo(centerX + 17, centerY - 17);
+  context.lineTo(centerX - 17, centerY + 17);
+  context.stroke();
   context.restore();
 }
 

@@ -53,7 +53,7 @@ export const bedroomRoom = freezePureData({
         },
       },
     },
-    { npc: 'npc.guide', x: 315, y: 610, facing: 'right', pose: 'idle', when: when({ allFlags: ['ch1.letterRead'] }), render: { layoutBounds: hagridLayoutBounds } },
+    { npc: 'npc.guide', x: 250, y: 610, facing: 'right', pose: 'idle', when: when({ allFlags: ['ch1.letterRead'] }), render: { layoutBounds: hagridLayoutBounds } },
   ],
   hotspots: [
     {
@@ -81,8 +81,8 @@ export const bedroomRoom = freezePureData({
     {
       id: 'bedroom.guide',
       kind: 'talk',
-      hitArea: circle(315, 455, 95),
-      approach: { x: 425, y: 610, facing: 'left' },
+      hitArea: circle(250, 455, 95),
+      approach: { x: 360, y: 610, facing: 'left' },
       when: when({ allFlags: ['ch1.letterRead'], noFlags: ['ch1.guideMet'] }),
       presentation: { icon: 'talk', glow: 'objective' },
       repeat: 'until-condition',

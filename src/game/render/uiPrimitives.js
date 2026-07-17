@@ -91,7 +91,11 @@ export function traceRoundedRect(context, x, y, width, height, radius) {
   context.closePath();
 }
 
-export function drawStorybookSpread(context, rect, { title, subtitle = null } = {}) {
+export function drawStorybookSpread(context, rect, {
+  title,
+  subtitle = null,
+  cornerFlourishes = true,
+} = {}) {
   const { x, y, width, height } = rect;
   const middle = x + width / 2;
 
@@ -145,8 +149,10 @@ export function drawStorybookSpread(context, rect, { title, subtitle = null } = 
   context.bezierCurveTo(middle + 18, y + height * 0.34, middle + 18, y + height * 0.68, middle + 4, y + height - 28);
   context.stroke();
 
-  drawCornerFlourish(context, x + 42, y + 42, 1);
-  drawCornerFlourish(context, x + width - 42, y + 42, -1);
+  if (cornerFlourishes) {
+    drawCornerFlourish(context, x + 42, y + 42, 1);
+    drawCornerFlourish(context, x + width - 42, y + 42, -1);
+  }
 
   context.textAlign = 'center';
   context.fillStyle = INK;

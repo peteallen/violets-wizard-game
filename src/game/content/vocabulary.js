@@ -1,4 +1,4 @@
-const WORD_PATTERN = /[\p{L}\p{N}]+(?:['’][\p{L}\p{N}]+)*/gu;
+const WORD_PATTERN = /[\p{L}\p{N}]+(?:[’'-][\p{L}\p{N}]+)*/gu;
 
 export const coreVocabulary = Object.freeze([
   'a',
@@ -47,6 +47,7 @@ export const coreVocabulary = Object.freeze([
   'friends',
   'frog',
   'go',
+  'grown-ups',
   'hall',
   'hat',
   'hear',
@@ -139,15 +140,21 @@ export const coreVocabulary = Object.freeze([
 ]);
 
 export const properNouns = Object.freeze([
+  'alley',
   'biscuit',
+  'diagon',
   'dumbledore',
   'gold',
   'gryffindor',
   'hagrid',
   'hogwarts',
   'jocunda',
+  'madam',
+  "malkin's",
+  'menagerie',
   'merlin',
   'morgana',
+  'ollivanders',
   'pip',
   'purple',
   'quill',
