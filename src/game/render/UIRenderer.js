@@ -68,6 +68,9 @@ const SATCHEL_IMAGE_KEYS = Object.freeze([
   'cards/merlin/portrait',
   'cards/jocunda-sykes/portrait',
 ]);
+const CHOICE_IMAGE_KEYS = Object.freeze([
+  'ui/story/choice-tag-v2',
+]);
 
 export const UI_REVIEW_SCENES = Object.freeze([
   'ui-dialogue-review',
@@ -75,7 +78,6 @@ export const UI_REVIEW_SCENES = Object.freeze([
   'ui-dialogue-center-review',
   'ui-letter-reading-review',
   'ui-robe-picker-review',
-  'ui-choices-review',
   'ui-satchel-map-early-review',
   'ui-satchel-map-review',
   'ui-satchel-cards-review',
@@ -699,15 +701,6 @@ export class UIRenderer {
         reducedMotion,
         dialogueSceneContext({ dialogue, actors: [player], cameraX: 0, roomVariant: 'base' }),
       );
-    } else if (scene === 'ui-choices-review') {
-      this.drawDialogue(context, {
-        type: 'choice',
-        choices: [
-          { id: 'owl', icon: 'pet-owl', caption: 'Owl', characterId: 'character.pet-owl', characterScale: 0.72 },
-          { id: 'cat', icon: 'pet-cat', caption: 'Cat', characterId: 'character.cat', characterScale: 0.82 },
-          { id: 'toad', icon: 'pet-toad', caption: 'Toad', characterId: 'character.toad', characterScale: 1.18 },
-        ],
-      }, time, false, reducedMotion);
     } else if (scene === 'ui-robe-picker-review') {
       this.drawRobePicker(context, {
         overlay: { surface: 'robe-picker', selectedTrim: 'gold' },
@@ -829,9 +822,14 @@ export class UIRenderer {
 
   drawDialogue(context, dialogue, time, muted = false, reducedMotion = false, scene = {}) {
     if (!dialogue) return;
-    context.fillStyle = scene.night ? 'rgba(13,10,24,0.1)' : 'rgba(20,17,38,0.14)';
+    const isChoice = dialogue.type === 'choice' && dialogue.choices?.length;
+    context.fillStyle = isChoice
+      ? 'rgba(20,17,38,0.56)'
+      : scene.night
+        ? 'rgba(13,10,24,0.1)'
+        : 'rgba(20,17,38,0.14)';
     context.fillRect(0, 0, WORLD.width, WORLD.height);
-    if (dialogue.type === 'choice' && dialogue.choices?.length) {
+    if (isChoice) {
       this.drawChoices(context, dialogue.choices, time, reducedMotion);
       return null;
     }
@@ -941,10 +939,11 @@ export class UIRenderer {
   drawChoices(context, choices, time = 0, reducedMotion = false) {
     const layout = dialogueChoiceLayout(choices.length);
     const animationTime = reducedMotion ? 0 : time;
+    const choiceTagImage = this.imageFor(CHOICE_IMAGE_KEYS[0]);
     choices.forEach((choice, index) => {
       const rect = layout[index];
       choice.__rect = rect;
-      drawIllustratedChoiceTag(context, rect, index, choice.icon);
+      drawIllustratedChoiceTag(context, rect, index, choice.icon, choiceTagImage);
       if (typeof choice.characterId === 'string' && choice.characterId.length > 0) {
         this.characterRenderer.draw(context, {
           characterId: choice.characterId,
@@ -1155,11 +1154,17 @@ export class UIRenderer {
     return image;
   }
 
-  async preloadUiImages({ title = true, hud = true, satchel = true } = {}) {
+  async preloadUiImages({
+    title = true,
+    hud = true,
+    satchel = true,
+    choices = satchel,
+  } = {}) {
     const keys = new Set([
       ...(title ? TITLE_IMAGE_KEYS : []),
       ...(hud ? HUD_IMAGE_KEYS : []),
       ...(satchel ? SATCHEL_IMAGE_KEYS : []),
+      ...(choices ? CHOICE_IMAGE_KEYS : []),
     ]);
     await Promise.all([...keys].map(async (key) => {
       const image = this.imageFor(key);
@@ -2839,13 +2844,22 @@ function drawClose(context) {
   drawWaxIcon(context, 1090, 120, 45, 'close');
 }
 
-function drawIllustratedChoiceTag(context, rect, index, icon) {
+function drawIllustratedChoiceTag(context, rect, index, icon, image = null) {
   const phase = (index + 1) * 0.37 + String(icon ?? '').length * 0.041;
   const paper = ['#ead8b4', '#e4cfaa', '#f0dfbd', '#dcc39e'][index % 4];
   context.save();
-  context.fillStyle = 'rgba(48,31,29,0.26)';
-  traceChoiceTag(context, { ...rect, x: rect.x + 7, y: rect.y + 9 }, phase + 0.2);
-  context.fill();
+  drawChoiceTagShadow(context, rect, phase);
+  if (
+    rect.width === 286
+    && rect.height === 262
+    && image?.complete
+    && image.naturalWidth > 0
+    && image.naturalHeight > 0
+  ) {
+    context.drawImage(image, rect.x, rect.y, rect.width, rect.height);
+    context.restore();
+    return;
+  }
   context.fillStyle = paper;
   traceChoiceTag(context, rect, phase);
   context.fill();
@@ -2915,6 +2929,12 @@ function drawIllustratedChoiceTag(context, rect, index, icon) {
   }
   context.stroke();
   context.restore();
+}
+
+function drawChoiceTagShadow(context, rect, phase) {
+  context.fillStyle = 'rgba(48,31,29,0.26)';
+  traceChoiceTag(context, { ...rect, x: rect.x + 7, y: rect.y + 9 }, phase + 0.2);
+  context.fill();
 }
 
 function traceChoiceTag(context, rect, phase) {

@@ -248,6 +248,25 @@ function characterReviewFixture(id, description, characterDependencies = []) {
   );
 }
 
+function petChoiceReviewFixture(description) {
+  return createFixture(
+    description,
+    { chapter: 1, scene: 'ch1.petShopping' },
+    createSave({
+      scene: 'ch1.petShopping',
+      room: 'ch1.menagerie',
+      spawn: 'keeper',
+      questFlags: {
+        ...throughWandFlags,
+        'ch1.trimChosen': true,
+      },
+      wandId: 'violet-first-wand',
+      robeTrim: 'purple',
+    }),
+    PET_CHARACTERS,
+  );
+}
+
 registry
   .register('foundation', createFixture(
     'The painted storybook castle-and-lake title before Violet begins, with live Violet, owl, and new-player envelope layers.',
@@ -747,10 +766,11 @@ registry
     }),
     ['character.violet'],
   ))
-  .register('ui-choices-review', characterReviewFixture(
-    'ui-choices-review',
-    'Three authored companion choice cards without font-glyph stand-ins.',
-    PET_CHARACTERS,
+  .register('ui-choices-review', petChoiceReviewFixture(
+    'The real Chapter One companion choice with three live pet puppets on painted cards.',
+  ))
+  .register('ui-choice-icons-review', petChoiceReviewFixture(
+    'The real Chapter One companion confirmation with two code-drawn icon choices on painted cards.',
   ))
   .register('ui-satchel-map-early-review', characterReviewFixture(
     'ui-satchel-map-early-review',

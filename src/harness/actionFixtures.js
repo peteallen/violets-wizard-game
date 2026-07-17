@@ -234,7 +234,20 @@ registry
     'Hold the real robe picker with Gold selected for deterministic full-body, swatch, and control review.',
   ))
   .register('ui-choices-review', createFixture(
-    'Hold a complete set of authored vector choice cards.',
+    'Approach the keeper, advance her welcome, and hold the real three-pet choice.',
+    [
+      { frame: 0, type: 'tap', target: 'menagerie.keeper' },
+      { frame: 30, type: 'tap', target: 'dialogue.advance' },
+    ],
+  ))
+  .register('ui-choice-icons-review', createFixture(
+    'Choose the owl, advance the keeper’s confirmation, and hold the real two-icon choice.',
+    [
+      { frame: 0, type: 'tap', target: 'menagerie.keeper' },
+      { frame: 30, type: 'tap', target: 'dialogue.advance' },
+      { frame: 45, type: 'tap', target: 'dialogue.petOwl' },
+      { frame: 60, type: 'tap', target: 'dialogue.advance' },
+    ],
   ))
   .register('ui-satchel-map-early-review', createFixture(
     'Hold the early painted satchel map with soft fog and Ollivanders marked Next.',

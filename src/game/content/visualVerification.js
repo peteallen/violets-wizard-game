@@ -146,7 +146,10 @@ const REVIEW_SCENE_ILLUSION_CHECKS = Object.freeze({
     'The mirror, twelve swatch targets, and 88px-or-larger confirmation control remain mutually non-overlapping.',
   ],
   'ui-choices-review': [
-    'Exactly three pet choices appear as distinct, non-overlapping targets that are each at least 88×88.',
+    'The normal Chapter One Menagerie remains recognizable but subdued behind exactly three painted pet choices, each retaining its live companion puppet, code-rendered label, and distinct non-overlapping 88×88-or-larger target.',
+  ],
+  'ui-choice-icons-review': [
+    'The normal Chapter One Menagerie remains recognizable but subdued behind exactly two painted confirmation choices, each retaining its code-drawn emblem, code-rendered label, and distinct non-overlapping 88×88-or-larger target.',
   ],
   'ui-satchel-map-early-review': [
     'Exactly four painted destination panels appear in one readable journey, with Diagon Alley marked Here, Ollivanders marked Next, and the two later shops visibly softened by mist plus one small brass lock without becoming illegible.',

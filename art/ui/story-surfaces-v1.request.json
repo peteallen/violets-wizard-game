@@ -1,0 +1,38 @@
+{
+  "schema_version": 1,
+  "kind": "codex-built-in-ui-image-generation-request",
+  "slug": "violets-field-kit-story-surfaces-v1",
+  "generated_at": "2026-07-17",
+  "workflow": {
+    "name": "Codex built-in image generation",
+    "tool": "image_gen.imagegen",
+    "model_identifier": null,
+    "seed": null
+  },
+  "assets": [
+    {
+      "id": "choice-tag-v2",
+      "prompt_section": "Choice tag",
+      "source": "art/ui/story-surfaces/source/choice-tag-v2-chroma.png",
+      "shipping": "public/assets/art/ui/story-surfaces/choice-tag-v2.webp"
+    },
+    {
+      "id": "action-note-v2",
+      "prompt_section": "Action note",
+      "source": "art/ui/story-surfaces/source/action-note-v2-chroma.png",
+      "shipping": "public/assets/art/ui/story-surfaces/action-note-v2.webp"
+    },
+    {
+      "id": "robe-folio-v2",
+      "prompt_section": "Robe folio",
+      "source": "art/ui/story-surfaces/source/robe-folio-v2-chroma.png",
+      "shipping": "public/assets/art/ui/story-surfaces/robe-folio-v2.webp"
+    },
+    {
+      "id": "chapter-one-plaque-v2",
+      "prompt_section": "Chapter One plaque",
+      "source": "art/ui/story-surfaces/source/chapter-one-plaque-v2-chroma.png",
+      "shipping": "public/assets/art/ui/story-surfaces/chapter-one-plaque-v2.webp"
+    }
+  ]
+}

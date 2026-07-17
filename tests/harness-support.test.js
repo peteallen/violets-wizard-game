@@ -118,6 +118,7 @@ describe('state fixtures', () => {
       'ui-letter-reading-review',
       'ui-robe-picker-review',
       'ui-choices-review',
+      'ui-choice-icons-review',
       'ui-satchel-map-early-review',
       'ui-satchel-map-review',
       'ui-satchel-cards-review',
@@ -165,6 +166,11 @@ describe('state fixtures', () => {
       titleCharacterDependencies,
     );
     expect(getStateFixture('ui-choices-review').characterDependencies).toEqual([
+      'character.cat',
+      'character.pet-owl',
+      'character.toad',
+    ]);
+    expect(getStateFixture('ui-choice-icons-review').characterDependencies).toEqual([
       'character.cat',
       'character.pet-owl',
       'character.toad',
@@ -278,6 +284,37 @@ describe('registered harness scenarios', () => {
       character: { appearance: { robeTrim: null } },
     });
     expect(getActionFixture(id).actions).toEqual([]);
+  });
+
+  it('reaches both choice-card reviews through the normal Chapter One Menagerie dialogue', () => {
+    for (const id of ['ui-choices-review', 'ui-choice-icons-review']) {
+      expect(STATE_FIXTURE_IDS).toContain(id);
+      expect(ACTION_FIXTURE_IDS).toContain(id);
+      expect(parseHarnessRequest(`?scene=${id}`)).toMatchObject({ scene: id, state: id, actions: id });
+      expect(getStateFixture(id)).toMatchObject({
+        entry: { chapter: 1, scene: 'ch1.petShopping' },
+        save: {
+          resume: {
+            chapter: 'ch1',
+            scene: 'ch1.petShopping',
+            room: 'ch1.menagerie',
+            spawn: 'keeper',
+          },
+          progress: { questFlags: { 'ch1.trimChosen': true } },
+        },
+      });
+    }
+
+    expect(getActionFixture('ui-choices-review').actions).toEqual([
+      { frame: 0, type: 'tap', target: 'menagerie.keeper' },
+      { frame: 30, type: 'tap', target: 'dialogue.advance' },
+    ]);
+    expect(getActionFixture('ui-choice-icons-review').actions).toEqual([
+      { frame: 0, type: 'tap', target: 'menagerie.keeper' },
+      { frame: 30, type: 'tap', target: 'dialogue.advance' },
+      { frame: 45, type: 'tap', target: 'dialogue.petOwl' },
+      { frame: 60, type: 'tap', target: 'dialogue.advance' },
+    ]);
   });
 
   it('registers the signature Chapter One and Chapter Two set pieces as direct deterministic review scenes', () => {
