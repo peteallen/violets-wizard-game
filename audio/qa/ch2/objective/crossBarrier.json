@@ -1,0 +1,128 @@
+{
+  "language_code": "eng",
+  "language_probability": 1,
+  "text": "Find the bright barrier and run straight through it",
+  "words": [
+    {
+      "text": "Find",
+      "start": 0.099,
+      "end": 0.299,
+      "type": "word",
+      "logprob": -0.0011804286623373628
+    },
+    {
+      "text": " ",
+      "start": 0.299,
+      "end": 0.319,
+      "type": "spacing",
+      "logprob": -0.0000014305104514278355
+    },
+    {
+      "text": "the",
+      "start": 0.319,
+      "end": 0.419,
+      "type": "word",
+      "logprob": -0.0000014305104514278355
+    },
+    {
+      "text": " ",
+      "start": 0.419,
+      "end": 0.459,
+      "type": "spacing",
+      "logprob": -0.00034374051028862596
+    },
+    {
+      "text": "bright",
+      "start": 0.459,
+      "end": 0.699,
+      "type": "word",
+      "logprob": -0.00034374051028862596
+    },
+    {
+      "text": " ",
+      "start": 0.699,
+      "end": 0.799,
+      "type": "spacing",
+      "logprob": -0.000019788545614574105
+    },
+    {
+      "text": "barrier",
+      "start": 0.799,
+      "end": 1.22,
+      "type": "word",
+      "logprob": -0.000019788545614574105
+    },
+    {
+      "text": " ",
+      "start": 1.22,
+      "end": 1.559,
+      "type": "spacing",
+      "logprob": -0.0003383779258001596
+    },
+    {
+      "text": "and",
+      "start": 1.559,
+      "end": 1.679,
+      "type": "word",
+      "logprob": -0.0003383779258001596
+    },
+    {
+      "text": " ",
+      "start": 1.679,
+      "end": 1.739,
+      "type": "spacing",
+      "logprob": -0.0000019073468138230965
+    },
+    {
+      "text": "run",
+      "start": 1.74,
+      "end": 2,
+      "type": "word",
+      "logprob": -0.0000019073468138230965
+    },
+    {
+      "text": " ",
+      "start": 2,
+      "end": 2.019,
+      "type": "spacing",
+      "logprob": -8.344646857949556e-7
+    },
+    {
+      "text": "straight",
+      "start": 2.019,
+      "end": 2.399,
+      "type": "word",
+      "logprob": -8.344646857949556e-7
+    },
+    {
+      "text": " ",
+      "start": 2.399,
+      "end": 2.499,
+      "type": "spacing",
+      "logprob": -1.1920928244535389e-7
+    },
+    {
+      "text": "through",
+      "start": 2.5,
+      "end": 2.72,
+      "type": "word",
+      "logprob": -1.1920928244535389e-7
+    },
+    {
+      "text": " ",
+      "start": 2.72,
+      "end": 2.779,
+      "type": "spacing",
+      "logprob": -0.0000017881377516459906
+    },
+    {
+      "text": "it",
+      "start": 2.779,
+      "end": 2.96,
+      "type": "word",
+      "logprob": -0.0000017881377516459906
+    }
+  ],
+  "transcription_id": "2gagCU1JdZXZI4rBWtFe",
+  "audio_duration_secs": 3.204375
+}

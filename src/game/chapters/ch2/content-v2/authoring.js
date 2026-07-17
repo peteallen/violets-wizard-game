@@ -29,6 +29,32 @@ export function setPiecePlay(id) {
   return { type: 'setPiece.play', id };
 }
 
+export function sfxCue(at, key) {
+  return { type: 'cue', at, event: 'audio.command', payload: { command: 'sfx', key } };
+}
+
+export function musicCue(at, key) {
+  return {
+    type: 'cue',
+    at,
+    event: 'audio.command',
+    payload: { command: 'music', key, mode: 'crossfade', fadeSeconds: 0.8 },
+  };
+}
+
+export function actorActionCue(at, actor, action, { expression } = {}) {
+  return {
+    type: 'cue',
+    at,
+    event: 'actor.animationRequested',
+    payload: {
+      actor,
+      action,
+      ...(expression ? { expression } : {}),
+    },
+  };
+}
+
 export function travel(room, spawn, transition = 'crossfade') {
   return { type: 'travel.request', room, spawn, transition };
 }
@@ -72,16 +98,18 @@ export function actionHotspot({
   approach = null,
   when: condition = noCondition,
   icon,
+  kind = 'action',
+  glow = 'gold-thread',
   repeat = 'until-condition',
   onInteract,
 }) {
   return {
     id,
-    kind: 'action',
+    kind,
     hitArea,
     approach,
     when: condition,
-    presentation: { icon, glow: 'gold-thread' },
+    presentation: { icon, glow },
     requiredSpell: null,
     repeat,
     onInteract,

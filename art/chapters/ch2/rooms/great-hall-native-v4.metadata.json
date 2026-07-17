@@ -1,0 +1,84 @@
+{
+  "schema_version": 1,
+  "kind": "codex-built-in-room-image-generation",
+  "slug": "great-hall-native-v4",
+  "workflow": {
+    "name": "Codex built-in image generation",
+    "tool": "image_gen.imagegen",
+    "model_identifier": null,
+    "seed": null,
+    "note": "The built-in workflow did not return a model identifier or seed."
+  },
+  "timestamps": {
+    "generation_started_at": "2026-07-16T21:50:02.247Z",
+    "generation_completed_at": "2026-07-16T21:52:40.483Z",
+    "duration_ms": 158236
+  },
+  "request_spec": {
+    "path": "art/chapters/ch2/rooms/great-hall-native-v4.request.json",
+    "bytes": 1395,
+    "sha256": "42a2f5bf1d9111da5799813cc8ff6f1c32b55677fee132b1c4539d9e4ac31218"
+  },
+  "prompt": {
+    "path": "art/chapters/ch2/rooms/great-hall-native-v4.prompt.md",
+    "section": "Prompt",
+    "bytes": 3214,
+    "sha256": "7703c38ed64f76e74289f147b4f274fba2df74a53797999570b54af905de4ab3"
+  },
+  "references": [
+    {
+      "index": 1,
+      "path": "public/assets/art/rooms/ch2-great-hall.webp",
+      "role": "superseded Chapter Two composition reference only",
+      "generation_time_bytes": 178776,
+      "generation_time_sha256": "342a8b13125515e63712d496281824cb64d7a47648f784c688391fba254afe8e",
+      "dimensions": { "width": 2048, "height": 1152 },
+      "note": "The path now contains the accepted native-v4 derivative; this binding records the superseded v3 file bytes that were supplied to generation."
+    },
+    {
+      "index": 2,
+      "path": "art/raw/ch1-leaky.png",
+      "role": "warm timber and stone detail, deep interior lighting, and premium finish reference",
+      "bytes": 2473783,
+      "sha256": "ba771b909293ca6338f026a7011078198fecb137b8f50d855e67be5d9fc31097",
+      "dimensions": { "width": 1672, "height": 941 }
+    },
+    {
+      "index": 3,
+      "path": "art/raw/ch1-ollivanders.png",
+      "role": "academic depth, bookish surface detail, and blue-violet shadow reference",
+      "bytes": 2262906,
+      "sha256": "0ad6d0941b7ca7b4a4ea4ebe31488333b60c5dbb09ed6b8620fe2b073f2385a2",
+      "dimensions": { "width": 1672, "height": 941 }
+    }
+  ],
+  "generation_output": {
+    "id": "exec-b42e004d-ba75-416a-8fe4-78b7402d1b07",
+    "original_path": "/Users/peteallen/.codex/generated_images/019f6c3e-aa13-7f72-8f24-96fc942fe3e4/exec-b42e004d-ba75-416a-8fe4-78b7402d1b07.png",
+    "copied_to": "art/raw/ch2-great-hall-native-v4.png",
+    "media_type": "image/png",
+    "bytes": 2896768,
+    "sha256": "b7f4a786b1bef9d67b7938b8a39051e6e9f7e4f5ba7ba5d562c2a5fa9b8286a9",
+    "dimensions": { "width": 1672, "height": 941 }
+  },
+  "derivatives": {
+    "accepted_png": {
+      "path": "art/raw/ch2-great-hall-v4.png",
+      "bytes": 3836559,
+      "sha256": "47794a3e7c7341cc258f5393d8a98bb405957e786418a2ae46b04a2a9acfd5b8",
+      "dimensions": { "width": 2048, "height": 1152 }
+    },
+    "shipping_webp": {
+      "path": "public/assets/art/rooms/ch2-great-hall.webp",
+      "bytes": 452810,
+      "sha256": "e976d3ec5f7b6e21429812b480467d1123989fb9f70e4607256115b3e58eba75",
+      "dimensions": { "width": 2048, "height": 1152 }
+    }
+  },
+  "conversion": {
+    "crop": "sips -s format png -c 940 1672",
+    "resize": "sips -s format png -z 1152 2048",
+    "shipping": "cwebp -q 88 -m 6 -sharp_yuv",
+    "note": "The 1672x941 native PNG was center-cropped by one pixel to 1672x940, resized once to 2048x1152, then encoded as WebP."
+  }
+}

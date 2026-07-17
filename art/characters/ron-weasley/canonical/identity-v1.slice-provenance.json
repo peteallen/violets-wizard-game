@@ -1,0 +1,143 @@
+{
+  "schema_version": 1,
+  "algorithm": {
+    "id": "cyan-flood-aligned-character-sheet-v1",
+    "component_connectivity": 8,
+    "scale_filter": "premultiplied-rgba-box-rational-v1",
+    "output_color_type": 6,
+    "output_bit_depth": 8,
+    "deterministic": true
+  },
+  "slice_spec": {
+    "path": "art/characters/ron-weasley/canonical/identity-v1.layout.json",
+    "bytes": 1123,
+    "sha256": "1d249f9058b3d8e675ca52c52d436b7e698f277be6e45f44bde5de5943a8b19e",
+    "schema_version": 1,
+    "id": "ron-weasley.identity-v1"
+  },
+  "source": {
+    "path": "art/characters/ron-weasley/canonical/identity-v1.png",
+    "bytes": 1499998,
+    "expected_sha256": "d326fa7e90bc05492e90a14293151caf28eac45e0776359d074a5a8acaa930a9",
+    "sha256": "d326fa7e90bc05492e90a14293151caf28eac45e0776359d074a5a8acaa930a9",
+    "rgba_sha256": "7b6f69c770edbd2798b486350042dfadce9c6bd42ba48fb0187c8feecbe8acdc",
+    "dimensions": {
+      "width": 1086,
+      "height": 1448
+    }
+  },
+  "controls": {
+    "output_canvas": {
+      "width": 896,
+      "height": 1200,
+      "center_x": 448,
+      "ground_y": 1132
+    },
+    "common_scale": {
+      "numerator": 4,
+      "denominator": 5
+    },
+    "key": {
+      "color": {
+        "red": 1,
+        "green": 248,
+        "blue": 253
+      },
+      "tolerance": 28,
+      "alpha": {
+        "opaque_cyan_excess": 50,
+        "transparent_cyan_excess": 90,
+        "edge_spill_radius": 8,
+        "edge_spill_opaque_cyan_excess": 30,
+        "edge_spill_max_green_blue_delta": 70,
+        "matte_low_alpha": 170,
+        "matte_high_alpha": 245,
+        "edge_color_radius": 0
+      }
+    },
+    "components": {
+      "detail_min_pixels": 8,
+      "detail_max_pixels": 5000,
+      "detail_max_distance": 18
+    }
+  },
+  "outputs": [
+    {
+      "name": "neutral",
+      "path": "public/assets/art/characters/ron-weasley/default/neutral.png",
+      "media_type": "image/png",
+      "bytes": 537679,
+      "sha256": "ad3ebb138750ae7644a99fe384257866db43be727bd54413cd1b0bb427f8e4b4",
+      "rgba_sha256": "4d7653823760e8f1a41e0659ca06606c1b24f4eb90a54c26970724803221514d",
+      "dimensions": {
+        "width": 896,
+        "height": 1200
+      },
+      "crop": {
+        "x": 0,
+        "y": 0,
+        "width": 1086,
+        "height": 1448
+      },
+      "source_content_bounds": {
+        "x": 319,
+        "y": 51,
+        "width": 476,
+        "height": 1357
+      },
+      "scaled_dimensions": {
+        "width": 381,
+        "height": 1086
+      },
+      "placement": {
+        "x": 258,
+        "y": 47,
+        "width": 381,
+        "height": 1086,
+        "center_x": 448,
+        "ground_y": 1132
+      },
+      "flood": {
+        "background_pixels": 1173308,
+        "non_background_pixels": 399220,
+        "background_fraction": 0.7461285268052461
+      },
+      "components": {
+        "found": 5,
+        "dominant_pixels": 394087,
+        "kept": 3,
+        "removed": 2,
+        "selected_pixels": 394122,
+        "details": [
+          {
+            "pixels": 15,
+            "distance_from_dominant": 2,
+            "kept": true
+          },
+          {
+            "pixels": 1,
+            "distance_from_dominant": 2,
+            "kept": false
+          },
+          {
+            "pixels": 1,
+            "distance_from_dominant": 2,
+            "kept": false
+          },
+          {
+            "pixels": 20,
+            "distance_from_dominant": 2,
+            "kept": true
+          }
+        ]
+      },
+      "alpha": {
+        "transparent_pixels": 1178406,
+        "soft_pixels": 483,
+        "opaque_pixels": 393639
+      },
+      "edge_artifacts_repaired": 57
+    }
+  ],
+  "provenance_path": "art/characters/ron-weasley/canonical/identity-v1.slice-provenance.json"
+}

@@ -1,0 +1,128 @@
+{
+  "language_code": "eng",
+  "language_probability": 1,
+  "text": "Ask the conductor where to board the Hogwarts Express.",
+  "words": [
+    {
+      "text": "Ask",
+      "start": 0.059,
+      "end": 0.319,
+      "type": "word",
+      "logprob": -0.08913422375917435
+    },
+    {
+      "text": " ",
+      "start": 0.319,
+      "end": 0.399,
+      "type": "spacing",
+      "logprob": -0.000004410734163684538
+    },
+    {
+      "text": "the",
+      "start": 0.399,
+      "end": 0.479,
+      "type": "word",
+      "logprob": -0.000004410734163684538
+    },
+    {
+      "text": " ",
+      "start": 0.479,
+      "end": 0.519,
+      "type": "spacing",
+      "logprob": -0.00027307120035402477
+    },
+    {
+      "text": "conductor",
+      "start": 0.519,
+      "end": 1.059,
+      "type": "word",
+      "logprob": -0.00027307120035402477
+    },
+    {
+      "text": " ",
+      "start": 1.059,
+      "end": 1.099,
+      "type": "spacing",
+      "logprob": -7.152555099310121e-7
+    },
+    {
+      "text": "where",
+      "start": 1.1,
+      "end": 1.299,
+      "type": "word",
+      "logprob": -7.152555099310121e-7
+    },
+    {
+      "text": " ",
+      "start": 1.299,
+      "end": 1.319,
+      "type": "spacing",
+      "logprob": 0
+    },
+    {
+      "text": "to",
+      "start": 1.319,
+      "end": 1.459,
+      "type": "word",
+      "logprob": 0
+    },
+    {
+      "text": " ",
+      "start": 1.459,
+      "end": 1.499,
+      "type": "spacing",
+      "logprob": -0.000001311301275563892
+    },
+    {
+      "text": "board",
+      "start": 1.5,
+      "end": 1.759,
+      "type": "word",
+      "logprob": -0.000001311301275563892
+    },
+    {
+      "text": " ",
+      "start": 1.759,
+      "end": 1.799,
+      "type": "spacing",
+      "logprob": -0.00008523101132595912
+    },
+    {
+      "text": "the",
+      "start": 1.799,
+      "end": 1.859,
+      "type": "word",
+      "logprob": -0.00008523101132595912
+    },
+    {
+      "text": " ",
+      "start": 1.859,
+      "end": 1.919,
+      "type": "spacing",
+      "logprob": -0.000007748573807475623
+    },
+    {
+      "text": "Hogwarts",
+      "start": 1.919,
+      "end": 2.419,
+      "type": "word",
+      "logprob": -0.000007748573807475623
+    },
+    {
+      "text": " ",
+      "start": 2.419,
+      "end": 2.499,
+      "type": "spacing",
+      "logprob": -0.00005245071224635467
+    },
+    {
+      "text": "Express.",
+      "start": 2.5,
+      "end": 3.099,
+      "type": "word",
+      "logprob": -0.03966404004768265
+    }
+  ],
+  "transcription_id": "JNkLr46b5mcIytTq99jk",
+  "audio_duration_secs": 3.3436875
+}

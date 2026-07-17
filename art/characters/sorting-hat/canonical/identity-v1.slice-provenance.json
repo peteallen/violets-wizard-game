@@ -1,0 +1,122 @@
+{
+  "schema_version": 1,
+  "algorithm": {
+    "id": "cyan-flood-aligned-character-sheet-v1",
+    "component_connectivity": 8,
+    "scale_filter": "premultiplied-rgba-box-rational-v1",
+    "output_color_type": 6,
+    "output_bit_depth": 8,
+    "deterministic": true
+  },
+  "slice_spec": {
+    "path": "art/characters/sorting-hat/canonical/identity-v1.layout.json",
+    "bytes": 1123,
+    "sha256": "641c18649323835762ecbf77d70c8cb5b6385854fcdacd842bf18896ba965922",
+    "schema_version": 1,
+    "id": "sorting-hat.identity-v1"
+  },
+  "source": {
+    "path": "art/characters/sorting-hat/canonical/identity-v1.png",
+    "bytes": 1623970,
+    "expected_sha256": "47e156739a710ca5515eed9a18602955f0a62ab8267a23cd94a63b91590ae2f5",
+    "sha256": "47e156739a710ca5515eed9a18602955f0a62ab8267a23cd94a63b91590ae2f5",
+    "rgba_sha256": "9a5949dd54f36cf3c05655b2fa03d3659fb3dc245616dd4b5a4e415f7f76375d",
+    "dimensions": {
+      "width": 1448,
+      "height": 1086
+    }
+  },
+  "controls": {
+    "output_canvas": {
+      "width": 896,
+      "height": 1200,
+      "center_x": 448,
+      "ground_y": 1132
+    },
+    "common_scale": {
+      "numerator": 2,
+      "denominator": 3
+    },
+    "key": {
+      "color": {
+        "red": 1,
+        "green": 248,
+        "blue": 253
+      },
+      "tolerance": 28,
+      "alpha": {
+        "opaque_cyan_excess": 50,
+        "transparent_cyan_excess": 90,
+        "edge_spill_radius": 8,
+        "edge_spill_opaque_cyan_excess": 30,
+        "edge_spill_max_green_blue_delta": 70,
+        "matte_low_alpha": 170,
+        "matte_high_alpha": 245,
+        "edge_color_radius": 0
+      }
+    },
+    "components": {
+      "detail_min_pixels": 8,
+      "detail_max_pixels": 5000,
+      "detail_max_distance": 18
+    }
+  },
+  "outputs": [
+    {
+      "name": "neutral",
+      "path": "public/assets/art/characters/sorting-hat/default/neutral.png",
+      "media_type": "image/png",
+      "bytes": 496978,
+      "sha256": "79a1483d5444c2c6e4ff56c0190b3f383dce756b170b2d2dc9612fb49fdc2949",
+      "rgba_sha256": "95e712be41e3504c5c0c18783bb4168b40e52c807ed87a26323247b5eead7fec",
+      "dimensions": {
+        "width": 896,
+        "height": 1200
+      },
+      "crop": {
+        "x": 0,
+        "y": 0,
+        "width": 1448,
+        "height": 1086
+      },
+      "source_content_bounds": {
+        "x": 74,
+        "y": 40,
+        "width": 1304,
+        "height": 992
+      },
+      "scaled_dimensions": {
+        "width": 870,
+        "height": 662
+      },
+      "placement": {
+        "x": 13,
+        "y": 471,
+        "width": 870,
+        "height": 662,
+        "center_x": 448,
+        "ground_y": 1132
+      },
+      "flood": {
+        "background_pixels": 1024301,
+        "non_background_pixels": 548227,
+        "background_fraction": 0.6513721854237253
+      },
+      "components": {
+        "found": 1,
+        "dominant_pixels": 544857,
+        "kept": 1,
+        "removed": 0,
+        "selected_pixels": 544857,
+        "details": []
+      },
+      "alpha": {
+        "transparent_pixels": 1027671,
+        "soft_pixels": 334,
+        "opaque_pixels": 544523
+      },
+      "edge_artifacts_repaired": 20
+    }
+  ],
+  "provenance_path": "art/characters/sorting-hat/canonical/identity-v1.slice-provenance.json"
+}

@@ -1,0 +1,31 @@
+{
+  "schema_version": 1,
+  "slug": "jocunda-sykes",
+  "prompt": {
+    "path": "art/chapters/ch2/cards/jocunda-sykes.prompt.md",
+    "section": "Prompt"
+  },
+  "generation": {
+    "model": "google/gemini-3.1-flash-lite-image",
+    "canonical_model_slug": "google/gemini-3.1-flash-lite-image-20260630",
+    "provider": "google-vertex/global",
+    "endpoint": "https://openrouter.ai/api/v1/images",
+    "aspect_ratio": "1:1",
+    "resolution": "1K",
+    "n": 1,
+    "output_format": "png",
+    "seed": null
+  },
+  "output": {
+    "raw_native_base": "art/raw/ch2-card-jocunda-sykes-native",
+    "accepted_png": "art/raw/ch2-card-jocunda-sykes.png",
+    "shipping_webp": "public/assets/art/cards/jocunda-sykes.webp",
+    "metadata": "art/chapters/ch2/cards/jocunda-sykes.metadata.json"
+  },
+  "conversion": {
+    "width": 1254,
+    "height": 1254,
+    "webp_quality": 84,
+    "webp_method": 6
+  }
+}

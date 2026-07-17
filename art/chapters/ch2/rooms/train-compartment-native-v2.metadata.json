@@ -1,0 +1,83 @@
+{
+  "schema_version": 1,
+  "kind": "codex-built-in-room-image-generation",
+  "slug": "train-compartment-native-v2",
+  "workflow": {
+    "name": "Codex built-in image generation",
+    "tool": "image_gen.imagegen",
+    "model_identifier": null,
+    "seed": null,
+    "note": "The built-in workflow did not return a model identifier or seed."
+  },
+  "timestamps": {
+    "generation_started_at": "2026-07-16T21:44:26.091Z",
+    "generation_completed_at": "2026-07-16T21:45:54.635Z",
+    "duration_ms": 88544
+  },
+  "request_spec": {
+    "path": "art/chapters/ch2/rooms/train-compartment-native-v2.request.json",
+    "bytes": 1425,
+    "sha256": "88366d1871d81490d198c9147a8376a264ac3ffb73124dfa5fadca72f6787c48"
+  },
+  "prompt": {
+    "path": "art/chapters/ch2/rooms/train-compartment-native-v2.prompt.md",
+    "section": "Prompt",
+    "bytes": 2883,
+    "sha256": "e8431e23b2011043e7644c4ec58070e5cbbe4172aa3530d19741887eb7e83897"
+  },
+  "references": [
+    {
+      "index": 1,
+      "path": "art/raw/ch1-leaky.png",
+      "role": "warm timber, brass, dimensional interior-lighting, and dense material-detail reference",
+      "bytes": 2473783,
+      "sha256": "ba771b909293ca6338f026a7011078198fecb137b8f50d855e67be5d9fc31097",
+      "dimensions": { "width": 1672, "height": 941 }
+    },
+    {
+      "index": 2,
+      "path": "art/raw/ch1-malkins.png",
+      "role": "refined fabric, mirror-room depth, and premium finish reference",
+      "bytes": 2228921,
+      "sha256": "2ed310c31d0fb5a5205d516ceaa14967a7b8f8717a482aab7ed04da4a3349213",
+      "dimensions": { "width": 1672, "height": 941 }
+    },
+    {
+      "index": 3,
+      "path": "art/raw/ch1-bedroom.png",
+      "role": "bright wood, calm character-floor, and painterly surface reference",
+      "bytes": 2538610,
+      "sha256": "dbfbdf69b481f4bc563c2c7711e55615d9f838b20bef4f2fb2fd3ba3c02ca1df",
+      "dimensions": { "width": 1672, "height": 941 }
+    }
+  ],
+  "generation_output": {
+    "id": "exec-f38d2cc9-311d-43af-b711-1ccf5ba165dd",
+    "original_path": "/Users/peteallen/.codex/generated_images/019f6c3e-aa13-7f72-8f24-96fc942fe3e4/exec-f38d2cc9-311d-43af-b711-1ccf5ba165dd.png",
+    "copied_to": "art/raw/ch2-train-compartment-native-v2.png",
+    "media_type": "image/png",
+    "bytes": 2473160,
+    "sha256": "707e28b40b13a82773e5e0c28b15416a7970d5240c46200b55a359c899fe2713",
+    "dimensions": { "width": 1672, "height": 941 }
+  },
+  "derivatives": {
+    "accepted_png": {
+      "path": "art/raw/ch2-train-compartment-v2.png",
+      "bytes": 3389920,
+      "sha256": "1f2bf46bda0c9a53b8945a7e4500d820d4e0f8c7830933608eed6484398f9eae",
+      "dimensions": { "width": 2048, "height": 1152 }
+    },
+    "shipping_webp": {
+      "path": "public/assets/art/rooms/ch2-train-compartment.webp",
+      "bytes": 316022,
+      "sha256": "b12a4d2b954834ab77ac30c11fbe2e29cf7500367b5a967552a971c2744e0269",
+      "dimensions": { "width": 2048, "height": 1152 }
+    }
+  },
+  "conversion": {
+    "crop": "sips -s format png -c 940 1672",
+    "resize": "sips -s format png -z 1152 2048",
+    "shipping": "cwebp -q 88 -m 6 -sharp_yuv",
+    "note": "The 1672x941 native PNG was center-cropped by one pixel to 1672x940, resized once to 2048x1152, then encoded as WebP."
+  }
+}

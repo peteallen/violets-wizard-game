@@ -5,3 +5,4 @@ export {
 
 export { chapter1Descriptor } from './ch1/descriptor.js';
 export { chapter2Descriptor } from './ch2/descriptor.js';
+export { chapter3Descriptor } from './ch3/descriptor.js';

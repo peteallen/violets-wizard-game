@@ -86,11 +86,8 @@ const DEFAULT_TARGETS = Object.freeze({
 const CURRENT_ALLOWLIST = Object.freeze([
   ...allowMany(ARCHITECTURE_RULES.GENERIC_CHAPTER_IMPORT, 'src/game/core/assetManifest.js', [
     '../content/chapters/ch1.js',
-    '../content/chapters/ch2.js',
   ]),
   ...allowMany(ARCHITECTURE_RULES.GENERIC_CONCRETE_ROUTING, 'src/game/core/assetManifest.js', [
-    'ch2',
-    'ch1',
     'ch1',
   ]),
   ...allowMany(ARCHITECTURE_RULES.GENERIC_CONCRETE_ROUTING, 'src/game/core/VersionWatcher.js', [
@@ -107,22 +104,13 @@ const CURRENT_ALLOWLIST = Object.freeze([
     'ch1.courtyard',
     'ch1.letterRead',
     'ch1',
-    'ch1',
     'ch1.courtyard',
-    'ch2',
-    'ch2',
-    'ch1.diagonStreet',
-    'ch1',
     'ch1',
     'ch1',
     'ch1.chapterCardRoom',
-    'ch1',
-    'ch1',
     'ch1.bedroom',
     'ch1.letter',
     'ch1.letterScene',
-    'ch1',
-    'ch1',
     'ch1.letterRead',
     'ch1.wallOpened',
     'ch1.wandChosen',
@@ -201,8 +189,6 @@ const CURRENT_ALLOWLIST = Object.freeze([
   ...allowMany(ARCHITECTURE_RULES.GENERIC_CONCRETE_ROUTING, 'src/game/world/World.js', [
     'ch1',
     'ch1.keeper.petAndName',
-    'npc.violet',
-    'npc.pet.',
     'ch1.petNamed',
     'ch1.trimChosen',
     'ch1.tailor.done',

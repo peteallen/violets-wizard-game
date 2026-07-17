@@ -1,0 +1,240 @@
+{
+  "language_code": "eng",
+  "language_probability": 1,
+  "text": "You put yourself between trouble and the people you love. That is a bright kind of courage",
+  "words": [
+    {
+      "text": "You",
+      "start": 0.099,
+      "end": 0.219,
+      "type": "word",
+      "logprob": -0.001091599464416504
+    },
+    {
+      "text": " ",
+      "start": 0.219,
+      "end": 0.259,
+      "type": "spacing",
+      "logprob": -2.3841855067985307e-7
+    },
+    {
+      "text": "put",
+      "start": 0.259,
+      "end": 0.399,
+      "type": "word",
+      "logprob": -2.3841855067985307e-7
+    },
+    {
+      "text": " ",
+      "start": 0.399,
+      "end": 0.439,
+      "type": "spacing",
+      "logprob": -4.768370445162873e-7
+    },
+    {
+      "text": "yourself",
+      "start": 0.439,
+      "end": 0.819,
+      "type": "word",
+      "logprob": -4.768370445162873e-7
+    },
+    {
+      "text": " ",
+      "start": 0.819,
+      "end": 0.819,
+      "type": "spacing",
+      "logprob": -3.576278118089249e-7
+    },
+    {
+      "text": "between",
+      "start": 0.819,
+      "end": 1.159,
+      "type": "word",
+      "logprob": -3.576278118089249e-7
+    },
+    {
+      "text": " ",
+      "start": 1.159,
+      "end": 1.179,
+      "type": "spacing",
+      "logprob": -0.000002622600959512056
+    },
+    {
+      "text": "trouble",
+      "start": 1.179,
+      "end": 1.419,
+      "type": "word",
+      "logprob": -0.000002622600959512056
+    },
+    {
+      "text": " ",
+      "start": 1.419,
+      "end": 1.439,
+      "type": "spacing",
+      "logprob": -0.000002145764938177308
+    },
+    {
+      "text": "and",
+      "start": 1.439,
+      "end": 1.519,
+      "type": "word",
+      "logprob": -0.000002145764938177308
+    },
+    {
+      "text": " ",
+      "start": 1.519,
+      "end": 1.539,
+      "type": "spacing",
+      "logprob": -5.960462772236497e-7
+    },
+    {
+      "text": "the",
+      "start": 1.539,
+      "end": 1.599,
+      "type": "word",
+      "logprob": -5.960462772236497e-7
+    },
+    {
+      "text": " ",
+      "start": 1.599,
+      "end": 1.699,
+      "type": "spacing",
+      "logprob": -8.344646857949556e-7
+    },
+    {
+      "text": "people",
+      "start": 1.699,
+      "end": 1.939,
+      "type": "word",
+      "logprob": -8.344646857949556e-7
+    },
+    {
+      "text": " ",
+      "start": 1.939,
+      "end": 1.959,
+      "type": "spacing",
+      "logprob": -3.576278118089249e-7
+    },
+    {
+      "text": "you",
+      "start": 1.959,
+      "end": 2.119,
+      "type": "word",
+      "logprob": -3.576278118089249e-7
+    },
+    {
+      "text": " ",
+      "start": 2.119,
+      "end": 2.199,
+      "type": "spacing",
+      "logprob": -7.152555099310121e-7
+    },
+    {
+      "text": "love.",
+      "start": 2.2,
+      "end": 2.339,
+      "type": "word",
+      "logprob": -0.000841136183407798
+    },
+    {
+      "text": " ",
+      "start": 2.339,
+      "end": 2.379,
+      "type": "spacing",
+      "logprob": -2.3841855067985307e-7
+    },
+    {
+      "text": "That",
+      "start": 2.379,
+      "end": 2.5,
+      "type": "word",
+      "logprob": -2.3841855067985307e-7
+    },
+    {
+      "text": " ",
+      "start": 2.5,
+      "end": 2.539,
+      "type": "spacing",
+      "logprob": 0
+    },
+    {
+      "text": "is",
+      "start": 2.539,
+      "end": 2.639,
+      "type": "word",
+      "logprob": 0
+    },
+    {
+      "text": " ",
+      "start": 2.639,
+      "end": 2.779,
+      "type": "spacing",
+      "logprob": 0
+    },
+    {
+      "text": "a",
+      "start": 2.779,
+      "end": 2.799,
+      "type": "word",
+      "logprob": 0
+    },
+    {
+      "text": " ",
+      "start": 2.799,
+      "end": 2.819,
+      "type": "spacing",
+      "logprob": -0.000013947389561508317
+    },
+    {
+      "text": "bright",
+      "start": 2.819,
+      "end": 3.099,
+      "type": "word",
+      "logprob": -0.000013947389561508317
+    },
+    {
+      "text": " ",
+      "start": 3.099,
+      "end": 3.119,
+      "type": "spacing",
+      "logprob": -0.000018954096958623268
+    },
+    {
+      "text": "kind",
+      "start": 3.119,
+      "end": 3.339,
+      "type": "word",
+      "logprob": -0.000018954096958623268
+    },
+    {
+      "text": " ",
+      "start": 3.339,
+      "end": 3.359,
+      "type": "spacing",
+      "logprob": 0
+    },
+    {
+      "text": "of",
+      "start": 3.359,
+      "end": 3.48,
+      "type": "word",
+      "logprob": 0
+    },
+    {
+      "text": " ",
+      "start": 3.48,
+      "end": 3.5,
+      "type": "spacing",
+      "logprob": -0.0000020265558760002023
+    },
+    {
+      "text": "courage",
+      "start": 3.5,
+      "end": 4.019,
+      "type": "word",
+      "logprob": -0.0000020265558760002023
+    }
+  ],
+  "transcription_id": "5b5GepJ4Dpe0mwrez5SV",
+  "audio_duration_secs": 4.3821875
+}

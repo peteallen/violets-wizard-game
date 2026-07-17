@@ -92,8 +92,33 @@ describe('visual verification checklists', () => {
     expect(cast).toMatch(/Hagrid.*visible arms.*broad boots.*shaped coat.*moustache.*beard/s);
   });
 
-  it('keeps the rebuilt preview ticket in the player-facing review contract', () => {
-    expect(visualReviewChecklist('sp-ch2-ticket-review').join(' '))
-      .toMatch(/layered irregular railway ephemera.*tiny train vignette.*zero generic owl.*dashed seam/s);
+  it('keeps all six Chapter Two set pieces in the player-facing review contract', () => {
+    const chapterTwoScenes = [
+      'sp-ch2-barrier-run-review',
+      'sp-ch2-sweet-reaction-review',
+      'sp-ch2-lake-vista-review',
+      'sp-ch2-sorting-reveal-review',
+      'sp-ch2-common-room-arrival-review',
+      'sp-ch2-chapter-card-review',
+    ];
+    for (const scene of chapterTwoScenes) {
+      expect(visualReviewChecklist(scene), scene).not.toBeNull();
+    }
+
+    expect(visualReviewChecklist('sp-ch2-barrier-run-review').join(' '))
+      .toMatch(/continuous action.*opaque storybook whoosh.*zero blank frame/s);
+    expect(visualReviewChecklist('sp-ch2-sweet-reaction-review').join(' '))
+      .toMatch(/Every-Flavour Bean.*silent face-and-body reaction/s);
+    expect(visualReviewChecklist('sp-ch2-lake-vista-review').join(' '))
+      .toMatch(/castle.*lake reflection.*zero blank frame/s);
+    expect(visualReviewChecklist('sp-ch2-sorting-reveal-review').join(' '))
+      .toMatch(/Gryffindor.*one canonical outcome.*no alternate-house color/s);
+    expect(visualReviewChecklist('sp-ch2-common-room-arrival-review').join(' '))
+      .toMatch(/specifically Gryffindor.*Harry, Ron, and Hermione/s);
+    expect(visualReviewChecklist('sp-ch2-chapter-card-review').join(' '))
+      .toMatch(/first-classes handoff.*no retired preview ticket/s);
+
+    expect(visualReviewChecklist('ch2-placeholder')).toBeNull();
+    expect(visualReviewChecklist('sp-ch2-ticket-review')).toBeNull();
   });
 });

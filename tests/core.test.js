@@ -2,7 +2,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { clamp, easeInOutCubic, pointInCircle } from '../src/game/core/math.js';
 import { SeededRandom } from '../src/game/core/rng.js';
 import { SoundEngine } from '../src/game/core/SoundEngine.js';
-import { Game, roomTransitionState } from '../src/game/Game.js';
+import { Game, roomStateDuringSetPiece, roomTransitionState } from '../src/game/Game.js';
 import { UI_RECTS } from '../src/game/render/UIRenderer.js';
 
 afterEach(() => {
@@ -433,7 +433,7 @@ describe('Game audio commands', () => {
   it('uses a short crossfade when ordinary room music changes', () => {
     const game = Object.create(Game.prototype);
     game.sound = { playMusic: vi.fn() };
-    game.world = { roomId: 'ch1.diagonStreet' };
+    game.world = { chapter: { id: 'ch1' }, roomId: 'ch1.diagonStreet' };
 
     game.updateMusic();
     game.world.roomId = 'ch1.ollivanders';
@@ -449,6 +449,96 @@ describe('Game audio commands', () => {
       'music/ch1/violetTheme',
       { mode: 'crossfade', fadeSeconds: 0.8 },
     );
+
+    game.world = { chapter: { id: 'ch2' }, roomId: 'ch2.greatHall' };
+    game.updateMusic();
+    expect(game.sound.playMusic).toHaveBeenNthCalledWith(
+      3,
+      'music/ch2/sorting',
+      { mode: 'crossfade', fadeSeconds: 0.8 },
+    );
+  });
+});
+
+describe('set-piece room variant handoff', () => {
+  it('precomposites a chapter-authored destination variant as soon as its room is entered', async () => {
+    const room = {
+      id: 'ch2.greatHall',
+      background: {
+        layers: ['rooms/ch2/great-hall'],
+        variants: { gryffindor: ['rooms/ch2/great-hall-gryffindor'] },
+      },
+    };
+    const snapshot = { roomId: room.id, roomVariant: 'base' };
+    const preloadRoom = vi.fn().mockResolvedValue('gryffindor-cache');
+    const game = Object.create(Game.prototype);
+    Object.assign(game, {
+      dpr: 2,
+      scale: 0.75,
+      world: {
+        room,
+        chapter: {
+          setPieces: {
+            sorting: { params: { preloadRoomVariant: 'gryffindor' } },
+            sortingReduced: { params: { preloadRoomVariant: 'gryffindor' } },
+            elsewhere: { params: { preloadRoomVariant: 'platform' } },
+          },
+        },
+        snapshot: vi.fn(() => snapshot),
+      },
+      roomRenderer: { preloadRoom, logger: { warn: vi.fn() } },
+      particles: { clear: vi.fn() },
+      setPieceRenderer: { preloadBrickWall: vi.fn() },
+      updateMusic: vi.fn(),
+    });
+    game.preloadCurrentRoomSetPieceVariants = vi.fn(
+      Game.prototype.preloadCurrentRoomSetPieceVariants.bind(game),
+    );
+
+    game.handleWorldEvent({
+      type: 'room.entered',
+      payload: { room: 'ch2.greatHall', spawn: 'doors' },
+    });
+    await game.preloadCurrentRoomSetPieceVariants.mock.results[0].value;
+
+    expect(game.preloadCurrentRoomSetPieceVariants).toHaveBeenCalledOnce();
+    expect(preloadRoom).toHaveBeenCalledOnce();
+    expect(preloadRoom).toHaveBeenCalledWith(
+      room,
+      { ...snapshot, roomVariant: 'gryffindor' },
+      { scale: 1.5 },
+    );
+  });
+
+  it('keeps the outgoing painting until the authored opaque swap frame, then holds the target beneath the reveal', () => {
+    const state = {
+      roomVariant: 'base',
+      setPiece: {
+        time: 1.47,
+        descriptor: { duration: 2.4 },
+        params: {
+          preloadRoomVariant: 'gryffindor',
+          revealRoomVariantAt: 0.62,
+        },
+      },
+    };
+
+    expect(roomStateDuringSetPiece(state)).toBe(state);
+
+    const atOpaqueSwap = {
+      ...state,
+      setPiece: { ...state.setPiece, time: 2.4 * 0.62 },
+    };
+    expect(roomStateDuringSetPiece(atOpaqueSwap)).toEqual({
+      ...atOpaqueSwap,
+      roomVariant: 'gryffindor',
+    });
+
+    const duringReveal = {
+      ...state,
+      setPiece: { ...state.setPiece, time: 2.1 },
+    };
+    expect(roomStateDuringSetPiece(duringReveal).roomVariant).toBe('gryffindor');
   });
 });
 

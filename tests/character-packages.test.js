@@ -163,6 +163,8 @@ describe('canonical full-frame character packages', () => {
       'receive-wand',
       'admire-robes',
       'broom-wonder',
+      'barrier-run',
+      'sweet-reaction',
     ]);
   });
 

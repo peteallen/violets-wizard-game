@@ -1,0 +1,156 @@
+{
+  "language_code": "eng",
+  "language_probability": 1,
+  "text": "And plenty of room for sweets. That is the important bit",
+  "words": [
+    {
+      "text": "And",
+      "start": 0.079,
+      "end": 0.28,
+      "type": "word",
+      "logprob": -0.000017762025890988298
+    },
+    {
+      "text": " ",
+      "start": 0.28,
+      "end": 0.319,
+      "type": "spacing",
+      "logprob": -0.0000017881377516459906
+    },
+    {
+      "text": "plenty",
+      "start": 0.319,
+      "end": 0.619,
+      "type": "word",
+      "logprob": -0.0000017881377516459906
+    },
+    {
+      "text": " ",
+      "start": 0.619,
+      "end": 0.62,
+      "type": "spacing",
+      "logprob": -1.1920928244535389e-7
+    },
+    {
+      "text": "of",
+      "start": 0.62,
+      "end": 0.799,
+      "type": "word",
+      "logprob": -1.1920928244535389e-7
+    },
+    {
+      "text": " ",
+      "start": 0.799,
+      "end": 0.899,
+      "type": "spacing",
+      "logprob": -0.0000010728830375228426
+    },
+    {
+      "text": "room",
+      "start": 0.899,
+      "end": 1.1,
+      "type": "word",
+      "logprob": -0.0000010728830375228426
+    },
+    {
+      "text": " ",
+      "start": 1.1,
+      "end": 1.139,
+      "type": "spacing",
+      "logprob": -1.1920928244535389e-7
+    },
+    {
+      "text": "for",
+      "start": 1.139,
+      "end": 1.22,
+      "type": "word",
+      "logprob": -1.1920928244535389e-7
+    },
+    {
+      "text": " ",
+      "start": 1.22,
+      "end": 1.339,
+      "type": "spacing",
+      "logprob": -0.0006529344827868044
+    },
+    {
+      "text": "sweets.",
+      "start": 1.339,
+      "end": 1.799,
+      "type": "word",
+      "logprob": -0.0007094426878861018
+    },
+    {
+      "text": " ",
+      "start": 1.799,
+      "end": 2.239,
+      "type": "spacing",
+      "logprob": -0.0000011920922133867862
+    },
+    {
+      "text": "That",
+      "start": 2.24,
+      "end": 2.399,
+      "type": "word",
+      "logprob": -0.0000011920922133867862
+    },
+    {
+      "text": " ",
+      "start": 2.399,
+      "end": 2.439,
+      "type": "spacing",
+      "logprob": -1.1920928244535389e-7
+    },
+    {
+      "text": "is",
+      "start": 2.44,
+      "end": 2.559,
+      "type": "word",
+      "logprob": -1.1920928244535389e-7
+    },
+    {
+      "text": " ",
+      "start": 2.559,
+      "end": 2.599,
+      "type": "spacing",
+      "logprob": -1.1920928244535389e-7
+    },
+    {
+      "text": "the",
+      "start": 2.599,
+      "end": 2.659,
+      "type": "word",
+      "logprob": -1.1920928244535389e-7
+    },
+    {
+      "text": " ",
+      "start": 2.659,
+      "end": 2.699,
+      "type": "spacing",
+      "logprob": -1.1920928244535389e-7
+    },
+    {
+      "text": "important",
+      "start": 2.7,
+      "end": 3.24,
+      "type": "word",
+      "logprob": -1.1920928244535389e-7
+    },
+    {
+      "text": " ",
+      "start": 3.24,
+      "end": 3.279,
+      "type": "spacing",
+      "logprob": -2.3841855067985307e-7
+    },
+    {
+      "text": "bit",
+      "start": 3.279,
+      "end": 3.599,
+      "type": "word",
+      "logprob": -2.3841855067985307e-7
+    }
+  ],
+  "transcription_id": "AJJwcuMmORFn21f3L2Iy",
+  "audio_duration_secs": 3.7151875
+}

@@ -90,6 +90,7 @@ describe('Chapter Two native v2 grey-box package', () => {
 
   it('keeps Violet silent while the Hat personalizes one fixed Gryffindor outcome', () => {
     expect(chapter2V2.npcs['ch2.npc.violet'].voiceRole).toBe('silent');
+    expect(Object.values(chapter2V2.npcs).every(({ defaultTalk }) => defaultTalk === null)).toBe(true);
     const spokenLines = Object.values(chapter2V2.dialogues).flatMap(({ nodes }) => (
       Object.values(nodes).filter(({ type }) => type === 'line')
     ));
@@ -114,6 +115,17 @@ describe('Chapter Two native v2 grey-box package', () => {
     expect(actions).toContainEqual({
       type: 'yearbook.capture',
       moment: 'ch2.yearbook.sorting',
+    });
+  });
+
+  it('authors the platform and Gryffindor paintings into their opaque set-piece handoffs', () => {
+    expect(chapter2V2.setPieces['ch2.setPiece.barrierRun'].params).toMatchObject({
+      preloadRoomVariant: 'platform',
+      revealRoomVariantAt: 0.68,
+    });
+    expect(chapter2V2.setPieces['ch2.setPiece.sortingReveal'].params).toMatchObject({
+      preloadRoomVariant: 'gryffindor',
+      revealRoomVariantAt: 0.62,
     });
   });
 

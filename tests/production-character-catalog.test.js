@@ -6,17 +6,25 @@ import {
 } from '../src/game/characters/productionCatalog.js';
 import { chapter1CharacterIds } from '../src/game/content/chapters/ch1.js';
 import { chapter2CharacterIds } from '../src/game/content/chapters/ch2.js';
+import { assetManifest } from '../src/game/core/assetManifest.js';
 
 describe('production character catalog', () => {
   it('contains every declared identity once without loading a runtime', () => {
-    expect(productionCharacterCatalog.ids()).toEqual(chapter1CharacterIds);
-    expect(productionCharacterModules.map(({ id }) => id)).toEqual(chapter1CharacterIds);
-    expect(new Set(productionCharacterCatalog.ids()).size).toBe(10);
+    const chapterCharacterIds = [...new Set([...chapter1CharacterIds, ...chapter2CharacterIds])];
+    expect(productionCharacterCatalog.ids()).toEqual(chapterCharacterIds);
+    expect(productionCharacterModules.map(({ id }) => id)).toEqual(chapterCharacterIds);
+    expect(new Set(productionCharacterCatalog.ids()).size).toBe(18);
     expect(chapter2CharacterIds.every((id) => productionCharacterCatalog.registry.has(id))).toBe(true);
     expect(titleCharacterDependencies).toEqual(['character.violet', 'character.post-owl']);
     expect(productionCharacterCatalog.ids().every(
       (id) => !productionCharacterCatalog.registry.isLoaded(id),
     )).toBe(true);
+  });
+
+  it('publishes every package-owned character image through the production asset gate', () => {
+    for (const [key, asset] of Object.entries(productionCharacterCatalog.assets)) {
+      expect(assetManifest[key], key).toEqual({ ...asset, chapter: null });
+    }
   });
 
   it('keeps shared review participation separate from unique registration ownership', () => {

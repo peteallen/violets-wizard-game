@@ -1,0 +1,31 @@
+{
+  "schema_version": 1,
+  "slug": "great-hall-v2",
+  "prompt": {
+    "path": "art/chapters/ch2/rooms/great-hall-v2.prompt.md",
+    "section": "Prompt"
+  },
+  "generation": {
+    "model": "google/gemini-3.1-flash-lite-image",
+    "canonical_model_slug": "google/gemini-3.1-flash-lite-image-20260630",
+    "provider": "google-vertex/global",
+    "endpoint": "https://openrouter.ai/api/v1/images",
+    "aspect_ratio": "16:9",
+    "resolution": "1K",
+    "n": 1,
+    "output_format": "png",
+    "seed": null
+  },
+  "output": {
+    "raw_native_base": "art/raw/ch2-great-hall-v2-native",
+    "accepted_png": "art/raw/ch2-great-hall-v2.png",
+    "shipping_webp": "art/chapters/ch2/rooms/rejected/great-hall-v2.webp",
+    "metadata": "art/chapters/ch2/rooms/great-hall-v2.metadata.json"
+  },
+  "conversion": {
+    "width": 2048,
+    "height": 1152,
+    "webp_quality": 84,
+    "webp_method": 6
+  }
+}

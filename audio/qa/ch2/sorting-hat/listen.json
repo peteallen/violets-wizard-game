@@ -1,0 +1,212 @@
+{
+  "language_code": "eng",
+  "language_probability": 1,
+  "text": "Ahem, Violet, I can already tell that you care deeply. Show me what matters most",
+  "words": [
+    {
+      "text": "Ahem,",
+      "start": 0.079,
+      "end": 0.5,
+      "type": "word",
+      "logprob": -0.02236832760972902
+    },
+    {
+      "text": " ",
+      "start": 0.5,
+      "end": 1.079,
+      "type": "spacing",
+      "logprob": -0.00002586808113846928
+    },
+    {
+      "text": "Violet,",
+      "start": 1.079,
+      "end": 1.519,
+      "type": "word",
+      "logprob": -0.0033475264166814406
+    },
+    {
+      "text": " ",
+      "start": 1.519,
+      "end": 1.599,
+      "type": "spacing",
+      "logprob": 0
+    },
+    {
+      "text": "I",
+      "start": 1.599,
+      "end": 1.619,
+      "type": "word",
+      "logprob": 0
+    },
+    {
+      "text": " ",
+      "start": 1.619,
+      "end": 1.679,
+      "type": "spacing",
+      "logprob": 0
+    },
+    {
+      "text": "can",
+      "start": 1.679,
+      "end": 1.779,
+      "type": "word",
+      "logprob": 0
+    },
+    {
+      "text": " ",
+      "start": 1.779,
+      "end": 1.819,
+      "type": "spacing",
+      "logprob": -0.000002861018856492592
+    },
+    {
+      "text": "already",
+      "start": 1.819,
+      "end": 2.099,
+      "type": "word",
+      "logprob": -0.000002861018856492592
+    },
+    {
+      "text": " ",
+      "start": 2.099,
+      "end": 2.139,
+      "type": "spacing",
+      "logprob": 0
+    },
+    {
+      "text": "tell",
+      "start": 2.139,
+      "end": 2.419,
+      "type": "word",
+      "logprob": 0
+    },
+    {
+      "text": " ",
+      "start": 2.419,
+      "end": 2.439,
+      "type": "spacing",
+      "logprob": 0
+    },
+    {
+      "text": "that",
+      "start": 2.44,
+      "end": 2.599,
+      "type": "word",
+      "logprob": 0
+    },
+    {
+      "text": " ",
+      "start": 2.599,
+      "end": 2.619,
+      "type": "spacing",
+      "logprob": 0
+    },
+    {
+      "text": "you",
+      "start": 2.619,
+      "end": 2.72,
+      "type": "word",
+      "logprob": 0
+    },
+    {
+      "text": " ",
+      "start": 2.72,
+      "end": 2.779,
+      "type": "spacing",
+      "logprob": -2.3841855067985307e-7
+    },
+    {
+      "text": "care",
+      "start": 2.779,
+      "end": 3.079,
+      "type": "word",
+      "logprob": -2.3841855067985307e-7
+    },
+    {
+      "text": " ",
+      "start": 3.079,
+      "end": 3.179,
+      "type": "spacing",
+      "logprob": -2.3841855067985307e-7
+    },
+    {
+      "text": "deeply.",
+      "start": 3.179,
+      "end": 3.579,
+      "type": "word",
+      "logprob": -7.663443040785621e-7
+    },
+    {
+      "text": " ",
+      "start": 3.579,
+      "end": 3.959,
+      "type": "spacing",
+      "logprob": -3.576278118089249e-7
+    },
+    {
+      "text": "Show",
+      "start": 3.959,
+      "end": 4.099,
+      "type": "word",
+      "logprob": -3.576278118089249e-7
+    },
+    {
+      "text": " ",
+      "start": 4.099,
+      "end": 4.199,
+      "type": "spacing",
+      "logprob": 0
+    },
+    {
+      "text": "me",
+      "start": 4.199,
+      "end": 4.319,
+      "type": "word",
+      "logprob": 0
+    },
+    {
+      "text": " ",
+      "start": 4.319,
+      "end": 4.359,
+      "type": "spacing",
+      "logprob": 0
+    },
+    {
+      "text": "what",
+      "start": 4.36,
+      "end": 4.519,
+      "type": "word",
+      "logprob": 0
+    },
+    {
+      "text": " ",
+      "start": 4.519,
+      "end": 4.579,
+      "type": "spacing",
+      "logprob": -0.0000015497195136049413
+    },
+    {
+      "text": "matters",
+      "start": 4.579,
+      "end": 4.88,
+      "type": "word",
+      "logprob": -0.0000015497195136049413
+    },
+    {
+      "text": " ",
+      "start": 4.88,
+      "end": 4.98,
+      "type": "spacing",
+      "logprob": -1.1920928244535389e-7
+    },
+    {
+      "text": "most",
+      "start": 4.98,
+      "end": 5.319,
+      "type": "word",
+      "logprob": -1.1920928244535389e-7
+    }
+  ],
+  "transcription_id": "4GPRgEK75Sc2k2qOCEpz",
+  "audio_duration_secs": 5.488125
+}

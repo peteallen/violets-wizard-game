@@ -1,0 +1,212 @@
+{
+  "language_code": "eng",
+  "language_probability": 1,
+  "text": "And you stay close to the people beside you. Shared courage can carry everyone forward",
+  "words": [
+    {
+      "text": "And",
+      "start": 0.079,
+      "end": 0.219,
+      "type": "word",
+      "logprob": -0.062370676547288895
+    },
+    {
+      "text": " ",
+      "start": 0.219,
+      "end": 0.259,
+      "type": "spacing",
+      "logprob": -0.000008583032467868179
+    },
+    {
+      "text": "you",
+      "start": 0.259,
+      "end": 0.399,
+      "type": "word",
+      "logprob": -0.000008583032467868179
+    },
+    {
+      "text": " ",
+      "start": 0.399,
+      "end": 0.479,
+      "type": "spacing",
+      "logprob": -0.0000027418097943154862
+    },
+    {
+      "text": "stay",
+      "start": 0.479,
+      "end": 0.679,
+      "type": "word",
+      "logprob": -0.0000027418097943154862
+    },
+    {
+      "text": " ",
+      "start": 0.679,
+      "end": 0.699,
+      "type": "spacing",
+      "logprob": -3.576278118089249e-7
+    },
+    {
+      "text": "close",
+      "start": 0.699,
+      "end": 0.919,
+      "type": "word",
+      "logprob": -3.576278118089249e-7
+    },
+    {
+      "text": " ",
+      "start": 0.919,
+      "end": 0.939,
+      "type": "spacing",
+      "logprob": -2.3841855067985307e-7
+    },
+    {
+      "text": "to",
+      "start": 0.939,
+      "end": 1.059,
+      "type": "word",
+      "logprob": -2.3841855067985307e-7
+    },
+    {
+      "text": " ",
+      "start": 1.059,
+      "end": 1.059,
+      "type": "spacing",
+      "logprob": -3.576278118089249e-7
+    },
+    {
+      "text": "the",
+      "start": 1.059,
+      "end": 1.139,
+      "type": "word",
+      "logprob": -3.576278118089249e-7
+    },
+    {
+      "text": " ",
+      "start": 1.139,
+      "end": 1.159,
+      "type": "spacing",
+      "logprob": -5.960462772236497e-7
+    },
+    {
+      "text": "people",
+      "start": 1.159,
+      "end": 1.479,
+      "type": "word",
+      "logprob": -5.960462772236497e-7
+    },
+    {
+      "text": " ",
+      "start": 1.479,
+      "end": 1.479,
+      "type": "spacing",
+      "logprob": -0.000003933898824470816
+    },
+    {
+      "text": "beside",
+      "start": 1.48,
+      "end": 1.999,
+      "type": "word",
+      "logprob": -0.000003933898824470816
+    },
+    {
+      "text": " ",
+      "start": 1.999,
+      "end": 2.019,
+      "type": "spacing",
+      "logprob": -8.344646857949556e-7
+    },
+    {
+      "text": "you.",
+      "start": 2.019,
+      "end": 2.46,
+      "type": "word",
+      "logprob": -0.00426646508250883
+    },
+    {
+      "text": " ",
+      "start": 2.46,
+      "end": 2.539,
+      "type": "spacing",
+      "logprob": -0.00003123234637314454
+    },
+    {
+      "text": "Shared",
+      "start": 2.539,
+      "end": 2.799,
+      "type": "word",
+      "logprob": -0.00003123234637314454
+    },
+    {
+      "text": " ",
+      "start": 2.799,
+      "end": 2.839,
+      "type": "spacing",
+      "logprob": -7.152555099310121e-7
+    },
+    {
+      "text": "courage",
+      "start": 2.839,
+      "end": 3.219,
+      "type": "word",
+      "logprob": -7.152555099310121e-7
+    },
+    {
+      "text": " ",
+      "start": 3.219,
+      "end": 3.239,
+      "type": "spacing",
+      "logprob": 0
+    },
+    {
+      "text": "can",
+      "start": 3.24,
+      "end": 3.379,
+      "type": "word",
+      "logprob": 0
+    },
+    {
+      "text": " ",
+      "start": 3.379,
+      "end": 3.399,
+      "type": "spacing",
+      "logprob": -1.1920928244535389e-7
+    },
+    {
+      "text": "carry",
+      "start": 3.399,
+      "end": 3.72,
+      "type": "word",
+      "logprob": -1.1920928244535389e-7
+    },
+    {
+      "text": " ",
+      "start": 3.72,
+      "end": 3.819,
+      "type": "spacing",
+      "logprob": -3.576278118089249e-7
+    },
+    {
+      "text": "everyone",
+      "start": 3.819,
+      "end": 4.339,
+      "type": "word",
+      "logprob": -3.576278118089249e-7
+    },
+    {
+      "text": " ",
+      "start": 4.339,
+      "end": 4.379,
+      "type": "spacing",
+      "logprob": -0.0000010728830375228426
+    },
+    {
+      "text": "forward",
+      "start": 4.38,
+      "end": 4.799,
+      "type": "word",
+      "logprob": -0.0000010728830375228426
+    }
+  ],
+  "transcription_id": "CQ6tAOPIblxSOLDdvKIl",
+  "audio_duration_secs": 5.173875
+}

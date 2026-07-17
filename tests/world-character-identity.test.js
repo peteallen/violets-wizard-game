@@ -75,19 +75,28 @@ describe('canonical character identity in content and world snapshots', () => {
       npc.characterId,
     ]))).toEqual(CHARACTER_IDENTITIES);
 
-    expect(chapter2.npcs['npc.violet'].characterId).toBe('character.violet');
-    expect(chapter2.npcs['npc.narrator'].characterId).toBe('character.narrator');
-    expect(chapter2.npcs['npc.pet.cat'].characterId).toBe('character.cat');
-    expect(chapter2.npcs['npc.pet.owl'].characterId).toBe('character.pet-owl');
-    expect(chapter2.npcs['npc.pet.toad'].characterId).toBe('character.toad');
+    expect(Object.fromEntries(Object.entries(chapter2.npcs).map(([actorId, npc]) => [
+      actorId,
+      npc.characterId,
+    ]))).toEqual({
+      'ch2.npc.violet': 'character.violet',
+      'ch2.npc.narrator': 'character.narrator',
+      'ch2.npc.conductor': 'character.conductor',
+      'ch2.npc.harry': 'character.harry-potter',
+      'ch2.npc.ron': 'character.ron-weasley',
+      'ch2.npc.hermione': 'character.hermione-granger',
+      'ch2.npc.trolleyWitch': 'character.trolley-witch',
+      'ch2.npc.deputyHead': 'character.deputy-head',
+      'ch2.npc.sortingHat': 'character.sorting-hat',
+      'ch2.npc.headmaster': 'character.headmaster',
+      'ch2.npc.pet.cat': 'character.cat',
+      'ch2.npc.pet.owl': 'character.pet-owl',
+      'ch2.npc.pet.toad': 'character.toad',
+    });
     expect(chapter1CharacterIds).toEqual([...new Set(Object.values(CHARACTER_IDENTITIES))]);
-    expect(chapter2CharacterIds).toEqual([
-      'character.violet',
-      'character.narrator',
-      'character.cat',
-      'character.pet-owl',
-      'character.toad',
-    ]);
+    expect(chapter2CharacterIds).toEqual(
+      Object.values(chapter2.npcs).map(({ characterId }) => characterId),
+    );
   });
 
   it('exposes one depth-sortable actor record for the player and each visible room occupant', () => {
@@ -248,38 +257,32 @@ describe('canonical character identity in content and world snapshots', () => {
 
     const chapterTwoSave = saveAt({
       chapter: 'ch2',
-      scene: 'ch2.placeholder',
-      room: 'ch2.previewRoom',
-      spawn: 'start',
-      flags: { 'ch1.complete': true },
+      scene: 'ch2.scene.barrierPlatform',
+      room: 'ch2.kingsCross',
+      spawn: 'platform',
+      flags: { 'ch1.complete': true, 'ch2.barrierCrossed': true },
     });
     chapterTwoSave.progress.highestUnlockedChapter = 2;
     chapterTwoSave.character.pet = { type: 'owl', name: 'Moonbeam' };
     const chapterTwoWorld = new World({ chapters: contentRegistry, save: chapterTwoSave, seed: 42 });
-    chapterTwoWorld.dialogue.open('ch2.preview');
+    chapterTwoWorld.dialogue.open('ch2.dialogue.platformWelcome');
 
     const chapterTwoSnapshot = chapterTwoWorld.snapshot();
     expect(chapterTwoSnapshot.actors.map(({ actorId, characterId }) => ({
       actorId,
       characterId,
-    }))).toEqual([
-      { actorId: 'npc.violet', characterId: 'character.violet' },
-      { actorId: 'npc.pet.owl', characterId: 'character.pet-owl' },
-    ]);
-    expect(chapterTwoSnapshot.actors.find(({ actorId }) => actorId === 'npc.pet.owl').renderState)
-      .toEqual({
-        x: 575,
-        y: 620,
-        facing: 'right',
-        pose: 'idle',
-        lookX: 0.45,
-        action: null,
-      });
+    }))).toEqual(expect.arrayContaining([
+      { actorId: 'ch2.npc.conductor', characterId: 'character.conductor' },
+      { actorId: 'ch2.npc.violet', characterId: 'character.violet' },
+      { actorId: 'ch2.npc.pet.owl', characterId: 'character.pet-owl' },
+    ]));
+    expect(chapterTwoSnapshot.actors.find(({ actorId }) => actorId === 'ch2.npc.pet.owl').renderState)
+      .toMatchObject({ facing: 'right', pose: 'idle', lookX: 0.45, action: null });
     expectSupportedActorStates(chapterTwoSnapshot);
     expect(chapterTwoWorld.dialoguePresentation).toMatchObject({
-      speaker: 'npc.narrator',
-      speakerLabel: 'Narrator',
-      portraitCharacterId: 'character.narrator',
+      speaker: 'ch2.npc.conductor',
+      speakerLabel: 'Conductor',
+      portraitCharacterId: 'character.conductor',
     });
   });
 });

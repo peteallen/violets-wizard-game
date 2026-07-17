@@ -58,6 +58,34 @@ function outputContext(scale = 1) {
   };
 }
 
+function paintedOutputContext(scale = 1) {
+  const fillStyles = [];
+  let fillStyle = null;
+  return {
+    fillStyles,
+    drawImage: vi.fn(),
+    getTransform: () => ({ a: scale, d: scale }),
+    save: vi.fn(),
+    restore: vi.fn(),
+    translate: vi.fn(),
+    rotate: vi.fn(),
+    beginPath: vi.fn(),
+    moveTo: vi.fn(),
+    lineTo: vi.fn(),
+    quadraticCurveTo: vi.fn(),
+    closePath: vi.fn(),
+    fill: vi.fn(() => fillStyles.push(fillStyle)),
+    stroke: vi.fn(),
+    fillRect: vi.fn((...args) => fillStyles.push([fillStyle, ...args])),
+    set fillStyle(value) { fillStyle = value; },
+    get fillStyle() { return fillStyle; },
+    set strokeStyle(_value) {},
+    set lineWidth(_value) {},
+    set lineCap(_value) {},
+    set lineJoin(_value) {},
+  };
+}
+
 function createRenderer({ canvasResults = [], gate = null } = {}) {
   const decodeLog = [];
   const canvases = fakeCanvasFactory(canvasResults);
@@ -129,6 +157,25 @@ describe('RoomRenderer WebKit memory lifecycle', () => {
     expect(output.drawCalls).toHaveLength(2);
     expect(output.drawCalls[0][0]).toBe(cache.canvas);
     expect(factory).toHaveBeenCalledTimes(1);
+  });
+
+  it('layers persistent scarlet-and-gold side banners onto the Gryffindor Great Hall variant', async () => {
+    const { renderer } = createRenderer();
+    const greatHall = room('ch2.greatHall', ['asset/great-hall']);
+    greatHall.background.variants.gryffindor = ['asset/great-hall'];
+    const context = paintedOutputContext();
+
+    await renderer.preloadRoom(greatHall, { roomVariant: 'gryffindor' });
+    renderer.draw(context, greatHall, { roomVariant: 'gryffindor' }, 0);
+
+    expect(context.drawImage).toHaveBeenCalledTimes(1);
+    expect(context.fillStyles).toContain('#8f2638');
+    expect(context.fillStyles).toContain('#d9ad43');
+
+    context.fillStyles.length = 0;
+    await renderer.preloadRoom(greatHall, { roomVariant: 'base' });
+    renderer.draw(context, greatHall, { roomVariant: 'base' }, 0);
+    expect(context.fillStyles).toEqual([]);
   });
 
   it('never retains more than three decoded room images', async () => {

@@ -1,0 +1,226 @@
+{
+  "language_code": "eng",
+  "language_probability": 1,
+  "text": "Violet found friends, crossed the lake, and came home to Gryffindor. Next time, her first classes",
+  "words": [
+    {
+      "text": "Violet",
+      "start": 0.119,
+      "end": 0.479,
+      "type": "word",
+      "logprob": -0.003410833887755871
+    },
+    {
+      "text": " ",
+      "start": 0.479,
+      "end": 0.539,
+      "type": "spacing",
+      "logprob": -0.000007390948667307384
+    },
+    {
+      "text": "found",
+      "start": 0.539,
+      "end": 0.799,
+      "type": "word",
+      "logprob": -0.000007390948667307384
+    },
+    {
+      "text": " ",
+      "start": 0.799,
+      "end": 0.839,
+      "type": "spacing",
+      "logprob": -0.0008912881603464484
+    },
+    {
+      "text": "friends,",
+      "start": 0.839,
+      "end": 1.22,
+      "type": "word",
+      "logprob": -0.0008775161113590002
+    },
+    {
+      "text": " ",
+      "start": 1.22,
+      "end": 1.799,
+      "type": "spacing",
+      "logprob": -0.000023841574147809297
+    },
+    {
+      "text": "crossed",
+      "start": 1.799,
+      "end": 2.079,
+      "type": "word",
+      "logprob": -0.000023841574147809297
+    },
+    {
+      "text": " ",
+      "start": 2.079,
+      "end": 2.139,
+      "type": "spacing",
+      "logprob": -0.000011324817933200393
+    },
+    {
+      "text": "the",
+      "start": 2.139,
+      "end": 2.22,
+      "type": "word",
+      "logprob": -0.000011324817933200393
+    },
+    {
+      "text": " ",
+      "start": 2.22,
+      "end": 2.259,
+      "type": "spacing",
+      "logprob": -0.0007111880695447326
+    },
+    {
+      "text": "lake,",
+      "start": 2.259,
+      "end": 2.5,
+      "type": "word",
+      "logprob": -0.00583036346361041
+    },
+    {
+      "text": " ",
+      "start": 2.5,
+      "end": 3.019,
+      "type": "spacing",
+      "logprob": -0.0000033378546504536644
+    },
+    {
+      "text": "and",
+      "start": 3.019,
+      "end": 3.119,
+      "type": "word",
+      "logprob": -0.0000033378546504536644
+    },
+    {
+      "text": " ",
+      "start": 3.119,
+      "end": 3.179,
+      "type": "spacing",
+      "logprob": -4.768370445162873e-7
+    },
+    {
+      "text": "came",
+      "start": 3.179,
+      "end": 3.359,
+      "type": "word",
+      "logprob": -4.768370445162873e-7
+    },
+    {
+      "text": " ",
+      "start": 3.359,
+      "end": 3.379,
+      "type": "spacing",
+      "logprob": -8.344646857949556e-7
+    },
+    {
+      "text": "home",
+      "start": 3.379,
+      "end": 3.539,
+      "type": "word",
+      "logprob": -8.344646857949556e-7
+    },
+    {
+      "text": " ",
+      "start": 3.539,
+      "end": 3.579,
+      "type": "spacing",
+      "logprob": 0
+    },
+    {
+      "text": "to",
+      "start": 3.579,
+      "end": 3.619,
+      "type": "word",
+      "logprob": 0
+    },
+    {
+      "text": " ",
+      "start": 3.619,
+      "end": 3.699,
+      "type": "spacing",
+      "logprob": -0.0006414977833628654
+    },
+    {
+      "text": "Gryffindor.",
+      "start": 3.699,
+      "end": 4.319,
+      "type": "word",
+      "logprob": -0.00023379631842214042
+    },
+    {
+      "text": " ",
+      "start": 4.319,
+      "end": 5.059,
+      "type": "spacing",
+      "logprob": -0.0002858230145648122
+    },
+    {
+      "text": "Next",
+      "start": 5.059,
+      "end": 5.279,
+      "type": "word",
+      "logprob": -0.0002858230145648122
+    },
+    {
+      "text": " ",
+      "start": 5.279,
+      "end": 5.339,
+      "type": "spacing",
+      "logprob": -0.000013351351299206726
+    },
+    {
+      "text": "time,",
+      "start": 5.339,
+      "end": 5.699,
+      "type": "word",
+      "logprob": -0.00041815221629804
+    },
+    {
+      "text": " ",
+      "start": 5.699,
+      "end": 6.199,
+      "type": "spacing",
+      "logprob": -0.00009643566590966657
+    },
+    {
+      "text": "her",
+      "start": 6.199,
+      "end": 6.299,
+      "type": "word",
+      "logprob": -0.00009643566590966657
+    },
+    {
+      "text": " ",
+      "start": 6.299,
+      "end": 6.399,
+      "type": "spacing",
+      "logprob": -0.000007510157047363464
+    },
+    {
+      "text": "first",
+      "start": 6.399,
+      "end": 6.739,
+      "type": "word",
+      "logprob": -0.000007510157047363464
+    },
+    {
+      "text": " ",
+      "start": 6.739,
+      "end": 6.779,
+      "type": "spacing",
+      "logprob": -0.000002622600959512056
+    },
+    {
+      "text": "classes",
+      "start": 6.779,
+      "end": 7.399,
+      "type": "word",
+      "logprob": -0.000002622600959512056
+    }
+  ],
+  "transcription_id": "j8rQTkTTDg4f19NqKkzx",
+  "audio_duration_secs": 7.616125
+}

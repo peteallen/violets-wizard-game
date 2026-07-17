@@ -1,0 +1,84 @@
+{
+  "schema_version": 1,
+  "kind": "codex-built-in-room-image-generation",
+  "slug": "gryffindor-common-room-native-v2",
+  "workflow": {
+    "name": "Codex built-in image generation",
+    "tool": "image_gen.imagegen",
+    "model_identifier": null,
+    "seed": null,
+    "note": "The built-in workflow did not return a model identifier or seed."
+  },
+  "timestamps": {
+    "generation_started_at": "2026-07-16T21:53:35.734Z",
+    "generation_completed_at": "2026-07-16T21:55:06.748Z",
+    "duration_ms": 91014
+  },
+  "request_spec": {
+    "path": "art/chapters/ch2/rooms/gryffindor-common-room-native-v2.request.json",
+    "bytes": 1487,
+    "sha256": "c611cb7f79155ac32c62a966084f57c689c862663dc49ba71d058e8efae4be88"
+  },
+  "prompt": {
+    "path": "art/chapters/ch2/rooms/gryffindor-common-room-native-v2.prompt.md",
+    "section": "Prompt",
+    "bytes": 3377,
+    "sha256": "7cedaf89c878b89958a1978db033c249698b0db82c60cc7bc174dc6985ca6dbe"
+  },
+  "references": [
+    {
+      "index": 1,
+      "path": "public/assets/art/rooms/ch2-gryffindor-common-room.webp",
+      "role": "superseded Chapter Two composition reference only",
+      "generation_time_bytes": 192540,
+      "generation_time_sha256": "0ea0ac5bb270f832ce736e7b9b3cc4e105cd196290121b8bb71d1e830f87daba",
+      "dimensions": { "width": 2048, "height": 1152 },
+      "note": "The path now contains the accepted native-v2 derivative; this binding records the superseded file bytes that were supplied to generation."
+    },
+    {
+      "index": 2,
+      "path": "art/raw/ch1-bedroom.png",
+      "role": "cozy-bedroom finish, warm wood, woven textile, and window-light reference",
+      "bytes": 2538610,
+      "sha256": "dbfbdf69b481f4bc563c2c7711e55615d9f838b20bef4f2fb2fd3ba3c02ca1df",
+      "dimensions": { "width": 1672, "height": 941 }
+    },
+    {
+      "index": 3,
+      "path": "art/raw/ch1-leaky.png",
+      "role": "deep timber and stone interior, firelight, lived-in detail, and amber-versus-violet reference",
+      "bytes": 2473783,
+      "sha256": "ba771b909293ca6338f026a7011078198fecb137b8f50d855e67be5d9fc31097",
+      "dimensions": { "width": 1672, "height": 941 }
+    }
+  ],
+  "generation_output": {
+    "id": "exec-bacd8c84-a703-4cd7-a82d-261085113e41",
+    "original_path": "/Users/peteallen/.codex/generated_images/019f6c3e-aa13-7f72-8f24-96fc942fe3e4/exec-bacd8c84-a703-4cd7-a82d-261085113e41.png",
+    "copied_to": "art/raw/ch2-gryffindor-common-room-native-v2.png",
+    "media_type": "image/png",
+    "bytes": 2672577,
+    "sha256": "216ef69662ba950a1d708356c9607974b8af6d4e297ec967d9b4d7fb7be15599",
+    "dimensions": { "width": 1672, "height": 941 }
+  },
+  "derivatives": {
+    "accepted_png": {
+      "path": "art/raw/ch2-gryffindor-common-room-v2.png",
+      "bytes": 3635015,
+      "sha256": "e05275fdf21456cf91a92c1e963a2f02ee8ae81fc90005a943c532cd97b319dd",
+      "dimensions": { "width": 2048, "height": 1152 }
+    },
+    "shipping_webp": {
+      "path": "public/assets/art/rooms/ch2-gryffindor-common-room.webp",
+      "bytes": 394594,
+      "sha256": "ed890a44802958ef56fae6c372c794d29714b2246ec9453be6c16edd0260018f",
+      "dimensions": { "width": 2048, "height": 1152 }
+    }
+  },
+  "conversion": {
+    "crop": "sips -s format png -c 940 1672",
+    "resize": "sips -s format png -z 1152 2048",
+    "shipping": "cwebp -q 88 -m 6 -sharp_yuv",
+    "note": "The 1672x941 native PNG was center-cropped by one pixel to 1672x940, resized once to 2048x1152, then encoded as WebP."
+  }
+}

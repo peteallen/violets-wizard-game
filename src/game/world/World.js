@@ -12,6 +12,7 @@ import {
   affordanceSeenReceipt,
   createAffordancePlan,
   createAffordanceSnapshot,
+  targetIsSpent,
 } from './AffordanceSalience.js';
 import {
   applyGuideWalkCueToOccupants,
@@ -30,8 +31,12 @@ const PET_HINT_CORRIDOR_END = 0.16;
 const INTERACTION_ACTIVATION_DISTANCE = 45;
 const EXIT_ACTIVATION_DISTANCE = 2;
 const DOORWAY_SCALE = 0.82;
-const PLAYER_ACTOR_ID = 'npc.violet';
-const PET_ACTOR_PREFIX = 'npc.pet.';
+const PLAYER_CHARACTER_ID = 'character.violet';
+const PET_CHARACTER_IDS = Object.freeze({
+  cat: 'character.cat',
+  owl: 'character.pet-owl',
+  toad: 'character.toad',
+});
 
 export class World {
   constructor({
@@ -91,6 +96,7 @@ export class World {
       wand: Boolean(save.character?.wandId),
       outfit: save.character?.appearance?.robeTrim ? 'robes' : 'casual',
       robeTrim: robeTrimColor(save.character?.appearance?.robeTrim),
+      house: save.character?.house ?? null,
     };
 
     this.currentSceneId = save.resume?.scene ?? this.chapter.start.scene;
@@ -117,6 +123,15 @@ export class World {
         this.flags['ch1.petNamed'] ? 'dusk' : 'base',
       ),
     });
+  }
+
+  get playerActorId() {
+    return requireActorIdByCharacter(this.chapter, PLAYER_CHARACTER_ID);
+  }
+
+  get petActorId() {
+    const characterId = PET_CHARACTER_IDS[this.save.character.pet?.type];
+    return characterId ? requireActorIdByCharacter(this.chapter, characterId) : null;
   }
 
   get flags() {
@@ -354,7 +369,7 @@ export class World {
     for (const hotspot of this.room.hotspots ?? []) {
       if (!conditionMatches(hotspot.when, this.save)) continue;
       if (hotspot.id === coveredDestination) continue;
-      targets.push({
+      const target = {
         id: hotspot.id,
         semanticId: hotspot.semanticId,
         kind: hotspot.kind,
@@ -365,7 +380,9 @@ export class World {
         approach: hotspot.approach,
         presentation: hotspot.presentation,
         actions: hotspot.onInteract ?? [],
-      });
+      };
+      if (hotspot.repeat === 'once' && targetIsSpent(target, this.save)) continue;
+      targets.push(target);
     }
     for (const exit of this.room.exits ?? []) {
       if (!conditionMatches(exit.when, this.save)) continue;
@@ -383,8 +400,8 @@ export class World {
     }
     for (const occupant of this.room.occupants ?? []) {
       if (!conditionMatches(occupant.when, this.save)) continue;
-      if (occupant.npc === PLAYER_ACTOR_ID || occupant.npc.startsWith(PET_ACTOR_PREFIX)) continue;
       const npc = this.chapter.npcs[occupant.npc];
+      if (npc?.characterId === PLAYER_CHARACTER_ID || Object.values(PET_CHARACTER_IDS).includes(npc?.characterId)) continue;
       if (!npc?.defaultTalk) continue;
       targets.push({
         id: `${this.roomId}.${occupant.npc}`,
@@ -688,6 +705,7 @@ export class World {
     this.player.wand = Boolean(this.save.character.wandId);
     this.player.outfit = this.save.character.appearance?.robeTrim ? 'robes' : 'casual';
     this.player.robeTrim = robeTrimColor(this.save.character.appearance?.robeTrim);
+    this.player.house = this.save.character.house ?? null;
   }
 
   startActorAnimation(payload) {
@@ -865,9 +883,8 @@ export class World {
       .filter((occupant) => conditionMatches(occupant.when, this.save));
     const occupants = applyGuideWalkCueToOccupants(baseOccupants, tapToWalkCue);
     const baseTargets = this.targets();
-    const petActorId = this.save.character.pet?.type
-      ? `${PET_ACTOR_PREFIX}${this.save.character.pet.type}`
-      : null;
+    const playerActorId = this.playerActorId;
+    const petActorId = this.petActorId;
     const petDefinition = petActorId ? requireNpcDefinition(this.chapter, petActorId) : null;
     const petController = petDefinition ? requireFollowController(petDefinition, petActorId) : null;
     const basePet = petDefinition ? {
@@ -906,6 +923,8 @@ export class World {
       occupants,
       pet,
       actorAnimations,
+      playerActorId,
+      petActorId,
     });
     return {
       time: this.time,
@@ -936,6 +955,8 @@ export class World {
       hasSatchel: Boolean(this.flags['ch1.satchelReceived']),
       hasWand: Boolean(this.save.character.wandId),
       cards: [...this.save.collections.cards],
+      storyChoices: structuredClone(this.save.progress.storyChoices),
+      house: this.save.character.house,
       unlockedRooms: this.unlockedRooms(),
       objectiveRoom: this.objective?.mapStar?.room ?? null,
       newObjective: Boolean(this.objective) && this.time < this.objectiveEmphasisUntil,
@@ -1032,6 +1053,16 @@ function requireNpcDefinition(chapter, actorId) {
   return definition;
 }
 
+function requireActorIdByCharacter(chapter, characterId) {
+  const matches = Object.values(chapter?.npcs ?? {}).filter((npc) => npc.characterId === characterId);
+  if (matches.length !== 1) {
+    throw new Error(
+      `Chapter ${chapter?.id ?? 'unknown'} requires exactly one actor for ${characterId}; found ${matches.length}.`,
+    );
+  }
+  return matches[0].id;
+}
+
 function requireFollowController(definition, actorId) {
   if (definition.controller?.kind !== 'follow' || !definition.controller.poseMap) {
     throw new Error(`Companion actor ${actorId} requires a follow controller with an explicit pose map.`);
@@ -1052,10 +1083,10 @@ function createActorSnapshot(chapter, actorId, renderState, depth = renderState.
   };
 }
 
-function actorPositionMap(player, occupants, pet) {
+function actorPositionMap(player, occupants, pet, playerActorId, petActorId) {
   const positions = new Map(occupants.map((occupant) => [occupant.npc, occupant]));
-  positions.set(PLAYER_ACTOR_ID, player);
-  if (pet?.type) positions.set(`${PET_ACTOR_PREFIX}${pet.type}`, pet);
+  positions.set(playerActorId, player);
+  if (pet && petActorId) positions.set(petActorId, pet);
   return positions;
 }
 
@@ -1108,12 +1139,13 @@ function createActorSnapshots({
   occupants,
   pet,
   actorAnimations,
+  playerActorId,
+  petActorId,
 }) {
-  const petActorId = pet?.type ? `${PET_ACTOR_PREFIX}${pet.type}` : null;
-  const positions = actorPositionMap(player, occupants, pet);
-  const playerAnimation = actorAnimations[PLAYER_ACTOR_ID] ?? null;
+  const positions = actorPositionMap(player, occupants, pet, playerActorId, petActorId);
+  const playerAnimation = actorAnimations[playerActorId] ?? null;
   const actors = occupants
-    .filter((occupant) => occupant.npc !== PLAYER_ACTOR_ID && occupant.npc !== petActorId)
+    .filter((occupant) => occupant.npc !== playerActorId && occupant.npc !== petActorId)
     .map((occupant) => {
       const animation = actorAnimations[occupant.npc] ?? null;
       return createActorSnapshot(chapter, occupant.npc, {
@@ -1122,7 +1154,7 @@ function createActorSnapshots({
       }, occupant.y);
     });
 
-  actors.push(createActorSnapshot(chapter, PLAYER_ACTOR_ID, {
+  actors.push(createActorSnapshot(chapter, playerActorId, {
     x: player.x,
     y: player.y,
     scale: player.scale,
@@ -1130,6 +1162,7 @@ function createActorSnapshots({
     wand: player.wand,
     robeTrim: player.robeTrim,
     appearance: player.outfit,
+    ...(player.house ? { house: player.house } : {}),
     pose: player.walking ? 'walking' : 'idle',
     ...actorActionRenderState(playerAnimation),
   }));

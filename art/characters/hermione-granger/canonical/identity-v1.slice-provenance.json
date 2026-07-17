@@ -1,0 +1,122 @@
+{
+  "schema_version": 1,
+  "algorithm": {
+    "id": "cyan-flood-aligned-character-sheet-v1",
+    "component_connectivity": 8,
+    "scale_filter": "premultiplied-rgba-box-rational-v1",
+    "output_color_type": 6,
+    "output_bit_depth": 8,
+    "deterministic": true
+  },
+  "slice_spec": {
+    "path": "art/characters/hermione-granger/canonical/identity-v1.layout.json",
+    "bytes": 1143,
+    "sha256": "62c398b303cda490b671cc883df5f28005ee81d2b34e4eb039c57891fb0fdbd4",
+    "schema_version": 1,
+    "id": "hermione-granger.identity-v1"
+  },
+  "source": {
+    "path": "art/characters/hermione-granger/canonical/identity-v1.png",
+    "bytes": 1613888,
+    "expected_sha256": "f24f5ca9aa83c013ae43a59707a350801e03e811e5cdae6545fbd610d27df935",
+    "sha256": "f24f5ca9aa83c013ae43a59707a350801e03e811e5cdae6545fbd610d27df935",
+    "rgba_sha256": "11543861d31792066310d6c28adac959ca2fab70dfc010806cb022bdfb976674",
+    "dimensions": {
+      "width": 1086,
+      "height": 1448
+    }
+  },
+  "controls": {
+    "output_canvas": {
+      "width": 896,
+      "height": 1200,
+      "center_x": 448,
+      "ground_y": 1132
+    },
+    "common_scale": {
+      "numerator": 4,
+      "denominator": 5
+    },
+    "key": {
+      "color": {
+        "red": 1,
+        "green": 248,
+        "blue": 253
+      },
+      "tolerance": 28,
+      "alpha": {
+        "opaque_cyan_excess": 50,
+        "transparent_cyan_excess": 90,
+        "edge_spill_radius": 8,
+        "edge_spill_opaque_cyan_excess": 30,
+        "edge_spill_max_green_blue_delta": 70,
+        "matte_low_alpha": 170,
+        "matte_high_alpha": 245,
+        "edge_color_radius": 0
+      }
+    },
+    "components": {
+      "detail_min_pixels": 8,
+      "detail_max_pixels": 5000,
+      "detail_max_distance": 18
+    }
+  },
+  "outputs": [
+    {
+      "name": "neutral",
+      "path": "public/assets/art/characters/hermione-granger/default/neutral.png",
+      "media_type": "image/png",
+      "bytes": 622279,
+      "sha256": "b220579f9b9fe4d9a61954af0b99c1c60b55979846298483dfafff008aee4482",
+      "rgba_sha256": "b7248728eaf68a9684bda55353839dcf84aed6971b0b2de63c9ec6295c287a04",
+      "dimensions": {
+        "width": 896,
+        "height": 1200
+      },
+      "crop": {
+        "x": 0,
+        "y": 0,
+        "width": 1086,
+        "height": 1448
+      },
+      "source_content_bounds": {
+        "x": 245,
+        "y": 52,
+        "width": 679,
+        "height": 1311
+      },
+      "scaled_dimensions": {
+        "width": 544,
+        "height": 1049
+      },
+      "placement": {
+        "x": 176,
+        "y": 84,
+        "width": 544,
+        "height": 1049,
+        "center_x": 448,
+        "ground_y": 1132
+      },
+      "flood": {
+        "background_pixels": 1107006,
+        "non_background_pixels": 465522,
+        "background_fraction": 0.7039658435334697
+      },
+      "components": {
+        "found": 1,
+        "dominant_pixels": 459372,
+        "kept": 1,
+        "removed": 0,
+        "selected_pixels": 459372,
+        "details": []
+      },
+      "alpha": {
+        "transparent_pixels": 1113156,
+        "soft_pixels": 496,
+        "opaque_pixels": 458876
+      },
+      "edge_artifacts_repaired": 31
+    }
+  ],
+  "provenance_path": "art/characters/hermione-granger/canonical/identity-v1.slice-provenance.json"
+}

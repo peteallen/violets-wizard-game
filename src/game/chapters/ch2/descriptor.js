@@ -4,7 +4,7 @@ export const chapter2Descriptor = defineChapterDescriptor({
   id: 'ch2',
   number: 2,
   title: 'Platform 9¾ & The Sorting',
-  availability: 'placeholder',
+  availability: 'playable',
   loaders: {
     content: () => import('./content.js'),
     presentation: () => import('./presentation.js'),

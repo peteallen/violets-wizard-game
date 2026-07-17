@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
-import { Game, selectChapter1ResumeRecap } from '../src/game/Game.js';
+import { Game, selectChapter1ResumeRecap, selectResumeRecap } from '../src/game/Game.js';
 import { chapter1ResumeRecaps } from '../src/game/content/chapters/ch1.js';
+import { chapter2RecapDefinitions } from '../src/game/chapters/ch2/content-v2/recaps.js';
 import { dialogueScrollLayout } from '../src/game/render/UIRenderer.js';
 import { createSaveV1 } from '../src/game/systems/Save.js';
 
@@ -143,5 +144,37 @@ describe('Chapter 1 resume recaps', () => {
     game.update(1 / 60);
     expect(game.world.update).toHaveBeenCalledOnce();
     expect(game.processWorldEvents).toHaveBeenCalledOnce();
+  });
+});
+
+describe('chapter-owned resume recaps', () => {
+  it('selects the latest completed Chapter Two story beat without spoiling the next one', () => {
+    const save = saveWithFlags('ch1.complete');
+    save.progress.completedChapters = ['ch1'];
+    save.progress.highestUnlockedChapter = 2;
+    save.resume = {
+      chapter: 'ch2', scene: 'ch2.scene.kingsCross', room: 'ch2.kingsCross', spawn: 'start',
+    };
+
+    expect(selectResumeRecap(save)).toBeNull();
+
+    for (const flag of ['ch2.barrierCrossed', 'ch2.boardedTrain', 'ch2.friendsMet']) {
+      save.progress.questFlags[flag] = true;
+    }
+    expect(selectResumeRecap(save)).toEqual(chapter2RecapDefinitions[0]);
+
+    for (const flag of [
+      'ch2.sweetReactionSeen', 'ch2.trainComplete', 'ch2.lakeSeen',
+      'ch2.greatHallEntered', 'ch2.sortedGryffindor',
+    ]) save.progress.questFlags[flag] = true;
+    expect(selectResumeRecap(save)).toEqual(chapter2RecapDefinitions[1]);
+
+    for (const flag of ['ch2.feastAwarded', 'ch2.feastComplete', 'ch2.commonRoomArrived']) {
+      save.progress.questFlags[flag] = true;
+    }
+    expect(selectResumeRecap(save)).toEqual(chapter2RecapDefinitions[2]);
+
+    save.progress.completedChapters.push('ch2');
+    expect(selectResumeRecap(save)).toBeNull();
   });
 });

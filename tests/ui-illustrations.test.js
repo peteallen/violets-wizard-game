@@ -84,6 +84,9 @@ describe('illustrated interface primitives', () => {
       'owl', 'cat', 'toad', 'wand', 'eyes', 'map', 'cards', 'replay', 'quill', 'satchel',
       'quest', 'close', 'check', 'speaker', 'name-biscuit', 'name-pip', 'name-custom', 'name-star',
       'heart', 'rose', 'circle', 'star',
+      'icons/ch2/every-flavor-beans', 'icons/ch2/chocolate-frog', 'icons/ch2/cauldron-cake',
+      'icons/ch2/protect-friends', 'icons/ch2/explore-mysteries', 'icons/ch2/help-someone',
+      'icons/ch2/step-forward', 'icons/ch2/tell-truth', 'icons/ch2/stay-close',
     ];
     for (const icon of icons) {
       const first = recordingContext();
@@ -102,6 +105,9 @@ describe('illustrated interface primitives', () => {
       'speaker', 'check', 'map', 'cards', 'close', 'replay', 'quill',
       'owl', 'cat', 'toad', 'wand', 'eyes', 'satchel', 'quest',
       'name-biscuit', 'name-pip', 'name-custom',
+      'icons/ch2/every-flavor-beans', 'icons/ch2/chocolate-frog', 'icons/ch2/cauldron-cake',
+      'icons/ch2/protect-friends', 'icons/ch2/explore-mysteries', 'icons/ch2/help-someone',
+      'icons/ch2/step-forward', 'icons/ch2/tell-truth', 'icons/ch2/stay-close',
     ];
     const forbiddenGeometry = new Set([
       'arc', 'arcTo', 'ellipse', 'lineTo', 'rect', 'roundRect', 'setLineDash',
@@ -154,6 +160,31 @@ describe('illustrated interface primitives', () => {
         .toBe(first.calls.filter(([method]) => method === 'restore').length);
       expect(first.depth, `${icon} should restore Canvas state`).toBe(0);
     }
+  });
+
+  it('gives every Chapter Two sweet and Sorting answer its own readable icon silhouette', () => {
+    const icons = [
+      'icons/ch2/every-flavor-beans',
+      'icons/ch2/chocolate-frog',
+      'icons/ch2/cauldron-cake',
+      'icons/ch2/protect-friends',
+      'icons/ch2/explore-mysteries',
+      'icons/ch2/help-someone',
+      'icons/ch2/step-forward',
+      'icons/ch2/tell-truth',
+      'icons/ch2/stay-close',
+    ];
+    const fingerprints = icons.map((icon) => {
+      const context = recordingContext();
+      drawVectorIcon(context, icon, 0, 0, 100);
+      expect(context.calls.some(([method]) => method === 'fillText'), icon).toBe(false);
+      return JSON.stringify(context.calls);
+    });
+    const fallback = recordingContext();
+    drawVectorIcon(fallback, 'unregistered-choice-icon', 0, 0, 100);
+
+    expect(new Set(fingerprints).size).toBe(icons.length);
+    expect(fingerprints).not.toContain(JSON.stringify(fallback.calls));
   });
 
   it('pools wax controls from layered curves instead of straight-edged polygons', () => {

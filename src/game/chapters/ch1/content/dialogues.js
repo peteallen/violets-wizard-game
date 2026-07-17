@@ -366,8 +366,8 @@ export const chapter1DialogueDefinitions = [
         actions: [
           flagSet('ch1.chapterCardSeen'),
           flagSet('ch1.complete'),
-          { type: 'chapter.complete', chapter: 'ch1' },
-          travel('ch2.previewRoom', 'start'),
+          { type: 'chapter.complete', chapter: 'ch1', nextChapter: 'ch2' },
+          travel('ch2.kingsCross', 'start'),
         ],
       },
     },

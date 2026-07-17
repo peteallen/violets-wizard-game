@@ -1,0 +1,37 @@
+{
+  "schema_version": 1,
+  "slug": "gryffindor-common-room-native-v2",
+  "prompt": {
+    "path": "art/chapters/ch2/rooms/gryffindor-common-room-native-v2.prompt.md",
+    "section": "Prompt"
+  },
+  "references": [
+    {
+      "path": "public/assets/art/rooms/ch2-gryffindor-common-room.webp",
+      "role": "superseded Chapter Two composition reference only"
+    },
+    {
+      "path": "art/raw/ch1-bedroom.png",
+      "role": "cozy-bedroom finish, warm wood, woven textile, and window-light reference"
+    },
+    {
+      "path": "art/raw/ch1-leaky.png",
+      "role": "deep timber and stone interior, firelight, lived-in detail, and amber-versus-violet reference"
+    }
+  ],
+  "generation": {
+    "workflow": "Codex built-in image generation",
+    "tool": "image_gen.imagegen",
+    "model_identifier": null,
+    "seed": null,
+    "returned_model_or_seed_note": "The built-in workflow did not return a model identifier or seed."
+  },
+  "output": {
+    "generated_output_id": "exec-bacd8c84-a703-4cd7-a82d-261085113e41",
+    "generated_output_path": "/Users/peteallen/.codex/generated_images/019f6c3e-aa13-7f72-8f24-96fc942fe3e4/exec-bacd8c84-a703-4cd7-a82d-261085113e41.png",
+    "native_source": "art/raw/ch2-gryffindor-common-room-native-v2.png",
+    "accepted_png": "art/raw/ch2-gryffindor-common-room-v2.png",
+    "shipping_webp": "public/assets/art/rooms/ch2-gryffindor-common-room.webp",
+    "metadata": "art/chapters/ch2/rooms/gryffindor-common-room-native-v2.metadata.json"
+  }
+}

@@ -16,20 +16,19 @@ import {
   chapter2AssetKeys,
   chapter2CharacterIds,
 } from '../src/game/content/chapters/ch2.js';
+import { chapter3 } from '../src/game/content/chapters/ch3.js';
 import {
   chapterAvailability,
   chapterCatalog,
   chapterDescriptors,
+  chapterMaps,
   contentRegistry,
   getChapter,
+  getChapterMap,
   isChapterPlayable,
   loadChapterPackage,
+  resolveOwnedChapterMap,
 } from '../src/game/content/index.js';
-import {
-  ChapterPreviewRenderer,
-  chapterPreviewActionAt,
-  chapterPreviewLayout,
-} from '../src/game/render/ChapterPreviewRenderer.js';
 import { chapter1SceneDefinitions } from '../src/game/chapters/ch1/content/scenes/index.js';
 
 function descriptor(number, overrides = {}) {
@@ -88,23 +87,52 @@ describe('ChapterCatalog', () => {
     expect(calls).toEqual(['presentation', 'content', 'harness']);
     expect(() => catalog.load('ch99')).toThrow(/does not contain chapter ch99/);
   });
+
+  it('selects only maps owned by the active scene, with a legacy single-map fallback', () => {
+    const castleMap = { id: 'ch12.map.castle' };
+    const villageMap = { id: 'ch12.map.village' };
+    const ownedMaps = {
+      [castleMap.id]: castleMap,
+      [villageMap.id]: villageMap,
+    };
+    const chapter = {
+      contractVersion: 2,
+      scenes: {
+        'ch12.scene.castle': { mapId: castleMap.id },
+        'ch12.scene.indoors': {},
+      },
+    };
+
+    expect(resolveOwnedChapterMap(chapter, ownedMaps, 'ch12.scene.castle')).toBe(castleMap);
+    expect(resolveOwnedChapterMap(chapter, ownedMaps, 'ch12.scene.indoors')).toBeNull();
+    expect(resolveOwnedChapterMap(
+      { contractVersion: 1, scenes: {} },
+      { [villageMap.id]: villageMap },
+    )).toBe(villageMap);
+  });
 });
 
 describe('production chapter packages', () => {
-  it('wraps the existing chapters without changing synchronous identity or availability', () => {
-    expect(chapterCatalog.ids()).toEqual(['ch1', 'ch2']);
+  it('publishes playable Chapter Two and the Chapter Three handoff destination', () => {
+    expect(chapterCatalog.ids()).toEqual(['ch1', 'ch2', 'ch3']);
     expect(chapterDescriptors.map(({ id, number, title, availability }) => ({
       id, number, title, availability,
     }))).toEqual([
       { id: 'ch1', number: 1, title: chapter1.title, availability: 'playable' },
-      { id: 'ch2', number: 2, title: chapter2.title, availability: 'placeholder' },
+      { id: 'ch2', number: 2, title: chapter2.title, availability: 'playable' },
+      { id: 'ch3', number: 3, title: chapter3.title, availability: 'placeholder' },
     ]);
-    expect(contentRegistry).toEqual({ ch1: chapter1, ch2: chapter2 });
+    expect(contentRegistry).toEqual({ ch1: chapter1, ch2: chapter2, ch3: chapter3 });
+    expect(chapterMaps.ch1).toEqual({ [chapter1Map.id]: chapter1Map });
+    expect(getChapterMap('ch1')).toBe(chapter1Map);
+    expect(getChapterMap('ch2')).toBeNull();
+    expect(getChapterMap('ch99')).toBeNull();
     expect(getChapter('ch1')).toBe(chapter1);
     expect(getChapter(2)).toBe(chapter2);
-    expect(chapterAvailability).toEqual({ ch1: 'playable', ch2: 'placeholder' });
+    expect(chapterAvailability).toEqual({ ch1: 'playable', ch2: 'playable', ch3: 'placeholder' });
     expect(isChapterPlayable(1)).toBe(true);
-    expect(isChapterPlayable('ch2')).toBe(false);
+    expect(isChapterPlayable('ch2')).toBe(true);
+    expect(isChapterPlayable('ch3')).toBe(false);
   });
 
   it('loads exact existing content and character dependencies through each package', async () => {
@@ -120,7 +148,7 @@ describe('production chapter packages', () => {
     expect(chapterOnePackage.characterDependencies).toBe(chapter1CharacterIds);
     expect(chapterTwoPackage.chapter).toBe(chapter2);
     expect(chapterTwoPackage.assetKeys).toEqual(chapter2AssetKeys);
-    expect(chapterTwoPackage.characterDependencies).toBe(chapter2CharacterIds);
+    expect(chapterTwoPackage.characterDependencies).toEqual(chapter2CharacterIds);
     expect(Object.isFrozen(chapterOnePackage)).toBe(true);
     expect(Object.isFrozen(chapterTwoPackage)).toBe(true);
   });
@@ -133,25 +161,25 @@ describe('production chapter packages', () => {
     expect(Object.values(chapter1.scenes).every((scene) => !Object.hasOwn(scene, 'order'))).toBe(true);
   });
 
-  it('loads the Chapter Two preview as an independent exact-key presentation registration', async () => {
+  it('loads Chapter Two presentation registration independently from its content', async () => {
     const presentationModule = await loadChapterPackage('ch2', 'presentation');
     const presentation = presentationModule.default;
-    const [preview] = presentation.registrations;
 
     expect(presentation.chapterId).toBe('ch2');
-    expect(presentation.registrations.map(({ id }) => id)).toEqual(['ch2.preview']);
-    expect(preview.layout).toBe(chapterPreviewLayout);
-    expect(preview.semanticTargetAt).toBe(chapterPreviewActionAt);
-    expect(preview.createRenderer()).toBeInstanceOf(ChapterPreviewRenderer);
+    expect(presentation.registrations).toEqual([]);
     expect(Object.isFrozen(presentation)).toBe(true);
     expect(Object.isFrozen(presentation.registrations)).toBe(true);
   });
 
-  it('keeps the existing Chapter Two harness URLs behind its independent loader', async () => {
+  it('keeps the Chapter Two set-piece review URLs behind its independent loader', async () => {
     const harnessModule = await loadChapterPackage('ch2', 'harness');
     expect(harnessModule.default.registrations.map(({ sceneId }) => sceneId)).toEqual([
-      'ch2-placeholder',
-      'sp-ch2-ticket-review',
+      'sp-ch2-barrier-run-review',
+      'sp-ch2-sweet-reaction-review',
+      'sp-ch2-lake-vista-review',
+      'sp-ch2-sorting-reveal-review',
+      'sp-ch2-common-room-arrival-review',
+      'sp-ch2-chapter-card-review',
     ]);
     expect(Object.isFrozen(harnessModule.default.registrations)).toBe(true);
   });

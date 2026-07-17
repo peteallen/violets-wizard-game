@@ -23,14 +23,17 @@ function staticNpc({
   };
 }
 
-function petNpc({ id, characterId, displayName, scale }) {
-  return staticNpc({
-    id,
-    characterId,
-    displayName,
-    voiceRole: 'creature',
-    scale,
-  });
+function petNpc({ id, characterId, displayName, scale, controller }) {
+  return {
+    ...staticNpc({
+      id,
+      characterId,
+      displayName,
+      voiceRole: 'creature',
+      scale,
+    }),
+    controller,
+  };
 }
 
 export const chapter2NpcDefinitions = Object.freeze([
@@ -53,14 +56,12 @@ export const chapter2NpcDefinitions = Object.freeze([
     characterId: 'character.conductor',
     displayName: 'Conductor',
     voiceRole: 'warm-conductor',
-    defaultTalk: 'ch2.dialogue.platformWelcome',
   }),
   staticNpc({
     id: 'ch2.npc.harry',
     characterId: 'character.harry-potter',
     displayName: 'Harry',
     voiceRole: 'friendly-classmate',
-    defaultTalk: 'ch2.dialogue.trainFriends',
   }),
   staticNpc({
     id: 'ch2.npc.ron',
@@ -79,32 +80,56 @@ export const chapter2NpcDefinitions = Object.freeze([
     characterId: 'character.trolley-witch',
     displayName: 'Trolley Witch',
     voiceRole: 'kind-shopkeeper',
-    defaultTalk: 'ch2.dialogue.trolleySweets',
   }),
   staticNpc({
     id: 'ch2.npc.deputyHead',
     characterId: 'character.deputy-head',
     displayName: 'Deputy Head',
     voiceRole: 'crisp-professor',
-    defaultTalk: 'ch2.dialogue.greatHallWelcome',
   }),
   staticNpc({
     id: 'ch2.npc.sortingHat',
     characterId: 'character.sorting-hat',
     displayName: 'Sorting Hat',
     voiceRole: 'ancient-kind-hat',
-    defaultTalk: 'ch2.dialogue.sorting',
   }),
   staticNpc({
     id: 'ch2.npc.headmaster',
     characterId: 'character.headmaster',
     displayName: 'Headmaster',
     voiceRole: 'gentle-headmaster',
-    defaultTalk: 'ch2.dialogue.feast',
   }),
-  petNpc({ id: 'ch2.npc.pet.cat', characterId: 'character.cat', displayName: 'Cat', scale: 0.55 }),
-  petNpc({ id: 'ch2.npc.pet.owl', characterId: 'character.pet-owl', displayName: 'Owl', scale: 0.55 }),
-  petNpc({ id: 'ch2.npc.pet.toad', characterId: 'character.toad', displayName: 'Toad', scale: 0.42 }),
+  petNpc({
+    id: 'ch2.npc.pet.cat',
+    characterId: 'character.cat',
+    displayName: 'Cat',
+    scale: 0.55,
+    controller: {
+      kind: 'follow', target: 'ch2.npc.violet', minimumDistance: 70, maxDistance: 190,
+      poseMap: { moving: 'pet-follow', hintLook: 'idle', hintAttention: 'paw' },
+    },
+  }),
+  petNpc({
+    id: 'ch2.npc.pet.owl',
+    characterId: 'character.pet-owl',
+    displayName: 'Owl',
+    scale: 0.55,
+    controller: {
+      kind: 'follow', target: 'ch2.npc.violet', minimumDistance: 90, maxDistance: 220,
+      poseMap: { moving: 'pet-follow', hintLook: 'idle', hintAttention: 'perch' },
+      facingLookMagnitude: 0.45,
+    },
+  }),
+  petNpc({
+    id: 'ch2.npc.pet.toad',
+    characterId: 'character.toad',
+    displayName: 'Toad',
+    scale: 0.42,
+    controller: {
+      kind: 'follow', target: 'ch2.npc.violet', minimumDistance: 55, maxDistance: 150,
+      poseMap: { moving: 'pet-follow', hintLook: 'idle', hintAttention: 'idle' },
+    },
+  }),
 ]);
 
 export const chapter2CharacterIds = Object.freeze(

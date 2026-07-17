@@ -114,6 +114,14 @@ export const trolleySweetsScene = defineScene({
         onInteract: [dialogueStart('ch2.dialogue.trolleySweets')],
       }),
       actionHotspot({
+        id: 'ch2.train.trolleyRecovery',
+        hitArea: circle(280, 500, 112),
+        approach: { x: 410, y: 620, facing: 'left' },
+        when: when({ allFlags: ['ch2.sweetChosen'], noFlags: ['ch2.sweetReactionSeen'] }),
+        icon: 'sweet-trolley',
+        onInteract: [dialogueStart('ch2.dialogue.trolleySweets')],
+      }),
+      actionHotspot({
         id: 'ch2.train.window',
         hitArea: rect(500, 170, 330, 250),
         approach: { x: 620, y: 620, facing: 'right' },
@@ -178,7 +186,7 @@ export const sortingScene = defineScene({
   layer: storyLayer({
     occupants: [
       occupant('ch2.npc.deputyHead', 820, 620, 'left'),
-      occupant('ch2.npc.sortingHat', 640, 500, 'left', 'waiting'),
+      occupant('ch2.npc.sortingHat', 640, 450, 'left', 'speaking'),
       occupant('ch2.npc.headmaster', 1080, 560, 'left', 'seated'),
     ],
     hotspots: [

@@ -2,9 +2,12 @@ import { describe, expect, it, vi } from 'vitest';
 import { Game } from '../src/game/Game.js';
 import { cards } from '../src/game/content/cards.js';
 import { chapter1Map } from '../src/game/content/chapters/ch1.js';
+import { contentRegistry } from '../src/game/content/index.js';
 import { resolveAsset } from '../src/game/core/assetManifest.js';
 import { buildMapState, MAP_FOG_STATES } from '../src/game/core/MapState.js';
 import { buildCardAlbumEntries, UIRenderer, UI_RECTS } from '../src/game/render/UIRenderer.js';
+import { createSaveV1 } from '../src/game/systems/Save.js';
+import { World } from '../src/game/world/World.js';
 
 function center(rect) {
   return { x: rect.x + rect.width / 2, y: rect.y + rect.height / 2 };
@@ -20,6 +23,7 @@ function rectsOverlap(first, second) {
 function gameStub() {
   const game = Object.create(Game.prototype);
   game.world = {
+    chapter: { id: 'ch1' },
     overlay: { surface: 'satchel', tab: 'map' },
     closeOverlay: vi.fn(),
     drainEvents: () => [],
@@ -41,12 +45,17 @@ describe('satchel card album', () => {
     expect(entries.map(({ id, earned }) => ({ id, earned }))).toEqual([
       { id: 'morgana', earned: true },
       { id: 'dumbledore', earned: false },
+      { id: 'merlin', earned: false },
+      { id: 'jocunda-sykes', earned: false },
     ]);
     for (const entry of entries) {
       expect(entry.__rect.width).toBeGreaterThanOrEqual(88);
       expect(entry.__rect.height).toBeGreaterThanOrEqual(88);
+      expect(entry.__rect.y + entry.__rect.height).toBeLessThanOrEqual(652);
       expect(resolveAsset(entry.portraitAsset)).toContain('/assets/art/cards/');
     }
+    expect(entries.slice(0, 2).every((entry) => entry.__rect.x + entry.__rect.width < 640)).toBe(true);
+    expect(entries.slice(2).every((entry) => entry.__rect.x > 640)).toBe(true);
     expect(UI_RECTS.satchelMapTab.height).toBeGreaterThanOrEqual(88);
     expect(UI_RECTS.satchelCardsTab.height).toBeGreaterThanOrEqual(88);
     expect(UI_RECTS.satchelStartOver.width).toBeGreaterThanOrEqual(88);
@@ -199,6 +208,74 @@ describe('satchel card album', () => {
       'satchel.map.ch1.menagerie',
     ]);
     expect(mapTargets.every(({ x, y }) => Number.isFinite(x) && Number.isFinite(y))).toBe(true);
+  });
+
+  it('keeps a Chapter Two save in Chapter Two even when stale input points at the Chapter One map', () => {
+    const save = createSaveV1({
+      now: '2026-07-16T18:00:00.000Z',
+      appVersion: 'chapter-two-satchel-test',
+      worldSeed: 42,
+    });
+    save.resume = {
+      chapter: 'ch2',
+      scene: 'ch2.scene.kingsCross',
+      room: 'ch2.kingsCross',
+      spawn: 'start',
+    };
+    save.progress.highestUnlockedChapter = 2;
+    save.progress.completedChapters = ['ch1'];
+    save.progress.questFlags['ch1.complete'] = true;
+    save.progress.questFlags['ch1.satchelReceived'] = true;
+    save.character.wandId = 'violet-first-wand';
+
+    const world = new World({ chapters: contentRegistry, save, seed: 42 });
+    const game = Object.create(Game.prototype);
+    game.screen = 'playing';
+    game.debug = false;
+    game.replayMode = false;
+    game.resumeRecap = null;
+    game.roomTransition = null;
+    game.lastRenderState = null;
+    game.simTime = 0;
+    game.reducedMotion = false;
+    game.world = world;
+    game.sound = {
+      unlock: vi.fn(() => Promise.resolve()),
+      playSfx: vi.fn(),
+      speak: vi.fn(),
+    };
+    game.updateStatus = vi.fn();
+    game.processWorldEvents = vi.fn();
+    game.shouldShowDebugReset = () => false;
+    game.shouldShowReplayExit = () => false;
+    game.uiRenderer = new UIRenderer({ characterRenderer: { draw: () => {} } });
+
+    game.handleTap(center(UI_RECTS.satchel));
+    expect(world.overlay).toEqual({ surface: 'satchel', tab: 'cards' });
+
+    game.handleOverlayTap(center(UI_RECTS.satchelMapTab), world.snapshot());
+    expect(world.overlay).toEqual({ surface: 'satchel', tab: 'cards' });
+    expect(game.sound.playSfx).toHaveBeenCalledTimes(1);
+    expect(game.sound.playSfx).toHaveBeenLastCalledWith('sfx/ui/parchment', 'chime');
+
+    world.overlay = { surface: 'satchel', tab: 'map' };
+    const staleMapState = world.snapshot();
+    const staleLocation = game.uiRenderer.mapPresentation(staleMapState)
+      .hitTargets.find(({ id }) => id === 'map.ch1.diagonStreet');
+    const chapterBeforeTap = world.chapter.id;
+    const roomBeforeTap = world.roomId;
+
+    game.handleOverlayTap(center(staleLocation.hitArea), staleMapState);
+
+    expect(world.chapter.id).toBe(chapterBeforeTap);
+    expect(world.roomId).toBe(roomBeforeTap);
+    expect(world.overlay).toEqual({ surface: 'satchel', tab: 'cards' });
+    expect(game.sound.playSfx).toHaveBeenLastCalledWith('sfx/ui/locked', 'fizzle');
+
+    world.overlay = { surface: 'satchel', tab: 'map' };
+    const semanticIds = game.semanticTargets(world.snapshot()).map(({ id }) => id);
+    expect(semanticIds).not.toContain('satchel.map');
+    expect(semanticIds.some((id) => id.startsWith('satchel.map.ch1.'))).toBe(false);
   });
 });
 

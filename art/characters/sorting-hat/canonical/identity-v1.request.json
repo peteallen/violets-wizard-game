@@ -1,0 +1,32 @@
+{
+  "schema_version": 1,
+  "prompt": {
+    "path": "art/characters/sorting-hat/canonical/identity-v1.prompt.md",
+    "section": "Accepted built-in prompt"
+  },
+  "references": [
+    {
+      "path": "art/guides/ch1-room-style-triptych.png",
+      "role": "the game's painterly storybook texture, dark-brown edge treatment, warm light, and violet-blue shadows only"
+    },
+    {
+      "path": "art/guides/flat-cyan-chroma.png",
+      "role": "the exact flat extraction background"
+    }
+  ],
+  "generation": {
+    "workflow": "Codex built-in image generation",
+    "tool": "image_gen.imagegen",
+    "model_identifier": null,
+    "seed": null,
+    "returned_model_or_seed_note": "The built-in workflow did not return a model identifier or seed."
+  },
+  "output": {
+    "generated_output_id": "exec-75d3c9c2-2856-491d-93e2-ba3daf4a8190",
+    "generated_output_path": "/Users/peteallen/.codex/generated_images/019f6c3e-aa13-7f72-8f24-96fc942fe3e4/exec-75d3c9c2-2856-491d-93e2-ba3daf4a8190.png",
+    "image": "art/characters/sorting-hat/canonical/identity-v1.png",
+    "metadata": "art/characters/sorting-hat/canonical/identity-v1.metadata.json",
+    "shipping_image": "public/assets/art/characters/sorting-hat/default/neutral.png",
+    "slice_provenance": "art/characters/sorting-hat/canonical/identity-v1.slice-provenance.json"
+  }
+}

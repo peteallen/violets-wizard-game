@@ -46,6 +46,7 @@ describe('current character animation requirements', () => {
   it('records every current story-specific action before asset generation begins', () => {
     expect(characterAnimationRequirement('puppet.violet').actions).toEqual(expect.arrayContaining([
       'wrong-wand-one', 'wrong-wand-two', 'chosen-wand', 'receive-wand', 'admire-robes', 'broom-wonder',
+      'barrier-run', 'sweet-reaction',
     ]));
     expect(characterAnimationRequirement('puppet.guide').clips).toEqual(expect.arrayContaining([
       'beckon', 'map-handoff', 'ticket-handoff', 'brick-tap',

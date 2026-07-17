@@ -17,6 +17,24 @@ export const cards = Object.freeze([
     text: 'Dumbledore likes clever plans and lemon sweets.',
     caption: 'Dumbledore',
   }),
+  Object.freeze({
+    id: 'merlin',
+    chapter: 2,
+    name: 'Merlin',
+    portraitAsset: 'cards/merlin/portrait',
+    voice: 'voice/ch2/card/merlin',
+    text: 'Merlin was famous for great magic and an even greater beard.',
+    caption: 'Merlin',
+  }),
+  Object.freeze({
+    id: 'jocunda-sykes',
+    chapter: 2,
+    name: 'Jocunda Sykes',
+    portraitAsset: 'cards/jocunda-sykes/portrait',
+    voice: 'voice/ch2/card/jocunda-sykes',
+    text: 'Jocunda Sykes flew across the Atlantic on a broomstick.',
+    caption: 'Jocunda Sykes',
+  }),
 ]);
 
 export const cardsById = Object.freeze(Object.fromEntries(cards.map((card) => [card.id, card])));

@@ -56,6 +56,7 @@ function createSave({
   completedChapters = [],
   questFlags = {},
   storyChoices = {},
+  house = null,
   wandId = null,
   robeTrim = null,
   pet = null,
@@ -73,6 +74,7 @@ function createSave({
   save.progress.completedChapters = [...completedChapters];
   save.progress.questFlags = { ...questFlags };
   save.progress.storyChoices = structuredClone(storyChoices);
+  save.character.house = house;
   save.character.wandId = wandId;
   save.character.appearance.robeTrim = robeTrim;
   if (pet) save.character.pet = { ...pet };
@@ -153,6 +155,73 @@ const completedProfile = Object.freeze({
   treasures: [],
   housePoints: 0,
 });
+
+const chapter2ThroughFriendsFlags = Object.freeze({
+  ...completeChapterFlags,
+  'ch2.barrierCrossed': true,
+  'ch2.boardedTrain': true,
+  'ch2.friendsMet': true,
+});
+
+const chapter2ThroughTrainFlags = Object.freeze({
+  ...chapter2ThroughFriendsFlags,
+  'ch2.sweetChosen': true,
+  'ch2.sweetReactionSeen': true,
+  'ch2.trainComplete': true,
+});
+
+const chapter2ThroughSortingQuestionsFlags = Object.freeze({
+  ...chapter2ThroughTrainFlags,
+  'ch2.lakeSeen': true,
+  'ch2.greatHallEntered': true,
+  'ch2.sorting.cares.protect': true,
+  'ch2.sorting.courage.truth': true,
+});
+
+const chapter2ThroughFeastFlags = Object.freeze({
+  ...chapter2ThroughSortingQuestionsFlags,
+  'ch2.sortedGryffindor': true,
+  'ch2.feastAwarded': true,
+  'ch2.feastComplete': true,
+});
+
+const chapter2StoryChoices = Object.freeze({
+  'ch2.choice.sweet': 'every-flavor-beans',
+  'ch2.choice.sortingCare': 'protect-friends',
+  'ch2.choice.sortingCourage': 'tell-truth',
+});
+
+const CHAPTER_TWO_PLAYER = Object.freeze(['character.violet', 'character.cat']);
+
+function chapter2SetPieceFixture({
+  id,
+  description,
+  scene,
+  room,
+  spawn,
+  questFlags,
+  storyChoices = chapter2StoryChoices,
+  house = null,
+  housePoints = 0,
+  characterDependencies = CHAPTER_TWO_PLAYER,
+}) {
+  return createFixture(
+    description,
+    { chapter: 2, scene: id },
+    createSave({
+      ...completedProfile,
+      chapter: 'ch2',
+      scene,
+      room,
+      spawn,
+      questFlags,
+      storyChoices,
+      house,
+      housePoints,
+    }),
+    characterDependencies,
+  );
+}
 
 const registry = new ImmutableRegistry('state', validateStateFixture);
 
@@ -313,17 +382,6 @@ registry
       spawn: 'west',
     }),
   ))
-  .register('ch2-placeholder', createFixture(
-    'The intentional Chapter 2 preview after Chapter 1 completion.',
-    { chapter: 2, scene: 'ch2.placeholder' },
-    createSave({
-      ...completedProfile,
-      chapter: 'ch2',
-      scene: 'ch2.placeholder',
-      room: 'ch2.previewRoom',
-      spawn: 'start',
-    }),
-  ))
   .register('sp-letter-open-review', createFixture(
     'The delivered letter at the start of its seal-crack, unfold, and readable invitation sequence.',
     { chapter: 1, scene: 'sp-letter-open-review' },
@@ -414,17 +472,92 @@ registry
       wandId: 'violet-first-wand',
     }),
   ))
-  .register('sp-ch2-ticket-review', createFixture(
-    'The intentional Chapter Two preview ticket followed by its two clearly framed preview choices.',
-    { chapter: 2, scene: 'sp-ch2-ticket-review' },
-    createSave({
-      ...completedProfile,
-      chapter: 'ch2',
-      scene: 'ch2.placeholder',
-      room: 'ch2.previewRoom',
-      spawn: 'start',
-    }),
-  ))
+  .register('sp-ch2-barrier-run-review', chapter2SetPieceFixture({
+    id: 'sp-ch2-barrier-run-review',
+    description: 'Violet at the ordinary King’s Cross barrier immediately before her comic run and the opaque platform reveal.',
+    scene: 'ch2.scene.kingsCross',
+    room: 'ch2.kingsCross',
+    spawn: 'barrier',
+    questFlags: completeChapterFlags,
+    storyChoices: {},
+    characterDependencies: [
+      ...CHAPTER_TWO_PLAYER,
+      'character.conductor',
+    ],
+  }))
+  .register('sp-ch2-sweet-reaction-review', chapter2SetPieceFixture({
+    id: 'sp-ch2-sweet-reaction-review',
+    description: 'Violet beside the sweets trolley immediately after choosing an Every-Flavour Bean and before her playful silent reaction.',
+    scene: 'ch2.scene.trolleySweets',
+    room: 'ch2.trainCompartment',
+    spawn: 'window',
+    questFlags: {
+      ...chapter2ThroughFriendsFlags,
+      'ch2.sweetChosen': true,
+    },
+    characterDependencies: [
+      ...CHAPTER_TWO_PLAYER,
+      'character.harry-potter',
+      'character.ron-weasley',
+      'character.hermione-granger',
+      'character.trolley-witch',
+    ],
+  }))
+  .register('sp-ch2-lake-vista-review', chapter2SetPieceFixture({
+    id: 'sp-ch2-lake-vista-review',
+    description: 'Violet arriving at the dark lake before the castle vista receives its quiet storybook hold.',
+    scene: 'ch2.scene.lakeVista',
+    room: 'ch2.lakeVista',
+    spawn: 'vista',
+    questFlags: chapter2ThroughTrainFlags,
+  }))
+  .register('sp-ch2-sorting-reveal-review', chapter2SetPieceFixture({
+    id: 'sp-ch2-sorting-reveal-review',
+    description: 'Violet beneath the Sorting Hat after her canonical courage answers and immediately before the Gryffindor reveal.',
+    scene: 'ch2.scene.sorting',
+    room: 'ch2.greatHall',
+    spawn: 'sorting',
+    questFlags: chapter2ThroughSortingQuestionsFlags,
+    characterDependencies: [
+      ...CHAPTER_TWO_PLAYER,
+      'character.deputy-head',
+      'character.sorting-hat',
+      'character.headmaster',
+    ],
+  }))
+  .register('sp-ch2-common-room-arrival-review', chapter2SetPieceFixture({
+    id: 'sp-ch2-common-room-arrival-review',
+    description: 'Gryffindor Violet at the portrait entrance immediately before her friends welcome her into the common room.',
+    scene: 'ch2.scene.commonRoomArrival',
+    room: 'ch2.gryffindorCommonRoom',
+    spawn: 'portraitDoor',
+    questFlags: chapter2ThroughFeastFlags,
+    house: 'gryffindor',
+    housePoints: 10,
+    characterDependencies: [
+      ...CHAPTER_TWO_PLAYER,
+      'character.harry-potter',
+      'character.ron-weasley',
+      'character.hermione-granger',
+    ],
+  }))
+  .register('sp-ch2-chapter-card-review', chapter2SetPieceFixture({
+    id: 'sp-ch2-chapter-card-review',
+    description: 'Violet’s completed Gryffindor arrival staged immediately before the Chapter Two page turns toward first classes.',
+    scene: 'ch2.scene.chapterCard',
+    room: 'ch2.chapterCardRoom',
+    spawn: 'start',
+    questFlags: {
+      ...chapter2ThroughFeastFlags,
+      'ch2.commonRoomArrived': true,
+    },
+    house: 'gryffindor',
+    housePoints: 10,
+    characterDependencies: [
+      ...CHAPTER_TWO_PLAYER,
+      'character.narrator',
+    ],
+  }))
   .register('parent-panel', completedSurfaceFixture(
     'parent-panel',
     'The grown-up book on its safe chapter replay and yearbook page.',

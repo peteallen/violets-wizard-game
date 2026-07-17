@@ -1,0 +1,37 @@
+{
+  "schema_version": 1,
+  "slug": "platform-native-v2",
+  "prompt": {
+    "path": "art/chapters/ch2/rooms/platform-native-v2.prompt.md",
+    "section": "Prompt"
+  },
+  "references": [
+    {
+      "path": "art/raw/ch1-platform.png",
+      "role": "direct style, finish, railway atmosphere, and material-quality reference"
+    },
+    {
+      "path": "art/raw/ch1-courtyard.png",
+      "role": "stone-floor and brick texture reference"
+    },
+    {
+      "path": "art/raw/ch1-leaky.png",
+      "role": "warm interior depth and amber-versus-violet lighting reference"
+    }
+  ],
+  "generation": {
+    "workflow": "Codex built-in image generation",
+    "tool": "image_gen.imagegen",
+    "model_identifier": null,
+    "seed": null,
+    "returned_model_or_seed_note": "The built-in workflow did not return a model identifier or seed."
+  },
+  "output": {
+    "generated_output_id": "exec-f5950615-81d9-47e7-bbb5-f40471da031c",
+    "generated_output_path": "/Users/peteallen/.codex/generated_images/019f6c3e-aa13-7f72-8f24-96fc942fe3e4/exec-f5950615-81d9-47e7-bbb5-f40471da031c.png",
+    "native_source": "art/raw/ch2-platform-native-v2.png",
+    "accepted_png": "art/raw/ch2-platform-v2.png",
+    "shipping_webp": "public/assets/art/rooms/ch2-platform.webp",
+    "metadata": "art/chapters/ch2/rooms/platform-native-v2.metadata.json"
+  }
+}

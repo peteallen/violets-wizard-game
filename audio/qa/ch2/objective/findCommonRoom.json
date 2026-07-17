@@ -1,0 +1,128 @@
+{
+  "language_code": "eng",
+  "language_probability": 1,
+  "text": "Follow the Gryffindor lion toward your new common room.",
+  "words": [
+    {
+      "text": "Follow",
+      "start": 0.099,
+      "end": 0.379,
+      "type": "word",
+      "logprob": -0.00008105902816168964
+    },
+    {
+      "text": " ",
+      "start": 0.379,
+      "end": 0.419,
+      "type": "spacing",
+      "logprob": -0.000034689302992774174
+    },
+    {
+      "text": "the",
+      "start": 0.419,
+      "end": 0.459,
+      "type": "word",
+      "logprob": -0.000034689302992774174
+    },
+    {
+      "text": " ",
+      "start": 0.459,
+      "end": 0.559,
+      "type": "spacing",
+      "logprob": -0.00019786784832831472
+    },
+    {
+      "text": "Gryffindor",
+      "start": 0.56,
+      "end": 1.1,
+      "type": "word",
+      "logprob": -0.00009586094361111464
+    },
+    {
+      "text": " ",
+      "start": 1.1,
+      "end": 1.24,
+      "type": "spacing",
+      "logprob": -0.00408066064119339
+    },
+    {
+      "text": "lion",
+      "start": 1.24,
+      "end": 1.62,
+      "type": "word",
+      "logprob": -0.00408066064119339
+    },
+    {
+      "text": " ",
+      "start": 1.62,
+      "end": 1.659,
+      "type": "spacing",
+      "logprob": -0.00004124556289752945
+    },
+    {
+      "text": "toward",
+      "start": 1.659,
+      "end": 1.979,
+      "type": "word",
+      "logprob": -0.00004124556289752945
+    },
+    {
+      "text": " ",
+      "start": 1.979,
+      "end": 2.059,
+      "type": "spacing",
+      "logprob": -2.3841855067985307e-7
+    },
+    {
+      "text": "your",
+      "start": 2.059,
+      "end": 2.119,
+      "type": "word",
+      "logprob": -2.3841855067985307e-7
+    },
+    {
+      "text": " ",
+      "start": 2.119,
+      "end": 2.239,
+      "type": "spacing",
+      "logprob": -1.1920928244535389e-7
+    },
+    {
+      "text": "new",
+      "start": 2.24,
+      "end": 2.44,
+      "type": "word",
+      "logprob": -1.1920928244535389e-7
+    },
+    {
+      "text": " ",
+      "start": 2.44,
+      "end": 2.48,
+      "type": "spacing",
+      "logprob": -0.00018094333063345402
+    },
+    {
+      "text": "common",
+      "start": 2.48,
+      "end": 2.779,
+      "type": "word",
+      "logprob": -0.00018094333063345402
+    },
+    {
+      "text": " ",
+      "start": 2.779,
+      "end": 2.899,
+      "type": "spacing",
+      "logprob": -0.0000019073468138230965
+    },
+    {
+      "text": "room.",
+      "start": 2.899,
+      "end": 3.22,
+      "type": "word",
+      "logprob": -0.07738533019874012
+    }
+  ],
+  "transcription_id": "9LP4X00XICcQKEYaxecl",
+  "audio_duration_secs": 3.483
+}

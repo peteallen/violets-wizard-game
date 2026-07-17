@@ -8,6 +8,8 @@ import {
   brickTileState,
   brickTileStates,
   brickTileSourceRect,
+  chapterTwoRoomVariantCoverAlpha,
+  chapterTwoSetPieceState,
   deliveryLetteringAlpha,
   drawReadableInvitation,
   letterOpeningBounds,
@@ -94,6 +96,36 @@ describe('SetPieceRenderer dispatch', () => {
     renderer.draw({}, active, {});
 
     expect(renderer.drawTicket).toHaveBeenCalledWith({}, active, { reducedMotion: false });
+  });
+
+  it('routes every playable Chapter Two set piece to its dedicated first-pass composition', () => {
+    const cases = [
+      ['ch2.setPiece.barrierRun', 'drawChapterTwoBarrierRun'],
+      ['ch2.setPiece.sweetReaction', 'drawChapterTwoSweetReaction'],
+      ['ch2.setPiece.lakeVista', 'drawChapterTwoLakeVista'],
+      ['ch2.setPiece.sortingReveal', 'drawChapterTwoSortingReveal'],
+      ['ch2.setPiece.commonRoomArrival', 'drawChapterTwoCommonRoomArrival'],
+      ['ch2.setPiece.chapterCard', 'drawChapterTwoChapterCard'],
+    ];
+    const renderer = setPieceRenderer();
+    for (const [, method] of cases) renderer[method] = vi.fn();
+
+    for (const [id, method] of cases) {
+      const active = {
+        id,
+        requestedId: id,
+        time: 0.5,
+        descriptor: { duration: 1, renderer: `setPiece.ch2.${id.split('.').at(-1)}` },
+      };
+      const worldState = { player: { x: 640, y: 620 }, cameraX: 0 };
+      renderer.draw({}, active, worldState, { reducedMotion: true });
+      expect(renderer[method]).toHaveBeenCalledWith(
+        {},
+        active,
+        ...(method.includes('Barrier') || method.includes('Sweet') ? [worldState] : []),
+        { reducedMotion: true },
+      );
+    }
   });
 
   it('holds the delivered VIOLET lettering opacity still in reduced motion', () => {
@@ -393,6 +425,57 @@ describe('SetPieceRenderer dispatch', () => {
     expect(ticketPresentationState(0).scale).toBe(0);
     expect(ticketPresentationState(2).scale).toBeGreaterThan(0.99);
     expect(ticketPresentationState(2, 4, { reducedMotion: true }).bob).toBe(0);
+  });
+
+  it('keeps the Chapter Two presentation envelope deterministic and motion-safe', () => {
+    expect(chapterTwoSetPieceState(0, 2)).toMatchObject({
+      progress: 0,
+      enter: 0,
+      anticipation: 0,
+      rush: 0,
+    });
+    expect(chapterTwoSetPieceState(1, 2).progress).toBe(0.5);
+    expect(chapterTwoSetPieceState(20, 2).progress).toBe(1);
+    expect(chapterTwoSetPieceState(0.1, 2, { reducedMotion: true })).toMatchObject({
+      enter: 1,
+      anticipation: 1,
+      rush: 0,
+      reducedMotion: true,
+    });
+  });
+
+  it('fully covers each room-painting swap before calmly revealing the precomposited destination', () => {
+    const revealAt = 0.68;
+    expect(chapterTwoRoomVariantCoverAlpha(revealAt - 0.16, revealAt)).toBe(0);
+    expect(chapterTwoRoomVariantCoverAlpha(revealAt, revealAt)).toBe(1);
+    expect(chapterTwoRoomVariantCoverAlpha(revealAt + 0.04, revealAt)).toBe(1);
+    expect(chapterTwoRoomVariantCoverAlpha(revealAt + 0.22, revealAt)).toBe(0);
+
+    expect(chapterTwoRoomVariantCoverAlpha(
+      revealAt,
+      revealAt,
+      { reducedMotion: true },
+    )).toBe(1);
+  });
+
+  it('shows the sweet Violet actually chose instead of a fixed bean reaction', () => {
+    const renderer = setPieceRenderer();
+    const active = {
+      time: 0.8,
+      params: { choiceId: 'choice.sweet' },
+      descriptor: { duration: 1.6, params: { choiceId: 'choice.sweet' } },
+    };
+    const drawings = ['every-flavor-beans', 'chocolate-frog', 'cauldron-cake'].map((choice) => {
+      const context = recordingTicketContext();
+      renderer.drawChapterTwoSweetReaction(context, active, {
+        player: { x: 640, y: 620 },
+        cameraX: 0,
+        storyChoices: { 'choice.sweet': choice },
+      }, { reducedMotion: true });
+      return JSON.stringify(context.calls);
+    });
+
+    expect(new Set(drawings).size).toBe(3);
   });
 
   it('renders the preview ticket as layered railway ephemera without a generic owl or dashed geometry', () => {

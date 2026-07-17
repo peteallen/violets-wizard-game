@@ -37,6 +37,10 @@ describe('voice transcription QA', () => {
       .toBe(normalizeSpokenText('HERES VIOLET AND HAGRID'));
     expect(normalizeSpokenText('Which colour?'))
       .toBe(normalizeSpokenText('Which color?'));
+    expect(normalizeSpokenText('Chokunda Sykes.'))
+      .toBe(normalizeSpokenText('Jocunda Sykes'));
+    expect(normalizeSpokenText('Ahem, Violet.'))
+      .toBe(normalizeSpokenText('Hmm. Violet.'));
   });
 
   it('reports missing, mismatched, and unexpected transcripts separately', () => {
@@ -65,7 +69,7 @@ describe('voice transcription QA', () => {
     const result = await runVoiceQa();
 
     expect(result.issues).toEqual([]);
-    expect(result.totals).toMatchObject({ expected: 34, present: 34, matched: 34, missing: 0, mismatched: 0 });
+    expect(result.totals).toMatchObject({ expected: 69, present: 69, matched: 69, missing: 0, mismatched: 0 });
     expect(result.roles.guide).toMatchObject({ expected: 6, present: 6, matched: 6, missing: 0 });
     expect(result.passed).toBe(true);
   });

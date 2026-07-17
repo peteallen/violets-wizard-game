@@ -1,4 +1,8 @@
 import { PALETTE, WORLD } from '../config.js';
+import {
+  drawProductionRoomVariantBackground,
+  drawProductionRoomVariantOverlay,
+} from '../presentation/productionRoomVariantOverlays.js';
 import { resolveRoomVariant } from '../world/roomVariant.js';
 
 const ROOM_MOODS = Object.freeze({
@@ -320,7 +324,7 @@ export class RoomRenderer {
     });
   }
 
-  draw(context, room, state, time, camera = { x: 0 }) {
+  draw(context, room, state, time, camera = { x: 0 }, { reducedMotion = false } = {}) {
     const roomId = room?.id ?? state?.roomId ?? 'ch1.bedroom';
     const variant = resolveRoomVariant(room, state?.roomVariant);
     const scale = contextScale(context);
@@ -328,22 +332,33 @@ export class RoomRenderer {
     this.currentCacheKey = description.key;
     const cache = this.roomCaches.get(description.key);
 
-    if (cache?.canvas && cache.canvas.width > 1 && cache.canvas.height > 1) {
-      this.touchCache(cache);
-      const roomWidth = room?.size?.width ?? WORLD.width;
-      const sourceWidth = Math.min(cache.width, cache.height * (WORLD.width / WORLD.height));
-      const cameraRatio = Math.max(0, Math.min(1, camera.x / Math.max(1, roomWidth - WORLD.width)));
-      const sourceX = (cache.width - sourceWidth) * cameraRatio;
-      context.drawImage(cache.canvas, sourceX, 0, sourceWidth, cache.height, 0, 0, WORLD.width, WORLD.height);
-      return;
-    }
+    const presentationRequest = {
+      roomId,
+      variant,
+      cameraX: camera.x,
+      time,
+      reducedMotion: Boolean(reducedMotion),
+      state,
+    };
+    drawProductionRoomVariantBackground(context, presentationRequest, () => {
+      if (cache?.canvas && cache.canvas.width > 1 && cache.canvas.height > 1) {
+        this.touchCache(cache);
+        const roomWidth = room?.size?.width ?? WORLD.width;
+        const sourceWidth = Math.min(cache.width, cache.height * (WORLD.width / WORLD.height));
+        const cameraRatio = Math.max(0, Math.min(1, camera.x / Math.max(1, roomWidth - WORLD.width)));
+        const sourceX = (cache.width - sourceWidth) * cameraRatio;
+        context.drawImage(cache.canvas, sourceX, 0, sourceWidth, cache.height, 0, 0, WORLD.width, WORLD.height);
+      } else {
+        this.drawProcedural(context, roomId, variant, time, camera.x);
+        if (description.keys.length) {
+          void this.prepareRoom(room, state, { scale }).catch((error) => {
+            this.logger?.warn?.('Room cache preparation failed; keeping the procedural fallback.', error);
+          });
+        }
+      }
+    });
 
-    this.drawProcedural(context, roomId, variant, time, camera.x);
-    if (description.keys.length) {
-      void this.prepareRoom(room, state, { scale }).catch((error) => {
-        this.logger?.warn?.('Room cache preparation failed; keeping the procedural fallback.', error);
-      });
-    }
+    drawProductionRoomVariantOverlay(context, presentationRequest);
   }
 
   drawProcedural(context, roomId, variant, time, cameraX = 0) {

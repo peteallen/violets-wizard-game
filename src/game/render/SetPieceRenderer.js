@@ -147,6 +147,10 @@ export class SetPieceRenderer {
     }
     const id = String(active.requestedId ?? active.id ?? '');
     const normalized = id.toLowerCase();
+    const registeredRenderer = String(active.descriptor?.renderer ?? '')
+      .split('.')
+      .at(-1)
+      ?.toLowerCase();
     if (normalized.includes('letter')) {
       this.drawLetter(context, active, {
         reducedMotion,
@@ -161,6 +165,18 @@ export class SetPieceRenderer {
       this.drawWandChaos(context, active, { reducedMotion });
     } else if (normalized.includes('wandchosen') || normalized.includes('wand-chosen')) {
       this.drawWandChosen(context, active, worldState, { reducedMotion });
+    } else if (registeredRenderer === 'barrierrun') {
+      this.drawChapterTwoBarrierRun(context, active, worldState, { reducedMotion });
+    } else if (registeredRenderer === 'sweetreaction') {
+      this.drawChapterTwoSweetReaction(context, active, worldState, { reducedMotion });
+    } else if (registeredRenderer === 'lakevista') {
+      this.drawChapterTwoLakeVista(context, active, { reducedMotion });
+    } else if (registeredRenderer === 'sortingreveal') {
+      this.drawChapterTwoSortingReveal(context, active, { reducedMotion });
+    } else if (registeredRenderer === 'commonroomarrival') {
+      this.drawChapterTwoCommonRoomArrival(context, active, { reducedMotion });
+    } else if (registeredRenderer === 'chaptercard') {
+      this.drawChapterTwoChapterCard(context, active, { reducedMotion });
     } else if (normalized.includes('ticket')) this.drawTicket(context, active, { reducedMotion });
   }
 
@@ -477,6 +493,237 @@ export class SetPieceRenderer {
     drawGoldenRibbons(context, state);
   }
 
+  drawChapterTwoBarrierRun(context, active, worldState, { reducedMotion = false } = {}) {
+    const state = chapterTwoSetPieceState(active.time, active.descriptor?.duration, { reducedMotion });
+    const revealAt = chapterTwoRoomVariantRevealAt(active, 0.68);
+    const playerX = (worldState?.player?.x ?? 640) - (worldState?.cameraX ?? 0);
+    const playerY = worldState?.player?.y ?? 620;
+    context.save();
+    context.fillStyle = `rgba(30,24,49,${0.08 + state.anticipation * 0.12})`;
+    context.fillRect(0, 0, WORLD.width, WORLD.height);
+    context.lineCap = 'round';
+    for (let index = 0; index < 9; index += 1) {
+      const spread = (index - 4) * 62;
+      const drift = reducedMotion ? 0 : Math.sin(active.time * 7 + index) * 12;
+      context.strokeStyle = index % 2 === 0
+        ? `rgba(250,220,143,${0.08 + state.rush * 0.32})`
+        : `rgba(213,191,235,${0.07 + state.rush * 0.24})`;
+      context.lineWidth = 4 + (index % 3) * 2;
+      context.beginPath();
+      context.moveTo(playerX - 70 - state.rush * 190, playerY - 170 + spread * 0.28);
+      context.bezierCurveTo(
+        690 + drift,
+        360 + spread * 0.32,
+        910 - drift,
+        330 + spread * 0.54,
+        1140 + state.rush * 110,
+        350 + spread,
+      );
+      context.stroke();
+    }
+    const wash = chapterTwoRoomVariantCoverAlpha(state.progress, revealAt, { reducedMotion });
+    context.fillStyle = `rgba(255,245,213,${wash})`;
+    context.fillRect(0, 0, WORLD.width, WORLD.height);
+    drawBarrierWashInk(context, wash);
+    context.restore();
+  }
+
+  drawChapterTwoSweetReaction(context, active, worldState, { reducedMotion = false } = {}) {
+    const state = chapterTwoSetPieceState(active.time, active.descriptor?.duration, { reducedMotion });
+    const centerX = (worldState?.player?.x ?? 640) - (worldState?.cameraX ?? 0);
+    // Keep the chosen sweets above Violet so her silent reaction remains
+    // readable instead of covering her glasses, face, and torso.
+    const centerY = (worldState?.player?.y ?? 620) - 330;
+    const pop = reducedMotion ? 1 : easeOutBack(clamp01(state.progress / 0.42));
+    context.save();
+    context.globalAlpha = Math.min(1, state.enter * (0.78 + state.hold * 0.22));
+    context.translate(centerX, centerY);
+    context.scale(pop, pop);
+    for (let index = 0; index < 10; index += 1) {
+      const angle = (Math.PI * 2 * index) / 10;
+      const inner = 92 + (index % 2) * 10;
+      const outer = 142 + (index % 3) * 8;
+      context.strokeStyle = index % 2 === 0 ? '#f5cf65' : '#d3a8e2';
+      context.lineWidth = 7;
+      context.beginPath();
+      context.moveTo(Math.cos(angle) * inner, Math.sin(angle) * inner);
+      context.quadraticCurveTo(
+        Math.cos(angle + 0.08) * ((inner + outer) / 2),
+        Math.sin(angle + 0.08) * ((inner + outer) / 2),
+        Math.cos(angle) * outer,
+        Math.sin(angle) * outer,
+      );
+      context.stroke();
+    }
+    const choiceId = active.params?.choiceId ?? active.descriptor?.params?.choiceId;
+    const choice = choiceId ? worldState?.storyChoices?.[choiceId] : null;
+    drawChosenSweet(context, choice);
+    context.strokeStyle = '#4a3143';
+    context.lineWidth = 8;
+    context.beginPath();
+    context.moveTo(-34, 6);
+    context.bezierCurveTo(-12, -15, 10, 26, 34, 3);
+    context.stroke();
+    context.restore();
+  }
+
+  drawChapterTwoLakeVista(context, active, { reducedMotion = false } = {}) {
+    const state = chapterTwoSetPieceState(active.time, active.descriptor?.duration, { reducedMotion });
+    const motion = chapterTwoLakeMotionState(active.time, active.descriptor?.duration, { reducedMotion });
+    context.save();
+    context.fillStyle = `rgba(20,24,53,${0.08 + state.hold * 0.1})`;
+    context.fillRect(0, 0, WORLD.width, WORLD.height);
+
+    drawLakeParallaxMist(context, motion, state.enter);
+    context.strokeStyle = `rgba(126,159,207,${0.04 + state.enter * 0.055})`;
+    context.lineCap = 'round';
+    for (let index = 0; index < 7; index += 1) {
+      const y = 486 + index * 31;
+      const drift = motion.nearParallax * (0.35 + index * 0.08);
+      context.lineWidth = 2 + (index % 3);
+      for (let segment = 0; segment < 3; segment += 1) {
+        const startX = 276 + segment * 286 + ((index + segment) % 3) * 17 + drift;
+        const length = 132 + ((index * 19 + segment * 23) % 58);
+        context.beginPath();
+        context.moveTo(startX, y);
+        context.bezierCurveTo(
+          startX + length * 0.28,
+          y - 9 + segment * 2,
+          startX + length * 0.7,
+          y + 10 - index % 3,
+          startX + length,
+          y - 2,
+        );
+        context.stroke();
+      }
+    }
+    context.strokeStyle = `rgba(238,204,115,${0.12 + state.enter * 0.28})`;
+    for (let index = 0; index < 6; index += 1) {
+      const y = 516 + index * 25;
+      const shimmer = motion.reflectionShimmer * (8 + index * 2);
+      const drift = motion.midParallax * (0.28 + index * 0.06);
+      context.lineWidth = 2.5 + (index % 3) * 0.8;
+      for (let segment = 0; segment < 3; segment += 1) {
+        const startX = 348 + segment * 204 - index * 7 + drift;
+        const length = 126 + ((index + segment) % 3) * 24;
+        context.beginPath();
+        context.moveTo(startX, y);
+        context.bezierCurveTo(
+          startX + length * 0.3 + shimmer,
+          y - 12,
+          startX + length * 0.68 - shimmer,
+          y + 13,
+          startX + length,
+          y,
+        );
+        context.stroke();
+      }
+    }
+
+    drawLakeBoatMotion(context, motion, state.enter);
+    for (const [x, y, size] of [[180, 142, 9], [290, 88, 6], [1004, 112, 8], [1110, 186, 5]]) {
+      drawPaintedSpark(context, x, y, size, `rgba(255,229,145,${0.32 + state.enter * 0.4})`);
+    }
+    context.restore();
+  }
+
+  drawChapterTwoSortingReveal(context, active, { reducedMotion = false } = {}) {
+    const state = chapterTwoSetPieceState(active.time, active.descriptor?.duration, { reducedMotion });
+    const ceremony = chapterTwoSortingCeremonyState(
+      active.time,
+      active.descriptor?.duration,
+      { reducedMotion },
+    );
+    const revealAt = chapterTwoRoomVariantRevealAt(active, 0.62);
+    context.save();
+    context.fillStyle = `rgba(111,20,33,${state.enter * (0.06 + ceremony.cheer * 0.08)})`;
+    context.fillRect(0, 0, WORLD.width, WORLD.height);
+    drawSortingCandleResponse(context, ceremony, active.time);
+    // The room switches to its persistent Gryffindor treatment while the
+    // opaque wash is at full strength. Retire the temporary ceremony banners
+    // at that same hidden handoff so two differently sized pairs never stack.
+    if (state.progress + Number.EPSILON < revealAt) {
+      drawGryffindorBanner(context, 78, -22, 210, 400 * ceremony.banner, -1);
+      drawGryffindorBanner(context, 992, -22, 210, 400 * ceremony.banner, 1);
+    }
+    context.save();
+    context.translate(640, 104 - (1 - ceremony.announcement) * 120);
+    context.scale(ceremony.announcement, ceremony.announcement);
+    context.fillStyle = '#7b2433';
+    context.strokeStyle = '#efc766';
+    context.lineWidth = 7;
+    paintedRibbonPath(context, -310, -50, 620, 100);
+    context.fill();
+    context.stroke();
+    context.fillStyle = '#fff1bd';
+    context.textAlign = 'center';
+    context.font = '700 58px "Almendra", "Georgia", serif';
+    context.fillText('GRYFFINDOR!', 0, 20);
+    context.restore();
+    drawSortingHatPulse(context, ceremony);
+    const sparkleAlpha = reducedMotion
+      ? 0.62
+      : (0.24 + ceremony.cheer * 0.28 + Math.sin(active.time * 6) * 0.12);
+    for (const [x, y, size] of [[350, 170, 12], [470, 240, 8], [810, 230, 10], [920, 160, 7], [640, 210, 9]]) {
+      drawPaintedSpark(context, x, y, size, `rgba(255,222,121,${sparkleAlpha})`);
+    }
+    const wash = chapterTwoRoomVariantCoverAlpha(state.progress, revealAt, { reducedMotion });
+    context.fillStyle = `rgba(255,239,177,${wash})`;
+    context.fillRect(0, 0, WORLD.width, WORLD.height);
+    drawSortingWashInk(context, wash);
+    context.restore();
+  }
+
+  drawChapterTwoCommonRoomArrival(context, active, { reducedMotion = false } = {}) {
+    const state = chapterTwoSetPieceState(active.time, active.descriptor?.duration, { reducedMotion });
+    const glow = reducedMotion ? 0.55 : 0.42 + Math.sin(active.time * 2.4) * 0.08;
+    context.save();
+    context.fillStyle = `rgba(125,46,29,${state.enter * 0.1})`;
+    context.fillRect(0, 0, WORLD.width, WORLD.height);
+    drawCommonRoomWelcomeGarland(context, state.enter, glow);
+    context.fillStyle = `rgba(255,239,177,${state.enter})`;
+    context.textAlign = 'center';
+    context.font = '700 48px "Almendra", "Georgia", serif';
+    context.fillText('WELCOME HOME, VIOLET', 640, 112);
+    context.restore();
+  }
+
+  drawChapterTwoChapterCard(context, active, { reducedMotion = false } = {}) {
+    const state = chapterTwoSetPieceState(active.time, active.descriptor?.duration, { reducedMotion });
+    const settle = reducedMotion ? 1 : easeOutBack(clamp01(state.progress / 0.36));
+    context.save();
+    context.fillStyle = `rgba(20,17,38,${0.2 + state.enter * 0.32})`;
+    context.fillRect(0, 0, WORLD.width, WORLD.height);
+    context.translate(640, 340);
+    context.scale(settle, settle);
+    context.fillStyle = '#f0dfb3';
+    context.strokeStyle = '#8d5b3f';
+    context.lineWidth = 8;
+    paintedChapterPlaquePath(context);
+    context.fill();
+    drawChapterPlaqueGrain(context);
+    paintedChapterPlaquePath(context);
+    context.stroke();
+    context.strokeStyle = 'rgba(151,94,55,0.38)';
+    context.lineWidth = 3;
+    context.beginPath();
+    context.moveTo(-330, -92);
+    context.bezierCurveTo(-110, -104, 115, -82, 330, -94);
+    context.moveTo(-330, 98);
+    context.bezierCurveTo(-105, 84, 110, 106, 330, 92);
+    context.stroke();
+    context.fillStyle = '#6f2435';
+    context.textAlign = 'center';
+    context.font = '700 28px "Andika", "Trebuchet MS", sans-serif';
+    context.fillText('CHAPTER TWO COMPLETE', 0, -80);
+    context.font = '700 64px "Almendra", "Georgia", serif';
+    context.fillText('Welcome to Gryffindor', 0, 8);
+    context.fillStyle = '#6b5138';
+    context.font = '700 26px "Andika", "Trebuchet MS", sans-serif';
+    context.fillText('Next: Violet’s first classes', 0, 72);
+    context.restore();
+  }
+
   drawTicket(context, active, { reducedMotion = false } = {}) {
     const state = ticketPresentationState(active.time, active.descriptor.duration, { reducedMotion });
     context.fillStyle = 'rgba(20,17,38,0.42)';
@@ -758,6 +1005,471 @@ export function ticketPresentationState(time, duration = 4, { reducedMotion = fa
     scale: reducedMotion ? clamp01(time / 0.35) : settled,
     bob: reducedMotion ? 0 : Math.sin(time * 2.2) * 8 * clamp01(settled),
   });
+}
+
+export function chapterTwoSetPieceState(time, duration = 1, { reducedMotion = false } = {}) {
+  const safeDuration = Math.max(0.1, Number.isFinite(duration) ? duration : 1);
+  const progress = clamp01(Math.max(0, time) / safeDuration);
+  const enter = reducedMotion
+    ? (progress > 0 ? 1 : 0)
+    : easeOutCubic(clamp01(progress / 0.28));
+  const anticipation = reducedMotion ? 1 : easeInOutCubic(clamp01(progress / 0.22));
+  const rush = reducedMotion ? 0 : easeInOutCubic(clamp01((progress - 0.18) / 0.62));
+  const hold = easeInOutCubic(clamp01((progress - 0.18) / 0.34));
+  return Object.freeze({ progress, enter, anticipation, rush, hold, reducedMotion });
+}
+
+export function chapterTwoLakeMotionState(time, duration = 3.2, { reducedMotion = false } = {}) {
+  const safeTime = Math.max(0, Number.isFinite(time) ? time : 0);
+  const safeDuration = Math.max(0.1, Number.isFinite(duration) ? duration : 3.2);
+  const progress = clamp01(safeTime / safeDuration);
+  const enter = reducedMotion ? 1 : easeOutCubic(clamp01(progress / 0.18));
+  if (reducedMotion) {
+    return Object.freeze({
+      progress,
+      boatBob: 0,
+      boatYaw: 0,
+      farParallax: 0,
+      midParallax: 0,
+      nearParallax: 0,
+      reflectionShimmer: 0.35,
+      reducedMotion: true,
+    });
+  }
+  return Object.freeze({
+    progress,
+    boatBob: Math.sin(safeTime * 1.75) * 4.2 * enter,
+    boatYaw: Math.sin(safeTime * 1.08 + 0.45) * 0.009 * enter,
+    farParallax: Math.sin(safeTime * 0.32) * 3.5 * enter,
+    midParallax: Math.sin(safeTime * 0.43 + 0.7) * 7 * enter,
+    nearParallax: Math.sin(safeTime * 0.56 + 1.1) * 13 * enter,
+    reflectionShimmer: Math.sin(safeTime * 1.42) * 0.5 + 0.5,
+    reducedMotion: false,
+  });
+}
+
+export function chapterTwoSortingCeremonyState(
+  time,
+  duration = 3.6,
+  { reducedMotion = false } = {},
+) {
+  const safeTime = Math.max(0, Number.isFinite(time) ? time : 0);
+  const safeDuration = Math.max(0.1, Number.isFinite(duration) ? duration : 3.6);
+  const progress = clamp01(safeTime / safeDuration);
+  if (reducedMotion) {
+    return Object.freeze({
+      progress,
+      candleResponse: 0.78,
+      hatPulse: 0,
+      announcement: 1,
+      banner: 1,
+      cheer: 0.74,
+      reducedMotion: true,
+    });
+  }
+  const candleResponse = easeInOutCubic(clamp01(progress / 0.28));
+  const hatEnvelope = easeOutCubic(clamp01(progress / 0.22))
+    * (1 - easeInOutCubic(clamp01((progress - 0.48) / 0.32)));
+  const announcementProgress = clamp01((progress - 0.14) / 0.28);
+  const bannerProgress = clamp01((progress - 0.22) / 0.34);
+  return Object.freeze({
+    progress,
+    candleResponse,
+    hatPulse: (Math.sin(safeTime * 5.2) * 0.5 + 0.5) * hatEnvelope,
+    announcement: announcementProgress === 0
+      ? 0
+      : Math.max(0, Math.min(1, easeOutBack(announcementProgress))),
+    banner: bannerProgress === 0
+      ? 0
+      : Math.max(0, Math.min(1, easeOutBack(bannerProgress))),
+    cheer: easeOutCubic(clamp01((progress - 0.38) / 0.2)),
+    reducedMotion: false,
+  });
+}
+
+export function chapterTwoRoomVariantCoverAlpha(
+  progress,
+  revealAt,
+  { reducedMotion = false } = {},
+) {
+  const safeProgress = clamp01(progress);
+  const safeRevealAt = clamp01(revealAt);
+  const fadeIn = reducedMotion ? 0.1 : 0.16;
+  const hold = 0.04;
+  const fadeOut = reducedMotion ? 0.12 : 0.18;
+  const cover = easeInOutCubic(clamp01(
+    (safeProgress - (safeRevealAt - fadeIn)) / fadeIn,
+  ));
+  const uncover = 1 - easeInOutCubic(clamp01(
+    (safeProgress - (safeRevealAt + hold)) / fadeOut,
+  ));
+  return Math.min(cover, uncover);
+}
+
+function chapterTwoRoomVariantRevealAt(active, fallback) {
+  const candidate = active?.params?.revealRoomVariantAt
+    ?? active?.descriptor?.params?.revealRoomVariantAt;
+  return Number.isFinite(candidate) ? clamp01(candidate) : fallback;
+}
+
+function drawLakeParallaxMist(context, motion, enter) {
+  context.save();
+  context.lineCap = 'round';
+  context.strokeStyle = `rgba(158,173,219,${0.035 + enter * 0.045})`;
+  context.lineWidth = 20;
+  context.beginPath();
+  context.moveTo(-80 + motion.farParallax, 340);
+  context.bezierCurveTo(260 + motion.farParallax, 318, 620 - motion.farParallax, 354, 1360, 326);
+  context.stroke();
+  context.strokeStyle = `rgba(109,136,186,${0.045 + enter * 0.055})`;
+  context.lineWidth = 13;
+  context.beginPath();
+  context.moveTo(-70 + motion.midParallax, 424);
+  context.bezierCurveTo(330 + motion.midParallax, 401, 820 - motion.midParallax, 445, 1350, 412);
+  context.stroke();
+  context.restore();
+}
+
+function drawLakeBoatMotion(context, motion, enter) {
+  context.save();
+  context.translate(166, 671 + motion.boatBob);
+  context.rotate(motion.boatYaw);
+  context.fillStyle = `rgba(10,18,40,${0.18 + enter * 0.22})`;
+  context.strokeStyle = `rgba(132,91,58,${0.38 + enter * 0.28})`;
+  context.lineWidth = 7;
+  context.lineJoin = 'round';
+  context.beginPath();
+  context.moveTo(-184, -34);
+  context.bezierCurveTo(-112, -62, 82, -66, 184, -32);
+  context.bezierCurveTo(139, 18, 75, 48, 1, 56);
+  context.bezierCurveTo(-78, 48, -142, 20, -184, -34);
+  context.closePath();
+  context.fill();
+  context.stroke();
+  context.strokeStyle = `rgba(235,190,112,${0.18 + enter * 0.18})`;
+  context.lineWidth = 3;
+  context.beginPath();
+  context.moveTo(-154, -34);
+  context.bezierCurveTo(-70, -51, 74, -53, 151, -31);
+  context.stroke();
+  context.restore();
+}
+
+function drawSortingCandleResponse(context, ceremony, time) {
+  const positions = [
+    [176, 82, 0.2], [324, 119, 1.1], [472, 72, 2.2], [591, 116, 0.7],
+    [702, 88, 1.8], [826, 124, 2.7], [974, 78, 1.4], [1120, 114, 0.4],
+  ];
+  for (const [x, y, phase] of positions) {
+    const flutter = ceremony.reducedMotion ? 0 : Math.sin(time * 4.2 + phase) * 3;
+    const alpha = 0.05 + ceremony.candleResponse * 0.1;
+    context.fillStyle = `rgba(255,205,88,${alpha})`;
+    context.beginPath();
+    context.moveTo(x, y - 25 - flutter);
+    context.bezierCurveTo(x + 17, y - 5, x + 14, y + 20, x, y + 29);
+    context.bezierCurveTo(x - 14, y + 20, x - 17, y - 5, x, y - 25 - flutter);
+    context.fill();
+  }
+}
+
+function drawSortingHatPulse(context, ceremony) {
+  const alpha = 0.07 + ceremony.hatPulse * 0.18;
+  context.strokeStyle = `rgba(255,218,126,${alpha})`;
+  context.lineWidth = 4;
+  context.lineCap = 'round';
+  for (const direction of [-1, 1]) {
+    context.beginPath();
+    context.moveTo(640 + direction * 48, 392);
+    context.bezierCurveTo(
+      640 + direction * (70 + ceremony.hatPulse * 10),
+      374,
+      640 + direction * (87 + ceremony.hatPulse * 15),
+      414,
+      640 + direction * (108 + ceremony.hatPulse * 18),
+      393,
+    );
+    context.stroke();
+  }
+}
+
+function drawSortingWashInk(context, wash) {
+  if (wash <= 0.1) return;
+  context.save();
+  context.globalAlpha = wash;
+  context.strokeStyle = 'rgba(124,36,54,0.42)';
+  context.lineWidth = 9;
+  context.lineCap = 'round';
+  for (const direction of [-1, 1]) {
+    context.beginPath();
+    context.moveTo(640 + direction * 76, 360);
+    context.bezierCurveTo(
+      640 + direction * 190,
+      270,
+      640 + direction * 330,
+      450,
+      640 + direction * 520,
+      330,
+    );
+    context.stroke();
+  }
+  drawPaintedSpark(context, 640, 360, 54, 'rgba(143,38,56,0.56)');
+  drawPaintedSpark(context, 640, 360, 27, 'rgba(232,186,78,0.92)');
+  context.restore();
+}
+
+function drawBarrierWashInk(context, wash) {
+  if (wash <= 0.1) return;
+  const alpha = clamp01((wash - 0.1) / 0.9);
+  context.save();
+  context.globalAlpha = alpha;
+  context.lineCap = 'round';
+  const strokes = [
+    [-110, 110, 220, 18, 820, 178, 1390, 72, 34, 'rgba(121,54,78,0.34)'],
+    [-90, 210, 310, 120, 880, 265, 1370, 172, 18, 'rgba(151,112,167,0.42)'],
+    [-120, 326, 260, 245, 930, 370, 1400, 292, 28, 'rgba(205,145,77,0.3)'],
+    [-80, 455, 340, 345, 850, 530, 1380, 408, 20, 'rgba(124,65,102,0.38)'],
+    [-140, 612, 230, 492, 910, 680, 1420, 530, 30, 'rgba(211,163,87,0.28)'],
+  ];
+  for (const [startX, startY, cp1X, cp1Y, cp2X, cp2Y, endX, endY, width, color] of strokes) {
+    context.strokeStyle = color;
+    context.lineWidth = width;
+    context.beginPath();
+    context.moveTo(startX, startY);
+    context.bezierCurveTo(cp1X, cp1Y, cp2X, cp2Y, endX, endY);
+    context.stroke();
+  }
+  context.strokeStyle = 'rgba(126,91,139,0.42)';
+  context.lineWidth = 12;
+  context.beginPath();
+  context.moveTo(455, -20);
+  context.bezierCurveTo(590, 178, 492, 520, 350, 750);
+  context.moveTo(826, -20);
+  context.bezierCurveTo(702, 194, 792, 516, 930, 750);
+  context.stroke();
+  for (const [x, y, size, color] of [
+    [220, 155, 18, 'rgba(130,61,95,0.5)'],
+    [1040, 138, 13, 'rgba(206,151,67,0.62)'],
+    [310, 548, 12, 'rgba(206,151,67,0.58)'],
+    [1110, 575, 20, 'rgba(130,61,95,0.46)'],
+    [665, 356, 24, 'rgba(218,168,83,0.66)'],
+  ]) drawPaintedSpark(context, x, y, size, color);
+  context.restore();
+}
+
+function drawCommonRoomWelcomeGarland(context, enter, glow) {
+  const alpha = clamp01(enter) * glow;
+  context.save();
+  context.lineCap = 'round';
+  context.strokeStyle = `rgba(103,35,48,${alpha * 0.72})`;
+  context.lineWidth = 22;
+  traceCommonRoomGarland(context);
+  context.stroke();
+  context.strokeStyle = `rgba(255,214,116,${alpha})`;
+  context.lineWidth = 8;
+  traceCommonRoomGarland(context);
+  context.stroke();
+  for (const [x, y, size, rotation] of [
+    [318, 174, 14, -0.4],
+    [446, 158, 12, 0.25],
+    [834, 158, 13, -0.3],
+    [962, 178, 15, 0.34],
+  ]) {
+    context.save();
+    context.translate(x, y);
+    context.rotate(rotation);
+    context.fillStyle = `rgba(126,38,52,${alpha * 0.92})`;
+    context.beginPath();
+    context.moveTo(0, -size);
+    context.bezierCurveTo(size * 0.8, -size * 0.45, size * 0.68, size * 0.58, 0, size);
+    context.bezierCurveTo(-size * 0.72, size * 0.46, -size * 0.62, -size * 0.62, 0, -size);
+    context.fill();
+    context.restore();
+  }
+  context.restore();
+}
+
+function traceCommonRoomGarland(context) {
+  context.beginPath();
+  context.moveTo(250, 202);
+  context.bezierCurveTo(332, 145, 426, 194, 526, 145);
+  context.moveTo(754, 145);
+  context.bezierCurveTo(852, 193, 946, 148, 1032, 205);
+}
+
+function drawChapterPlaqueGrain(context) {
+  context.save();
+  paintedChapterPlaquePath(context);
+  context.clip();
+  context.strokeStyle = 'rgba(116,75,49,0.08)';
+  context.lineWidth = 2;
+  for (let index = 0; index < 11; index += 1) {
+    const y = -124 + index * 25;
+    context.beginPath();
+    context.moveTo(-365 + Math.sin(index * 1.9) * 10, y);
+    context.bezierCurveTo(-145, y + 5, 126, y - 4, 365 - Math.cos(index * 1.4) * 9, y + 2);
+    context.stroke();
+  }
+  context.restore();
+}
+
+function drawStorybookBean(context, x, y, rotation, color) {
+  context.save();
+  context.translate(x, y);
+  context.rotate(rotation);
+  context.fillStyle = color;
+  context.strokeStyle = '#4a3143';
+  context.lineWidth = 5;
+  context.beginPath();
+  context.moveTo(-18, -34);
+  context.bezierCurveTo(20, -48, 38, -15, 27, 18);
+  context.bezierCurveTo(16, 50, -24, 45, -33, 16);
+  context.bezierCurveTo(-42, -10, -36, -30, -18, -34);
+  context.closePath();
+  context.fill();
+  context.stroke();
+  context.strokeStyle = 'rgba(255,244,210,0.52)';
+  context.lineWidth = 4;
+  context.beginPath();
+  context.moveTo(-12, -22);
+  context.bezierCurveTo(1, -28, 10, -21, 14, -12);
+  context.stroke();
+  context.restore();
+}
+
+function drawChosenSweet(context, choice) {
+  if (choice === 'chocolate-frog') {
+    drawStorybookChocolateFrog(context);
+    return;
+  }
+  if (choice === 'cauldron-cake') {
+    drawStorybookCauldronCake(context);
+    return;
+  }
+  drawStorybookBean(context, -72, 28, -0.24, '#9a5d8d');
+  drawStorybookBean(context, 4, -58, 0.18, '#d8a74f');
+  drawStorybookBean(context, 74, 36, 0.38, '#6f8f78');
+}
+
+function drawStorybookChocolateFrog(context) {
+  context.fillStyle = '#7a4b35';
+  context.strokeStyle = '#4a3143';
+  context.lineWidth = 7;
+  context.beginPath();
+  context.moveTo(-72, 42);
+  context.bezierCurveTo(-90, 8, -67, -17, -39, -14);
+  context.bezierCurveTo(-35, -53, -5, -68, 0, -28);
+  context.bezierCurveTo(7, -68, 37, -53, 41, -14);
+  context.bezierCurveTo(70, -17, 91, 9, 72, 42);
+  context.bezierCurveTo(42, 66, -42, 66, -72, 42);
+  context.closePath();
+  context.fill();
+  context.stroke();
+  context.fillStyle = '#d8a75d';
+  context.beginPath();
+  context.moveTo(-54, 38);
+  context.bezierCurveTo(-31, 23, -16, 27, 0, 42);
+  context.bezierCurveTo(17, 27, 32, 23, 54, 38);
+  context.bezierCurveTo(28, 52, -28, 52, -54, 38);
+  context.fill();
+  context.fillStyle = '#f2dfad';
+  for (const x of [-24, 24]) {
+    context.beginPath();
+    context.moveTo(x - 10, -25);
+    context.bezierCurveTo(x - 8, -39, x + 8, -39, x + 10, -25);
+    context.bezierCurveTo(x + 7, -12, x - 7, -12, x - 10, -25);
+    context.fill();
+  }
+}
+
+function drawStorybookCauldronCake(context) {
+  context.fillStyle = '#5f526c';
+  context.strokeStyle = '#4a3143';
+  context.lineWidth = 7;
+  context.beginPath();
+  context.moveTo(-64, -8);
+  context.bezierCurveTo(-58, 34, -38, 61, 0, 64);
+  context.bezierCurveTo(38, 61, 58, 34, 64, -8);
+  context.bezierCurveTo(32, -27, -32, -27, -64, -8);
+  context.closePath();
+  context.fill();
+  context.stroke();
+  context.fillStyle = '#d5a45e';
+  context.beginPath();
+  context.moveTo(-50, -13);
+  context.bezierCurveTo(-53, -52, -22, -66, -4, -47);
+  context.bezierCurveTo(12, -70, 54, -50, 49, -12);
+  context.bezierCurveTo(22, 3, -22, 4, -50, -13);
+  context.closePath();
+  context.fill();
+  context.stroke();
+  context.strokeStyle = 'rgba(255,242,190,0.62)';
+  context.lineWidth = 4;
+  context.beginPath();
+  context.moveTo(-31, -37);
+  context.bezierCurveTo(-13, -49, 10, -47, 29, -35);
+  context.stroke();
+}
+
+function drawPaintedSpark(context, x, y, size, color) {
+  context.fillStyle = color;
+  context.beginPath();
+  context.moveTo(x, y - size);
+  context.quadraticCurveTo(x + size * 0.22, y - size * 0.2, x + size, y);
+  context.quadraticCurveTo(x + size * 0.2, y + size * 0.18, x, y + size);
+  context.quadraticCurveTo(x - size * 0.2, y + size * 0.18, x - size, y);
+  context.quadraticCurveTo(x - size * 0.22, y - size * 0.2, x, y - size);
+  context.fill();
+}
+
+function drawGryffindorBanner(context, x, y, width, height, direction) {
+  context.save();
+  context.translate(x, y);
+  context.fillStyle = '#7d2434';
+  context.strokeStyle = '#e7bd5d';
+  context.lineWidth = 8;
+  context.beginPath();
+  context.moveTo(0, 0);
+  context.bezierCurveTo(width * 0.32, 12, width * 0.68, -8, width, 0);
+  context.lineTo(width, height - 42);
+  context.bezierCurveTo(width * 0.72, height - 24, width * 0.62, height - 4, width / 2, height);
+  context.bezierCurveTo(width * 0.38, height - 4, width * 0.28, height - 24, 0, height - 42);
+  context.closePath();
+  context.fill();
+  context.stroke();
+  context.strokeStyle = 'rgba(255,225,130,0.65)';
+  context.lineWidth = 5;
+  context.beginPath();
+  context.moveTo(width * 0.25, 34);
+  context.bezierCurveTo(width * 0.32, height * 0.35, width * 0.25, height * 0.7, width * 0.34, height - 70);
+  context.moveTo(width * 0.75, 34);
+  context.bezierCurveTo(width * 0.68, height * 0.35, width * 0.75, height * 0.7, width * 0.66, height - 70);
+  context.stroke();
+  context.fillStyle = '#efc766';
+  context.textAlign = 'center';
+  context.font = '700 78px "Almendra", "Georgia", serif';
+  context.fillText(direction < 0 ? 'G' : 'V', width / 2, Math.min(height - 90, 190));
+  context.restore();
+}
+
+function paintedRibbonPath(context, x, y, width, height) {
+  context.beginPath();
+  context.moveTo(x, y + 16);
+  context.bezierCurveTo(x + width * 0.22, y - 5, x + width * 0.78, y + 8, x + width, y + 14);
+  context.lineTo(x + width - 25, y + height / 2);
+  context.lineTo(x + width, y + height - 14);
+  context.bezierCurveTo(x + width * 0.76, y + height + 5, x + width * 0.24, y + height - 6, x, y + height - 16);
+  context.lineTo(x + 25, y + height / 2);
+  context.closePath();
+}
+
+function paintedChapterPlaquePath(context) {
+  context.beginPath();
+  context.moveTo(-385, -142);
+  context.bezierCurveTo(-240, -165, 220, -154, 385, -138);
+  context.bezierCurveTo(405, -55, 395, 62, 378, 142);
+  context.bezierCurveTo(210, 158, -220, 166, -382, 140);
+  context.bezierCurveTo(-402, 48, -398, -58, -385, -142);
+  context.closePath();
 }
 
 function drawInvitation(context, state) {

@@ -1,0 +1,37 @@
+{
+  "schema_version": 1,
+  "slug": "kings-cross-native-v2",
+  "prompt": {
+    "path": "art/chapters/ch2/rooms/kings-cross-native-v2.prompt.md",
+    "section": "Prompt"
+  },
+  "references": [
+    {
+      "path": "art/raw/ch1-platform.png",
+      "role": "railway-platform style and finish"
+    },
+    {
+      "path": "art/raw/ch1-courtyard.png",
+      "role": "brick, stone-floor, material-detail, and warm-light reference"
+    },
+    {
+      "path": "art/raw/ch1-leaky.png",
+      "role": "interior depth, richly painted surface, and amber-versus-violet lighting reference"
+    }
+  ],
+  "generation": {
+    "workflow": "Codex built-in image generation",
+    "tool": "image_gen.imagegen",
+    "model_identifier": null,
+    "seed": null,
+    "returned_model_or_seed_note": "The built-in workflow did not return a model identifier or seed."
+  },
+  "output": {
+    "generated_output_id": "exec-c4aeaa41-b43f-4c6e-b13d-ed3e4fafe6f3",
+    "generated_output_path": "/Users/peteallen/.codex/generated_images/019f6c3e-aa13-7f72-8f24-96fc942fe3e4/exec-c4aeaa41-b43f-4c6e-b13d-ed3e4fafe6f3.png",
+    "native_source": "art/raw/ch2-kings-cross-native-v2.png",
+    "accepted_png": "art/raw/ch2-kings-cross-v2.png",
+    "shipping_webp": "public/assets/art/rooms/ch2-kings-cross.webp",
+    "metadata": "art/chapters/ch2/rooms/kings-cross-native-v2.metadata.json"
+  }
+}

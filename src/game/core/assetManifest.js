@@ -1,5 +1,6 @@
 import { chapter1AssetKeys } from '../content/chapters/ch1.js';
-import { chapter2AssetKeys } from '../content/chapters/ch2.js';
+import { chapters } from '../content/index.js';
+import { productionCharacterCatalog } from '../characters/productionCatalog.js';
 import { assetUrl } from './assetUrl.js';
 
 const IMAGE_PATHS = Object.freeze({
@@ -18,55 +19,6 @@ const IMAGE_PATHS = Object.freeze({
   'cards/dumbledore/portrait': 'assets/art/cards/dumbledore.webp',
 });
 
-const CHARACTER_IMAGE_PATHS = Object.freeze({
-  'characters/violet/casual/neutral': 'assets/art/characters/violet/casual/neutral.png',
-  'characters/violet/casual/blink': 'assets/art/characters/violet/casual/blink.png',
-  'characters/violet/casual/talk-a': 'assets/art/characters/violet/casual/talk-a.png',
-  'characters/violet/casual/talk-b': 'assets/art/characters/violet/casual/talk-b.png',
-  'characters/violet/casual/wonder': 'assets/art/characters/violet/casual/wonder.png',
-  'characters/violet/casual/proud': 'assets/art/characters/violet/casual/proud.png',
-  'characters/violet/casual/curious': 'assets/art/characters/violet/casual/curious.png',
-  'characters/violet/casual/profile-right': 'assets/art/characters/violet/casual/profile-right.png',
-  'characters/violet/casual/walk-contact': 'assets/art/characters/violet/casual/walk-contact.png',
-  'characters/violet/casual/walk-pass': 'assets/art/characters/violet/casual/walk-pass.png',
-  'characters/violet/casual/jump': 'assets/art/characters/violet/casual/jump.png',
-  'characters/violet/casual/giggle': 'assets/art/characters/violet/casual/giggle.png',
-  'characters/violet/casual/tumble': 'assets/art/characters/violet/casual/tumble.png',
-  'characters/violet/casual/wand-hold': 'assets/art/characters/violet/casual/wand-hold.png',
-  'characters/violet/casual/cheer': 'assets/art/characters/violet/casual/cheer.png',
-  'characters/violet/robes/neutral': 'assets/art/characters/violet/robes/neutral.png',
-  'characters/violet/robes/blink': 'assets/art/characters/violet/robes/blink.png',
-  'characters/violet/robes/talk-a': 'assets/art/characters/violet/robes/talk-a.png',
-  'characters/violet/robes/talk-b': 'assets/art/characters/violet/robes/talk-b.png',
-  'characters/violet/robes/wonder': 'assets/art/characters/violet/robes/wonder.png',
-  'characters/violet/robes/proud': 'assets/art/characters/violet/robes/proud.png',
-  'characters/violet/robes/curious': 'assets/art/characters/violet/robes/curious.png',
-  'characters/violet/robes/profile-right': 'assets/art/characters/violet/robes/profile-right.png',
-  'characters/violet/robes/walk-contact': 'assets/art/characters/violet/robes/walk-contact.png',
-  'characters/violet/robes/walk-pass': 'assets/art/characters/violet/robes/walk-pass.png',
-  'characters/violet/robes/robe-present': 'assets/art/characters/violet/robes/robe-present.png',
-  'characters/violet/robes/wand-hold': 'assets/art/characters/violet/robes/wand-hold.png',
-  'characters/violet/robes/cheer': 'assets/art/characters/violet/robes/cheer.png',
-  'characters/hagrid/default/neutral': 'assets/art/characters/hagrid/default/neutral.png',
-  'characters/hagrid/default/blink': 'assets/art/characters/hagrid/default/blink.png',
-  'characters/hagrid/default/talk-a': 'assets/art/characters/hagrid/default/talk-a.png',
-  'characters/hagrid/default/talk-b': 'assets/art/characters/hagrid/default/talk-b.png',
-  'characters/hagrid/default/profile-right': 'assets/art/characters/hagrid/default/profile-right.png',
-  'characters/hagrid/default/walk-contact': 'assets/art/characters/hagrid/default/walk-contact.png',
-  'characters/wandmaker/default/neutral': 'assets/art/characters/wandmaker/default/neutral.png',
-  'characters/wandmaker/default/blink': 'assets/art/characters/wandmaker/default/blink.png',
-  'characters/wandmaker/default/talk-a': 'assets/art/characters/wandmaker/default/talk-a.png',
-  'characters/wandmaker/default/talk-b': 'assets/art/characters/wandmaker/default/talk-b.png',
-  'characters/madam-malkin/default/neutral': 'assets/art/characters/madam-malkin/default/neutral.png',
-  'characters/madam-malkin/default/blink': 'assets/art/characters/madam-malkin/default/blink.png',
-  'characters/madam-malkin/default/talk-a': 'assets/art/characters/madam-malkin/default/talk-a.png',
-  'characters/madam-malkin/default/talk-b': 'assets/art/characters/madam-malkin/default/talk-b.png',
-  'characters/menagerie-keeper/default/neutral': 'assets/art/characters/menagerie-keeper/default/neutral.png',
-  'characters/menagerie-keeper/default/blink': 'assets/art/characters/menagerie-keeper/default/blink.png',
-  'characters/menagerie-keeper/default/talk-a': 'assets/art/characters/menagerie-keeper/default/talk-a.png',
-  'characters/menagerie-keeper/default/talk-b': 'assets/art/characters/menagerie-keeper/default/talk-b.png',
-});
-
 const AMBIENCE_ALIASES = Object.freeze({
   'ambience/ch1/bedroom': 'assets/audio/music/ch1/violetTheme.mp3',
   'ambience/ch1/leaky': 'assets/audio/music/ch1/violetTheme.mp3',
@@ -74,10 +26,10 @@ const AMBIENCE_ALIASES = Object.freeze({
   'ambience/ch1/shop': 'assets/audio/music/ch1/violetTheme.mp3',
 });
 
-const allKeys = [...new Set([...chapter1AssetKeys, ...chapter2AssetKeys])];
+const allKeys = [...new Set(chapter1AssetKeys)];
 
 const chapterAssetEntries = Object.fromEntries(allKeys.map((key) => {
-  const chapter = key.includes('/ch2/') ? 'ch2' : 'ch1';
+  const chapter = 'ch1';
   if (IMAGE_PATHS[key]) return [key, Object.freeze({ path: IMAGE_PATHS[key], kind: 'image', chapter })];
   if (AMBIENCE_ALIASES[key]) return [key, Object.freeze({ path: AMBIENCE_ALIASES[key], kind: 'music', chapter, volume: 0.38 })];
   if (key.startsWith('voice/')) return [key, Object.freeze({ path: `assets/audio/${key}.mp3`, kind: 'voice', chapter, volume: 1 })];
@@ -86,12 +38,31 @@ const chapterAssetEntries = Object.fromEntries(allKeys.map((key) => {
   throw new Error(`No manifest convention exists for asset key ${key}.`);
 }));
 
-const characterAssetEntries = Object.fromEntries(Object.entries(CHARACTER_IMAGE_PATHS).map(([key, path]) => [
+const characterAssetEntries = Object.fromEntries(Object.entries(productionCharacterCatalog.assets).map(([key, asset]) => [
   key,
-  Object.freeze({ path, kind: 'image', chapter: 'ch1' }),
+  Object.freeze({ ...asset, chapter: null }),
 ]));
 
-export const assetManifest = Object.freeze({ ...chapterAssetEntries, ...characterAssetEntries });
+const packagedChapterAssetEntries = Object.fromEntries(
+  chapters
+    .filter((chapter) => chapter.contractVersion === 2)
+    .flatMap((chapter) => Object.entries(chapter.assets).map(([key, entry]) => {
+      const { key: _declaredKey, ...assetEntry } = entry;
+      return [key, Object.freeze({
+        ...assetEntry,
+        chapter: chapter.id,
+        ...(entry.kind === 'voice' ? { volume: 1 } : {}),
+        ...(entry.kind === 'sfx' ? { volume: 0.8 } : {}),
+        ...(entry.kind === 'music' ? { volume: 0.55 } : {}),
+      })];
+    })),
+);
+
+export const assetManifest = Object.freeze({
+  ...chapterAssetEntries,
+  ...packagedChapterAssetEntries,
+  ...characterAssetEntries,
+});
 
 export function getAsset(key) {
   return assetManifest[key] ?? null;

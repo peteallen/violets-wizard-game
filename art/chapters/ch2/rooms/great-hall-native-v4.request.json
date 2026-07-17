@@ -1,0 +1,37 @@
+{
+  "schema_version": 1,
+  "slug": "great-hall-native-v4",
+  "prompt": {
+    "path": "art/chapters/ch2/rooms/great-hall-native-v4.prompt.md",
+    "section": "Prompt"
+  },
+  "references": [
+    {
+      "path": "public/assets/art/rooms/ch2-great-hall.webp",
+      "role": "superseded Chapter Two composition reference only"
+    },
+    {
+      "path": "art/raw/ch1-leaky.png",
+      "role": "warm timber and stone detail, deep interior lighting, and premium finish reference"
+    },
+    {
+      "path": "art/raw/ch1-ollivanders.png",
+      "role": "academic depth, bookish surface detail, and blue-violet shadow reference"
+    }
+  ],
+  "generation": {
+    "workflow": "Codex built-in image generation",
+    "tool": "image_gen.imagegen",
+    "model_identifier": null,
+    "seed": null,
+    "returned_model_or_seed_note": "The built-in workflow did not return a model identifier or seed."
+  },
+  "output": {
+    "generated_output_id": "exec-b42e004d-ba75-416a-8fe4-78b7402d1b07",
+    "generated_output_path": "/Users/peteallen/.codex/generated_images/019f6c3e-aa13-7f72-8f24-96fc942fe3e4/exec-b42e004d-ba75-416a-8fe4-78b7402d1b07.png",
+    "native_source": "art/raw/ch2-great-hall-native-v4.png",
+    "accepted_png": "art/raw/ch2-great-hall-v4.png",
+    "shipping_webp": "public/assets/art/rooms/ch2-great-hall.webp",
+    "metadata": "art/chapters/ch2/rooms/great-hall-native-v4.metadata.json"
+  }
+}

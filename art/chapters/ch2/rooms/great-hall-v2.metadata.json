@@ -1,0 +1,352 @@
+{
+  "schema_version": 1,
+  "kind": "openrouter-room-image-generation",
+  "slug": "great-hall-v2",
+  "model": "google/gemini-3.1-flash-lite-image",
+  "canonical_model_slug": "google/gemini-3.1-flash-lite-image-20260630",
+  "provider": "google-vertex/global",
+  "endpoint": "https://openrouter.ai/api/v1/images",
+  "started_at": "2026-07-16T20:10:36.917Z",
+  "completed_at": "2026-07-16T20:10:40.463Z",
+  "seconds": 3.55,
+  "seed": null,
+  "seed_note": "The dedicated OpenRouter image endpoint did not advertise a seed control during live discovery, so no seed was sent or returned.",
+  "review": {
+    "status": "rejected",
+    "reason": "The fresh retry still contained figurative gargoyle and bird stonework despite the strengthened no-creatures constraint."
+  },
+  "request_spec": {
+    "path": "art/chapters/ch2/rooms/great-hall-v2.request.json",
+    "bytes": 893,
+    "sha256": "c8de6dad19eab23f3b28f7ed69695504bebadbf797014c8d304cb61a824cbe83"
+  },
+  "prompt": {
+    "path": "art/chapters/ch2/rooms/great-hall-v2.prompt.md",
+    "section": "Prompt",
+    "document_bytes": 3492,
+    "document_sha256": "da0d148e86ee096317586e1ed5686334b4fc43a58d8b1fe8efe0f8297434407c",
+    "text_bytes": 2960,
+    "text_sha256": "ea0b683019a93636062ae01072f072e9d8c1784a567f89c7fdaec55e32ffe483",
+    "locked_prefix_sha256": "fa59a54e8650f943bb4b2a4214cb8c2799cef0143df51b038cc3b479d3ad39a4"
+  },
+  "catalog": {
+    "checked_at": "2026-07-16T20:10:36.917Z",
+    "snapshot": {
+      "model": {
+        "id": "google/gemini-3.1-flash-lite-image",
+        "canonical_slug": "google/gemini-3.1-flash-lite-image-20260630",
+        "hugging_face_id": null,
+        "name": "Google: Nano Banana 2 Lite (Gemini 3.1 Flash Lite Image)",
+        "created": 1782837225,
+        "description": "Nano Banana 2 Lite (Gemini 3.1 Flash Lite Image) is Google's fastest, most cost-efficient Gemini image model, built for high-velocity developer pipelines and rapid-fire visual exploration. It delivers text-to-image generation...",
+        "context_length": 65536,
+        "architecture": {
+          "modality": "text+image->text+image",
+          "input_modalities": [
+            "image",
+            "text"
+          ],
+          "output_modalities": [
+            "image",
+            "text"
+          ],
+          "tokenizer": "Gemini",
+          "instruct_type": null
+        },
+        "pricing": {
+          "prompt": "0.00000025",
+          "completion": "0.0000015",
+          "image_output": "0.00003",
+          "web_search": "0.014"
+        },
+        "top_provider": {
+          "context_length": 65536,
+          "max_completion_tokens": 65536,
+          "is_moderated": false
+        },
+        "per_request_limits": null,
+        "supported_parameters": [
+          "include_reasoning",
+          "max_tokens",
+          "reasoning",
+          "reasoning_effort",
+          "response_format",
+          "seed",
+          "temperature",
+          "top_p"
+        ],
+        "default_parameters": {},
+        "supported_voices": null,
+        "knowledge_cutoff": "2025-01-01",
+        "expiration_date": null,
+        "links": {
+          "details": "/api/v1/models/google/gemini-3.1-flash-lite-image-20260630/endpoints"
+        },
+        "reasoning": {
+          "mandatory": false,
+          "default_enabled": true,
+          "supported_efforts": [
+            "high",
+            "minimal"
+          ],
+          "default_effort": "minimal"
+        }
+      },
+      "image_model": {
+        "id": "google/gemini-3.1-flash-lite-image",
+        "name": "Google: Nano Banana 2 Lite (Gemini 3.1 Flash Lite Image)",
+        "description": "Nano Banana 2 Lite (Gemini 3.1 Flash Lite Image) is Google's fastest, most cost-efficient Gemini image model, built for high-velocity developer pipelines and rapid-fire visual exploration. It delivers text-to-image generation...",
+        "created": 1782837225,
+        "architecture": {
+          "input_modalities": [
+            "image",
+            "text"
+          ],
+          "output_modalities": [
+            "image",
+            "text"
+          ]
+        },
+        "supported_parameters": {
+          "resolution": {
+            "type": "enum",
+            "values": [
+              "1K"
+            ]
+          },
+          "aspect_ratio": {
+            "type": "enum",
+            "values": [
+              "1:1",
+              "1:4",
+              "1:8",
+              "2:3",
+              "3:2",
+              "3:4",
+              "4:1",
+              "4:3",
+              "4:5",
+              "5:4",
+              "8:1",
+              "9:16",
+              "16:9",
+              "21:9"
+            ]
+          },
+          "n": {
+            "type": "range",
+            "min": 1,
+            "max": 1
+          },
+          "input_references": {
+            "type": "range",
+            "min": 0,
+            "max": 14
+          }
+        },
+        "supports_streaming": false,
+        "endpoints": "/api/v1/images/models/google/gemini-3.1-flash-lite-image/endpoints"
+      },
+      "provider_endpoint": {
+        "provider_name": "Google Vertex",
+        "provider_slug": "google-vertex/global",
+        "provider_tag": "google-vertex/global",
+        "supported_parameters": {
+          "resolution": {
+            "type": "enum",
+            "values": [
+              "1K"
+            ]
+          },
+          "aspect_ratio": {
+            "type": "enum",
+            "values": [
+              "1:1",
+              "1:4",
+              "1:8",
+              "2:3",
+              "3:2",
+              "3:4",
+              "4:1",
+              "4:3",
+              "4:5",
+              "5:4",
+              "8:1",
+              "9:16",
+              "16:9",
+              "21:9"
+            ]
+          },
+          "n": {
+            "type": "range",
+            "min": 1,
+            "max": 1
+          },
+          "input_references": {
+            "type": "range",
+            "min": 0,
+            "max": 14
+          }
+        },
+        "allowed_passthrough_parameters": [
+          "cachedContent"
+        ],
+        "supports_streaming": false,
+        "pricing": [
+          {
+            "billable": "output_image",
+            "unit": "token",
+            "cost_usd": 0.00003
+          }
+        ]
+      }
+    },
+    "sources": {
+      "model": {
+        "url": "https://openrouter.ai/api/v1/model/google/gemini-3.1-flash-lite-image",
+        "status": 200,
+        "body_bytes": 1334,
+        "body_sha256": "997e2e05481b1f34ec6eb4552908c3f613d498590a0b3ff71cff7532ba84ee21",
+        "response_headers": {
+          "cf-ray": "a1c3a6bd4b72a3cc-DEN",
+          "content-type": "application/json",
+          "date": "Thu, 16 Jul 2026 20:10:37 GMT",
+          "server": "cloudflare"
+        }
+      },
+      "image_models": {
+        "url": "https://openrouter.ai/api/v1/images/models",
+        "status": 200,
+        "body_bytes": 27272,
+        "body_sha256": "dbedd85c93b2c6f9693d47298e1a9d4a6b520de472d87c558ef2364a1c26ceb6",
+        "response_headers": {
+          "cf-ray": "a1c3a6bd89e0f4b9-DEN",
+          "content-type": "application/json",
+          "date": "Thu, 16 Jul 2026 20:10:37 GMT",
+          "server": "cloudflare"
+        }
+      },
+      "image_endpoints": {
+        "url": "https://openrouter.ai/api/v1/images/models/google/gemini-3.1-flash-lite-image/endpoints",
+        "status": 200,
+        "body_bytes": 1156,
+        "body_sha256": "885d94bf1eca466ce64afaa10e118e4d4b8462e3f84f2c163dd1062a78047d27",
+        "response_headers": {
+          "cf-ray": "a1c3a6bd7c2e2d54-DEN",
+          "content-type": "application/json",
+          "date": "Thu, 16 Jul 2026 20:10:37 GMT",
+          "server": "cloudflare"
+        }
+      }
+    }
+  },
+  "request": {
+    "endpoint": "https://openrouter.ai/api/v1/images",
+    "method": "POST",
+    "body_bytes": 3187,
+    "body_sha256": "08f19aad7ce349ed9363177a7b56660c76fb79016f1fbf62f3b52e8bf462182e",
+    "controls": {
+      "model": "google/gemini-3.1-flash-lite-image",
+      "aspect_ratio": "16:9",
+      "resolution": "1K",
+      "n": 1,
+      "output_format": "png",
+      "provider": {
+        "only": [
+          "google-vertex/global"
+        ],
+        "allow_fallbacks": false,
+        "automatic_retries": 0
+      }
+    }
+  },
+  "response": {
+    "status": 200,
+    "headers": {
+      "cf-ray": "a1c3a6bdcd11a3cc-DEN",
+      "content-type": "application/json",
+      "date": "Thu, 16 Jul 2026 20:10:39 GMT",
+      "server": "cloudflare",
+      "x-generation-id": "gen-img-1784232637-rPCkhYXx6R5AwTLNgFdx"
+    },
+    "body_bytes": 320029,
+    "body_sha256": "aa1b7b1c9932a3e869d2eec17855ccadc9cd4143559a8af04693d183b06c2367",
+    "request_id": null,
+    "generation_id": "gen-img-1784232637-rPCkhYXx6R5AwTLNgFdx",
+    "image": {
+      "reported_media_type": "image/jpeg",
+      "detected_media_type": "image/jpeg",
+      "bytes": 239657,
+      "sha256": "6a1ee94b784e3e6ddedf3e6fb584eb221c57c9aa77c7ae5d5c3f3bc64bd73281"
+    },
+    "usage": {
+      "prompt_tokens": 598,
+      "completion_tokens": 1120,
+      "total_tokens": 1718,
+      "cost": 0.0337495,
+      "is_byok": false,
+      "prompt_tokens_details": {
+        "cached_tokens": 0,
+        "cache_write_tokens": 0,
+        "audio_tokens": 0,
+        "video_tokens": 0
+      },
+      "cost_details": {
+        "upstream_inference_cost": 0.0337495,
+        "upstream_inference_prompt_cost": 0.0001495,
+        "upstream_inference_completions_cost": 0.0336
+      },
+      "completion_tokens_details": {
+        "reasoning_tokens": 0,
+        "image_tokens": 1120
+      }
+    }
+  },
+  "conversion": {
+    "native_center_crop": {
+      "width": 1365,
+      "height": 768
+    },
+    "accepted_dimensions": {
+      "width": 2048,
+      "height": 1152
+    },
+    "accepted_tool": "/usr/bin/sips",
+    "shipping_tool": "cwebp",
+    "shipping_quality": 84,
+    "shipping_method": 6,
+    "shipping_sharp_yuv": true
+  },
+  "output": {
+    "native": {
+      "path": "art/raw/ch2-great-hall-v2-native.jpg",
+      "media_type": "image/jpeg",
+      "bytes": 239657,
+      "sha256": "6a1ee94b784e3e6ddedf3e6fb584eb221c57c9aa77c7ae5d5c3f3bc64bd73281",
+      "dimensions": {
+        "width": 1376,
+        "height": 768
+      }
+    },
+    "accepted": {
+      "path": "art/raw/ch2-great-hall-v2.png",
+      "media_type": "image/png",
+      "bytes": 3169089,
+      "sha256": "59ef741a629195dcdcc738f137bd14c9ce638c215da9240ca49869e110b366a7",
+      "dimensions": {
+        "width": 2048,
+        "height": 1152
+      }
+    },
+    "shipping": {
+      "path": "art/chapters/ch2/rooms/rejected/great-hall-v2.webp",
+      "media_type": "image/webp",
+      "bytes": 191750,
+      "sha256": "5af15c95a07b151e23cd74c06f27be420a189d766c7664aeff6c6bec40617954",
+      "dimensions": {
+        "width": 2048,
+        "height": 1152
+      }
+    }
+  }
+}

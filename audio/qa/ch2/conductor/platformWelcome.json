@@ -1,0 +1,170 @@
+{
+  "language_code": "eng",
+  "language_probability": 1,
+  "text": "You found it, Violet. Your train is waiting just beyond the steam.",
+  "words": [
+    {
+      "text": "You",
+      "start": 0.099,
+      "end": 0.28,
+      "type": "word",
+      "logprob": -0.003201955696567893
+    },
+    {
+      "text": " ",
+      "start": 0.28,
+      "end": 0.319,
+      "type": "spacing",
+      "logprob": -0.0000252720492426306
+    },
+    {
+      "text": "found",
+      "start": 0.319,
+      "end": 0.559,
+      "type": "word",
+      "logprob": -0.0000252720492426306
+    },
+    {
+      "text": " ",
+      "start": 0.559,
+      "end": 0.579,
+      "type": "spacing",
+      "logprob": -0.0000010728830375228426
+    },
+    {
+      "text": "it,",
+      "start": 0.579,
+      "end": 0.659,
+      "type": "word",
+      "logprob": -0.0009938767952159349
+    },
+    {
+      "text": " ",
+      "start": 0.659,
+      "end": 0.74,
+      "type": "spacing",
+      "logprob": -0.00006425174069590867
+    },
+    {
+      "text": "Violet.",
+      "start": 0.74,
+      "end": 1.139,
+      "type": "word",
+      "logprob": -0.011325399083684065
+    },
+    {
+      "text": " ",
+      "start": 1.139,
+      "end": 1.859,
+      "type": "spacing",
+      "logprob": -5.960462772236497e-7
+    },
+    {
+      "text": "Your",
+      "start": 1.86,
+      "end": 2.019,
+      "type": "word",
+      "logprob": -5.960462772236497e-7
+    },
+    {
+      "text": " ",
+      "start": 2.019,
+      "end": 2.039,
+      "type": "spacing",
+      "logprob": -2.3841855067985307e-7
+    },
+    {
+      "text": "train",
+      "start": 2.039,
+      "end": 2.299,
+      "type": "word",
+      "logprob": -2.3841855067985307e-7
+    },
+    {
+      "text": " ",
+      "start": 2.299,
+      "end": 2.339,
+      "type": "spacing",
+      "logprob": 0
+    },
+    {
+      "text": "is",
+      "start": 2.339,
+      "end": 2.48,
+      "type": "word",
+      "logprob": 0
+    },
+    {
+      "text": " ",
+      "start": 2.48,
+      "end": 2.48,
+      "type": "spacing",
+      "logprob": -0.0000011920922133867862
+    },
+    {
+      "text": "waiting",
+      "start": 2.48,
+      "end": 2.859,
+      "type": "word",
+      "logprob": -0.0000011920922133867862
+    },
+    {
+      "text": " ",
+      "start": 2.859,
+      "end": 2.899,
+      "type": "spacing",
+      "logprob": -0.00001490105023549404
+    },
+    {
+      "text": "just",
+      "start": 2.899,
+      "end": 3.079,
+      "type": "word",
+      "logprob": -0.00001490105023549404
+    },
+    {
+      "text": " ",
+      "start": 3.079,
+      "end": 3.099,
+      "type": "spacing",
+      "logprob": -4.768370445162873e-7
+    },
+    {
+      "text": "beyond",
+      "start": 3.099,
+      "end": 3.379,
+      "type": "word",
+      "logprob": -4.768370445162873e-7
+    },
+    {
+      "text": " ",
+      "start": 3.379,
+      "end": 3.399,
+      "type": "spacing",
+      "logprob": -2.3841855067985307e-7
+    },
+    {
+      "text": "the",
+      "start": 3.399,
+      "end": 3.48,
+      "type": "word",
+      "logprob": -2.3841855067985307e-7
+    },
+    {
+      "text": " ",
+      "start": 3.48,
+      "end": 3.519,
+      "type": "spacing",
+      "logprob": -0.000016093124941107817
+    },
+    {
+      "text": "steam.",
+      "start": 3.519,
+      "end": 3.939,
+      "type": "word",
+      "logprob": -0.026728073648276524
+    }
+  ],
+  "transcription_id": "Y1XYqD8qdKCV1ptrgLKp",
+  "audio_duration_secs": 4.3189375
+}

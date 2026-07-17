@@ -16,6 +16,7 @@ import {
   chapter1LetterNarration,
 } from '../src/game/content/chapters/ch1-letter.js';
 import { chapter2, chapter2AssetKeys } from '../src/game/content/chapters/ch2.js';
+import { chapter3 } from '../src/game/content/chapters/ch3.js';
 import {
   chapterAvailability,
   contentRegistry,
@@ -52,26 +53,33 @@ function referencedAssets(chapter) {
 }
 
 describe('chapter content contracts', () => {
-  it('validates the playable Chapter 1 and intentional Chapter 2 placeholder', () => {
+  it('validates playable Chapters One and Two plus the Chapter Three handoff', () => {
     expect(validateChapter(chapter1)).toBe(chapter1);
     expect(validateChapter(chapter2)).toBe(chapter2);
+    expect(validateChapter(chapter3)).toBe(chapter3);
     expect(validateMap(chapter1Map)).toBe(chapter1Map);
-    expect(contentRegistry).toEqual({ ch1: chapter1, ch2: chapter2 });
+    expect(contentRegistry).toEqual({ ch1: chapter1, ch2: chapter2, ch3: chapter3 });
     expect(maps).toEqual({ [chapter1Map.id]: chapter1Map });
     expect(getMap(chapter1Map.id)).toBe(chapter1Map);
     expect(getMap('map.ch8.missing')).toBeNull();
     expect(getChapter(1)).toBe(chapter1);
     expect(getChapter('ch2')).toBe(chapter2);
-    expect(chapterAvailability).toEqual({ ch1: 'playable', ch2: 'placeholder' });
+    expect(chapterAvailability).toEqual({ ch1: 'playable', ch2: 'playable', ch3: 'placeholder' });
     expect(isChapterPlayable('ch1')).toBe(true);
-    expect(isChapterPlayable(2)).toBe(false);
+    expect(isChapterPlayable(2)).toBe(true);
+    expect(isChapterPlayable(3)).toBe(false);
   });
 
   it('keeps captions short, familiar, and complete across dialogue, objectives, cards, and recaps', () => {
-    const objectiveCaptions = Object.values(chapter1.quests).flatMap((quest) => Object.values(quest.steps).map((step) => step.objective.caption));
+    const objectiveCaptions = [chapter1, chapter2].flatMap((chapter) => (
+      Object.values(chapter.quests).flatMap((quest) => (
+        Object.values(quest.steps).map((step) => step.objective.caption)
+      ))
+    ));
     const allCaptions = [
       ...dialogueCaptions(chapter1),
       ...dialogueCaptions(chapter2),
+      ...dialogueCaptions(chapter3),
       ...objectiveCaptions,
       ...cards.map((card) => card.caption),
       ...chapter1ResumeRecaps.map((recap) => recap.caption),
@@ -86,8 +94,9 @@ describe('chapter content contracts', () => {
     for (const key of referencedAssets(chapter1)) expect(chapter1AssetKeys).toContain(key);
     for (const key of referencedAssets(chapter2)) expect(chapter2AssetKeys).toContain(key);
     for (const card of cards) {
-      expect(chapter1AssetKeys).toContain(card.portraitAsset);
-      expect(chapter1AssetKeys).toContain(card.voice);
+      const assetKeys = card.chapter === 1 ? chapter1AssetKeys : chapter2AssetKeys;
+      expect(assetKeys).toContain(card.portraitAsset);
+      expect(assetKeys).toContain(card.voice);
       expect(cardsById[card.id]).toBe(card);
     }
   });
@@ -217,14 +226,15 @@ describe('chapter content contracts', () => {
     }));
   });
 
-  it('gives the placeholder only safe Explore and replay-mode choices', () => {
-    const choice = chapter2.dialogues['ch2.preview'].nodes.choice;
-    expect(choice.choices.map((entry) => entry.id)).toEqual(['explore', 'playAgain']);
-    expect(choice.choices[0].actions).toContainEqual({ type: 'travel.request', room: 'ch1.diagonStreet', spawn: 'west' });
-    expect(choice.choices[1].actions).toContainEqual({ type: 'ui.open', surface: 'chapter-replay', tab: 'ch1' });
+  it('makes Chapter Two playable with one personalized Gryffindor outcome', () => {
+    const sorting = chapter2.dialogues['ch2.dialogue.sorting'];
+    expect(chapter2.contractVersion).toBe(2);
+    expect(sorting.nodes.careChoice.choices).toHaveLength(3);
+    expect(sorting.nodes.courageChoice.choices).toHaveLength(3);
+    expect(chapter2.rooms).toHaveProperty('ch2.gryffindorCommonRoom');
   });
 
-  it('walks the required path from the owl through the Chapter 2 preview without losing choices', () => {
+  it('walks the required Chapter One path into the real Chapter Two opening without losing choices', () => {
     const save = createSaveV1({ now: '2026-07-12T18:00:00.000Z', appVersion: 'content-test', worldSeed: 42 });
     const world = new World({ chapters: contentRegistry, save, seed: 42 });
     const settle = (seconds = 10) => {
@@ -298,8 +308,8 @@ describe('chapter content contracts', () => {
     settle(1);
 
     expect(world.chapter.id).toBe('ch2');
-    expect(world.roomId).toBe('ch2.previewRoom');
-    expect(world.currentSceneId).toBe('ch2.placeholder');
+    expect(world.roomId).toBe('ch2.kingsCross');
+    expect(world.currentSceneId).toBe('ch2.scene.kingsCross');
     expect(save.progress.questFlags['ch1.complete']).toBe(true);
     expect(save.character).toMatchObject({
       wandId: 'violet-first-wand',

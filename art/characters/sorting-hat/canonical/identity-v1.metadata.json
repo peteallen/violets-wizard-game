@@ -1,0 +1,58 @@
+{
+  "schema_version": 1,
+  "kind": "codex-built-in-character-image-generation",
+  "slug": "sorting-hat",
+  "workflow": {
+    "name": "Codex built-in image generation",
+    "tool": "image_gen.imagegen",
+    "model_identifier": null,
+    "seed": null,
+    "note": "The built-in workflow did not return a model identifier or seed."
+  },
+  "timestamps": {
+    "generation_started_at": "2026-07-16T21:30:25.013Z",
+    "generation_completed_at": "2026-07-16T21:31:15.879Z",
+    "duration_ms": 50866
+  },
+  "request_spec": {
+    "path": "art/characters/sorting-hat/canonical/identity-v1.request.json",
+    "bytes": 1330,
+    "sha256": "b36e19610440bc4c3743680feb67f6d178dfba442c2ad31708b91d1b7b688a17"
+  },
+  "prompt": {
+    "path": "art/characters/sorting-hat/canonical/identity-v1.prompt.md",
+    "section": "Accepted built-in prompt",
+    "document_bytes": 4691,
+    "document_sha256": "ca6d9eea1edfe96759b0e823d0a2895b7fc2c0df4f9d0a688bd0b1a31c53bb9f"
+  },
+  "references": [
+    {
+      "index": 1,
+      "path": "art/guides/ch1-room-style-triptych.png",
+      "sha256": "ce0628710e9add1a8641c869ce6df94303457faac6434fcb188733b096450a07",
+      "dimensions": { "width": 1536, "height": 288 }
+    },
+    {
+      "index": 2,
+      "path": "art/guides/flat-cyan-chroma.png",
+      "sha256": "be13115e6b358a8d99ef4c4c4a8a82d917ee826d0b57c4a9457e046fe776ea46",
+      "dimensions": { "width": 768, "height": 1024 }
+    }
+  ],
+  "generation_output": {
+    "id": "exec-75d3c9c2-2856-491d-93e2-ba3daf4a8190",
+    "original_path": "/Users/peteallen/.codex/generated_images/019f6c3e-aa13-7f72-8f24-96fc942fe3e4/exec-75d3c9c2-2856-491d-93e2-ba3daf4a8190.png",
+    "copied_to": "art/characters/sorting-hat/canonical/identity-v1.png",
+    "copy_note": "Copied byte-for-byte without image edits before deterministic chroma extraction.",
+    "bytes": 1623970,
+    "sha256": "47e156739a710ca5515eed9a18602955f0a62ab8267a23cd94a63b91590ae2f5",
+    "dimensions": { "width": 1448, "height": 1086 }
+  },
+  "shipping_derivative": {
+    "path": "public/assets/art/characters/sorting-hat/default/neutral.png",
+    "bytes": 496978,
+    "sha256": "79a1483d5444c2c6e4ff56c0190b3f383dce756b170b2d2dc9612fb49fdc2949",
+    "dimensions": { "width": 896, "height": 1200 },
+    "extraction_provenance": "art/characters/sorting-hat/canonical/identity-v1.slice-provenance.json"
+  }
+}

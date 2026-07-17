@@ -78,14 +78,18 @@ describe('state fixtures', () => {
       'world-secret-pet-review',
       'ch1-wand-chosen',
       'ch1-complete',
-      'ch2-placeholder',
       'sp-letter-open-review',
       'transition-ink-review',
       'transition-sparkle-review',
       'sp-brick-wall-review',
       'sp-wand-vase-review',
       'sp-wand-chosen-review',
-      'sp-ch2-ticket-review',
+      'sp-ch2-barrier-run-review',
+      'sp-ch2-sweet-reaction-review',
+      'sp-ch2-lake-vista-review',
+      'sp-ch2-sorting-reveal-review',
+      'sp-ch2-common-room-arrival-review',
+      'sp-ch2-chapter-card-review',
       'parent-panel',
       'parent-settings',
       'parent-save',
@@ -256,20 +260,99 @@ describe('registered harness scenarios', () => {
     expect(getActionFixture(id).actions).toEqual([]);
   });
 
-  it('registers the signature Chapter One set pieces and Chapter Two ticket as direct deterministic review scenes', () => {
+  it('registers the signature Chapter One and Chapter Two set pieces as direct deterministic review scenes', () => {
     expect(SET_PIECE_REVIEW_SCENES).toEqual({
       'sp-letter-open-review': 'sp.letterOpen',
       'sp-brick-wall-review': 'sp.brickWall',
       'sp-wand-vase-review': 'sp.wandChaos2',
       'sp-wand-chosen-review': 'sp.wandChosen',
-      'sp-ch2-ticket-review': 'sp.ch2.previewTicket',
+      'sp-ch2-barrier-run-review': 'ch2.setPiece.barrierRun',
+      'sp-ch2-sweet-reaction-review': 'ch2.setPiece.sweetReaction',
+      'sp-ch2-lake-vista-review': 'ch2.setPiece.lakeVista',
+      'sp-ch2-sorting-reveal-review': 'ch2.setPiece.sortingReveal',
+      'sp-ch2-common-room-arrival-review': 'ch2.setPiece.commonRoomArrival',
+      'sp-ch2-chapter-card-review': 'ch2.setPiece.chapterCard',
     });
     for (const id of Object.keys(SET_PIECE_REVIEW_SCENES)) {
       expect(parseHarnessRequest(`?scene=${id}`)).toMatchObject({ scene: id, state: id, actions: id });
     }
-    expect(getActionFixture('sp-ch2-ticket-review').actions).toEqual([
-      { frame: 250, type: 'tap', target: 'hud.quest' },
-    ]);
+
+    const chapterTwoScenes = [
+      'sp-ch2-barrier-run-review',
+      'sp-ch2-sweet-reaction-review',
+      'sp-ch2-lake-vista-review',
+      'sp-ch2-sorting-reveal-review',
+      'sp-ch2-common-room-arrival-review',
+      'sp-ch2-chapter-card-review',
+    ];
+    for (const id of chapterTwoScenes) {
+      expect(getActionFixture(id).actions, id).toEqual([]);
+    }
+
+    expect(getStateFixture('sp-ch2-barrier-run-review').save).toMatchObject({
+      resume: {
+        chapter: 'ch2',
+        scene: 'ch2.scene.kingsCross',
+        room: 'ch2.kingsCross',
+        spawn: 'barrier',
+      },
+      character: { house: null },
+      progress: { storyChoices: {} },
+    });
+    expect(getStateFixture('sp-ch2-sweet-reaction-review').save).toMatchObject({
+      resume: {
+        chapter: 'ch2',
+        scene: 'ch2.scene.trolleySweets',
+        room: 'ch2.trainCompartment',
+        spawn: 'window',
+      },
+      character: { house: null },
+      progress: {
+        questFlags: { 'ch2.sweetChosen': true },
+        storyChoices: { 'ch2.choice.sweet': 'every-flavor-beans' },
+      },
+    });
+    expect(getStateFixture('sp-ch2-lake-vista-review').save.resume).toEqual({
+      chapter: 'ch2',
+      scene: 'ch2.scene.lakeVista',
+      room: 'ch2.lakeVista',
+      spawn: 'vista',
+    });
+    expect(getStateFixture('sp-ch2-sorting-reveal-review').save).toMatchObject({
+      resume: {
+        chapter: 'ch2',
+        scene: 'ch2.scene.sorting',
+        room: 'ch2.greatHall',
+        spawn: 'sorting',
+      },
+      character: { house: null },
+      progress: {
+        storyChoices: {
+          'ch2.choice.sweet': 'every-flavor-beans',
+          'ch2.choice.sortingCare': 'protect-friends',
+          'ch2.choice.sortingCourage': 'tell-truth',
+        },
+      },
+    });
+    expect(getStateFixture('sp-ch2-common-room-arrival-review').save).toMatchObject({
+      resume: {
+        chapter: 'ch2',
+        scene: 'ch2.scene.commonRoomArrival',
+        room: 'ch2.gryffindorCommonRoom',
+        spawn: 'portraitDoor',
+      },
+      character: { house: 'gryffindor' },
+    });
+    expect(getStateFixture('sp-ch2-chapter-card-review').save).toMatchObject({
+      resume: {
+        chapter: 'ch2',
+        scene: 'ch2.scene.chapterCard',
+        room: 'ch2.chapterCardRoom',
+        spawn: 'start',
+      },
+      character: { house: 'gryffindor' },
+      progress: { questFlags: { 'ch2.commonRoomArrived': true } },
+    });
   });
 
   it('registers normal and hint-escalated world-shimmer review scenes', () => {

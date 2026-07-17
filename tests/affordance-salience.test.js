@@ -3,7 +3,11 @@ import { chapter1Map } from '../src/game/content/chapters/ch1.js';
 import { contentRegistry } from '../src/game/content/index.js';
 import { createSaveV1 } from '../src/game/systems/Save.js';
 import { World } from '../src/game/world/World.js';
-import { GLINT_SCHEDULE, PET_HINT_SCHEDULE } from '../src/game/world/AffordanceSalience.js';
+import {
+  GLINT_SCHEDULE,
+  PET_HINT_SCHEDULE,
+  targetIsSpent,
+} from '../src/game/world/AffordanceSalience.js';
 
 const progression = Object.freeze({
   owl: { 'ch1.owlTapped': true },
@@ -168,10 +172,24 @@ describe('D31 golden-thread lifecycle', () => {
     const world = createWorld({ flags, room: 'ch1.ollivanders' });
     world.addCollection('cards', 'morgana');
     const card = world.snapshot().targets.find((target) => target.id === 'ollivanders.cardMorgana');
-    expect(card.salience).toMatchObject({ tier: 'none', visible: 'none' });
+    expect(card).toBeUndefined();
 
     world.setFlag('ch1.wandTry1', true);
     expect(threadTarget(world).worldTargetId).toBe('ollivanders.wand2');
+  });
+
+  it('treats an already owned replay keepsake as spent even without its old reward receipt', () => {
+    const save = createSaveV1({ now: '2026-07-16T00:00:00.000Z' });
+    save.collections.cards.push('merlin');
+    expect(targetIsSpent({
+      actions: [{
+        type: 'reward.grant',
+        receipt: 'ch2.reward.card.train',
+        points: 0,
+        cards: ['merlin'],
+        treasures: [],
+      }],
+    }, save)).toBe(true);
   });
 
   it('enforces one global inclusive-window budget while real exits change rooms', () => {

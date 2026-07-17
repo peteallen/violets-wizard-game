@@ -1,0 +1,128 @@
+{
+  "schema_version": 1,
+  "algorithm": {
+    "id": "cyan-flood-aligned-character-sheet-v1",
+    "component_connectivity": 8,
+    "scale_filter": "premultiplied-rgba-box-rational-v1",
+    "output_color_type": 6,
+    "output_bit_depth": 8,
+    "deterministic": true
+  },
+  "slice_spec": {
+    "path": "art/characters/conductor/canonical/identity-v1.layout.json",
+    "bytes": 1115,
+    "sha256": "8ad2f1c91553537a991ab41cc132fb26c842a357d2b191cc6b429a418d51b7d2",
+    "schema_version": 1,
+    "id": "conductor.identity-v1"
+  },
+  "source": {
+    "path": "art/characters/conductor/canonical/identity-v1.png",
+    "bytes": 1670698,
+    "expected_sha256": "9fb3350aa09da0b1bb5e46301bd67eef43cadd7fe96e13e63ae698a1a2a8e995",
+    "sha256": "9fb3350aa09da0b1bb5e46301bd67eef43cadd7fe96e13e63ae698a1a2a8e995",
+    "rgba_sha256": "9fa331376b5a3756f4792c0693a21579b2e3b1afb93463b3321a3cf46e1a22a4",
+    "dimensions": {
+      "width": 1086,
+      "height": 1448
+    }
+  },
+  "controls": {
+    "output_canvas": {
+      "width": 896,
+      "height": 1200,
+      "center_x": 448,
+      "ground_y": 1132
+    },
+    "common_scale": {
+      "numerator": 4,
+      "denominator": 5
+    },
+    "key": {
+      "color": {
+        "red": 1,
+        "green": 248,
+        "blue": 253
+      },
+      "tolerance": 28,
+      "alpha": {
+        "opaque_cyan_excess": 50,
+        "transparent_cyan_excess": 90,
+        "edge_spill_radius": 8,
+        "edge_spill_opaque_cyan_excess": 30,
+        "edge_spill_max_green_blue_delta": 70,
+        "matte_low_alpha": 170,
+        "matte_high_alpha": 245,
+        "edge_color_radius": 0
+      }
+    },
+    "components": {
+      "detail_min_pixels": 8,
+      "detail_max_pixels": 5000,
+      "detail_max_distance": 18
+    }
+  },
+  "outputs": [
+    {
+      "name": "neutral",
+      "path": "public/assets/art/characters/conductor/default/neutral.png",
+      "media_type": "image/png",
+      "bytes": 679855,
+      "sha256": "a2b76d01000da1cb016d360cc7c7bb23027b2fc9017ce6f8fe4696b1282bcc1f",
+      "rgba_sha256": "25d17034022d903184ffd27e7b752942ee19f70a4bdde6ddd4e9c2110463d403",
+      "dimensions": {
+        "width": 896,
+        "height": 1200
+      },
+      "crop": {
+        "x": 0,
+        "y": 0,
+        "width": 1086,
+        "height": 1448
+      },
+      "source_content_bounds": {
+        "x": 242,
+        "y": 34,
+        "width": 719,
+        "height": 1389
+      },
+      "scaled_dimensions": {
+        "width": 576,
+        "height": 1112
+      },
+      "placement": {
+        "x": 160,
+        "y": 21,
+        "width": 576,
+        "height": 1112,
+        "center_x": 448,
+        "ground_y": 1132
+      },
+      "flood": {
+        "background_pixels": 1087762,
+        "non_background_pixels": 484766,
+        "background_fraction": 0.6917282235991983
+      },
+      "components": {
+        "found": 2,
+        "dominant_pixels": 480800,
+        "kept": 1,
+        "removed": 1,
+        "selected_pixels": 480800,
+        "details": [
+          {
+            "pixels": 5,
+            "distance_from_dominant": 2,
+            "kept": false
+          }
+        ]
+      },
+      "alpha": {
+        "transparent_pixels": 1091728,
+        "soft_pixels": 416,
+        "opaque_pixels": 480384
+      },
+      "edge_artifacts_repaired": 34
+    }
+  ],
+  "provenance_path": "art/characters/conductor/canonical/identity-v1.slice-provenance.json"
+}

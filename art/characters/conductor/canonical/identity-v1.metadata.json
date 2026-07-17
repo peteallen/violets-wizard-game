@@ -1,0 +1,58 @@
+{
+  "schema_version": 1,
+  "kind": "codex-built-in-character-image-generation",
+  "slug": "conductor",
+  "workflow": {
+    "name": "Codex built-in image generation",
+    "tool": "image_gen.imagegen",
+    "model_identifier": null,
+    "seed": null,
+    "note": "The built-in workflow did not return a model identifier or seed."
+  },
+  "timestamps": {
+    "generation_started_at": "2026-07-16T21:03:08.615Z",
+    "generation_completed_at": "2026-07-16T21:04:17.396Z",
+    "duration_ms": 68781
+  },
+  "request_spec": {
+    "path": "art/characters/conductor/canonical/identity-v1.request.json",
+    "bytes": 1320,
+    "sha256": "e8ac262c27382f08da70026f62bab16ae8105b7a07ed9e4a35d04b0c925a2a1b"
+  },
+  "prompt": {
+    "path": "art/characters/conductor/canonical/identity-v1.prompt.md",
+    "section": "Accepted built-in prompt",
+    "document_bytes": 5409,
+    "document_sha256": "9c5918a49e3b4d4ff93601caef965ba7e638c9858112e30f7fd1eda9d4873f81"
+  },
+  "references": [
+    {
+      "index": 1,
+      "path": "art/guides/ch1-room-style-triptych.png",
+      "sha256": "ce0628710e9add1a8641c869ce6df94303457faac6434fcb188733b096450a07",
+      "dimensions": { "width": 1536, "height": 288 }
+    },
+    {
+      "index": 2,
+      "path": "art/guides/flat-cyan-chroma.png",
+      "sha256": "be13115e6b358a8d99ef4c4c4a8a82d917ee826d0b57c4a9457e046fe776ea46",
+      "dimensions": { "width": 768, "height": 1024 }
+    }
+  ],
+  "generation_output": {
+    "id": "exec-ba8b3f24-dff2-4e4a-abfa-17a8e19c12a1",
+    "original_path": "/Users/peteallen/.codex/generated_images/019f6c3e-aa13-7f72-8f24-96fc942fe3e4/exec-ba8b3f24-dff2-4e4a-abfa-17a8e19c12a1.png",
+    "copied_to": "art/characters/conductor/canonical/identity-v1.png",
+    "copy_note": "Copied byte-for-byte without image edits before deterministic chroma extraction.",
+    "bytes": 1670698,
+    "sha256": "9fb3350aa09da0b1bb5e46301bd67eef43cadd7fe96e13e63ae698a1a2a8e995",
+    "dimensions": { "width": 1086, "height": 1448 }
+  },
+  "shipping_derivative": {
+    "path": "public/assets/art/characters/conductor/default/neutral.png",
+    "bytes": 679855,
+    "sha256": "a2b76d01000da1cb016d360cc7c7bb23027b2fc9017ce6f8fe4696b1282bcc1f",
+    "dimensions": { "width": 896, "height": 1200 },
+    "extraction_provenance": "art/characters/conductor/canonical/identity-v1.slice-provenance.json"
+  }
+}

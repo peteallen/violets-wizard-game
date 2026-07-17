@@ -1,12 +1,20 @@
 import { buildCharacterCatalog } from './CharacterCatalog.js';
 import { catCharacterModule } from './cat/index.js';
+import { conductorCharacterModule } from './conductor/index.js';
+import { deputyHeadCharacterModule } from './deputy-head/index.js';
 import { hagridCharacterModule } from './hagrid/index.js';
+import { harryPotterCharacterModule } from './harry-potter/index.js';
+import { headmasterCharacterModule } from './headmaster/index.js';
+import { hermioneGrangerCharacterModule } from './hermione-granger/index.js';
 import { madamMalkinCharacterModule } from './madam-malkin/index.js';
 import { menagerieKeeperCharacterModule } from './menagerie-keeper/index.js';
 import { narratorCharacterModule } from './narrator/index.js';
 import { petOwlCharacterModule } from './pet-owl/index.js';
 import { postOwlCharacterModule } from './post-owl/index.js';
+import { ronWeasleyCharacterModule } from './ron-weasley/index.js';
+import { sortingHatCharacterModule } from './sorting-hat/index.js';
 import { toadCharacterModule } from './toad/index.js';
+import { trolleyWitchCharacterModule } from './trolley-witch/index.js';
 import { violetCharacterModule } from './violet/index.js';
 import { wandmakerCharacterModule } from './wandmaker/index.js';
 
@@ -31,6 +39,14 @@ export const productionCharacterModules = Object.freeze([
   catCharacterModule,
   petOwlCharacterModule,
   toadCharacterModule,
+  conductorCharacterModule,
+  harryPotterCharacterModule,
+  ronWeasleyCharacterModule,
+  hermioneGrangerCharacterModule,
+  trolleyWitchCharacterModule,
+  deputyHeadCharacterModule,
+  sortingHatCharacterModule,
+  headmasterCharacterModule,
 ]);
 
 export const productionCharacterCatalog = buildCharacterCatalog(

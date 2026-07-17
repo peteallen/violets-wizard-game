@@ -348,6 +348,20 @@ export function targetIsSpent(target, save) {
     if (action.type === 'collection.add') {
       if (save?.collections?.[action.collection]?.includes(action.id)) return true;
     }
+    if (
+      action.type === 'reward.grant'
+      && save?.progress?.rewardReceipts?.includes(action.receipt)
+    ) return true;
+    if (action.type === 'reward.grant') {
+      const cards = action.cards ?? [];
+      const treasures = action.treasures ?? [];
+      const grantsKeepsake = cards.length > 0 || treasures.length > 0;
+      if (
+        grantsKeepsake
+        && cards.every((id) => save?.collections?.cards?.includes(id))
+        && treasures.every((id) => save?.collections?.treasures?.includes(id))
+      ) return true;
+    }
     if (action.type === 'flag.set' && save?.progress?.questFlags?.[action.flag] === (action.value ?? true)) return true;
   }
   return false;

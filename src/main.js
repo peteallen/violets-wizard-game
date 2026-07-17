@@ -1,6 +1,7 @@
 import './style.css';
 import { Game } from './game/Game.js';
 import { CharacterScopeController } from './game/characters/CharacterScopeController.js';
+import { saveMigrationOptions } from './game/chapters/saveMigrations.js';
 import {
   productionCharacterCatalog,
   titleCharacterDependencies,
@@ -15,7 +16,7 @@ const url = new URL(window.location.href);
 const params = url.searchParams;
 const clock = () => new Date().toISOString();
 const storage = browserStorage();
-const saveManager = new Save({ storage, clock });
+const saveManager = new Save({ storage, clock, migrationOptions: saveMigrationOptions });
 let bootstrapReset = null;
 
 if (params.get('reset') === '1') {

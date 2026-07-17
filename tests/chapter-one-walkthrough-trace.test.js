@@ -321,10 +321,10 @@ const EXPECTED_WALKTHROUGH_TRACE = [
     milestone: 'chapter-two-arrival',
     state: {
       chapter: 'ch2',
-      scene: 'ch2.placeholder',
-      room: 'ch2.previewRoom',
-      objective: null,
-      setPiece: 'sp.ch2.previewTicket',
+      scene: 'ch2.scene.kingsCross',
+      room: 'ch2.kingsCross',
+      objective: 'Find the barrier!',
+      thread: 'ch2.kingsCross.barrier',
     },
     progress: {
       flags: ['ch1.chapterCardSeen', 'ch1.complete'],
@@ -338,28 +338,9 @@ const EXPECTED_WALKTHROUGH_TRACE = [
       'state.changed:flag:progress.questFlags.ch1.chapterCardSeen',
       'state.changed:flag:progress.questFlags.ch1.complete',
       'chapter.completed:ch1->ch2',
-      'room.transitionRequested:ch1.chapterCardRoom->ch2.previewRoom:start:ink',
-      'room.entered:ch2.previewRoom:start',
-      'setPiece.started:sp.ch2.previewTicket',
+      'room.transitionRequested:ch1.chapterCardRoom->ch2.kingsCross:start:ink',
+      'room.entered:ch2.kingsCross:start',
       'dialogue.closed:ch1.narrator.chapterEnd:completed',
-    ],
-  },
-  {
-    milestone: 'chapter-two-preview-choice',
-    state: {
-      chapter: 'ch2',
-      scene: 'ch2.placeholder',
-      room: 'ch2.previewRoom',
-      objective: null,
-      dialogue: 'ch2.preview:choice:choice',
-      choices: ['explore', 'playAgain'],
-    },
-    progress: {},
-    events: [
-      'setPiece.completed:sp.ch2.previewTicket',
-      'dialogue.opened:ch2.preview:nextTime',
-      'dialogue.lineChanged:ch2.preview:nextTime',
-      'dialogue.choicesChanged:ch2.preview:choice',
     ],
   },
 ];
@@ -580,15 +561,11 @@ function runChapterOneWalkthrough() {
   settleUntil(world, () => world.chapter.id === 'ch2');
   recorder.record('chapter-two-arrival');
 
-  settleUntil(world, () => !world.setPieces.active);
-  world.advanceDialogue();
-  recorder.record('chapter-two-preview-choice');
-
   return recorder.trace;
 }
 
 describe('deterministic Chapter One walkthrough baseline', () => {
-  it('preserves milestone state and semantic event order through the Chapter Two preview', () => {
+  it('preserves milestone state and semantic event order through the playable Chapter Two opening', () => {
     expect(runChapterOneWalkthrough()).toEqual(EXPECTED_WALKTHROUGH_TRACE);
   });
 });

@@ -1,4 +1,11 @@
-export const SAVE_SCHEMA_VERSION = 1;
+import {
+  CURRENT_SAVE_SCHEMA_VERSION,
+  SAVE_V2_RECEIPT_FIELDS,
+  migrateSave,
+} from './SaveMigrations.js';
+
+export const LEGACY_SAVE_SCHEMA_VERSION = 1;
+export const SAVE_SCHEMA_VERSION = CURRENT_SAVE_SCHEMA_VERSION;
 export const SAVE_STORAGE_KEY = 'violets-wizard-save-v1';
 export const SAVE_BACKUP_KEY = 'violets-wizard-save-v1-backup';
 export const YEARBOOK_MAX_ENTRIES = 24;
@@ -30,7 +37,7 @@ function exactObject(value, path, required, optional = []) {
   if (!isPlainObject(value)) fail(path, 'must be a plain object');
   const allowed = new Set([...required, ...optional]);
   for (const key of Object.keys(value)) {
-    if (!allowed.has(key)) fail(`${path}.${key}`, 'is not part of save schema v1');
+    if (!allowed.has(key)) fail(`${path}.${key}`, 'is not part of this save schema');
   }
   for (const key of required) {
     if (!Object.hasOwn(value, key)) fail(`${path}.${key}`, 'is required');
@@ -145,11 +152,13 @@ function validateMinigameCheckpoint(value, path) {
   boolean(value.completed, `${path}.completed`);
 }
 
-function validateProgress(value, path) {
-  exactObject(value, path, [
+function validateProgress(value, path, { receipts = false } = {}) {
+  const required = [
     'highestUnlockedChapter', 'completedChapters', 'questFlags', 'storyChoices',
     'rewardReceipts', 'encounterCheckpoints', 'minigameCheckpoints', 'openedOwlPost',
-  ]);
+  ];
+  if (receipts) required.push(...SAVE_V2_RECEIPT_FIELDS);
+  exactObject(value, path, required);
   number(value.highestUnlockedChapter, `${path}.highestUnlockedChapter`, { min: 1, integer: true });
   array(value.completedChapters, `${path}.completedChapters`, chapterId, { unique: true });
   record(value.questFlags, `${path}.questFlags`, (entry, entryPath, key) => {
@@ -161,6 +170,16 @@ function validateProgress(value, path) {
   record(value.encounterCheckpoints, `${path}.encounterCheckpoints`, validateEncounterCheckpoint);
   record(value.minigameCheckpoints, `${path}.minigameCheckpoints`, validateMinigameCheckpoint);
   referenceArray(value.openedOwlPost, `${path}.openedOwlPost`, { unique: true });
+  if (receipts) {
+    for (const field of SAVE_V2_RECEIPT_FIELDS) {
+      referenceArray(value[field], `${path}.${field}`, { unique: true });
+      value[field].forEach((receipt, index) => {
+        if (!FLAG_ID.test(receipt)) {
+          fail(`${path}.${field}[${index}]`, 'must be a chapter-namespaced receipt id');
+        }
+      });
+    }
+  }
 }
 
 function validateCharacter(value, path) {
@@ -260,20 +279,20 @@ function validateSettings(value, path) {
   oneOf(value.learning, ['off', 'gentle', 'stretchy'], `${path}.learning`);
 }
 
-export function validateSaveV1(value, path = 'save') {
+function validateSaveVersion(value, schemaVersion, { receipts = false, path = 'save' } = {}) {
   exactObject(value, path, [
     'schemaVersion', 'createdAt', 'updatedAt', 'appVersion', 'worldSeed',
     'resume', 'progress', 'character', 'spellbook', 'collections',
     'learning', 'yearbook', 'settings',
   ]);
-  if (value.schemaVersion !== SAVE_SCHEMA_VERSION) fail(`${path}.schemaVersion`, `must be ${SAVE_SCHEMA_VERSION}`);
+  if (value.schemaVersion !== schemaVersion) fail(`${path}.schemaVersion`, `must be ${schemaVersion}`);
   isoDate(value.createdAt, `${path}.createdAt`);
   isoDate(value.updatedAt, `${path}.updatedAt`);
   if (Date.parse(value.updatedAt) < Date.parse(value.createdAt)) fail(`${path}.updatedAt`, 'must not precede createdAt');
   string(value.appVersion, `${path}.appVersion`, { max: 120 });
   number(value.worldSeed, `${path}.worldSeed`, { min: 0, max: 0xffffffff, integer: true });
   validateResume(value.resume, `${path}.resume`);
-  validateProgress(value.progress, `${path}.progress`);
+  validateProgress(value.progress, `${path}.progress`, { receipts });
   const currentChapterNumber = Number(value.resume.chapter.slice(2));
   if (currentChapterNumber > value.progress.highestUnlockedChapter) {
     fail(`${path}.resume.chapter`, 'cannot exceed highestUnlockedChapter');
@@ -287,10 +306,24 @@ export function validateSaveV1(value, path = 'save') {
   return value;
 }
 
+export function validateSaveV1(value, path = 'save') {
+  return validateSaveVersion(value, LEGACY_SAVE_SCHEMA_VERSION, { path });
+}
+
+export function validateSaveV2(value, path = 'save') {
+  return validateSaveVersion(value, SAVE_SCHEMA_VERSION, { receipts: true, path });
+}
+
+export function validateSave(value, path = 'save') {
+  if (value?.schemaVersion === LEGACY_SAVE_SCHEMA_VERSION) return validateSaveV1(value, path);
+  if (value?.schemaVersion === SAVE_SCHEMA_VERSION) return validateSaveV2(value, path);
+  fail(`${path}.schemaVersion`, `must be ${LEGACY_SAVE_SCHEMA_VERSION} or ${SAVE_SCHEMA_VERSION}`);
+}
+
 export function createSaveV1({ now, appVersion = 'development', worldSeed = 1, name = 'Violet' } = {}) {
   isoDate(now, 'createSaveV1.now');
   const save = {
-    schemaVersion: SAVE_SCHEMA_VERSION,
+    schemaVersion: LEGACY_SAVE_SCHEMA_VERSION,
     createdAt: now,
     updatedAt: now,
     appVersion,
@@ -346,8 +379,18 @@ export function createSaveV1({ now, appVersion = 'development', worldSeed = 1, n
   return save;
 }
 
+export function createSaveV2(options = {}) {
+  const save = createSaveV1(options);
+  save.schemaVersion = SAVE_SCHEMA_VERSION;
+  for (const field of SAVE_V2_RECEIPT_FIELDS) save.progress[field] = [];
+  validateSaveV2(save);
+  return save;
+}
+
+export const createSave = createSaveV2;
+
 export function setFlag(save, flag, value = true) {
-  validateSaveV1(save);
+  validateSave(save);
   if (typeof flag !== 'string' || !FLAG_ID.test(flag)) fail('setFlag.flag', 'must be a chapter-namespaced flag');
   boolean(value, 'setFlag.value');
   if (save.progress.questFlags[flag] === value) return false;
@@ -356,7 +399,7 @@ export function setFlag(save, flag, value = true) {
 }
 
 export function serializeSave(value) {
-  validateSaveV1(value);
+  validateSave(value);
   return JSON.stringify(value);
 }
 
@@ -368,7 +411,7 @@ export function parseSave(raw) {
   } catch (error) {
     fail('save', 'contains invalid JSON', error);
   }
-  validateSaveV1(value);
+  validateSave(value);
   return value;
 }
 
@@ -382,6 +425,24 @@ function storageError(error, rollbackError) {
   };
 }
 
+function saveMigrationOptions(source = {}) {
+  if (source === null || typeof source !== 'object' || Array.isArray(source)) {
+    throw new TypeError('Save migration options must be a plain object.');
+  }
+  const resumeRedirects = source.resumeRedirects ?? [];
+  if (!Array.isArray(resumeRedirects)) {
+    throw new TypeError('Save migration resume redirects must be an array.');
+  }
+  return Object.freeze({
+    resumeRedirects: Object.freeze(structuredClone(resumeRedirects)),
+    validateVersion(value, version) {
+      if (version === LEGACY_SAVE_SCHEMA_VERSION) validateSaveV1(value);
+      else if (version === SAVE_SCHEMA_VERSION) validateSaveV2(value);
+      else fail('save.schemaVersion', `has unsupported schema version ${version}`);
+    },
+  });
+}
+
 export class Save {
   constructor({
     storage,
@@ -391,6 +452,7 @@ export class Save {
     debounceMs = 500,
     setTimer = globalThis.setTimeout?.bind(globalThis),
     clearTimer = globalThis.clearTimeout?.bind(globalThis),
+    migrationOptions = {},
   } = {}) {
     if (!storage || typeof storage.getItem !== 'function' || typeof storage.setItem !== 'function' || typeof storage.removeItem !== 'function') {
       throw new TypeError('Save requires a localStorage-compatible storage adapter.');
@@ -407,8 +469,13 @@ export class Save {
     this.debounceMs = debounceMs;
     this.setTimer = setTimer;
     this.clearTimer = clearTimer;
+    this.migrationOptions = saveMigrationOptions(migrationOptions);
     this.pending = null;
     this.timer = null;
+  }
+
+  prepare(value) {
+    return migrateSave(value, this.migrationOptions);
   }
 
   load() {
@@ -421,7 +488,24 @@ export class Save {
     if (raw === null) return { ok: true, status: 'empty', save: null };
 
     try {
-      return { ok: true, status: 'loaded', save: parseSave(raw) };
+      const parsed = parseSave(raw);
+      const save = this.prepare(parsed);
+      if (parsed.schemaVersion !== save.schemaVersion) {
+        try {
+          this.storage.setItem(this.backupKey, raw);
+          this.storage.setItem(this.key, serializeSave(save));
+        } catch (error) {
+          return storageError(error);
+        }
+        return {
+          ok: true,
+          status: 'migrated',
+          save,
+          fromSchemaVersion: parsed.schemaVersion,
+          backupStatus: 'backed-up',
+        };
+      }
+      return { ok: true, status: 'loaded', save };
     } catch (error) {
       let backupRaw;
       try {
@@ -437,7 +521,12 @@ export class Save {
       }
       if (backupRaw !== null) {
         try {
-          return { ok: true, status: 'recovered-backup', save: parseSave(backupRaw), error };
+          return {
+            ok: true,
+            status: 'recovered-backup',
+            save: this.prepare(parseSave(backupRaw)),
+            error,
+          };
         } catch (backupError) {
           return { ok: false, status: 'corrupt', save: null, error, backupError };
         }
@@ -447,11 +536,11 @@ export class Save {
   }
 
   write(value) {
-    validateSaveV1(value);
+    const prepared = this.prepare(value);
     const updatedAt = this.clock();
     isoDate(updatedAt, 'Save.clock()');
-    const nextSave = cloneJson({ ...value, updatedAt });
-    validateSaveV1(nextSave);
+    const nextSave = cloneJson({ ...prepared, updatedAt });
+    validateSaveV2(nextSave);
     const serialized = serializeSave(nextSave);
 
     if (this.timer !== null) {
@@ -490,8 +579,7 @@ export class Save {
   }
 
   queue(value) {
-    validateSaveV1(value);
-    this.pending = cloneJson(value);
+    this.pending = this.prepare(value);
     if (this.timer !== null) this.clearTimer(this.timer);
     this.timer = this.setTimer(() => {
       this.timer = null;
@@ -531,7 +619,7 @@ export class Save {
     if (raw === null) return { ok: false, status: 'missing-backup', save: null };
     let value;
     try {
-      value = parseSave(raw);
+      value = this.prepare(parseSave(raw));
     } catch (error) {
       return { ok: false, status: 'corrupt-backup', save: null, error };
     }
@@ -542,7 +630,7 @@ export class Save {
   import(raw) {
     let value;
     try {
-      value = parseSave(raw);
+      value = this.prepare(parseSave(raw));
     } catch (error) {
       return { ok: false, status: 'invalid-import', save: null, error };
     }
@@ -576,7 +664,7 @@ export class Save {
   }
 
   export(value) {
-    return serializeSave(value);
+    return serializeSave(this.prepare(value));
   }
 
   clear() {

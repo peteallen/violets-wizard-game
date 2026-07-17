@@ -1017,6 +1017,15 @@ export function drawVectorIcon(context, icon, x, y, size, {
   else if (normalized === 'heart') drawHeartIcon(context, color);
   else if (normalized === 'rose') drawRoseIcon(context, color, secondary);
   else if (normalized === 'circle') drawOrbIcon(context, color, secondary);
+  else if (normalized === 'beans') drawBeansIcon(context, color, secondary);
+  else if (normalized === 'chocolate-frog') drawToadIcon(context, color, secondary);
+  else if (normalized === 'cauldron-cake') drawCauldronCakeIcon(context, color, secondary);
+  else if (normalized === 'shield-heart') drawShieldHeartIcon(context, color, secondary);
+  else if (normalized === 'mystery-map') drawMapIcon(context, color, secondary);
+  else if (normalized === 'helping-hand') drawHelpingHandIcon(context, color, secondary);
+  else if (normalized === 'step-forward') drawStepForwardIcon(context, color, secondary);
+  else if (normalized === 'tell-truth') drawSpeakerIcon(context, color, secondary);
+  else if (normalized === 'stay-close') drawStayCloseIcon(context, color, secondary);
   else drawStarIcon(context, color, secondary);
   context.restore();
 }
@@ -2895,6 +2904,15 @@ function traceEmptyHolsterMark(context, size) {
 
 function normalizeIcon(icon) {
   const value = String(icon ?? '').toLowerCase();
+  if (value.includes('every-flavor-beans')) return 'beans';
+  if (value.includes('chocolate-frog')) return 'chocolate-frog';
+  if (value.includes('cauldron-cake')) return 'cauldron-cake';
+  if (value.includes('protect-friends')) return 'shield-heart';
+  if (value.includes('explore-mysteries')) return 'mystery-map';
+  if (value.includes('help-someone')) return 'helping-hand';
+  if (value.includes('step-forward')) return 'step-forward';
+  if (value.includes('tell-truth')) return 'tell-truth';
+  if (value.includes('stay-close')) return 'stay-close';
   if (value === 'name-biscuit') return 'biscuit';
   if (value === 'name-pip') return 'pip';
   if (value === 'name-custom') return 'quill';
@@ -4063,6 +4081,182 @@ function drawPipIcon(context, color, secondary) {
   context.fillStyle = ICON_MID;
   traceOrganicOval(context, 14, 24, 5, 4, 0.62);
   context.fill();
+}
+
+function drawBeansIcon(context, color, secondary) {
+  const beans = [
+    { x: -24, y: 12, rotation: -0.38, fill: secondary },
+    { x: 4, y: -18, rotation: 0.2, fill: '#b56f75' },
+    { x: 28, y: 17, rotation: 0.46, fill: '#75907a' },
+  ];
+  for (const bean of beans) {
+    context.save();
+    context.translate(bean.x, bean.y);
+    context.rotate(bean.rotation);
+    context.fillStyle = bean.fill;
+    context.strokeStyle = color;
+    context.lineWidth = 5;
+    context.beginPath();
+    context.moveTo(-18, -31);
+    context.bezierCurveTo(17, -42, 36, -13, 26, 18);
+    context.bezierCurveTo(17, 46, -20, 41, -29, 15);
+    context.bezierCurveTo(-38, -10, -33, -27, -18, -31);
+    context.closePath();
+    context.fill();
+    context.stroke();
+    context.strokeStyle = 'rgba(255,244,210,0.58)';
+    context.lineWidth = 3;
+    context.beginPath();
+    context.moveTo(-12, -18);
+    context.bezierCurveTo(-1, -25, 10, -18, 13, -9);
+    context.stroke();
+    context.restore();
+  }
+}
+
+function drawCauldronCakeIcon(context, color, secondary) {
+  context.fillStyle = '#7d5a45';
+  context.strokeStyle = color;
+  context.lineWidth = 6;
+  context.beginPath();
+  context.moveTo(-38, -9);
+  context.bezierCurveTo(-35, 23, -24, 42, 0, 45);
+  context.bezierCurveTo(24, 42, 35, 23, 38, -9);
+  context.bezierCurveTo(18, -20, -18, -20, -38, -9);
+  context.closePath();
+  context.fill();
+  context.stroke();
+  context.fillStyle = secondary;
+  traceOrganicOval(context, 0, -11, 38, 12, 0.42);
+  context.fill();
+  context.stroke();
+  context.fillStyle = '#c9827f';
+  context.beginPath();
+  context.moveTo(-27, -14);
+  context.bezierCurveTo(-31, -38, -14, -48, -2, -37);
+  context.bezierCurveTo(7, -52, 30, -40, 26, -14);
+  context.bezierCurveTo(10, -4, -12, -5, -27, -14);
+  context.closePath();
+  context.fill();
+  context.stroke();
+  context.strokeStyle = 'rgba(255,238,188,0.62)';
+  context.lineWidth = 3;
+  context.beginPath();
+  context.moveTo(-18, -28);
+  context.bezierCurveTo(-7, -35, 7, -34, 18, -27);
+  context.stroke();
+}
+
+function drawShieldHeartIcon(context, color, secondary) {
+  context.fillStyle = secondary;
+  context.strokeStyle = color;
+  context.lineWidth = 6;
+  context.beginPath();
+  context.moveTo(0, -45);
+  context.bezierCurveTo(18, -35, 31, -31, 40, -32);
+  context.bezierCurveTo(41, 4, 27, 31, 0, 46);
+  context.bezierCurveTo(-27, 31, -41, 4, -40, -32);
+  context.bezierCurveTo(-30, -31, -17, -35, 0, -45);
+  context.closePath();
+  context.fill();
+  context.stroke();
+  context.save();
+  context.scale(0.48, 0.48);
+  drawHeartIcon(context, '#8a3145');
+  context.restore();
+  context.strokeStyle = 'rgba(255,244,210,0.58)';
+  context.lineWidth = 3;
+  context.beginPath();
+  context.moveTo(-25, -26);
+  context.bezierCurveTo(-19, -33, -10, -37, -2, -38);
+  context.moveTo(-29, -16);
+  context.bezierCurveTo(-30, 2, -23, 18, -10, 29);
+  context.moveTo(29, -16);
+  context.bezierCurveTo(30, 2, 23, 18, 10, 29);
+  context.stroke();
+}
+
+function drawHelpingHandIcon(context, color, secondary) {
+  context.fillStyle = secondary;
+  context.strokeStyle = color;
+  context.lineWidth = 6;
+  context.beginPath();
+  context.moveTo(-37, 30);
+  context.bezierCurveTo(-28, 5, -20, -17, -14, -39);
+  context.bezierCurveTo(-6, -45, -1, -35, -4, -19);
+  context.bezierCurveTo(2, -43, 13, -44, 12, -19);
+  context.bezierCurveTo(19, -38, 30, -34, 25, -11);
+  context.bezierCurveTo(39, -24, 47, -13, 36, 7);
+  context.bezierCurveTo(25, 31, 5, 44, -18, 43);
+  context.bezierCurveTo(-28, 42, -34, 38, -37, 30);
+  context.closePath();
+  context.fill();
+  context.stroke();
+  context.save();
+  context.translate(10, 8);
+  context.scale(0.27, 0.27);
+  drawHeartIcon(context, '#8a3145');
+  context.restore();
+  context.strokeStyle = 'rgba(255,244,210,0.62)';
+  context.lineWidth = 3;
+  context.beginPath();
+  context.moveTo(-24, 25);
+  context.bezierCurveTo(-10, 31, 5, 28, 16, 18);
+  context.stroke();
+}
+
+function drawStepForwardIcon(context, color, secondary) {
+  const footprint = (x, y, rotation, fill) => {
+    context.save();
+    context.translate(x, y);
+    context.rotate(rotation);
+    context.fillStyle = fill;
+    context.strokeStyle = color;
+    context.lineWidth = 5;
+    context.beginPath();
+    context.moveTo(-12, 31);
+    context.bezierCurveTo(-27, 17, -25, -8, -17, -29);
+    context.bezierCurveTo(-9, -48, 10, -48, 18, -29);
+    context.bezierCurveTo(27, -8, 26, 18, 11, 32);
+    context.bezierCurveTo(4, 40, -5, 39, -12, 31);
+    context.closePath();
+    context.fill();
+    context.stroke();
+    context.fillStyle = 'rgba(255,244,210,0.6)';
+    traceOrganicOval(context, -3, -27, 7, 12, 0.74);
+    context.fill();
+    context.restore();
+  };
+  footprint(-22, 17, -0.2, secondary);
+  footprint(23, -14, 0.22, '#b97572');
+}
+
+function drawStayCloseIcon(context, color, secondary) {
+  context.strokeStyle = color;
+  context.lineWidth = 7;
+  context.beginPath();
+  context.moveTo(-35, 24);
+  context.bezierCurveTo(-17, 4, 17, 4, 35, 24);
+  context.bezierCurveTo(22, 39, -22, 39, -35, 24);
+  context.stroke();
+  context.save();
+  context.translate(-22, -11);
+  context.scale(0.46, 0.46);
+  drawHeartIcon(context, '#8a3145');
+  context.restore();
+  context.save();
+  context.translate(22, -11);
+  context.scale(0.46, 0.46);
+  drawHeartIcon(context, secondary);
+  context.restore();
+  context.strokeStyle = 'rgba(255,244,210,0.58)';
+  context.lineWidth = 3;
+  context.beginPath();
+  context.moveTo(-31, -20);
+  context.bezierCurveTo(-24, -27, -16, -28, -10, -22);
+  context.moveTo(13, -20);
+  context.bezierCurveTo(20, -27, 28, -27, 33, -19);
+  context.stroke();
 }
 
 function drawHeartIcon(context, color) {

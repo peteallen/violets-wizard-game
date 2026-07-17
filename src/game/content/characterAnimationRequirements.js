@@ -47,7 +47,7 @@ export const CURRENT_CHARACTER_ANIMATION_REQUIREMENTS = Object.freeze({
     expressions: [...HUMAN_BASE.expressions, 'wonder', 'proud', 'curious'],
     actions: [
       'inspect', 'wrong-wand-one', 'wrong-wand-two', 'chosen-wand',
-      'receive-wand', 'admire-robes', 'broom-wonder',
+      'receive-wand', 'admire-robes', 'broom-wonder', 'barrier-run', 'sweet-reaction',
     ],
     surfaces: [...HUMAN_BASE.surfaces, 'title', 'robe-picker'],
     sockets: [...HUMAN_BASE.sockets, 'wandGrip', 'wandTip', 'sortingHat'],

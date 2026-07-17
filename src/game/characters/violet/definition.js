@@ -20,6 +20,8 @@ const VIOLET_ACTIONS = Object.freeze({
   'receive-wand': 'wand-receive',
   'admire-robes': 'robe-present',
   'broom-wonder': 'wonder',
+  'barrier-run': 'walking',
+  'sweet-reaction': 'giggle',
 });
 
 const COMMON_ALIASES = Object.freeze({

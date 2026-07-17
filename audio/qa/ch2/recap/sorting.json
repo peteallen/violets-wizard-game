@@ -1,0 +1,156 @@
+{
+  "language_code": "eng",
+  "language_probability": 1,
+  "text": "The Sorting Hat listened carefully and recognized Violet as a Gryffindor.",
+  "words": [
+    {
+      "text": "The",
+      "start": 0.079,
+      "end": 0.179,
+      "type": "word",
+      "logprob": -0.00009858122211880982
+    },
+    {
+      "text": " ",
+      "start": 0.179,
+      "end": 0.199,
+      "type": "spacing",
+      "logprob": -0.10036197304725647
+    },
+    {
+      "text": "Sorting",
+      "start": 0.199,
+      "end": 0.479,
+      "type": "word",
+      "logprob": -0.10036197304725647
+    },
+    {
+      "text": " ",
+      "start": 0.479,
+      "end": 0.519,
+      "type": "spacing",
+      "logprob": -0.000018596476365928538
+    },
+    {
+      "text": "Hat",
+      "start": 0.519,
+      "end": 0.719,
+      "type": "word",
+      "logprob": -0.000018596476365928538
+    },
+    {
+      "text": " ",
+      "start": 0.719,
+      "end": 0.759,
+      "type": "spacing",
+      "logprob": -0.0000032186455882765586
+    },
+    {
+      "text": "listened",
+      "start": 0.759,
+      "end": 1.12,
+      "type": "word",
+      "logprob": -0.0000032186455882765586
+    },
+    {
+      "text": " ",
+      "start": 1.12,
+      "end": 1.159,
+      "type": "spacing",
+      "logprob": -3.576278118089249e-7
+    },
+    {
+      "text": "carefully",
+      "start": 1.159,
+      "end": 1.579,
+      "type": "word",
+      "logprob": -3.576278118089249e-7
+    },
+    {
+      "text": " ",
+      "start": 1.579,
+      "end": 1.879,
+      "type": "spacing",
+      "logprob": -0.00011050090688513592
+    },
+    {
+      "text": "and",
+      "start": 1.879,
+      "end": 2,
+      "type": "word",
+      "logprob": -0.00011050090688513592
+    },
+    {
+      "text": " ",
+      "start": 2,
+      "end": 2.039,
+      "type": "spacing",
+      "logprob": -0.005930565297603607
+    },
+    {
+      "text": "recognized",
+      "start": 2.039,
+      "end": 2.659,
+      "type": "word",
+      "logprob": -0.005930565297603607
+    },
+    {
+      "text": " ",
+      "start": 2.659,
+      "end": 2.719,
+      "type": "spacing",
+      "logprob": -0.0003327769518364221
+    },
+    {
+      "text": "Violet",
+      "start": 2.72,
+      "end": 3.059,
+      "type": "word",
+      "logprob": -0.0003327769518364221
+    },
+    {
+      "text": " ",
+      "start": 3.059,
+      "end": 3.099,
+      "type": "spacing",
+      "logprob": -2.3841855067985307e-7
+    },
+    {
+      "text": "as",
+      "start": 3.099,
+      "end": 3.179,
+      "type": "word",
+      "logprob": -2.3841855067985307e-7
+    },
+    {
+      "text": " ",
+      "start": 3.179,
+      "end": 3.219,
+      "type": "spacing",
+      "logprob": -1.1920928244535389e-7
+    },
+    {
+      "text": "a",
+      "start": 3.22,
+      "end": 3.299,
+      "type": "word",
+      "logprob": -1.1920928244535389e-7
+    },
+    {
+      "text": " ",
+      "start": 3.299,
+      "end": 3.339,
+      "type": "spacing",
+      "logprob": -0.0001934579631779343
+    },
+    {
+      "text": "Gryffindor.",
+      "start": 3.339,
+      "end": 4.019,
+      "type": "word",
+      "logprob": -0.02301021306497701
+    }
+  ],
+  "transcription_id": "rFz57u8ZD3HvaqvIp8sw",
+  "audio_duration_secs": 4.3189375
+}

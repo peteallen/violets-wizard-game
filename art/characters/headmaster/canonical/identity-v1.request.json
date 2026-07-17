@@ -1,0 +1,32 @@
+{
+  "schema_version": 1,
+  "prompt": {
+    "path": "art/characters/headmaster/canonical/identity-v1.prompt.md",
+    "section": "Accepted built-in prompt"
+  },
+  "references": [
+    {
+      "path": "art/guides/ch1-room-style-triptych.png",
+      "role": "the game's painterly storybook texture, dark-brown edge treatment, warm light, and violet-blue shadows only"
+    },
+    {
+      "path": "art/guides/flat-cyan-chroma.png",
+      "role": "the exact flat extraction background"
+    }
+  ],
+  "generation": {
+    "workflow": "Codex built-in image generation",
+    "tool": "image_gen.imagegen",
+    "model_identifier": null,
+    "seed": null,
+    "returned_model_or_seed_note": "The built-in workflow did not return a model identifier or seed."
+  },
+  "output": {
+    "generated_output_id": "exec-86e9314b-fa8e-430a-9e4a-7d8a17033c23",
+    "generated_output_path": "/Users/peteallen/.codex/generated_images/019f6c3e-aa13-7f72-8f24-96fc942fe3e4/exec-86e9314b-fa8e-430a-9e4a-7d8a17033c23.png",
+    "image": "art/characters/headmaster/canonical/identity-v1.png",
+    "metadata": "art/characters/headmaster/canonical/identity-v1.metadata.json",
+    "shipping_image": "public/assets/art/characters/headmaster/default/neutral.png",
+    "slice_provenance": "art/characters/headmaster/canonical/identity-v1.slice-provenance.json"
+  }
+}

@@ -1,0 +1,58 @@
+{
+  "schema_version": 1,
+  "kind": "codex-built-in-character-image-generation",
+  "slug": "deputy-head",
+  "workflow": {
+    "name": "Codex built-in image generation",
+    "tool": "image_gen.imagegen",
+    "model_identifier": null,
+    "seed": null,
+    "note": "The built-in workflow did not return a model identifier or seed."
+  },
+  "timestamps": {
+    "generation_started_at": "2026-07-16T21:31:31.884Z",
+    "generation_completed_at": "2026-07-16T21:32:36.121Z",
+    "duration_ms": 64237
+  },
+  "request_spec": {
+    "path": "art/characters/deputy-head/canonical/identity-v1.request.json",
+    "bytes": 1330,
+    "sha256": "5cbdba51674ddb73494408ba77ddb4445293c51fda6266875e659e9733cc3294"
+  },
+  "prompt": {
+    "path": "art/characters/deputy-head/canonical/identity-v1.prompt.md",
+    "section": "Accepted built-in prompt",
+    "document_bytes": 5412,
+    "document_sha256": "5f38045a7de370a995cf118c367daf3ca2cf6009d555ece47db5b8485a8f0317"
+  },
+  "references": [
+    {
+      "index": 1,
+      "path": "art/guides/ch1-room-style-triptych.png",
+      "sha256": "ce0628710e9add1a8641c869ce6df94303457faac6434fcb188733b096450a07",
+      "dimensions": { "width": 1536, "height": 288 }
+    },
+    {
+      "index": 2,
+      "path": "art/guides/flat-cyan-chroma.png",
+      "sha256": "be13115e6b358a8d99ef4c4c4a8a82d917ee826d0b57c4a9457e046fe776ea46",
+      "dimensions": { "width": 768, "height": 1024 }
+    }
+  ],
+  "generation_output": {
+    "id": "exec-4242168c-3283-4ed4-984f-2f1a8ebb973d",
+    "original_path": "/Users/peteallen/.codex/generated_images/019f6c3e-aa13-7f72-8f24-96fc942fe3e4/exec-4242168c-3283-4ed4-984f-2f1a8ebb973d.png",
+    "copied_to": "art/characters/deputy-head/canonical/identity-v1.png",
+    "copy_note": "Copied byte-for-byte without image edits before deterministic chroma extraction.",
+    "bytes": 1558332,
+    "sha256": "540501d979b987d585ee327514ff205bb5332067de2c1e18ca977209676d0a8e",
+    "dimensions": { "width": 1086, "height": 1448 }
+  },
+  "shipping_derivative": {
+    "path": "public/assets/art/characters/deputy-head/default/neutral.png",
+    "bytes": 591608,
+    "sha256": "2328c67f09df67ff32da781bca18329312112bf31569e37c12912480ac03aff2",
+    "dimensions": { "width": 896, "height": 1200 },
+    "extraction_provenance": "art/characters/deputy-head/canonical/identity-v1.slice-provenance.json"
+  }
+}

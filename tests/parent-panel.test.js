@@ -215,6 +215,83 @@ describe('chapter replay isolation', () => {
     expect(game.saveData.yearbook.entries).toEqual([]);
   });
 
+  it('keeps cards found during replay while discarding replay-only story changes', async () => {
+    const canonical = saveFixture({ complete: true });
+    canonical.collections.cards = ['morgana'];
+    const game = parentGame(canonical);
+    game.createWorld = vi.fn(function createWorld(save) { this.saveData = save; });
+
+    await game.beginReplay('ch1');
+    game.saveData.collections.cards.push('merlin');
+    game.saveData.progress.questFlags['ch1.replayOnly'] = true;
+    game.saveData.character.wandId = 'replay-only-wand';
+    const exited = await game.exitReplay();
+
+    expect(exited.save.collections.cards).toEqual(['morgana', 'merlin']);
+    expect(exited.save.progress.questFlags['ch1.replayOnly']).toBeUndefined();
+    expect(exited.save.character.wandId).toBe('violet-first-wand');
+    expect(game.saveManager.write).toHaveBeenCalledTimes(2);
+  });
+
+  it('replays Chapter Two from King’s Cross with Violet’s established character choices', async () => {
+    const canonical = saveFixture({ complete: true });
+    canonical.progress.completedChapters.push('ch2');
+    canonical.progress.highestUnlockedChapter = 3;
+    canonical.progress.questFlags['ch2.complete'] = true;
+    canonical.progress.storyChoices['ch2.choice.sortingCare'] = 'protect-friends';
+    canonical.character.house = 'gryffindor';
+    canonical.character.commonRoomPassword = ['lion', 'torch', 'star'];
+    canonical.resume = {
+      chapter: 'ch3', scene: 'ch3.scene.preview', room: 'ch3.previewRoom', spawn: 'start',
+    };
+    const game = parentGame(canonical);
+    game.createWorld = vi.fn(function createWorld(save) { this.saveData = save; });
+
+    const started = await game.beginReplay('ch2');
+
+    expect(started).toMatchObject({ ok: true, status: 'replay-started' });
+    expect(game.saveData.resume).toEqual({
+      chapter: 'ch2',
+      scene: 'ch2.scene.kingsCross',
+      room: 'ch2.kingsCross',
+      spawn: 'start',
+    });
+    expect(game.saveData.character).toMatchObject({
+      name: 'Violet',
+      wandId: 'violet-first-wand',
+      appearance: { robeTrim: 'purple' },
+      pet: { type: 'cat', name: 'Biscuit' },
+      house: null,
+      commonRoomPassword: [],
+    });
+    expect(game.saveData.progress.completedChapters).toEqual(['ch1']);
+    expect(game.saveData.progress.questFlags['ch1.complete']).toBe(true);
+    expect(game.saveData.progress.questFlags['ch2.complete']).toBeUndefined();
+    expect(game.saveData.progress.storyChoices['ch2.choice.sortingCare']).toBeUndefined();
+    expect(game.characterScopes.activateChapter).toHaveBeenCalledWith('ch2', {
+      source: 'chapter-replay',
+    });
+    expect(game.updateStatus).toHaveBeenCalledWith(
+      'Chapter Two replay. Violet’s saved adventure is safe.',
+    );
+  });
+
+  it('offers the latest completed chapter in the grown-up book', () => {
+    const save = saveFixture({ complete: true });
+    const game = parentGame(save);
+    expect(game.parentPanelModel()).toMatchObject({
+      replayChapterId: 'ch1',
+      replayChapterLabel: 'Chapter One',
+    });
+
+    save.progress.completedChapters.push('ch2');
+    save.progress.highestUnlockedChapter = 3;
+    expect(game.parentPanelModel()).toMatchObject({
+      replayChapterId: 'ch2',
+      replayChapterLabel: 'Chapter Two',
+    });
+  });
+
   it('exports canonical progress rather than temporary replay progress', () => {
     const game = parentGame();
     game.replayMode = true;

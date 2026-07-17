@@ -1,0 +1,114 @@
+{
+  "language_code": "eng",
+  "language_probability": 1,
+  "text": "Meet the friendly classmates in your train compartment.",
+  "words": [
+    {
+      "text": "Meet",
+      "start": 0.099,
+      "end": 0.28,
+      "type": "word",
+      "logprob": -0.00010597144137136638
+    },
+    {
+      "text": " ",
+      "start": 0.28,
+      "end": 0.299,
+      "type": "spacing",
+      "logprob": -8.344646857949556e-7
+    },
+    {
+      "text": "the",
+      "start": 0.299,
+      "end": 0.359,
+      "type": "word",
+      "logprob": -8.344646857949556e-7
+    },
+    {
+      "text": " ",
+      "start": 0.359,
+      "end": 0.439,
+      "type": "spacing",
+      "logprob": -0.0000014305104514278355
+    },
+    {
+      "text": "friendly",
+      "start": 0.439,
+      "end": 0.759,
+      "type": "word",
+      "logprob": -0.0000014305104514278355
+    },
+    {
+      "text": " ",
+      "start": 0.759,
+      "end": 0.879,
+      "type": "spacing",
+      "logprob": -0.000002264974000354414
+    },
+    {
+      "text": "classmates",
+      "start": 0.879,
+      "end": 1.48,
+      "type": "word",
+      "logprob": -0.000002264974000354414
+    },
+    {
+      "text": " ",
+      "start": 1.48,
+      "end": 1.5,
+      "type": "spacing",
+      "logprob": -9.536738616588991e-7
+    },
+    {
+      "text": "in",
+      "start": 1.5,
+      "end": 1.62,
+      "type": "word",
+      "logprob": -9.536738616588991e-7
+    },
+    {
+      "text": " ",
+      "start": 1.62,
+      "end": 1.659,
+      "type": "spacing",
+      "logprob": -2.3841855067985307e-7
+    },
+    {
+      "text": "your",
+      "start": 1.659,
+      "end": 1.759,
+      "type": "word",
+      "logprob": -2.3841855067985307e-7
+    },
+    {
+      "text": " ",
+      "start": 1.759,
+      "end": 1.899,
+      "type": "spacing",
+      "logprob": -0.000060437283536884934
+    },
+    {
+      "text": "train",
+      "start": 1.899,
+      "end": 2.159,
+      "type": "word",
+      "logprob": -0.000060437283536884934
+    },
+    {
+      "text": " ",
+      "start": 2.159,
+      "end": 2.239,
+      "type": "spacing",
+      "logprob": -0.000013589766240329482
+    },
+    {
+      "text": "compartment.",
+      "start": 2.24,
+      "end": 2.899,
+      "type": "word",
+      "logprob": -0.04806626827955066
+    }
+  ],
+  "transcription_id": "PvbAzn5TUSoCzNSaEMRf",
+  "audio_duration_secs": 3.1579375
+}

@@ -1,0 +1,158 @@
+{
+  "schema_version": 1,
+  "algorithm": {
+    "id": "cyan-flood-aligned-character-sheet-v1",
+    "component_connectivity": 8,
+    "scale_filter": "premultiplied-rgba-box-rational-v1",
+    "output_color_type": 6,
+    "output_bit_depth": 8,
+    "deterministic": true
+  },
+  "slice_spec": {
+    "path": "art/characters/trolley-witch/canonical/identity-v1.layout.json",
+    "bytes": 1131,
+    "sha256": "20426c4e2c89cca2831694bd7e8e2a3e33af19d76cff0c9d3a6950579a2a8d51",
+    "schema_version": 1,
+    "id": "trolley-witch.identity-v1"
+  },
+  "source": {
+    "path": "art/characters/trolley-witch/canonical/identity-v1.png",
+    "bytes": 1761826,
+    "expected_sha256": "c3325f0b042512c2e5d5c6b760cab4a88d534a2670dcdf46efb21bec45bc1bfc",
+    "sha256": "c3325f0b042512c2e5d5c6b760cab4a88d534a2670dcdf46efb21bec45bc1bfc",
+    "rgba_sha256": "66b7f0de6786ef0deaa854281119191351a2c6c973bc63a43c952ad822ae4f07",
+    "dimensions": {
+      "width": 1086,
+      "height": 1448
+    }
+  },
+  "controls": {
+    "output_canvas": {
+      "width": 896,
+      "height": 1200,
+      "center_x": 448,
+      "ground_y": 1132
+    },
+    "common_scale": {
+      "numerator": 4,
+      "denominator": 5
+    },
+    "key": {
+      "color": {
+        "red": 1,
+        "green": 248,
+        "blue": 253
+      },
+      "tolerance": 28,
+      "alpha": {
+        "opaque_cyan_excess": 50,
+        "transparent_cyan_excess": 90,
+        "edge_spill_radius": 8,
+        "edge_spill_opaque_cyan_excess": 30,
+        "edge_spill_max_green_blue_delta": 70,
+        "matte_low_alpha": 170,
+        "matte_high_alpha": 245,
+        "edge_color_radius": 0
+      }
+    },
+    "components": {
+      "detail_min_pixels": 8,
+      "detail_max_pixels": 5000,
+      "detail_max_distance": 18
+    }
+  },
+  "outputs": [
+    {
+      "name": "neutral",
+      "path": "public/assets/art/characters/trolley-witch/default/neutral.png",
+      "media_type": "image/png",
+      "bytes": 794108,
+      "sha256": "218f81909f4adafe18e180c3d9f1ee0bf2eb8da85ff21d6bb971cf8ee8bb2bd7",
+      "rgba_sha256": "917fd04e96e95efc37b718026770a8bf0ac25c5e7fcf2d7980b6dbbe31753142",
+      "dimensions": {
+        "width": 896,
+        "height": 1200
+      },
+      "crop": {
+        "x": 0,
+        "y": 0,
+        "width": 1086,
+        "height": 1448
+      },
+      "source_content_bounds": {
+        "x": 221,
+        "y": 66,
+        "width": 663,
+        "height": 1336
+      },
+      "scaled_dimensions": {
+        "width": 531,
+        "height": 1069
+      },
+      "placement": {
+        "x": 183,
+        "y": 64,
+        "width": 531,
+        "height": 1069,
+        "center_x": 448,
+        "ground_y": 1132
+      },
+      "flood": {
+        "background_pixels": 999401,
+        "non_background_pixels": 573127,
+        "background_fraction": 0.6355378091836839
+      },
+      "components": {
+        "found": 8,
+        "dominant_pixels": 566388,
+        "kept": 1,
+        "removed": 7,
+        "selected_pixels": 566388,
+        "details": [
+          {
+            "pixels": 2,
+            "distance_from_dominant": 2,
+            "kept": false
+          },
+          {
+            "pixels": 3,
+            "distance_from_dominant": 3,
+            "kept": false
+          },
+          {
+            "pixels": 3,
+            "distance_from_dominant": 3,
+            "kept": false
+          },
+          {
+            "pixels": 3,
+            "distance_from_dominant": 3,
+            "kept": false
+          },
+          {
+            "pixels": 1,
+            "distance_from_dominant": 3,
+            "kept": false
+          },
+          {
+            "pixels": 2,
+            "distance_from_dominant": 5,
+            "kept": false
+          },
+          {
+            "pixels": 3,
+            "distance_from_dominant": 5,
+            "kept": false
+          }
+        ]
+      },
+      "alpha": {
+        "transparent_pixels": 1006140,
+        "soft_pixels": 867,
+        "opaque_pixels": 565521
+      },
+      "edge_artifacts_repaired": 23
+    }
+  ],
+  "provenance_path": "art/characters/trolley-witch/canonical/identity-v1.slice-provenance.json"
+}

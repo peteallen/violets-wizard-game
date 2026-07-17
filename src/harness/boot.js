@@ -31,7 +31,12 @@ export const SET_PIECE_REVIEW_SCENES = Object.freeze({
   'sp-brick-wall-review': 'sp.brickWall',
   'sp-wand-vase-review': 'sp.wandChaos2',
   'sp-wand-chosen-review': 'sp.wandChosen',
-  'sp-ch2-ticket-review': 'sp.ch2.previewTicket',
+  'sp-ch2-barrier-run-review': 'ch2.setPiece.barrierRun',
+  'sp-ch2-sweet-reaction-review': 'ch2.setPiece.sweetReaction',
+  'sp-ch2-lake-vista-review': 'ch2.setPiece.lakeVista',
+  'sp-ch2-sorting-reveal-review': 'ch2.setPiece.sortingReveal',
+  'sp-ch2-common-room-arrival-review': 'ch2.setPiece.commonRoomArrival',
+  'sp-ch2-chapter-card-review': 'ch2.setPiece.chapterCard',
 });
 
 export const WORLD_AFFORDANCE_REVIEW_SCENES = Object.freeze({
@@ -187,14 +192,19 @@ export async function prepareSetPieceReview(game, scene) {
   if (scene === 'sp-brick-wall-review') await game.setPieceRenderer.preloadBrickWall();
   if (game.world.dialogue.active) game.world.dialogue.close('harness-set-piece-review');
   game.world.afterSetPieceActions.length = 0;
-  const stagedPlayerX = {
-    'sp-wand-vase-review': 910,
-    'sp-wand-chosen-review': 1080,
+  const stagedPlayer = {
+    'sp-wand-vase-review': { x: 910, facing: 'right' },
+    'sp-wand-chosen-review': { x: 1080, facing: 'right' },
+    'sp-ch2-barrier-run-review': { x: 760, facing: 'right' },
+    'sp-ch2-sweet-reaction-review': { x: 410, facing: 'left' },
+    'sp-ch2-sorting-reveal-review': { x: 640, facing: 'right' },
+    'sp-ch2-common-room-arrival-review': { x: 590, facing: 'right' },
   }[scene];
-  if (stagedPlayerX) {
-    game.world.player.x = stagedPlayerX;
-    game.world.player.targetX = stagedPlayerX;
-    game.world.player.facing = 'right';
+  if (stagedPlayer) {
+    game.world.player.x = stagedPlayer.x;
+    game.world.player.targetX = stagedPlayer.x;
+    game.world.player.facing = stagedPlayer.facing;
+    game.world.player.walking = false;
   }
   if (game.world.setPieces.active?.requestedId !== setPieceId) game.world.setPieces.start(setPieceId);
   game.processWorldEvents();

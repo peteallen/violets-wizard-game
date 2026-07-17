@@ -1,7 +1,14 @@
-import { cards, cardsById, contentRegistry } from './content/index.js';
-import { chapter1Map, chapter1ResumeRecaps } from './content/chapters/ch1.js';
+import {
+  cards,
+  cardsById,
+  contentRegistry,
+  getChapterMap,
+  resumeRecaps,
+} from './content/index.js';
+import { chapter1ResumeRecaps } from './content/chapters/ch1.js';
 import { INPUT, PALETTE, WORLD } from './config.js';
 import { resolveAsset } from './core/assetManifest.js';
+import { conditionMatches } from './core/conditions.js';
 import { cleanPetName, PetNameDialog } from './core/PetNameDialog.js';
 import { SaveTransferDialog } from './core/SaveTransferDialog.js';
 import { SoundEngine } from './core/SoundEngine.js';
@@ -27,7 +34,8 @@ import {
 } from './render/UIRenderer.js';
 import { WorldAffordanceRenderer } from './render/WorldAffordanceRenderer.js';
 import { WorldPropRenderer } from './render/WorldPropRenderer.js';
-import { Save, YEARBOOK_MAX_BYTES, createSaveV1 } from './systems/Save.js';
+import { resolveProductionRoomMusic } from './presentation/productionRoomVariantOverlays.js';
+import { Save, YEARBOOK_MAX_BYTES, createSaveV2 } from './systems/Save.js';
 import { World } from './world/World.js';
 
 const FIXED_HARNESS_TIME = '2000-01-01T00:00:00.000Z';
@@ -43,6 +51,13 @@ function isChapterTwoPreview(world, state) {
   return Boolean(
     world?.chapter?.id === 'ch2'
     && state?.roomId === 'ch2.previewRoom',
+  );
+}
+
+function activeChapterMap(world, state) {
+  return getChapterMap(
+    world?.chapter?.id ?? state?.chapterId,
+    state?.sceneId,
   );
 }
 
@@ -83,14 +98,24 @@ export class Game {
     this.sessionTransitioning = false;
 
     const storage = options.storage ?? safeStorage();
-    this.saveManager = options.saveManager ?? new Save({ storage, clock: this.clock });
+    this.saveManager = options.saveManager ?? new Save({
+      storage,
+      clock: this.clock,
+      migrationOptions: options.saveMigrationOptions,
+    });
     const loaded = options.saveData
-      ? { ok: true, status: 'provided', save: structuredClone(options.saveData) }
+      ? {
+          ok: true,
+          status: 'provided',
+          save: typeof this.saveManager.prepare === 'function'
+            ? this.saveManager.prepare(options.saveData)
+            : structuredClone(options.saveData),
+        }
       : this.saveManager.load();
     this.loadStatus = loaded;
     this.saveData = loaded.ok && loaded.save
       ? loaded.save
-      : createSaveV1({ now: this.clock(), appVersion: import.meta.env.VITE_BUILD_SHA ?? 'development', worldSeed: 12072026 });
+      : createSaveV2({ now: this.clock(), appVersion: import.meta.env.VITE_BUILD_SHA ?? 'development', worldSeed: 12072026 });
     this.hasStoredSave = Boolean(loaded.ok && loaded.save && hasMeaningfulProgress(this.saveData));
     this.motionQuery = matchMedia('(prefers-reduced-motion: reduce)');
     this.reducedMotion = options.reducedMotion
@@ -205,6 +230,7 @@ export class Game {
     this.processWorldEvents();
     this.updateMusic();
     if (this.world.roomId === 'ch1.courtyard') void this.setPieceRenderer.preloadBrickWall();
+    void this.preloadCurrentRoomSetPieceVariants();
   }
 
   beginSessionTransition() {
@@ -242,7 +268,7 @@ export class Game {
         source: 'start-adventure',
       });
       if (!this.isCurrentSessionTransition(generation)) return;
-      const recap = this.hasStoredSave ? selectChapter1ResumeRecap(this.saveData) : null;
+      const recap = this.hasStoredSave ? selectResumeRecap(this.saveData) : null;
       this.createWorld(this.saveData);
       try {
         await this.characterScopes.releaseTitle();
@@ -522,7 +548,11 @@ export class Game {
       return;
     }
     if (state.hasSatchel && pointInUiRect(point, UI_RECTS.satchel)) {
-      this.world.overlay = { surface: 'satchel', tab: 'map' };
+      const map = activeChapterMap(this.world, state);
+      this.world.overlay = {
+        surface: 'satchel',
+        tab: map ? 'map' : 'cards',
+      };
       this.sound.playSfx('sfx/ui/parchment', 'chime');
       return;
     }
@@ -693,6 +723,8 @@ export class Game {
       return;
     }
     if (state.overlay.surface === 'satchel') {
+      const map = activeChapterMap(this.world, state);
+      const mapAvailable = Boolean(map);
       if (pointInUiRect(point, UI_RECTS.satchelStartOver)) {
         this.sound.playSfx('sfx/ui/parchment', 'chime');
         this.openParentPanel('confirm-start-over', null, {
@@ -702,6 +734,10 @@ export class Game {
         return;
       }
       if (pointInUiRect(point, UI_RECTS.satchelMapTab)) {
+        if (!mapAvailable) {
+          this.world.overlay = { surface: 'satchel', tab: 'cards' };
+          return;
+        }
         this.world.overlay = { surface: 'satchel', tab: 'map' };
         this.sound.playSfx('sfx/ui/parchment', 'tap');
         return;
@@ -724,10 +760,15 @@ export class Game {
         this.updateStatus(card.text);
         return;
       }
+      if (!mapAvailable) {
+        this.world.overlay = { surface: 'satchel', tab: 'cards' };
+        this.sound.playSfx('sfx/ui/locked', 'fizzle');
+        return;
+      }
       const mapPresentation = this.uiRenderer.mapPresentation(
         state,
         this.simTime,
-        { reducedMotion: this.reducedMotion },
+        { map, reducedMotion: this.reducedMotion },
       );
       const location = mapPresentation.hitTargets.find(
         (candidate) => pointInUiRect(point, candidate.hitArea),
@@ -737,7 +778,7 @@ export class Game {
         this.sound.playSfx('sfx/ui/locked', 'fizzle');
         return;
       }
-      const contentLocation = chapter1Map.locations.find((candidate) => candidate.id === location.id);
+      const contentLocation = map.locations.find((candidate) => candidate.id === location.id);
       if (!contentLocation) return;
       this.world.closeOverlay();
       this.nextTransitionEffect = 'sparkle';
@@ -800,8 +841,13 @@ export class Game {
     if (overlay.page === 'play') {
       if (pointInUiRect(point, UI_RECTS.parentReplay)) {
         if (this.replayMode) this.exitReplay();
-        else if (this.saveData.progress.completedChapters.includes('ch1')) this.beginReplay('ch1');
-        else this.setParentNotice('Chapter One unlocks replay when it is complete.', 'error');
+        else {
+          const chapterId = latestReplayChapterId(
+            this.replayMode && this.canonicalSave ? this.canonicalSave : this.saveData,
+          );
+          if (chapterId) this.beginReplay(chapterId);
+          else this.setParentNotice('A finished chapter unlocks replay.', 'error');
+        }
         return;
       }
       if (pointInUiRect(point, UI_RECTS.parentYearbook)) {
@@ -952,6 +998,7 @@ export class Game {
         this.sound.stopVoice();
         break;
       case 'setPiece.started':
+        void this.preloadSetPieceRoomVariant(this.world.setPieces.active);
         if (event.payload.id.includes('previewTicket')) {
           this.playOrDeferTransitionAudio({
             type: 'sfx',
@@ -983,6 +1030,7 @@ export class Game {
         this.particles.clear();
         this.updateMusic();
         if (event.payload.room === 'ch1.courtyard') void this.setPieceRenderer.preloadBrickWall();
+        void this.preloadCurrentRoomSetPieceVariants();
         break;
       case 'ui.openRequested':
         if (event.payload.surface === 'chapter-replay') this.beginReplay();
@@ -991,8 +1039,8 @@ export class Game {
         }
         break;
       case 'chapter.completed':
-        if (this.world.chapter.id !== (event.payload.nextChapter ?? 'ch2')) {
-          this.world.changeChapter(event.payload.nextChapter ?? 'ch2');
+        if (this.world.chapter.id !== event.payload.nextChapter) {
+          this.world.changeChapter(event.payload.nextChapter);
           this.processWorldEvents();
         }
         break;
@@ -1054,10 +1102,45 @@ export class Game {
 
   updateMusic() {
     if (!this.world) return;
-    const key = this.world.roomId === 'ch1.diagonStreet'
-      ? 'music/ch1/diagonAlley'
-      : 'music/ch1/violetTheme';
+    const key = resolveProductionRoomMusic({
+      chapterId: this.world.chapter?.id,
+      roomId: this.world.roomId,
+    });
+    if (!key) return;
     this.sound.playMusic(key, { mode: 'crossfade', fadeSeconds: 0.8 });
+  }
+
+  preloadCurrentRoomSetPieceVariants() {
+    if (!this.world || this.roomTransition) return Promise.resolve([]);
+    const variants = [...new Set(Object.values(this.world.chapter?.setPieces ?? {})
+      .map((descriptor) => descriptor.params?.preloadRoomVariant)
+      .filter((variant) => roomHasVariant(this.world.room, variant)))];
+    return Promise.all(variants.map((variant) => this.preloadRoomVariant(variant)));
+  }
+
+  preloadSetPieceRoomVariant(active) {
+    const variant = setPieceParam(active, 'preloadRoomVariant');
+    if (this.roomTransition || !roomHasVariant(this.world?.room, variant)) {
+      return Promise.resolve(null);
+    }
+    return this.preloadRoomVariant(variant);
+  }
+
+  preloadRoomVariant(variant) {
+    if (!this.world || typeof this.roomRenderer?.preloadRoom !== 'function') {
+      return Promise.resolve(null);
+    }
+    const state = { ...this.world.snapshot(), roomVariant: variant };
+    const scale = (this.dpr ?? 1) * (this.scale ?? 1);
+    return Promise.resolve()
+      .then(() => this.roomRenderer.preloadRoom(this.world.room, state, { scale }))
+      .catch((error) => {
+        this.roomRenderer?.logger?.warn?.(
+          `Set-piece destination room variant ${variant} could not be prepared.`,
+          error,
+        );
+        return null;
+      });
   }
 
   beginRoomTransition(effect = 'ink') {
@@ -1286,6 +1369,7 @@ export class Game {
     const deferred = [...this.deferredTransitionAudio];
     this.releaseRoomTransition();
     if (this.destroyed) return;
+    void this.preloadCurrentRoomSetPieceVariants();
     for (const entry of deferred) this.playTransitionAudio(entry);
   }
 
@@ -1392,7 +1476,7 @@ export class Game {
       return cleared;
     }
 
-    const fresh = createSaveV1({
+    const fresh = createSaveV2({
       now: this.clock(),
       appVersion: import.meta.env.VITE_BUILD_SHA ?? 'development',
       worldSeed: 12072026,
@@ -1481,7 +1565,7 @@ export class Game {
       return result;
     }
 
-    const fresh = createSaveV1({
+    const fresh = createSaveV2({
       now: this.clock(),
       appVersion: import.meta.env.VITE_BUILD_SHA ?? 'development',
       worldSeed: 12072026,
@@ -1529,7 +1613,7 @@ export class Game {
     if (byteLength > YEARBOOK_MAX_BYTES) return;
     this.saveData.yearbook.entries.push({
       id: moment,
-      chapter: 'ch1',
+      chapter: this.world?.chapter?.id ?? this.saveData.resume.chapter,
       caption,
       mime: 'image/jpeg',
       width: 480,
@@ -1541,35 +1625,32 @@ export class Game {
     this.persistSave(this.saveData, true);
   }
 
-  async beginReplay(chapterId = 'ch1') {
+  async beginReplay(chapterId = null) {
     if (this.replayMode) return { ok: false, status: 'already-replaying' };
-    if (chapterId !== 'ch1' || !this.saveData.progress.completedChapters.includes(chapterId)) {
+    const requestedChapterId = chapterId ?? latestReplayChapterId(this.saveData);
+    const chapter = requestedChapterId ? contentRegistry[requestedChapterId] : null;
+    if (!chapter || !this.saveData.progress.completedChapters.includes(requestedChapterId)) {
       return { ok: false, status: 'chapter-locked' };
     }
     const generation = this.beginSessionTransition();
     if (generation === null) return { ok: false, status: 'session-transitioning' };
     const saved = this.saveManager.write(this.saveData);
     const canonicalSave = structuredClone(saved.ok ? saved.save : this.saveData);
-    const replay = createSaveV1({
-      now: this.clock(),
-      appVersion: canonicalSave.appVersion,
-      worldSeed: canonicalSave.worldSeed,
-      name: canonicalSave.character.name,
-    });
-    replay.settings = structuredClone(canonicalSave.settings);
+    const replay = createReplaySave(canonicalSave, chapter, this.clock());
+    const chapterLabel = chapterReplayLabel(chapter);
     try {
-      await this.activateSessionCharacterScope({ chapterId, source: 'chapter-replay' });
+      await this.activateSessionCharacterScope({ chapterId: requestedChapterId, source: 'chapter-replay' });
       if (!this.isCurrentSessionTransition(generation)) return { ok: false, status: 'superseded' };
       this.canonicalSave = canonicalSave;
       this.replayMode = true;
       this.createWorld(replay);
-      this.updateStatus('Chapter One replay. Violet’s saved adventure is safe.');
+      this.updateStatus(`${chapterLabel} replay. Violet’s saved adventure is safe.`);
       this.render();
       return { ok: true, status: 'replay-started', save: replay };
     } catch (error) {
       if (this.isCurrentSessionTransition(generation)) {
         this.roomRenderer?.logger?.warn?.('The replay character scope could not be activated.', error);
-        this.updateStatus('Chapter One replay could not open. Violet’s saved adventure is still safe.');
+        this.updateStatus(`${chapterLabel} replay could not open. Violet’s saved adventure is still safe.`);
         this.render();
       }
       return { ok: false, status: 'character-scope-error', error };
@@ -1582,7 +1663,8 @@ export class Game {
     if (!this.replayMode || !this.canonicalSave) return { ok: false, status: 'not-replaying' };
     const generation = this.beginSessionTransition();
     if (generation === null) return { ok: false, status: 'session-transitioning' };
-    const canonical = structuredClone(this.canonicalSave);
+    let canonical = structuredClone(this.canonicalSave);
+    const foundNewKeepsake = mergeReplayCollections(canonical, this.saveData);
     try {
       await this.activateSessionCharacterScope({
         chapterId: canonical.resume.chapter,
@@ -1592,6 +1674,10 @@ export class Game {
       this.replayMode = false;
       this.canonicalSave = null;
       this.sound.stopVoice();
+      if (foundNewKeepsake) {
+        const saved = this.saveManager.write(canonical);
+        if (saved.ok) canonical = saved.save;
+      }
       this.saveData = canonical;
       this.applyDeviceSettings(canonical.settings);
       this.createWorld(canonical, { preserveSave: true });
@@ -1645,13 +1731,21 @@ export class Game {
     const state = this.world.snapshot();
     this.lastRenderState = state;
     const room = this.world.room;
+    const roomRenderState = roomStateDuringSetPiece(state);
     const setPieceId = String(state.setPiece?.requestedId ?? state.setPiece?.id ?? '').toLowerCase();
     const brickWallActive = setPieceId.includes('brick');
     const behindCastSetPieceActive = brickWallActive || setPieceId.includes('wandchaos') || setPieceId.includes('wand-chaos');
 
     const chapterTwoPreview = isChapterTwoPreview(this.world, state);
     if (chapterTwoPreview || state.roomId === 'ch1.chapterCardRoom') {
-      this.roomRenderer.draw(context, room, state, this.simTime, { x: 0 });
+      this.roomRenderer.draw(
+        context,
+        room,
+        roomRenderState,
+        this.simTime,
+        { x: 0 },
+        { reducedMotion: this.reducedMotion },
+      );
       if (chapterTwoPreview && !state.setPiece) {
         this.chapterPreviewRenderer.draw(context, {
           choices: state.dialogue?.choices ?? [],
@@ -1668,7 +1762,14 @@ export class Game {
         });
       }
     } else {
-      this.roomRenderer.draw(context, room, state, this.simTime, { x: state.cameraX });
+      this.roomRenderer.draw(
+        context,
+        room,
+        roomRenderState,
+        this.simTime,
+        { x: state.cameraX },
+        { reducedMotion: this.reducedMotion },
+      );
       this.worldPropRenderer.draw(context, state, this.simTime, { reducedMotion: this.reducedMotion });
       this.guideFootprintRenderer.draw(context, state, this.simTime, { reducedMotion: this.reducedMotion });
       if (behindCastSetPieceActive) {
@@ -1711,7 +1812,9 @@ export class Game {
         );
       }
       if (state.overlay?.surface === 'satchel') {
+        const map = activeChapterMap(this.world, state);
         this.uiRenderer.drawSatchel(context, state, cards, {
+          map,
           parentGateProgress: this.parentGateProgress,
           time: this.simTime,
           reducedMotion: this.reducedMotion,
@@ -1741,11 +1844,15 @@ export class Game {
 
   parentPanelModel(overlay = this.world?.overlay) {
     const durableSave = this.replayMode && this.canonicalSave ? this.canonicalSave : this.saveData;
+    const replayChapterId = latestReplayChapterId(durableSave);
+    const replayChapter = replayChapterId ? contentRegistry[replayChapterId] : null;
     return {
       overlay,
       settings: this.saveData.settings,
       replayMode: this.replayMode,
-      chapter1Completed: durableSave.progress.completedChapters.includes('ch1'),
+      replayChapterId,
+      replayChapterLabel: replayChapter ? chapterReplayLabel(replayChapter) : null,
+      replayChapterDetail: replayChapter ? chapterReplayDetail(replayChapter) : null,
       yearbookCount: durableSave.yearbook.entries.length,
       effectiveReducedMotion: this.reducedMotion,
       systemReducedMotion: this.motionQuery.matches,
@@ -1831,8 +1938,16 @@ export class Game {
       if (!chapterTwoPreview && choice.__rect) targets.push({ id: `dialogue.${choice.id}`, x: choice.__rect.x + choice.__rect.width / 2, y: choice.__rect.y + choice.__rect.height / 2 });
     }
     if (state.overlay?.surface === 'satchel') {
+      const map = activeChapterMap(this.world, state);
+      const mapAvailable = Boolean(map);
+      if (mapAvailable) {
+        targets.push({
+          id: 'satchel.map',
+          x: UI_RECTS.satchelMapTab.x + UI_RECTS.satchelMapTab.width / 2,
+          y: UI_RECTS.satchelMapTab.y + UI_RECTS.satchelMapTab.height / 2,
+        });
+      }
       targets.push(
-        { id: 'satchel.map', x: UI_RECTS.satchelMapTab.x + UI_RECTS.satchelMapTab.width / 2, y: UI_RECTS.satchelMapTab.y + UI_RECTS.satchelMapTab.height / 2 },
         { id: 'satchel.cards', x: UI_RECTS.satchelCardsTab.x + UI_RECTS.satchelCardsTab.width / 2, y: UI_RECTS.satchelCardsTab.y + UI_RECTS.satchelCardsTab.height / 2 },
         semanticRect('satchel.grownups', UI_RECTS.satchelKeyhole),
         semanticRect('satchel.startOver', UI_RECTS.satchelStartOver),
@@ -1841,11 +1956,11 @@ export class Game {
         for (const slot of state.__cardSlots ?? []) {
           targets.push({ id: `satchel.card.${slot.id}`, x: slot.__rect.x + slot.__rect.width / 2, y: slot.__rect.y + slot.__rect.height / 2 });
         }
-      } else {
+      } else if (mapAvailable) {
         const mapPresentation = this.uiRenderer.mapPresentation(
           state,
           this.simTime,
-          { reducedMotion: this.reducedMotion },
+          { map, reducedMotion: this.reducedMotion },
         );
         for (const location of mapPresentation.hitTargets) {
           targets.push({
@@ -2007,6 +2122,27 @@ export class Game {
     if (this.debug) window.removeEventListener('keydown', this.boundKeyDown);
     return characterRelease;
   }
+}
+
+export function roomStateDuringSetPiece(state) {
+  const active = state?.setPiece;
+  const variant = setPieceParam(active, 'preloadRoomVariant');
+  const revealAt = setPieceParam(active, 'revealRoomVariantAt');
+  if (typeof variant !== 'string' || !variant || !Number.isFinite(revealAt)) return state;
+  const duration = Math.max(0.1, active?.descriptor?.duration ?? 1);
+  const progress = clamp((active?.time ?? 0) / duration, 0, 1);
+  if (progress + Number.EPSILON < clamp(revealAt, 0, 1)) return state;
+  return { ...state, roomVariant: variant };
+}
+
+function setPieceParam(active, key) {
+  return active?.params?.[key] ?? active?.descriptor?.params?.[key];
+}
+
+function roomHasVariant(room, variant) {
+  return typeof variant === 'string'
+    && Array.isArray(room?.background?.variants?.[variant])
+    && room.background.variants[variant].length > 0;
 }
 
 export function roomTransitionState(elapsed, {
@@ -2366,4 +2502,121 @@ export function selectChapter1ResumeRecap(save, recaps = chapter1ResumeRecaps) {
   if (flags['ch1.petNamed']) step = 'returnToGuide';
   if (flags['ch1.ticketReceived'] || flags['ch1.complete']) return null;
   return recaps.find((recap) => recap.step === step) ?? null;
+}
+
+export function selectResumeRecap(
+  save,
+  chaptersById = contentRegistry,
+  recapsByChapter = resumeRecaps,
+) {
+  const chapterId = save?.resume?.chapter;
+  const chapter = chaptersById?.[chapterId];
+  const recaps = recapsByChapter?.[chapterId] ?? chapter?.recaps ?? [];
+  if (!chapter || recaps.length === 0) return null;
+  if (save.progress?.completedChapters?.includes(chapterId)) return null;
+  if (chapter.contractVersion === 1) return selectChapter1ResumeRecap(save, recaps);
+
+  const active = activeQuestStep(chapter, save);
+  if (!active) return null;
+  const activeIndex = active.order.indexOf(active.stepId);
+  if (activeIndex < 0) return null;
+
+  let selected = null;
+  let selectedIndex = -1;
+  for (const recap of recaps) {
+    const recapIndex = active.order.indexOf(recap.step);
+    if (recapIndex < 0 || recapIndex > activeIndex || recapIndex < selectedIndex) continue;
+    selected = recap;
+    selectedIndex = recapIndex;
+  }
+  return selected;
+}
+
+function activeQuestStep(chapter, save) {
+  for (const quest of Object.values(chapter.quests ?? {})) {
+    if (!conditionMatches(quest.startWhen, save)) continue;
+    const order = [];
+    const visited = new Set();
+    let stepId = quest.startStep;
+    while (stepId && !visited.has(stepId)) {
+      visited.add(stepId);
+      order.push(stepId);
+      const step = quest.steps[stepId];
+      if (!step) break;
+      if (!conditionMatches(step.doneWhen, save)) return { quest, stepId, order };
+      stepId = step.next;
+    }
+  }
+  return null;
+}
+
+function latestReplayChapterId(save) {
+  return [...(save?.progress?.completedChapters ?? [])]
+    .filter((chapterId) => Boolean(contentRegistry[chapterId]))
+    .sort((left, right) => contentRegistry[right].number - contentRegistry[left].number)[0] ?? null;
+}
+
+export function mergeReplayCollections(canonical, replay) {
+  let changed = false;
+  for (const field of ['cards', 'treasures']) {
+    const durable = canonical?.collections?.[field];
+    const discovered = replay?.collections?.[field];
+    if (!Array.isArray(durable) || !Array.isArray(discovered)) continue;
+    for (const id of discovered) {
+      if (durable.includes(id)) continue;
+      durable.push(id);
+      changed = true;
+    }
+  }
+  return changed;
+}
+
+function createReplaySave(canonicalSave, chapter, now) {
+  const replay = createSaveV2({
+    now,
+    appVersion: canonicalSave.appVersion,
+    worldSeed: canonicalSave.worldSeed,
+    name: canonicalSave.character.name,
+  });
+  replay.settings = structuredClone(canonicalSave.settings);
+  replay.collections.cards = [...canonicalSave.collections.cards];
+  replay.collections.treasures = [...canonicalSave.collections.treasures];
+  if (chapter.number > 1) {
+    replay.character = structuredClone(canonicalSave.character);
+    replay.character.house = null;
+    replay.character.commonRoomPassword = [];
+
+    const priorChapterIds = canonicalSave.progress.completedChapters.filter((chapterId) => (
+      contentRegistry[chapterId]?.number < chapter.number
+    ));
+    replay.progress.completedChapters = [...priorChapterIds];
+    replay.progress.highestUnlockedChapter = chapter.number;
+    for (const chapterId of priorChapterIds) replay.progress.questFlags[`${chapterId}.complete`] = true;
+    for (const [flag, value] of Object.entries(canonicalSave.progress.questFlags)) {
+      const owner = flag.split('.')[0];
+      if (priorChapterIds.includes(owner)) replay.progress.questFlags[flag] = value;
+    }
+    for (const [choice, value] of Object.entries(canonicalSave.progress.storyChoices)) {
+      const owner = choice.split('.')[0];
+      if (priorChapterIds.includes(owner)) replay.progress.storyChoices[choice] = structuredClone(value);
+    }
+    replay.resume = {
+      chapter: chapter.id,
+      scene: chapter.start.scene,
+      room: chapter.start.room,
+      spawn: chapter.start.spawn,
+    };
+  }
+  return replay;
+}
+
+function chapterReplayLabel(chapter) {
+  const words = { 1: 'One', 2: 'Two', 3: 'Three' };
+  return `Chapter ${words[chapter.number] ?? chapter.number}`;
+}
+
+function chapterReplayDetail(chapter) {
+  if (chapter.number === 1) return 'Play from the letter again';
+  if (chapter.number === 2) return 'Return to King’s Cross';
+  return 'Play this chapter again';
 }

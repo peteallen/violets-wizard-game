@@ -507,19 +507,24 @@ export function dialogueChoiceLayout(count) {
 export function albumCardLayout(entry) {
   const rect = entry?.__rect;
   if (!rect) throw new TypeError('albumCardLayout requires an album entry with a card rectangle.');
+  const sidePadding = Math.max(22, rect.width * 0.09);
+  const portraitTop = Math.max(24, rect.height * 0.07);
+  const nameplateHeight = Math.min(58, rect.height * 0.15);
+  const nameplateBottom = Math.max(22, rect.height * 0.065);
+  const nameplateSide = Math.max(28, rect.width * 0.13);
   return Object.freeze({
     card: Object.freeze({ ...rect }),
     portrait: Object.freeze({
-      x: rect.x + 32,
-      y: rect.y + 28,
-      width: rect.width - 64,
-      height: 226,
+      x: rect.x + sidePadding,
+      y: rect.y + portraitTop,
+      width: rect.width - sidePadding * 2,
+      height: Math.min(226, rect.height - portraitTop - nameplateHeight - nameplateBottom - 34),
     }),
     nameplate: Object.freeze({
-      x: rect.x + 43,
-      y: rect.y + 282,
-      width: rect.width - 86,
-      height: 58,
+      x: rect.x + nameplateSide,
+      y: rect.y + rect.height - nameplateBottom - nameplateHeight,
+      width: rect.width - nameplateSide * 2,
+      height: nameplateHeight,
     }),
   });
 }
@@ -702,10 +707,12 @@ export class UIRenderer {
         overlay: { surface: 'satchel', tab: 'cards' },
         unlockedRooms: ['ch1.ollivanders', 'ch1.malkins', 'ch1.menagerie'],
         objective: { mapStar: { room: 'ch1.diagonStreet', hotspot: 'street.menagerieDoor' } },
-        cards: ['morgana'],
+        cards: ['morgana', 'merlin'],
       }, [
         { id: 'morgana', name: 'Morgana', portraitAsset: 'cards/morgana/portrait' },
         { id: 'dumbledore', name: 'Dumbledore', portraitAsset: 'cards/dumbledore/portrait' },
+        { id: 'merlin', name: 'Merlin', portraitAsset: 'cards/merlin/portrait' },
+        { id: 'jocunda-sykes', name: 'Jocunda Sykes', portraitAsset: 'cards/jocunda-sykes/portrait' },
       ]);
     } else if (scene === 'ui-objective-review') {
       this.drawObjective(
@@ -890,28 +897,31 @@ export class UIRenderer {
   }
 
   drawSatchel(context, state, cardDefinitions = [], {
+    map = chapter1Map,
     parentGateProgress = 0,
     time = 0,
     reducedMotion = false,
   } = {}) {
-    const activeTab = state.overlay?.tab === 'cards' ? 'cards' : 'map';
+    const activeTab = state.overlay?.tab === 'cards' || !map ? 'cards' : 'map';
     drawStorybookSpread(context, { x: 72, y: 32, width: 1136, height: 652 }, {
       title: childFacingUiText('Violet’s Satchel', 'proper-name'),
     });
 
     const content = activeTab === 'cards'
       ? this.drawCardAlbumContent(context, state, cardDefinitions)
-      : this.drawMapContent(context, state, time, { reducedMotion });
+      : this.drawMapContent(context, state, time, { map, reducedMotion });
 
     // Leather tabs, the grown-up keyhole, and the close seal belong to the
     // satchel itself, so they stay above the illustrated page content.
-    drawSatchelTab(
-      context,
-      UI_RECTS.satchelMapTab,
-      'map',
-      childFacingUiText('Map', 'caption'),
-      activeTab === 'map',
-    );
+    if (map) {
+      drawSatchelTab(
+        context,
+        UI_RECTS.satchelMapTab,
+        'map',
+        childFacingUiText('Map', 'caption'),
+        activeTab === 'map',
+      );
+    }
     drawSatchelTab(
       context,
       UI_RECTS.satchelCardsTab,
@@ -934,14 +944,20 @@ export class UIRenderer {
     return this.drawSatchel(context, state, []);
   }
 
-  drawMapContent(context, state, time = 0, { reducedMotion = false } = {}) {
-    const mapState = buildMapState(chapter1Map, state);
+  drawMapContent(context, state, time = 0, {
+    map = chapter1Map,
+    reducedMotion = false,
+  } = {}) {
+    const mapState = buildMapState(map, state);
     return this.mapRenderer.draw(context, mapState, state, time, { reducedMotion });
   }
 
-  mapPresentation(state, time = 0, { reducedMotion = false } = {}) {
+  mapPresentation(state, time = 0, {
+    map = chapter1Map,
+    reducedMotion = false,
+  } = {}) {
     return createIllustratedMapPresentation(
-      buildMapState(chapter1Map, state),
+      buildMapState(map, state),
       state,
       time,
       { reducedMotion },
@@ -1149,12 +1165,14 @@ export class UIRenderer {
 
   drawParentPlay(context, model) {
     drawParchmentAction(context, UI_RECTS.parentReplay, {
-      label: model.replayMode ? 'Return to saved game' : 'Replay Chapter One',
+      label: model.replayMode
+        ? 'Return to saved game'
+        : model.replayChapterLabel ? `Replay ${model.replayChapterLabel}` : 'Replay a chapter',
       detail: model.replayMode
         ? 'Leave this practice adventure'
-        : model.chapter1Completed ? 'Play from the letter again' : 'Unlocks after Chapter One',
+        : model.replayChapterDetail ?? 'Unlocks after a chapter is finished',
       icon: vectorControlIcon('replay'),
-      disabled: !model.replayMode && !model.chapter1Completed,
+      disabled: !model.replayMode && !model.replayChapterId,
     });
     drawParchmentAction(context, UI_RECTS.parentYearbook, {
       label: 'Violet’s Yearbook',
@@ -1422,17 +1440,18 @@ function traceYearbookLeafVein(context, x, y, size, index) {
 
 export function buildCardAlbumEntries(cardDefinitions, earnedCardIds) {
   const earned = new Set(earnedCardIds);
-  const slotWidth = 330;
-  const slotHeight = 375;
-  const gap = 50;
-  const columns = Math.max(1, Math.min(2, cardDefinitions.length));
+  const compact = cardDefinitions.length > 2;
+  const slotWidth = compact ? 250 : 330;
+  const slotHeight = compact ? 276 : 292;
+  const gap = compact ? 26 : 50;
+  const columns = Math.max(1, Math.min(4, cardDefinitions.length));
   const startX = (WORLD.width - (columns * slotWidth + (columns - 1) * gap)) / 2;
   return cardDefinitions.map((card, index) => ({
     ...card,
     earned: earned.has(card.id),
     __rect: {
       x: startX + (index % columns) * (slotWidth + gap),
-      y: 286 + Math.floor(index / columns) * (slotHeight + 28),
+      y: 282 + Math.floor(index / columns) * (slotHeight + 24),
       width: slotWidth,
       height: slotHeight,
     },

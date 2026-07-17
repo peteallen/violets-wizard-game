@@ -1,0 +1,83 @@
+{
+  "schema_version": 1,
+  "kind": "codex-built-in-room-image-generation",
+  "slug": "kings-cross-native-v2",
+  "workflow": {
+    "name": "Codex built-in image generation",
+    "tool": "image_gen.imagegen",
+    "model_identifier": null,
+    "seed": null,
+    "note": "The built-in workflow did not return a model identifier or seed."
+  },
+  "timestamps": {
+    "generation_started_at": "2026-07-16T21:39:11.237Z",
+    "generation_completed_at": "2026-07-16T21:40:52.416Z",
+    "duration_ms": 101179
+  },
+  "request_spec": {
+    "path": "art/chapters/ch2/rooms/kings-cross-native-v2.request.json",
+    "bytes": 1353,
+    "sha256": "3e531ba874aa7574ae493ed9afb82b6d45f6c96a665c4e58ac117aeb9fbd0de5"
+  },
+  "prompt": {
+    "path": "art/chapters/ch2/rooms/kings-cross-native-v2.prompt.md",
+    "section": "Prompt",
+    "bytes": 2969,
+    "sha256": "70acd5063d92d5fe811567e2203f41a16adc606fa824cbe1eebe911b73829425"
+  },
+  "references": [
+    {
+      "index": 1,
+      "path": "art/raw/ch1-platform.png",
+      "role": "railway-platform style and finish",
+      "bytes": 2884310,
+      "sha256": "8035bbc87dd43643a59132dec27a91255d942f653ca6a78487312a46ac022af1",
+      "dimensions": { "width": 1672, "height": 941 }
+    },
+    {
+      "index": 2,
+      "path": "art/raw/ch1-courtyard.png",
+      "role": "brick, stone-floor, material-detail, and warm-light reference",
+      "bytes": 2988006,
+      "sha256": "1d52de7f7002bf8286207e9b77d0da2e640d99b47fe4cec56290fb6f75425068",
+      "dimensions": { "width": 1672, "height": 941 }
+    },
+    {
+      "index": 3,
+      "path": "art/raw/ch1-leaky.png",
+      "role": "interior depth, richly painted surface, and amber-versus-violet lighting reference",
+      "bytes": 2473783,
+      "sha256": "ba771b909293ca6338f026a7011078198fecb137b8f50d855e67be5d9fc31097",
+      "dimensions": { "width": 1672, "height": 941 }
+    }
+  ],
+  "generation_output": {
+    "id": "exec-c4aeaa41-b43f-4c6e-b13d-ed3e4fafe6f3",
+    "original_path": "/Users/peteallen/.codex/generated_images/019f6c3e-aa13-7f72-8f24-96fc942fe3e4/exec-c4aeaa41-b43f-4c6e-b13d-ed3e4fafe6f3.png",
+    "copied_to": "art/raw/ch2-kings-cross-native-v2.png",
+    "media_type": "image/png",
+    "bytes": 2867438,
+    "sha256": "8295d25affcd2040189743135e6dd9a63744edc21c2393e0416f3efb05592548",
+    "dimensions": { "width": 1672, "height": 941 }
+  },
+  "derivatives": {
+    "accepted_png": {
+      "path": "art/raw/ch2-kings-cross-v2.png",
+      "bytes": 3815166,
+      "sha256": "5d06abd464e29038956229d289645ef1f1e59de01be17eddee67fb0300daf198",
+      "dimensions": { "width": 2048, "height": 1152 }
+    },
+    "shipping_webp": {
+      "path": "public/assets/art/rooms/ch2-kings-cross.webp",
+      "bytes": 422220,
+      "sha256": "b904aab57451974da2c8aabd2d130afbba531ee3688731640b50712c2e4507de",
+      "dimensions": { "width": 2048, "height": 1152 }
+    }
+  },
+  "conversion": {
+    "crop": "sips -s format png -c 940 1672",
+    "resize": "sips -s format png -z 1152 2048",
+    "shipping": "cwebp -q 88 -m 6 -sharp_yuv",
+    "note": "The 1672x941 native PNG was center-cropped by one pixel to 1672x940, resized once to 2048x1152, then encoded as WebP."
+  }
+}

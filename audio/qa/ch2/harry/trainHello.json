@@ -1,0 +1,198 @@
+{
+  "language_code": "eng",
+  "language_probability": 1,
+  "text": "Hi Violet, there is a seat by the window if you would like it",
+  "words": [
+    {
+      "text": "Hi",
+      "start": 0.079,
+      "end": 0.199,
+      "type": "word",
+      "logprob": -0.00007319182623177767
+    },
+    {
+      "text": " ",
+      "start": 0.199,
+      "end": 0.239,
+      "type": "spacing",
+      "logprob": -0.20157627761363983
+    },
+    {
+      "text": "Violet,",
+      "start": 0.239,
+      "end": 0.659,
+      "type": "word",
+      "logprob": -0.17972935949053084
+    },
+    {
+      "text": " ",
+      "start": 0.659,
+      "end": 0.779,
+      "type": "spacing",
+      "logprob": -0.0002616301644593477
+    },
+    {
+      "text": "there",
+      "start": 0.779,
+      "end": 0.879,
+      "type": "word",
+      "logprob": -0.0002616301644593477
+    },
+    {
+      "text": " ",
+      "start": 0.879,
+      "end": 0.899,
+      "type": "spacing",
+      "logprob": -4.768370445162873e-7
+    },
+    {
+      "text": "is",
+      "start": 0.899,
+      "end": 0.979,
+      "type": "word",
+      "logprob": -4.768370445162873e-7
+    },
+    {
+      "text": " ",
+      "start": 0.979,
+      "end": 1.019,
+      "type": "spacing",
+      "logprob": 0
+    },
+    {
+      "text": "a",
+      "start": 1.019,
+      "end": 1.079,
+      "type": "word",
+      "logprob": 0
+    },
+    {
+      "text": " ",
+      "start": 1.079,
+      "end": 1.119,
+      "type": "spacing",
+      "logprob": -3.576278118089249e-7
+    },
+    {
+      "text": "seat",
+      "start": 1.12,
+      "end": 1.259,
+      "type": "word",
+      "logprob": -3.576278118089249e-7
+    },
+    {
+      "text": " ",
+      "start": 1.259,
+      "end": 1.279,
+      "type": "spacing",
+      "logprob": 0
+    },
+    {
+      "text": "by",
+      "start": 1.279,
+      "end": 1.379,
+      "type": "word",
+      "logprob": 0
+    },
+    {
+      "text": " ",
+      "start": 1.379,
+      "end": 1.399,
+      "type": "spacing",
+      "logprob": 0
+    },
+    {
+      "text": "the",
+      "start": 1.399,
+      "end": 1.459,
+      "type": "word",
+      "logprob": 0
+    },
+    {
+      "text": " ",
+      "start": 1.459,
+      "end": 1.499,
+      "type": "spacing",
+      "logprob": -2.3841855067985307e-7
+    },
+    {
+      "text": "window",
+      "start": 1.5,
+      "end": 1.719,
+      "type": "word",
+      "logprob": -2.3841855067985307e-7
+    },
+    {
+      "text": " ",
+      "start": 1.719,
+      "end": 1.759,
+      "type": "spacing",
+      "logprob": -0.000008106198947643861
+    },
+    {
+      "text": "if",
+      "start": 1.759,
+      "end": 1.86,
+      "type": "word",
+      "logprob": -0.000008106198947643861
+    },
+    {
+      "text": " ",
+      "start": 1.86,
+      "end": 1.879,
+      "type": "spacing",
+      "logprob": 0
+    },
+    {
+      "text": "you",
+      "start": 1.879,
+      "end": 1.939,
+      "type": "word",
+      "logprob": 0
+    },
+    {
+      "text": " ",
+      "start": 1.939,
+      "end": 1.939,
+      "type": "spacing",
+      "logprob": -0.000008106198947643861
+    },
+    {
+      "text": "would",
+      "start": 1.939,
+      "end": 2.039,
+      "type": "word",
+      "logprob": -0.000008106198947643861
+    },
+    {
+      "text": " ",
+      "start": 2.039,
+      "end": 2.059,
+      "type": "spacing",
+      "logprob": -2.3841855067985307e-7
+    },
+    {
+      "text": "like",
+      "start": 2.059,
+      "end": 2.24,
+      "type": "word",
+      "logprob": -2.3841855067985307e-7
+    },
+    {
+      "text": " ",
+      "start": 2.24,
+      "end": 2.299,
+      "type": "spacing",
+      "logprob": -0.0000010728830375228426
+    },
+    {
+      "text": "it",
+      "start": 2.299,
+      "end": 2.359,
+      "type": "word",
+      "logprob": -0.0000010728830375228426
+    }
+  ],
+  "transcription_id": "LHGvdoKMnFDDhOSSaLZi",
+  "audio_duration_secs": 2.721625
+}

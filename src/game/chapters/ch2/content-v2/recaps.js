@@ -8,7 +8,7 @@ export const chapter2RecapDefinitions = Object.freeze([
   },
   {
     id: 'ch2.recap.sorting',
-    step: 'beSorted',
+    step: 'enjoyFeast',
     voice: 'voice/ch2/recap/sorting',
     text: 'The Sorting Hat listened carefully and recognized Violet as a Gryffindor.',
     caption: 'A new Gryffindor!',

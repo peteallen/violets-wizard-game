@@ -1,0 +1,170 @@
+{
+  "language_code": "eng",
+  "language_probability": 1,
+  "text": "Violet earned her first house points and reached the Gryffindor common room.",
+  "words": [
+    {
+      "text": "Violet",
+      "start": 0.079,
+      "end": 0.5,
+      "type": "word",
+      "logprob": -0.0005813338793814182
+    },
+    {
+      "text": " ",
+      "start": 0.5,
+      "end": 0.519,
+      "type": "spacing",
+      "logprob": -0.00006007967749610543
+    },
+    {
+      "text": "earned",
+      "start": 0.519,
+      "end": 0.74,
+      "type": "word",
+      "logprob": -0.00006007967749610543
+    },
+    {
+      "text": " ",
+      "start": 0.74,
+      "end": 0.759,
+      "type": "spacing",
+      "logprob": 0
+    },
+    {
+      "text": "her",
+      "start": 0.759,
+      "end": 0.859,
+      "type": "word",
+      "logprob": 0
+    },
+    {
+      "text": " ",
+      "start": 0.859,
+      "end": 0.919,
+      "type": "spacing",
+      "logprob": -1.1920928244535389e-7
+    },
+    {
+      "text": "first",
+      "start": 0.919,
+      "end": 1.139,
+      "type": "word",
+      "logprob": -1.1920928244535389e-7
+    },
+    {
+      "text": " ",
+      "start": 1.139,
+      "end": 1.179,
+      "type": "spacing",
+      "logprob": -0.011048921383917332
+    },
+    {
+      "text": "house",
+      "start": 1.179,
+      "end": 1.439,
+      "type": "word",
+      "logprob": -0.011048921383917332
+    },
+    {
+      "text": " ",
+      "start": 1.439,
+      "end": 1.479,
+      "type": "spacing",
+      "logprob": -0.000005364403477869928
+    },
+    {
+      "text": "points",
+      "start": 1.48,
+      "end": 2.079,
+      "type": "word",
+      "logprob": -0.000005364403477869928
+    },
+    {
+      "text": " ",
+      "start": 2.079,
+      "end": 2.119,
+      "type": "spacing",
+      "logprob": -0.00008928377064876258
+    },
+    {
+      "text": "and",
+      "start": 2.119,
+      "end": 2.24,
+      "type": "word",
+      "logprob": -0.00008928377064876258
+    },
+    {
+      "text": " ",
+      "start": 2.24,
+      "end": 2.279,
+      "type": "spacing",
+      "logprob": -0.0000020265558760002023
+    },
+    {
+      "text": "reached",
+      "start": 2.279,
+      "end": 2.559,
+      "type": "word",
+      "logprob": -0.0000020265558760002023
+    },
+    {
+      "text": " ",
+      "start": 2.559,
+      "end": 2.579,
+      "type": "spacing",
+      "logprob": -0.000002145764938177308
+    },
+    {
+      "text": "the",
+      "start": 2.579,
+      "end": 2.619,
+      "type": "word",
+      "logprob": -0.000002145764938177308
+    },
+    {
+      "text": " ",
+      "start": 2.619,
+      "end": 2.719,
+      "type": "spacing",
+      "logprob": -0.00012206286191940308
+    },
+    {
+      "text": "Gryffindor",
+      "start": 2.72,
+      "end": 3.22,
+      "type": "word",
+      "logprob": -0.00011744666671802406
+    },
+    {
+      "text": " ",
+      "start": 3.22,
+      "end": 3.319,
+      "type": "spacing",
+      "logprob": -0.0031863891053944826
+    },
+    {
+      "text": "common",
+      "start": 3.319,
+      "end": 3.619,
+      "type": "word",
+      "logprob": -0.0031863891053944826
+    },
+    {
+      "text": " ",
+      "start": 3.619,
+      "end": 3.739,
+      "type": "spacing",
+      "logprob": -0.0000023841830625315197
+    },
+    {
+      "text": "room.",
+      "start": 3.74,
+      "end": 4.059,
+      "type": "word",
+      "logprob": -0.02540727555533522
+    }
+  ],
+  "transcription_id": "XINXCMW6Vyv2Gvthhull",
+  "audio_duration_secs": 4.3189375
+}

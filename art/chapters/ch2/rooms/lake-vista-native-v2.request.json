@@ -1,0 +1,37 @@
+{
+  "schema_version": 1,
+  "slug": "lake-vista-native-v2",
+  "prompt": {
+    "path": "art/chapters/ch2/rooms/lake-vista-native-v2.prompt.md",
+    "section": "Prompt"
+  },
+  "references": [
+    {
+      "path": "public/assets/art/rooms/ch2-lake-vista.webp",
+      "role": "superseded Chapter Two composition reference only"
+    },
+    {
+      "path": "art/raw/ch1-platform.png",
+      "role": "finish, atmosphere, fine-detail, dusk palette, and luminous-brass reference"
+    },
+    {
+      "path": "art/raw/ch1-leaky.png",
+      "role": "warm inhabited-light versus deep violet-shadow reference"
+    }
+  ],
+  "generation": {
+    "workflow": "Codex built-in image generation",
+    "tool": "image_gen.imagegen",
+    "model_identifier": null,
+    "seed": null,
+    "returned_model_or_seed_note": "The built-in workflow did not return a model identifier or seed."
+  },
+  "output": {
+    "generated_output_id": "exec-27896b35-7fe1-4743-989b-afd3af5caea2",
+    "generated_output_path": "/Users/peteallen/.codex/generated_images/019f6c3e-aa13-7f72-8f24-96fc942fe3e4/exec-27896b35-7fe1-4743-989b-afd3af5caea2.png",
+    "native_source": "art/raw/ch2-lake-vista-native-v2.png",
+    "accepted_png": "art/raw/ch2-lake-vista-v2.png",
+    "shipping_webp": "public/assets/art/rooms/ch2-lake-vista.webp",
+    "metadata": "art/chapters/ch2/rooms/lake-vista-native-v2.metadata.json"
+  }
+}

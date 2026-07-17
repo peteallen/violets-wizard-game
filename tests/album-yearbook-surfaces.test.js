@@ -1,5 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { cards } from '../src/game/content/cards.js';
+import { WORLD } from '../src/game/config.js';
 import {
   albumCardLayout,
   buildCardAlbumEntries,
@@ -125,6 +126,8 @@ describe('storybook satchel card album', () => {
     expect(entries.map(({ id, earned }) => ({ id, earned }))).toEqual([
       { id: 'morgana', earned: true },
       { id: 'dumbledore', earned: false },
+      { id: 'merlin', earned: false },
+      { id: 'jocunda-sykes', earned: false },
     ]);
 
     const cardTargets = entries.map(({ __rect }) => __rect);
@@ -132,6 +135,10 @@ describe('storybook satchel card album', () => {
     for (const entry of entries) {
       const layout = albumCardLayout(entry);
       expect(layout.card).toEqual(entry.__rect);
+      expect(layout.card.x).toBeGreaterThanOrEqual(0);
+      expect(layout.card.y).toBeGreaterThanOrEqual(0);
+      expect(layout.card.x + layout.card.width).toBeLessThanOrEqual(WORLD.width);
+      expect(layout.card.y + layout.card.height).toBeLessThanOrEqual(WORLD.height);
       expect(overlaps(layout.portrait, layout.nameplate)).toBe(false);
       for (const control of [
         UI_RECTS.satchelMapTab,

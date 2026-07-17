@@ -20,7 +20,7 @@ export const chapter2V2 = defineChapter({
     spawn: 'start',
   },
   chapterCard: {
-    art: 'chapterCards/ch2/gryffindor-home-greybox',
+    art: 'chapterCards/ch2/gryffindor-home',
     voice: 'voice/ch2/narrator/chapterEnd',
     title: 'Welcome to Gryffindor',
   },
@@ -47,6 +47,12 @@ export const chapter2V2Flags = Object.freeze([
   'ch2.trainComplete',
   'ch2.lakeSeen',
   'ch2.greatHallEntered',
+  'ch2.sorting.cares.protect',
+  'ch2.sorting.cares.explore',
+  'ch2.sorting.cares.help',
+  'ch2.sorting.courage.forward',
+  'ch2.sorting.courage.truth',
+  'ch2.sorting.courage.together',
   'ch2.sortedGryffindor',
   'ch2.feastAwarded',
   'ch2.feastComplete',
@@ -55,8 +61,23 @@ export const chapter2V2Flags = Object.freeze([
   'ch2.complete',
 ]);
 
-export const chapter2V2Status = 'greybox';
+export const chapter2V2Status = 'playable';
 export const chapter2NextChapterId = 'ch3';
+export const chapter2ResumeRedirects = Object.freeze([
+  Object.freeze({
+    from: Object.freeze({
+      chapter: 'ch2',
+      scene: 'ch2.placeholder',
+      room: 'ch2.previewRoom',
+    }),
+    to: Object.freeze({
+      chapter: chapter2V2.id,
+      scene: chapter2V2.start.scene,
+      room: chapter2V2.start.room,
+      spawn: chapter2V2.start.spawn,
+    }),
+  }),
+]);
 
 export const chapter2ContentPackageV2 = Object.freeze({
   id: chapter2V2.id,

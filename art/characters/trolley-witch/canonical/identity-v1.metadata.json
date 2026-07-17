@@ -1,0 +1,58 @@
+{
+  "schema_version": 1,
+  "kind": "codex-built-in-character-image-generation",
+  "slug": "trolley-witch",
+  "workflow": {
+    "name": "Codex built-in image generation",
+    "tool": "image_gen.imagegen",
+    "model_identifier": null,
+    "seed": null,
+    "note": "The built-in workflow did not return a model identifier or seed."
+  },
+  "timestamps": {
+    "generation_started_at": "2026-07-16T21:06:07.567Z",
+    "generation_completed_at": "2026-07-16T21:07:43.302Z",
+    "duration_ms": 95735
+  },
+  "request_spec": {
+    "path": "art/characters/trolley-witch/canonical/identity-v1.request.json",
+    "bytes": 1340,
+    "sha256": "3b6f00e597d5f0adab70ee22647ec7b6f7a2e71d14978b9750b86200178b737e"
+  },
+  "prompt": {
+    "path": "art/characters/trolley-witch/canonical/identity-v1.prompt.md",
+    "section": "Accepted built-in prompt",
+    "document_bytes": 5609,
+    "document_sha256": "3032ab6d409a7727e85938a89a67859182bb95f5e94ee3f0ea72a18d28001d4c"
+  },
+  "references": [
+    {
+      "index": 1,
+      "path": "art/guides/ch1-room-style-triptych.png",
+      "sha256": "ce0628710e9add1a8641c869ce6df94303457faac6434fcb188733b096450a07",
+      "dimensions": { "width": 1536, "height": 288 }
+    },
+    {
+      "index": 2,
+      "path": "art/guides/flat-cyan-chroma.png",
+      "sha256": "be13115e6b358a8d99ef4c4c4a8a82d917ee826d0b57c4a9457e046fe776ea46",
+      "dimensions": { "width": 768, "height": 1024 }
+    }
+  ],
+  "generation_output": {
+    "id": "exec-df644851-9ea7-47db-bbdb-4f1c342b4649",
+    "original_path": "/Users/peteallen/.codex/generated_images/019f6c3e-aa13-7f72-8f24-96fc942fe3e4/exec-df644851-9ea7-47db-bbdb-4f1c342b4649.png",
+    "copied_to": "art/characters/trolley-witch/canonical/identity-v1.png",
+    "copy_note": "Copied byte-for-byte without image edits before deterministic chroma extraction.",
+    "bytes": 1761826,
+    "sha256": "c3325f0b042512c2e5d5c6b760cab4a88d534a2670dcdf46efb21bec45bc1bfc",
+    "dimensions": { "width": 1086, "height": 1448 }
+  },
+  "shipping_derivative": {
+    "path": "public/assets/art/characters/trolley-witch/default/neutral.png",
+    "bytes": 794108,
+    "sha256": "218f81909f4adafe18e180c3d9f1ee0bf2eb8da85ff21d6bb971cf8ee8bb2bd7",
+    "dimensions": { "width": 896, "height": 1200 },
+    "extraction_provenance": "art/characters/trolley-witch/canonical/identity-v1.slice-provenance.json"
+  }
+}

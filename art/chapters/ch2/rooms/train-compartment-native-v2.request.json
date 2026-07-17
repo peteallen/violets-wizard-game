@@ -1,0 +1,37 @@
+{
+  "schema_version": 1,
+  "slug": "train-compartment-native-v2",
+  "prompt": {
+    "path": "art/chapters/ch2/rooms/train-compartment-native-v2.prompt.md",
+    "section": "Prompt"
+  },
+  "references": [
+    {
+      "path": "art/raw/ch1-leaky.png",
+      "role": "warm timber, brass, dimensional interior-lighting, and dense material-detail reference"
+    },
+    {
+      "path": "art/raw/ch1-malkins.png",
+      "role": "refined fabric, mirror-room depth, and premium finish reference"
+    },
+    {
+      "path": "art/raw/ch1-bedroom.png",
+      "role": "bright wood, calm character-floor, and painterly surface reference"
+    }
+  ],
+  "generation": {
+    "workflow": "Codex built-in image generation",
+    "tool": "image_gen.imagegen",
+    "model_identifier": null,
+    "seed": null,
+    "returned_model_or_seed_note": "The built-in workflow did not return a model identifier or seed."
+  },
+  "output": {
+    "generated_output_id": "exec-f38d2cc9-311d-43af-b711-1ccf5ba165dd",
+    "generated_output_path": "/Users/peteallen/.codex/generated_images/019f6c3e-aa13-7f72-8f24-96fc942fe3e4/exec-f38d2cc9-311d-43af-b711-1ccf5ba165dd.png",
+    "native_source": "art/raw/ch2-train-compartment-native-v2.png",
+    "accepted_png": "art/raw/ch2-train-compartment-v2.png",
+    "shipping_webp": "public/assets/art/rooms/ch2-train-compartment.webp",
+    "metadata": "art/chapters/ch2/rooms/train-compartment-native-v2.metadata.json"
+  }
+}

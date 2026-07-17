@@ -79,9 +79,6 @@ registry
   .register('ch1-complete', createFixture(
     'Hold the Chapter 1 completion state for a stable review frame.',
   ))
-  .register('ch2-placeholder', createFixture(
-    'Hold the Chapter 2 placeholder state before its content is authored.',
-  ))
   .register('sp-letter-open-review', createFixture(
     'Hold the letter-open choreography on its deterministic timeline.',
   ))
@@ -105,9 +102,23 @@ registry
   .register('sp-wand-chosen-review', createFixture(
     'Hold the chosen-wand crescendo on its deterministic timeline.',
   ))
-  .register('sp-ch2-ticket-review', createFixture(
-    'Advance the preview narration after the ticket settles so both intentional next-step choices can be reviewed.',
-    [{ frame: 250, type: 'tap', target: 'hud.quest' }],
+  .register('sp-ch2-barrier-run-review', createFixture(
+    'Hold the Chapter Two barrier run and opaque platform reveal on their deterministic timeline.',
+  ))
+  .register('sp-ch2-sweet-reaction-review', createFixture(
+    'Hold Violet’s chosen-sweet reaction on its deterministic timeline.',
+  ))
+  .register('sp-ch2-lake-vista-review', createFixture(
+    'Hold the first castle vista on its deterministic full-screen timeline.',
+  ))
+  .register('sp-ch2-sorting-reveal-review', createFixture(
+    'Hold the canonical Gryffindor Sorting reveal on its deterministic timeline.',
+  ))
+  .register('sp-ch2-common-room-arrival-review', createFixture(
+    'Hold Violet’s Gryffindor common-room welcome on its deterministic timeline.',
+  ))
+  .register('sp-ch2-chapter-card-review', createFixture(
+    'Hold the Chapter Two completion page on its deterministic page-turn timeline.',
   ))
   .register('parent-panel', createFixture(
     'Open the satchel and hold its grown-up brass keyhole for the full three-second gate.',

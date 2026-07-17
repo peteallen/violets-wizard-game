@@ -50,9 +50,6 @@ const REVIEW_SCENE_ILLUSION_CHECKS = Object.freeze({
   'ch1-complete': [
     'The completed Chapter One free-roam frame keeps Violet, her companion, and exactly one next objective visually distinct, with spent shopping interactions quiet.',
   ],
-  'ch2-placeholder': [
-    'The Chapter Two preview reads as one intentional illustrated destination with one clear return-or-replay decision and zero false gameplay affordances.',
-  ],
   'sp-letter-open-review': [
     'The sealed envelope, opening frame zero, unfolding paper, and settled invitation retain identical material proportions with zero blank or doubled-paper frame.',
   ],
@@ -72,9 +69,29 @@ const REVIEW_SCENE_ILLUSION_CHECKS = Object.freeze({
   'sp-wand-chosen-review': [
     'The chosen-wand crescendo keeps Violet, wand, and wandmaker readable through one restrained golden focal effect that fully settles before control returns.',
   ],
-  'sp-ch2-ticket-review': [
-    'The illustrated ticket settles before two distinct 88px-or-larger preview choices appear, with neither choice covering the ticket or the other action.',
-    'The ticket reads as layered irregular railway ephemera with a tiny train vignette and has zero generic owl ornament, dashed seam, perfect circle, or ruler-straight edge.',
+  'sp-ch2-barrier-run-review': [
+    'Violet’s hesitation, committed run, and disappearance through the brick barrier read as one continuous action from her real approach point, with no teleport or duplicate Violet.',
+    'The opaque storybook whoosh fully covers the ordinary-to-magical platform swap before the scarlet train and conductor appear, with zero blank frame, exposed painting edge, or mixed station variant.',
+  ],
+  'sp-ch2-sweet-reaction-review': [
+    'Violet’s chosen Every-Flavour Bean produces one playful, silent face-and-body reaction that remains readable beside the trolley and her seated friends without presenting failure or punishment.',
+    'The reaction effect stays attached to Violet, clears her glasses and expression, and introduces no text, score, success badge, or competing objective symbol.',
+  ],
+  'sp-ch2-lake-vista-review': [
+    'The illuminated castle and its lake reflection remain the uncontested focal point for the full quiet hold, with Violet and her companion clear of the silhouette and no gameplay affordance competing for attention.',
+    'Full and reduced motion preserve one stable painted scale and horizon with zero blank frame, hard layer edge, camera snap, or ornamental clutter over the vista.',
+  ],
+  'sp-ch2-sorting-reveal-review': [
+    'The reveal presents Gryffindor as Violet’s one canonical outcome, keeping Violet, the Sorting Hat, and the scarlet-and-gold house response simultaneously readable.',
+    'The yearbook-ready composition preserves Violet’s chosen robe trim while adding the Gryffindor identity, with no alternate-house color, duplicate character, or banner covering her face.',
+  ],
+  'sp-ch2-common-room-arrival-review': [
+    'The common room reads immediately as warm, safe, and specifically Gryffindor while Violet remains the center of Harry, Ron, and Hermione’s welcome composition.',
+    'Violet’s Gryffindor identity, her chosen robe trim, her companion, and all three friends remain mutually readable with no furniture collision, clipped figure, or competing interaction glow.',
+  ],
+  'sp-ch2-chapter-card-review': [
+    'The Chapter Two completion page keeps the Gryffindor common-room painting, chapter title, and first-classes handoff readable as one intentional storybook composition.',
+    'The page turn reveals zero blank or unpainted frame and contains no retired preview ticket, replay choice shelf, generic owl ornament, or false gameplay affordance.',
   ],
   'parent-panel': [
     'The grown-up book presents replay and yearbook as two distinct 88px-or-larger actions, with tabs, content, and close control mutually non-overlapping.',

@@ -13,6 +13,21 @@ const dialogueDefaults = Object.freeze({
   replayable: false,
 });
 
+const SORTING_CARE_FLAGS = Object.freeze([
+  'ch2.sorting.cares.protect',
+  'ch2.sorting.cares.explore',
+  'ch2.sorting.cares.help',
+]);
+const SORTING_COURAGE_FLAGS = Object.freeze([
+  'ch2.sorting.courage.forward',
+  'ch2.sorting.courage.truth',
+  'ch2.sorting.courage.together',
+]);
+
+function exclusiveFlagActions(selected, flags) {
+  return flags.map((flag) => flagSet(flag, flag === selected));
+}
+
 export const chapter2DialogueDefinitions = Object.freeze([
   {
     ...dialogueDefaults,
@@ -155,7 +170,7 @@ export const chapter2DialogueDefinitions = Object.freeze([
             caption: 'Protect friends',
             actions: [
               choiceRecord('ch2.choice.sortingCare', 'protect-friends'),
-              flagSet('ch2.sorting.cares.protect'),
+              ...exclusiveFlagActions('ch2.sorting.cares.protect', SORTING_CARE_FLAGS),
             ],
             next: 'courageQuestion',
           },
@@ -165,7 +180,7 @@ export const chapter2DialogueDefinitions = Object.freeze([
             caption: 'Explore mysteries',
             actions: [
               choiceRecord('ch2.choice.sortingCare', 'explore-mysteries'),
-              flagSet('ch2.sorting.cares.explore'),
+              ...exclusiveFlagActions('ch2.sorting.cares.explore', SORTING_CARE_FLAGS),
             ],
             next: 'courageQuestion',
           },
@@ -175,7 +190,7 @@ export const chapter2DialogueDefinitions = Object.freeze([
             caption: 'Help someone',
             actions: [
               choiceRecord('ch2.choice.sortingCare', 'help-someone'),
-              flagSet('ch2.sorting.cares.help'),
+              ...exclusiveFlagActions('ch2.sorting.cares.help', SORTING_CARE_FLAGS),
             ],
             next: 'courageQuestion',
           },
@@ -197,7 +212,7 @@ export const chapter2DialogueDefinitions = Object.freeze([
             caption: 'Step forward',
             actions: [
               choiceRecord('ch2.choice.sortingCourage', 'step-forward'),
-              flagSet('ch2.sorting.courage.forward'),
+              ...exclusiveFlagActions('ch2.sorting.courage.forward', SORTING_COURAGE_FLAGS),
             ],
             next: 'reason',
           },
@@ -207,7 +222,7 @@ export const chapter2DialogueDefinitions = Object.freeze([
             caption: 'Tell truth',
             actions: [
               choiceRecord('ch2.choice.sortingCourage', 'tell-truth'),
-              flagSet('ch2.sorting.courage.truth'),
+              ...exclusiveFlagActions('ch2.sorting.courage.truth', SORTING_COURAGE_FLAGS),
             ],
             next: 'reason',
           },
@@ -217,7 +232,7 @@ export const chapter2DialogueDefinitions = Object.freeze([
             caption: 'Stay close',
             actions: [
               choiceRecord('ch2.choice.sortingCourage', 'stay-close'),
-              flagSet('ch2.sorting.courage.together'),
+              ...exclusiveFlagActions('ch2.sorting.courage.together', SORTING_COURAGE_FLAGS),
             ],
             next: 'reason',
           },
@@ -237,27 +252,57 @@ export const chapter2DialogueDefinitions = Object.freeze([
         voice: 'voice/ch2/sorting-hat/protectReason',
         text: 'You put yourself between trouble and the people you love. That is a bright kind of courage.',
         caption: 'A loyal courage!',
-        next: 'gryffindor',
+        next: 'courageReason',
       }),
       exploreReason: line({
         speaker: 'ch2.npc.sortingHat',
         voice: 'voice/ch2/sorting-hat/exploreReason',
         text: 'You step toward mysteries even before you know what waits there. That takes courage.',
         caption: 'A curious courage!',
-        next: 'gryffindor',
+        next: 'courageReason',
       }),
       helpReason: line({
         speaker: 'ch2.npc.sortingHat',
         voice: 'voice/ch2/sorting-hat/helpReason',
         text: 'You notice who needs you, then choose to help. Kind courage can change a whole room.',
         caption: 'A kind courage!',
-        next: 'gryffindor',
+        next: 'courageReason',
       }),
       braveReason: line({
         speaker: 'ch2.npc.sortingHat',
         voice: 'voice/ch2/sorting-hat/braveReason',
         text: 'Every answer points toward a brave heart that moves even when the path is new.',
         caption: 'A brave heart!',
+        next: 'courageReason',
+      }),
+      courageReason: {
+        type: 'branch',
+        cases: [
+          { when: { allFlags: ['ch2.sorting.courage.forward'] }, next: 'forwardReason' },
+          { when: { allFlags: ['ch2.sorting.courage.truth'] }, next: 'truthReason' },
+          { when: { allFlags: ['ch2.sorting.courage.together'] }, next: 'togetherReason' },
+        ],
+        fallback: 'gryffindor',
+      },
+      forwardReason: line({
+        speaker: 'ch2.npc.sortingHat',
+        voice: 'voice/ch2/sorting-hat/forwardReason',
+        text: 'And you find that courage by taking the next step, even while your knees are still wobbling.',
+        caption: 'Step forward!',
+        next: 'gryffindor',
+      }),
+      truthReason: line({
+        speaker: 'ch2.npc.sortingHat',
+        voice: 'voice/ch2/sorting-hat/truthReason',
+        text: 'And you choose the truth when it would be easier to hide. That is courage with a clear voice.',
+        caption: 'Tell the truth!',
+        next: 'gryffindor',
+      }),
+      togetherReason: line({
+        speaker: 'ch2.npc.sortingHat',
+        voice: 'voice/ch2/sorting-hat/togetherReason',
+        text: 'And you stay close to the people beside you. Shared courage can carry everyone forward.',
+        caption: 'Stay close!',
         next: 'gryffindor',
       }),
       gryffindor: line({

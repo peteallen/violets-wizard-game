@@ -1,17 +1,17 @@
 import { describe, expect, it } from 'vitest';
-import { contentRegistry } from '../src/game/content/index.js';
+import { saveMigrationOptions } from '../src/game/chapters/saveMigrations.js';
 import {
   SAVE_BACKUP_KEY,
   SAVE_STORAGE_KEY,
   Save,
   SaveValidationError,
   createSaveV1,
+  createSaveV2,
   parseSave,
   setFlag,
   serializeSave,
   validateSaveV1,
 } from '../src/game/systems/Save.js';
-import { World } from '../src/game/world/World.js';
 
 const FIRST_TIME = '2026-07-12T18:00:00.000Z';
 const SECOND_TIME = '2026-07-12T18:01:00.000Z';
@@ -95,6 +95,47 @@ describe('save schema v1', () => {
 });
 
 describe('safe storage adapter', () => {
+  it('backs up and redirects a legacy Chapter Two preview before storing schema v2', () => {
+    const storage = new MemoryStorage();
+    const legacy = saveFixture();
+    legacy.resume = {
+      chapter: 'ch2',
+      scene: 'ch2.placeholder',
+      room: 'ch2.previewRoom',
+      spawn: 'start',
+    };
+    legacy.progress.highestUnlockedChapter = 2;
+    legacy.progress.completedChapters.push('ch1');
+    const raw = serializeSave(legacy);
+    storage.setItem(SAVE_STORAGE_KEY, raw);
+    const saves = new Save({
+      storage,
+      clock: () => SECOND_TIME,
+      migrationOptions: saveMigrationOptions,
+    });
+
+    const result = saves.load();
+
+    expect(result).toMatchObject({
+      ok: true,
+      status: 'migrated',
+      fromSchemaVersion: 1,
+      backupStatus: 'backed-up',
+      save: {
+        schemaVersion: 2,
+        resume: {
+          chapter: 'ch2',
+          scene: 'ch2.scene.kingsCross',
+          room: 'ch2.kingsCross',
+          spawn: 'start',
+        },
+      },
+    });
+    expect(storage.getItem(SAVE_BACKUP_KEY)).toBe(raw);
+    expect(parseSave(storage.getItem(SAVE_BACKUP_KEY))).toEqual(legacy);
+    expect(parseSave(storage.getItem(SAVE_STORAGE_KEY))).toEqual(result.save);
+  });
+
   it('writes with an injected timestamp and loads without touching wall-clock APIs', () => {
     const storage = new MemoryStorage();
     const saves = new Save({ storage, clock: () => SECOND_TIME });
@@ -113,7 +154,11 @@ describe('safe storage adapter', () => {
     const saves = new Save({ storage, clock: () => SECOND_TIME });
 
     const result = saves.load();
-    expect(result).toMatchObject({ ok: true, status: 'recovered-backup', save: saveFixture() });
+    expect(result).toMatchObject({
+      ok: true,
+      status: 'recovered-backup',
+      save: createSaveV2({ now: FIRST_TIME, appVersion: 'abc1234', worldSeed: 42 }),
+    });
     expect(storage.getItem(SAVE_STORAGE_KEY)).toBe('{broken');
   });
 
@@ -145,7 +190,10 @@ describe('safe storage adapter', () => {
 
     storage.failNextWrite = true;
     expect(saves.flush()).toMatchObject({ ok: false, status: 'storage-error' });
-    expect(saves.pending).toEqual({ ...save, updatedAt: SECOND_TIME });
+    expect(saves.pending).toEqual({
+      ...createSaveV2({ now: FIRST_TIME, appVersion: 'abc1234', worldSeed: 42 }),
+      updatedAt: SECOND_TIME,
+    });
     expect(saves.flush()).toMatchObject({ ok: true, status: 'saved' });
     expect(saves.pending).toBeNull();
   });
@@ -200,43 +248,6 @@ describe('safe storage adapter', () => {
     queuedCallback();
     expect(saves.pending).toBeNull();
     expect(saves.load().save.progress.storyChoices.checkpoint).toBe('latest');
-  });
-
-  it('keeps Explore in Chapter 1 free roam after superseded debounce callbacks run', () => {
-    const storage = new MemoryStorage();
-    const callbacks = [];
-    const saves = new Save({
-      storage,
-      clock: () => SECOND_TIME,
-      setTimer: (callback) => { callbacks.push(callback); return callbacks.length; },
-      clearTimer: () => {},
-    });
-    const completed = saveFixture();
-    completed.progress.highestUnlockedChapter = 2;
-    completed.progress.completedChapters.push('ch1');
-    completed.progress.questFlags['ch1.complete'] = true;
-    completed.resume = {
-      chapter: 'ch2', scene: 'ch2.placeholder', room: 'ch2.previewRoom', spawn: 'start',
-    };
-    const initial = saves.write(completed).save;
-    const world = new World({
-      chapters: contentRegistry,
-      save: structuredClone(initial),
-      seed: initial.worldSeed,
-      clock: () => SECOND_TIME,
-      onDirty: ({ flush, save }) => flush ? saves.write(save) : saves.queue(save),
-    });
-    const explore = contentRegistry.ch2.dialogues['ch2.preview'].nodes.choice.choices
-      .find((choice) => choice.id === 'explore');
-
-    world.runActions(explore.actions);
-    expect(world).toMatchObject({ roomId: 'ch1.diagonStreet', currentSceneId: 'ch1.freeRoam' });
-    expect(world.save.resume).toMatchObject({ chapter: 'ch1', scene: 'ch1.freeRoam' });
-
-    for (const callback of callbacks) callback();
-    expect(saves.load().save.resume).toMatchObject({
-      chapter: 'ch1', scene: 'ch1.freeRoam', room: 'ch1.diagonStreet', spawn: 'west',
-    });
   });
 
   it('queues autosave only when a flag actually changes', () => {

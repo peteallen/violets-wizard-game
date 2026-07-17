@@ -1,0 +1,170 @@
+{
+  "language_code": "eng",
+  "language_probability": 1,
+  "text": "We were just comparing what we know about Hogwarts. Welcome aboard, Violet",
+  "words": [
+    {
+      "text": "We",
+      "start": 0.159,
+      "end": 0.239,
+      "type": "word",
+      "logprob": -0.0007800396997481585
+    },
+    {
+      "text": " ",
+      "start": 0.239,
+      "end": 0.299,
+      "type": "spacing",
+      "logprob": -3.576278118089249e-7
+    },
+    {
+      "text": "were",
+      "start": 0.299,
+      "end": 0.399,
+      "type": "word",
+      "logprob": -3.576278118089249e-7
+    },
+    {
+      "text": " ",
+      "start": 0.399,
+      "end": 0.479,
+      "type": "spacing",
+      "logprob": -5.960462772236497e-7
+    },
+    {
+      "text": "just",
+      "start": 0.479,
+      "end": 0.68,
+      "type": "word",
+      "logprob": -5.960462772236497e-7
+    },
+    {
+      "text": " ",
+      "start": 0.68,
+      "end": 0.719,
+      "type": "spacing",
+      "logprob": -0.000003099436753473128
+    },
+    {
+      "text": "comparing",
+      "start": 0.719,
+      "end": 1.259,
+      "type": "word",
+      "logprob": -0.000003099436753473128
+    },
+    {
+      "text": " ",
+      "start": 1.259,
+      "end": 1.299,
+      "type": "spacing",
+      "logprob": -2.3841855067985307e-7
+    },
+    {
+      "text": "what",
+      "start": 1.299,
+      "end": 1.419,
+      "type": "word",
+      "logprob": -2.3841855067985307e-7
+    },
+    {
+      "text": " ",
+      "start": 1.419,
+      "end": 1.439,
+      "type": "spacing",
+      "logprob": 0
+    },
+    {
+      "text": "we",
+      "start": 1.439,
+      "end": 1.559,
+      "type": "word",
+      "logprob": 0
+    },
+    {
+      "text": " ",
+      "start": 1.559,
+      "end": 1.579,
+      "type": "spacing",
+      "logprob": -2.3841855067985307e-7
+    },
+    {
+      "text": "know",
+      "start": 1.579,
+      "end": 1.719,
+      "type": "word",
+      "logprob": -2.3841855067985307e-7
+    },
+    {
+      "text": " ",
+      "start": 1.719,
+      "end": 1.779,
+      "type": "spacing",
+      "logprob": -1.1920928244535389e-7
+    },
+    {
+      "text": "about",
+      "start": 1.779,
+      "end": 1.959,
+      "type": "word",
+      "logprob": -1.1920928244535389e-7
+    },
+    {
+      "text": " ",
+      "start": 1.959,
+      "end": 2.019,
+      "type": "spacing",
+      "logprob": -0.000004410734163684538
+    },
+    {
+      "text": "Hogwarts.",
+      "start": 2.019,
+      "end": 2.639,
+      "type": "word",
+      "logprob": -0.000008596207610227995
+    },
+    {
+      "text": " ",
+      "start": 2.639,
+      "end": 3.519,
+      "type": "spacing",
+      "logprob": -0.00000822540732769994
+    },
+    {
+      "text": "Welcome",
+      "start": 3.519,
+      "end": 3.799,
+      "type": "word",
+      "logprob": -0.00000822540732769994
+    },
+    {
+      "text": " ",
+      "start": 3.799,
+      "end": 3.859,
+      "type": "spacing",
+      "logprob": -0.000019907753085135482
+    },
+    {
+      "text": "aboard,",
+      "start": 3.859,
+      "end": 4.159,
+      "type": "word",
+      "logprob": -0.00068014836506336
+    },
+    {
+      "text": " ",
+      "start": 4.159,
+      "end": 4.259,
+      "type": "spacing",
+      "logprob": -0.00009023735765367746
+    },
+    {
+      "text": "Violet",
+      "start": 4.259,
+      "end": 4.759,
+      "type": "word",
+      "logprob": -0.00009023735765367746
+    }
+  ],
+  "transcription_id": "zcOqSzYeMObjGrqUsKUT",
+  "audio_duration_secs": 5.0155
+}

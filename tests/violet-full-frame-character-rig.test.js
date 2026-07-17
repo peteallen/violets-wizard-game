@@ -33,6 +33,32 @@ function sampledPath(character, time = 0) {
   return sample.layers[0].url.replace(/^.*assets\//, 'assets/');
 }
 
+function scarfContext() {
+  const fills = [];
+  let fillStyle = null;
+  return {
+    fills,
+    save: vi.fn(),
+    restore: vi.fn(),
+    translate: vi.fn(),
+    scale: vi.fn(),
+    rotate: vi.fn(),
+    beginPath: vi.fn(),
+    moveTo: vi.fn(),
+    lineTo: vi.fn(),
+    quadraticCurveTo: vi.fn(),
+    bezierCurveTo: vi.fn(),
+    closePath: vi.fn(),
+    fill: vi.fn(() => fills.push(fillStyle)),
+    stroke: vi.fn(),
+    set fillStyle(value) { fillStyle = value; },
+    get fillStyle() { return fillStyle; },
+    set strokeStyle(_value) {},
+    set lineWidth(_value) {},
+    set lineJoin(_value) {},
+  };
+}
+
 describe('Violet production full-frame rig', () => {
   it('is owned by Violet’s canonical package and world runtime', async () => {
     expect(violetCharacterModule.definition).toBe(violetCharacterDefinition);
@@ -136,6 +162,52 @@ describe('Violet production full-frame rig', () => {
       appearance: 'robes',
       robeTrim: '#4e83b7',
     }));
+  });
+
+  it('adds a restrained scarlet-and-gold scarf only when Violet’s saved house is Gryffindor', () => {
+    const sample = {
+      root: { x: 0, y: 0, rotation: 0, scaleX: 1, scaleY: 1 },
+    };
+    const result = {
+      status: 'drawn',
+      animation: {
+        appearance: 'robes', semantic: 'idle', mirror: false, facing: 'right',
+      },
+      sample,
+    };
+    const unsorted = scarfContext();
+    const gryffindor = scarfContext();
+    const draw = vi.spyOn(violetFullFrameCharacterRig, 'draw').mockReturnValue(result);
+
+    violetCharacterRuntime.renderers.world({
+      context: unsorted,
+      time: 0,
+      characterId: 'character.violet',
+      surface: 'world',
+      appearance: 'robes',
+      house: null,
+      x: 340,
+      y: 610,
+    });
+    expect(unsorted.fills).toEqual([]);
+
+    violetCharacterRuntime.renderers.world({
+      context: gryffindor,
+      time: 0,
+      characterId: 'character.violet',
+      surface: 'world',
+      appearance: 'robes',
+      house: 'gryffindor',
+      x: 340,
+      y: 610,
+    });
+    expect(gryffindor.fills).toContain('#8f2638');
+    expect(gryffindor.fills).toContain('#5b1c2b');
+    expect(gryffindor.translate).toHaveBeenCalledWith(340, 610);
+    expect(draw).toHaveBeenLastCalledWith(gryffindor, expect.objectContaining({
+      house: 'gryffindor',
+    }), 0, 'world');
+    draw.mockRestore();
   });
 
   it('puts every production frame in the core preload and orphan-check manifest', () => {

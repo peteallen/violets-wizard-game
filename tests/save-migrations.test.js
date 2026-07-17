@@ -124,9 +124,9 @@ describe('save schema migrations', () => {
     expect(migrateSave(save, migrationOptions()).resume).toEqual(save.resume);
   });
 
-  it('requires a valid chapter-owned redirect for every version-1 migration', () => {
-    expect(() => migrateSave(LEGACY_SAVE_FIXTURES.freshChapterOne))
-      .toThrow(/resumeRedirects.*at least one chapter-owned redirect/);
+  it('allows a generic migration with no redirects and validates supplied chapter-owned redirects', () => {
+    expect(migrateSave(LEGACY_SAVE_FIXTURES.freshChapterOne, { resumeRedirects: [] }))
+      .toEqual(expectedV2(LEGACY_SAVE_FIXTURES.freshChapterOne));
     expect(() => migrateSave(LEGACY_SAVE_FIXTURES.chapterTwoPreview, migrationOptions({
       resumeRedirects: [{
         from: LEGACY_CHAPTER_TWO_PREVIEW,

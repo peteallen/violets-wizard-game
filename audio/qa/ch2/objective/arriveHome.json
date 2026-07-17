@@ -1,0 +1,142 @@
+{
+  "language_code": "eng",
+  "language_probability": 1,
+  "text": "Let your friends welcome you into the Gryffindor common room.",
+  "words": [
+    {
+      "text": "Let",
+      "start": 0.099,
+      "end": 0.259,
+      "type": "word",
+      "logprob": -0.00029940891545265913
+    },
+    {
+      "text": " ",
+      "start": 0.259,
+      "end": 0.319,
+      "type": "spacing",
+      "logprob": -0.000002861018856492592
+    },
+    {
+      "text": "your",
+      "start": 0.319,
+      "end": 0.439,
+      "type": "word",
+      "logprob": -0.000002861018856492592
+    },
+    {
+      "text": " ",
+      "start": 0.439,
+      "end": 0.479,
+      "type": "spacing",
+      "logprob": -0.0000016689286894688848
+    },
+    {
+      "text": "friends",
+      "start": 0.479,
+      "end": 0.819,
+      "type": "word",
+      "logprob": -0.0000016689286894688848
+    },
+    {
+      "text": " ",
+      "start": 0.819,
+      "end": 0.879,
+      "type": "spacing",
+      "logprob": -0.000009059865078597795
+    },
+    {
+      "text": "welcome",
+      "start": 0.879,
+      "end": 1.199,
+      "type": "word",
+      "logprob": -0.000009059865078597795
+    },
+    {
+      "text": " ",
+      "start": 1.199,
+      "end": 1.259,
+      "type": "spacing",
+      "logprob": -1.1920928244535389e-7
+    },
+    {
+      "text": "you",
+      "start": 1.259,
+      "end": 1.339,
+      "type": "word",
+      "logprob": -1.1920928244535389e-7
+    },
+    {
+      "text": " ",
+      "start": 1.339,
+      "end": 1.359,
+      "type": "spacing",
+      "logprob": -0.0000027418097943154862
+    },
+    {
+      "text": "into",
+      "start": 1.36,
+      "end": 1.559,
+      "type": "word",
+      "logprob": -0.0000027418097943154862
+    },
+    {
+      "text": " ",
+      "start": 1.559,
+      "end": 1.599,
+      "type": "spacing",
+      "logprob": -0.000016927575416048057
+    },
+    {
+      "text": "the",
+      "start": 1.599,
+      "end": 1.639,
+      "type": "word",
+      "logprob": -0.000016927575416048057
+    },
+    {
+      "text": " ",
+      "start": 1.639,
+      "end": 1.74,
+      "type": "spacing",
+      "logprob": -0.0008132726070471108
+    },
+    {
+      "text": "Gryffindor",
+      "start": 1.74,
+      "end": 2.259,
+      "type": "word",
+      "logprob": -0.00031415541479873355
+    },
+    {
+      "text": " ",
+      "start": 2.259,
+      "end": 2.359,
+      "type": "spacing",
+      "logprob": -0.03805484250187874
+    },
+    {
+      "text": "common",
+      "start": 2.359,
+      "end": 2.639,
+      "type": "word",
+      "logprob": -0.03805484250187874
+    },
+    {
+      "text": " ",
+      "start": 2.639,
+      "end": 2.719,
+      "type": "spacing",
+      "logprob": -0.000005125986263010418
+    },
+    {
+      "text": "room.",
+      "start": 2.72,
+      "end": 3.019,
+      "type": "word",
+      "logprob": -0.11521358488935221
+    }
+  ],
+  "transcription_id": "12wZcZGBAZqdezJibLw3",
+  "audio_duration_secs": 3.2508125
+}

@@ -1,0 +1,84 @@
+{
+  "schema_version": 1,
+  "kind": "codex-built-in-room-image-generation",
+  "slug": "lake-vista-native-v2",
+  "workflow": {
+    "name": "Codex built-in image generation",
+    "tool": "image_gen.imagegen",
+    "model_identifier": null,
+    "seed": null,
+    "note": "The built-in workflow did not return a model identifier or seed."
+  },
+  "timestamps": {
+    "generation_started_at": "2026-07-16T21:46:34.163Z",
+    "generation_completed_at": "2026-07-16T21:49:08.786Z",
+    "duration_ms": 154623
+  },
+  "request_spec": {
+    "path": "art/chapters/ch2/rooms/lake-vista-native-v2.request.json",
+    "bytes": 1369,
+    "sha256": "beeb159ab0e2aa7b8003afa740dfd82ffc1f0e16e75e96dacfbed1d8e2c4b839"
+  },
+  "prompt": {
+    "path": "art/chapters/ch2/rooms/lake-vista-native-v2.prompt.md",
+    "section": "Prompt",
+    "bytes": 3268,
+    "sha256": "31bbc09efaefb9f86c6d96be2cf10976e728dfdd416ff53dc52101540b7da663"
+  },
+  "references": [
+    {
+      "index": 1,
+      "path": "public/assets/art/rooms/ch2-lake-vista.webp",
+      "role": "superseded Chapter Two composition reference only",
+      "generation_time_bytes": 142208,
+      "generation_time_sha256": "c5eed9ab2a1e49c69025921a849091857d9c8283ff54aa94a7c2892fa8ec35b3",
+      "dimensions": { "width": 2048, "height": 1152 },
+      "note": "The path now contains the accepted native-v2 derivative; this binding records the superseded file bytes that were supplied to generation."
+    },
+    {
+      "index": 2,
+      "path": "art/raw/ch1-platform.png",
+      "role": "finish, atmosphere, fine-detail, dusk palette, and luminous-brass reference",
+      "bytes": 2884310,
+      "sha256": "8035bbc87dd43643a59132dec27a91255d942f653ca6a78487312a46ac022af1",
+      "dimensions": { "width": 1672, "height": 941 }
+    },
+    {
+      "index": 3,
+      "path": "art/raw/ch1-leaky.png",
+      "role": "warm inhabited-light versus deep violet-shadow reference",
+      "bytes": 2473783,
+      "sha256": "ba771b909293ca6338f026a7011078198fecb137b8f50d855e67be5d9fc31097",
+      "dimensions": { "width": 1672, "height": 941 }
+    }
+  ],
+  "generation_output": {
+    "id": "exec-27896b35-7fe1-4743-989b-afd3af5caea2",
+    "original_path": "/Users/peteallen/.codex/generated_images/019f6c3e-aa13-7f72-8f24-96fc942fe3e4/exec-27896b35-7fe1-4743-989b-afd3af5caea2.png",
+    "copied_to": "art/raw/ch2-lake-vista-native-v2.png",
+    "media_type": "image/png",
+    "bytes": 2729377,
+    "sha256": "92716330d031a118919b5577d0e2fae482aaa62476a7bec37f5e0e6095a48846",
+    "dimensions": { "width": 1672, "height": 941 }
+  },
+  "derivatives": {
+    "accepted_png": {
+      "path": "art/raw/ch2-lake-vista-v2.png",
+      "bytes": 3680689,
+      "sha256": "9c16e29df4adf2f606e4d26b472fa395d84fe2a6d16a782edd1fa162275a999c",
+      "dimensions": { "width": 2048, "height": 1152 }
+    },
+    "shipping_webp": {
+      "path": "public/assets/art/rooms/ch2-lake-vista.webp",
+      "bytes": 369654,
+      "sha256": "a8f930ba06cab4ab503624970d2a53353d97348590690c6a47c9f6c06e7cc6c3",
+      "dimensions": { "width": 2048, "height": 1152 }
+    }
+  },
+  "conversion": {
+    "crop": "sips -s format png -c 940 1672",
+    "resize": "sips -s format png -z 1152 2048",
+    "shipping": "cwebp -q 88 -m 6 -sharp_yuv",
+    "note": "The 1672x941 native PNG was center-cropped by one pixel to 1672x940, resized once to 2048x1152, then encoded as WebP."
+  }
+}

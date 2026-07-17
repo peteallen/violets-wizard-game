@@ -78,8 +78,8 @@ function validateResumeRedirect(value, path) {
 }
 
 function validateResumeRedirects(value) {
-  if (!Array.isArray(value) || value.length === 0) {
-    fail('migrateSave.options.resumeRedirects', 'must contain at least one chapter-owned redirect');
+  if (!Array.isArray(value)) {
+    fail('migrateSave.options.resumeRedirects', 'must be an array of chapter-owned redirects');
   }
   value.forEach((redirect, index) => validateResumeRedirect(
     redirect,

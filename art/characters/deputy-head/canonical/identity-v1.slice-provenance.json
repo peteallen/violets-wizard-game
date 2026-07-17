@@ -1,0 +1,122 @@
+{
+  "schema_version": 1,
+  "algorithm": {
+    "id": "cyan-flood-aligned-character-sheet-v1",
+    "component_connectivity": 8,
+    "scale_filter": "premultiplied-rgba-box-rational-v1",
+    "output_color_type": 6,
+    "output_bit_depth": 8,
+    "deterministic": true
+  },
+  "slice_spec": {
+    "path": "art/characters/deputy-head/canonical/identity-v1.layout.json",
+    "bytes": 1123,
+    "sha256": "e9a36797b2ea267eda9e73ac5ca0c881e5e64fc0ed88fe052ef57cfac7eb3117",
+    "schema_version": 1,
+    "id": "deputy-head.identity-v1"
+  },
+  "source": {
+    "path": "art/characters/deputy-head/canonical/identity-v1.png",
+    "bytes": 1558332,
+    "expected_sha256": "540501d979b987d585ee327514ff205bb5332067de2c1e18ca977209676d0a8e",
+    "sha256": "540501d979b987d585ee327514ff205bb5332067de2c1e18ca977209676d0a8e",
+    "rgba_sha256": "1934b4b62fbddff32e2b131b0d3dee67b6fe02cde541f9d85fb7989e29e6f7e4",
+    "dimensions": {
+      "width": 1086,
+      "height": 1448
+    }
+  },
+  "controls": {
+    "output_canvas": {
+      "width": 896,
+      "height": 1200,
+      "center_x": 448,
+      "ground_y": 1132
+    },
+    "common_scale": {
+      "numerator": 4,
+      "denominator": 5
+    },
+    "key": {
+      "color": {
+        "red": 1,
+        "green": 248,
+        "blue": 253
+      },
+      "tolerance": 28,
+      "alpha": {
+        "opaque_cyan_excess": 50,
+        "transparent_cyan_excess": 90,
+        "edge_spill_radius": 8,
+        "edge_spill_opaque_cyan_excess": 30,
+        "edge_spill_max_green_blue_delta": 70,
+        "matte_low_alpha": 170,
+        "matte_high_alpha": 245,
+        "edge_color_radius": 0
+      }
+    },
+    "components": {
+      "detail_min_pixels": 8,
+      "detail_max_pixels": 5000,
+      "detail_max_distance": 18
+    }
+  },
+  "outputs": [
+    {
+      "name": "neutral",
+      "path": "public/assets/art/characters/deputy-head/default/neutral.png",
+      "media_type": "image/png",
+      "bytes": 591608,
+      "sha256": "2328c67f09df67ff32da781bca18329312112bf31569e37c12912480ac03aff2",
+      "rgba_sha256": "d9865b08bacb07c01355d4553b88e4fc61d897281c5d024f80439c6c7558b146",
+      "dimensions": {
+        "width": 896,
+        "height": 1200
+      },
+      "crop": {
+        "x": 0,
+        "y": 0,
+        "width": 1086,
+        "height": 1448
+      },
+      "source_content_bounds": {
+        "x": 221,
+        "y": 21,
+        "width": 681,
+        "height": 1406
+      },
+      "scaled_dimensions": {
+        "width": 545,
+        "height": 1125
+      },
+      "placement": {
+        "x": 176,
+        "y": 8,
+        "width": 545,
+        "height": 1125,
+        "center_x": 448,
+        "ground_y": 1132
+      },
+      "flood": {
+        "background_pixels": 1087400,
+        "non_background_pixels": 485128,
+        "background_fraction": 0.6914980210209294
+      },
+      "components": {
+        "found": 1,
+        "dominant_pixels": 475826,
+        "kept": 1,
+        "removed": 0,
+        "selected_pixels": 475826,
+        "details": []
+      },
+      "alpha": {
+        "transparent_pixels": 1096702,
+        "soft_pixels": 492,
+        "opaque_pixels": 475334
+      },
+      "edge_artifacts_repaired": 23
+    }
+  ],
+  "provenance_path": "art/characters/deputy-head/canonical/identity-v1.slice-provenance.json"
+}

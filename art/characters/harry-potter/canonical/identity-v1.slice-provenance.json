@@ -1,0 +1,163 @@
+{
+  "schema_version": 1,
+  "algorithm": {
+    "id": "cyan-flood-aligned-character-sheet-v1",
+    "component_connectivity": 8,
+    "scale_filter": "premultiplied-rgba-box-rational-v1",
+    "output_color_type": 6,
+    "output_bit_depth": 8,
+    "deterministic": true
+  },
+  "slice_spec": {
+    "path": "art/characters/harry-potter/canonical/identity-v1.layout.json",
+    "bytes": 1127,
+    "sha256": "c3af6092b4bb2982bb33580a9aa2dc6a01920372248abd59fe347b89b93698f1",
+    "schema_version": 1,
+    "id": "harry-potter.identity-v1"
+  },
+  "source": {
+    "path": "art/characters/harry-potter/canonical/identity-v1.png",
+    "bytes": 1517325,
+    "expected_sha256": "5e46ca1242eba5b43ea91af77710b9829bd54cf71273aaded747ddb3af8266b9",
+    "sha256": "5e46ca1242eba5b43ea91af77710b9829bd54cf71273aaded747ddb3af8266b9",
+    "rgba_sha256": "3ae43fca7f43e5676cd01dba135f5f076ba695c5907e392c0a02e5d45fe59699",
+    "dimensions": {
+      "width": 1086,
+      "height": 1448
+    }
+  },
+  "controls": {
+    "output_canvas": {
+      "width": 896,
+      "height": 1200,
+      "center_x": 448,
+      "ground_y": 1132
+    },
+    "common_scale": {
+      "numerator": 5,
+      "denominator": 6
+    },
+    "key": {
+      "color": {
+        "red": 1,
+        "green": 248,
+        "blue": 253
+      },
+      "tolerance": 28,
+      "alpha": {
+        "opaque_cyan_excess": 50,
+        "transparent_cyan_excess": 90,
+        "edge_spill_radius": 8,
+        "edge_spill_opaque_cyan_excess": 30,
+        "edge_spill_max_green_blue_delta": 70,
+        "matte_low_alpha": 170,
+        "matte_high_alpha": 245,
+        "edge_color_radius": 0
+      }
+    },
+    "components": {
+      "detail_min_pixels": 8,
+      "detail_max_pixels": 5000,
+      "detail_max_distance": 18
+    }
+  },
+  "outputs": [
+    {
+      "name": "neutral",
+      "path": "public/assets/art/characters/harry-potter/default/neutral.png",
+      "media_type": "image/png",
+      "bytes": 582619,
+      "sha256": "48a311c2b16d4f7ca4b73afd71cb8b6d2567565d4880d5d736972562895227d0",
+      "rgba_sha256": "54bf2540aaec0b091248a57240f7bbbeaf0c0bd2c765815393c266698945fc46",
+      "dimensions": {
+        "width": 896,
+        "height": 1200
+      },
+      "crop": {
+        "x": 0,
+        "y": 0,
+        "width": 1086,
+        "height": 1448
+      },
+      "source_content_bounds": {
+        "x": 302,
+        "y": 103,
+        "width": 505,
+        "height": 1251
+      },
+      "scaled_dimensions": {
+        "width": 421,
+        "height": 1043
+      },
+      "placement": {
+        "x": 238,
+        "y": 90,
+        "width": 421,
+        "height": 1043,
+        "center_x": 448,
+        "ground_y": 1132
+      },
+      "flood": {
+        "background_pixels": 1172859,
+        "non_background_pixels": 399669,
+        "background_fraction": 0.7458429992979457
+      },
+      "components": {
+        "found": 9,
+        "dominant_pixels": 394377,
+        "kept": 1,
+        "removed": 8,
+        "selected_pixels": 394377,
+        "details": [
+          {
+            "pixels": 2,
+            "distance_from_dominant": 4,
+            "kept": false
+          },
+          {
+            "pixels": 3,
+            "distance_from_dominant": 3,
+            "kept": false
+          },
+          {
+            "pixels": 2,
+            "distance_from_dominant": 3,
+            "kept": false
+          },
+          {
+            "pixels": 2,
+            "distance_from_dominant": 3,
+            "kept": false
+          },
+          {
+            "pixels": 1,
+            "distance_from_dominant": 3,
+            "kept": false
+          },
+          {
+            "pixels": 1,
+            "distance_from_dominant": 2,
+            "kept": false
+          },
+          {
+            "pixels": 1,
+            "distance_from_dominant": 6,
+            "kept": false
+          },
+          {
+            "pixels": 2,
+            "distance_from_dominant": 2,
+            "kept": false
+          }
+        ]
+      },
+      "alpha": {
+        "transparent_pixels": 1178151,
+        "soft_pixels": 506,
+        "opaque_pixels": 393871
+      },
+      "edge_artifacts_repaired": 15
+    }
+  ],
+  "provenance_path": "art/characters/harry-potter/canonical/identity-v1.slice-provenance.json"
+}

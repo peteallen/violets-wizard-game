@@ -1,0 +1,83 @@
+{
+  "schema_version": 1,
+  "kind": "codex-built-in-room-image-generation",
+  "slug": "platform-native-v2",
+  "workflow": {
+    "name": "Codex built-in image generation",
+    "tool": "image_gen.imagegen",
+    "model_identifier": null,
+    "seed": null,
+    "note": "The built-in workflow did not return a model identifier or seed."
+  },
+  "timestamps": {
+    "generation_started_at": "2026-07-16T21:42:08.114Z",
+    "generation_completed_at": "2026-07-16T21:43:52.347Z",
+    "duration_ms": 104233
+  },
+  "request_spec": {
+    "path": "art/chapters/ch2/rooms/platform-native-v2.request.json",
+    "bytes": 1332,
+    "sha256": "a6ed67a67bd7a96d8b396e1848a3fa875857aabbd9ce0d71514e33d616262f20"
+  },
+  "prompt": {
+    "path": "art/chapters/ch2/rooms/platform-native-v2.prompt.md",
+    "section": "Prompt",
+    "bytes": 2764,
+    "sha256": "23a0bc2fe002fd69607ed41d512d5dcf5aa1f23b291755f18453b200f9c66808"
+  },
+  "references": [
+    {
+      "index": 1,
+      "path": "art/raw/ch1-platform.png",
+      "role": "direct style, finish, railway atmosphere, and material-quality reference",
+      "bytes": 2884310,
+      "sha256": "8035bbc87dd43643a59132dec27a91255d942f653ca6a78487312a46ac022af1",
+      "dimensions": { "width": 1672, "height": 941 }
+    },
+    {
+      "index": 2,
+      "path": "art/raw/ch1-courtyard.png",
+      "role": "stone-floor and brick texture reference",
+      "bytes": 2988006,
+      "sha256": "1d52de7f7002bf8286207e9b77d0da2e640d99b47fe4cec56290fb6f75425068",
+      "dimensions": { "width": 1672, "height": 941 }
+    },
+    {
+      "index": 3,
+      "path": "art/raw/ch1-leaky.png",
+      "role": "warm interior depth and amber-versus-violet lighting reference",
+      "bytes": 2473783,
+      "sha256": "ba771b909293ca6338f026a7011078198fecb137b8f50d855e67be5d9fc31097",
+      "dimensions": { "width": 1672, "height": 941 }
+    }
+  ],
+  "generation_output": {
+    "id": "exec-f5950615-81d9-47e7-bbb5-f40471da031c",
+    "original_path": "/Users/peteallen/.codex/generated_images/019f6c3e-aa13-7f72-8f24-96fc942fe3e4/exec-f5950615-81d9-47e7-bbb5-f40471da031c.png",
+    "copied_to": "art/raw/ch2-platform-native-v2.png",
+    "media_type": "image/png",
+    "bytes": 3071298,
+    "sha256": "683d0344c5931bd2659d08f9b147edc5b6f9b639efbfda4f3ca8bde87d3a7e7f",
+    "dimensions": { "width": 1672, "height": 941 }
+  },
+  "derivatives": {
+    "accepted_png": {
+      "path": "art/raw/ch2-platform-v2.png",
+      "bytes": 4043523,
+      "sha256": "4744edd78bab7234ef925c9589ff9516bb245c50548d162c287f3f88c598164b",
+      "dimensions": { "width": 2048, "height": 1152 }
+    },
+    "shipping_webp": {
+      "path": "public/assets/art/rooms/ch2-platform.webp",
+      "bytes": 505196,
+      "sha256": "5ac1a11afb872e2f6e7ea107572075736ba0fda14918d41aa9ace141f5f84394",
+      "dimensions": { "width": 2048, "height": 1152 }
+    }
+  },
+  "conversion": {
+    "crop": "sips -s format png -c 940 1672",
+    "resize": "sips -s format png -z 1152 2048",
+    "shipping": "cwebp -q 88 -m 6 -sharp_yuv",
+    "note": "The 1672x941 native PNG was center-cropped by one pixel to 1672x940, resized once to 2048x1152, then encoded as WebP."
+  }
+}

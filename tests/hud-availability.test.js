@@ -24,7 +24,7 @@ function gameStub(state) {
     flags: {},
     overlay: null,
     objective: null,
-    chapter: { dialogues: {} },
+    chapter: { id: state.roomId.split('.')[0], dialogues: {} },
     dialogue: { open: vi.fn() },
     tap: vi.fn(),
     snapshot: () => state,

@@ -10,23 +10,42 @@ const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const DEFAULT_QA_DIRECTORY = resolve(ROOT, 'audio/qa');
 const DEFAULT_MANIFEST_FILE = resolve(DEFAULT_QA_DIRECTORY, 'manifest.json');
 const DEFAULT_AUDIO_DIRECTORY = resolve(ROOT, 'public/assets/audio');
-const ROLE_ORDER = Object.freeze(['narrator', 'guide', 'wandmaker', 'tailor', 'keeper', 'violet']);
+const ROLE_ORDER = Object.freeze([
+  'narrator',
+  'guide',
+  'wandmaker',
+  'tailor',
+  'keeper',
+  'conductor',
+  'trolley-witch',
+  'harry',
+  'ron',
+  'hermione',
+  'deputy-head',
+  'sorting-hat',
+  'headmaster',
+  'violet',
+]);
 
 export function collectExpectedVoiceLines() {
   const lines = [];
-  for (const chapter of [chapter1, chapter2]) {
-    for (const dialogue of Object.values(chapter.dialogues)) {
+  const chapters = [
+    { content: chapter1, recaps: chapter1ResumeRecaps },
+    { content: chapter2, recaps: chapter2.recaps ?? [] },
+  ];
+  for (const { content, recaps } of chapters) {
+    for (const dialogue of Object.values(content.dialogues)) {
       for (const node of Object.values(dialogue.nodes)) {
         if (node.type === 'line') addLine(lines, node.voice, node.text, roleForSpeaker(node.speaker));
       }
     }
-  }
-  for (const quest of Object.values(chapter1.quests)) {
-    for (const step of Object.values(quest.steps)) {
-      addLine(lines, step.objective.voice, step.objective.text, roleForSpeaker(step.objective.speaker));
+    for (const quest of Object.values(content.quests)) {
+      for (const step of Object.values(quest.steps)) {
+        addLine(lines, step.objective.voice, step.objective.text, roleForSpeaker(step.objective.speaker));
+      }
     }
+    for (const recap of recaps) addLine(lines, recap.voice, recap.text, 'narrator');
   }
-  for (const recap of chapter1ResumeRecaps) addLine(lines, recap.voice, recap.text, 'narrator');
   for (const card of cards) addLine(lines, card.voice, card.text, 'narrator');
 
   const unique = new Map();
@@ -46,6 +65,8 @@ export function normalizeSpokenText(value) {
     .normalize('NFKC')
     .toLocaleLowerCase('en-US')
     .replace(/\bcolour\b/gu, 'color')
+    .replace(/\bchokunda\b/gu, 'jocunda')
+    .replace(/\bahem\b/gu, 'hmm')
     .replace(/&/gu, ' and ')
     .replace(/[\u2018\u2019'`]/gu, '')
     .replace(/[^\p{L}\p{N}]+/gu, ' ')
@@ -272,7 +293,15 @@ function roleForSpeaker(speaker) {
     'npc.wandmaker': 'wandmaker',
     'npc.tailor': 'tailor',
     'npc.menagerieKeeper': 'keeper',
-    'npc.violet': 'violet',
+    'ch2.npc.narrator': 'narrator',
+    'ch2.npc.conductor': 'conductor',
+    'ch2.npc.harry': 'harry',
+    'ch2.npc.ron': 'ron',
+    'ch2.npc.hermione': 'hermione',
+    'ch2.npc.trolleyWitch': 'trolley-witch',
+    'ch2.npc.deputyHead': 'deputy-head',
+    'ch2.npc.sortingHat': 'sorting-hat',
+    'ch2.npc.headmaster': 'headmaster',
   })[speaker] ?? 'narrator';
 }
 

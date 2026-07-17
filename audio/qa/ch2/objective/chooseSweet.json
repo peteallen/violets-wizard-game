@@ -1,0 +1,100 @@
+{
+  "language_code": "eng",
+  "language_probability": 1,
+  "text": "Choose one magical sweet from the trolley",
+  "words": [
+    {
+      "text": "Choose",
+      "start": 0.079,
+      "end": 0.299,
+      "type": "word",
+      "logprob": -0.023534366860985756
+    },
+    {
+      "text": " ",
+      "start": 0.299,
+      "end": 0.459,
+      "type": "spacing",
+      "logprob": -0.00001168244216387393
+    },
+    {
+      "text": "one",
+      "start": 0.459,
+      "end": 0.599,
+      "type": "word",
+      "logprob": -0.00001168244216387393
+    },
+    {
+      "text": " ",
+      "start": 0.599,
+      "end": 0.779,
+      "type": "spacing",
+      "logprob": -0.0007111880695447326
+    },
+    {
+      "text": "magical",
+      "start": 0.779,
+      "end": 1.179,
+      "type": "word",
+      "logprob": -0.0007111880695447326
+    },
+    {
+      "text": " ",
+      "start": 1.179,
+      "end": 1.319,
+      "type": "spacing",
+      "logprob": -0.01260257139801979
+    },
+    {
+      "text": "sweet",
+      "start": 1.319,
+      "end": 1.639,
+      "type": "word",
+      "logprob": -0.01260257139801979
+    },
+    {
+      "text": " ",
+      "start": 1.639,
+      "end": 1.659,
+      "type": "spacing",
+      "logprob": -5.960462772236497e-7
+    },
+    {
+      "text": "from",
+      "start": 1.659,
+      "end": 1.779,
+      "type": "word",
+      "logprob": -5.960462772236497e-7
+    },
+    {
+      "text": " ",
+      "start": 1.779,
+      "end": 1.819,
+      "type": "spacing",
+      "logprob": -0.000005960446742392378
+    },
+    {
+      "text": "the",
+      "start": 1.819,
+      "end": 1.86,
+      "type": "word",
+      "logprob": -0.000005960446742392378
+    },
+    {
+      "text": " ",
+      "start": 1.86,
+      "end": 1.959,
+      "type": "spacing",
+      "logprob": -0.0002530493075028062
+    },
+    {
+      "text": "trolley",
+      "start": 1.959,
+      "end": 2.299,
+      "type": "word",
+      "logprob": -0.0002530493075028062
+    }
+  ],
+  "transcription_id": "1x3flypFt9NaWj8QRiXe",
+  "audio_duration_secs": 2.5541875
+}
