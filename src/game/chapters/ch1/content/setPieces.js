@@ -84,7 +84,7 @@ export const chapter1SetPieceDefinitions = {
     reducedMotion: 'reduced.wallCrossfade',
     params: { specification: 'SP-02', columns: 10, rows: 8 },
     timeline: { tracks: [sfxCue(0, 'sfx/ch1/wallRumble'), sfxCue(0.45, 'sfx/ch1/brickClack')] },
-    verification: { keyframes: [0, 0.6, 1, 1.4, 1.65, 1.8, 2.05, 2.2, 2.6], checklist: storybookChecklist('The intact wall has no visible seams.', 'Each moving cell reads as one opaque brick opening from the center outward.', 'Diagon Alley remains at one full-canvas world scale while the brick aperture occludes the outgoing courtyard and cast during the burst, never afterward.') },
+    verification: { keyframes: [0, 0.6, 1, 1.4, 1.65, 1.8, 2.05, 2.2, 2.6], checklist: storybookChecklist('The courtyard remains unchanged outside the intact wall before the first bricks move.', 'Each moving cell reads as one opaque brick opening from the center outward, with Diagon Alley visible only through the gaps.', 'The same stable-scale street reveal expands across the outgoing courtyard and cast during the burst, with no second transition afterward.') },
     onComplete: [flagSet('ch1.wallOpened'), travel('ch1.diagonStreet', 'street.west', 'none')],
   },
   'sp.wandChaos1': {

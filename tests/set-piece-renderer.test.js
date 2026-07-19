@@ -274,7 +274,7 @@ describe('SetPieceRenderer dispatch', () => {
     expect(finalStates.every((state) => state.progress === 1 && state.alpha === 0)).toBe(true);
   });
 
-  it('draws the street as the stage beneath all eighty wall tiles without allocating sprite canvases', () => {
+  it('reveals the street only inside the wall until the opening grows across the courtyard', () => {
     const canvasFactory = vi.fn(() => { throw new Error('The wall must not allocate a tile canvas.'); });
     const renderer = setPieceRenderer({ canvasFactory });
     const courtyard = { complete: true, naturalWidth: 1672, naturalHeight: 941 };
@@ -294,6 +294,10 @@ describe('SetPieceRenderer dispatch', () => {
     }, {});
 
     expect(canvasFactory).not.toHaveBeenCalled();
+    expect(context.bezierCurveTo).toHaveBeenCalled();
+    expect(context.clip).toHaveBeenCalled();
+    expect(context.clip.mock.invocationCallOrder[0])
+      .toBeLessThan(context.drawImage.mock.invocationCallOrder[0]);
     expect(context.drawImage.mock.calls[0][0]).toBe(reveal);
     expect(context.drawImage.mock.calls[0].slice(-4)).toEqual([0, 0, 1280, 720]);
     expect(context.drawImage.mock.calls.filter((call) => call[0] === courtyard && call.length === 9))

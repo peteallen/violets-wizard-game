@@ -378,7 +378,15 @@ export class SetPieceRenderer {
     }
 
     const states = brickTileStates(t);
-    drawStreetReveal(context, reveal, 0);
+    const openingProgress = clamp01((t - 0.8) / 0.8);
+    if (openingProgress > 0) {
+      context.save();
+      context.beginPath();
+      appendBrickWallOpening(context, openingProgress);
+      context.clip();
+      drawStreetReveal(context, reveal, 0);
+      context.restore();
+    }
 
     const shivering = t >= 0.4 && t < 0.8;
     if (shivering) {
@@ -1952,14 +1960,36 @@ function traceInvitationOwlOval(
   context.closePath();
 }
 
+function appendBrickWallOpening(context, progress) {
+  const centerX = BRICK_GRID.x + BRICK_GRID.width / 2;
+  const centerY = BRICK_GRID.y + BRICK_GRID.height / 2;
+  const halfWidth = lerp(2, BRICK_GRID.width / 2, progress);
+  const halfHeight = lerp(2, BRICK_GRID.height / 2, progress);
+  appendBrickPortalBounds(context, {
+    x: centerX - halfWidth,
+    y: centerY - halfHeight,
+    right: centerX + halfWidth,
+    bottom: centerY + halfHeight,
+    wobble: progress * 14,
+  });
+}
+
 function appendBrickPortal(context, progress) {
-  const x = lerp(BRICK_GRID.x - 24, -110, progress);
-  const y = lerp(BRICK_GRID.y - 24, -90, progress);
-  const right = lerp(BRICK_GRID.x + BRICK_GRID.width + 24, WORLD.width + 110, progress);
-  const bottom = lerp(BRICK_GRID.y + BRICK_GRID.height + 24, WORLD.height + 90, progress);
+  const centerX = BRICK_GRID.x + BRICK_GRID.width / 2;
+  const centerY = BRICK_GRID.y + BRICK_GRID.height / 2;
+  traceOrganicOval(
+    context,
+    centerX,
+    centerY,
+    lerp(BRICK_GRID.width / 2, WORLD.width * 0.78, progress),
+    lerp(BRICK_GRID.height / 2, WORLD.height * 0.9, progress),
+    progress * 0.7,
+  );
+}
+
+function appendBrickPortalBounds(context, { x, y, right, bottom, wobble }) {
   const width = right - x;
   const height = bottom - y;
-  const wobble = 12 + progress * 22;
 
   context.moveTo(x - wobble, y + height * 0.5);
   context.bezierCurveTo(

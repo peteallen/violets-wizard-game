@@ -77,7 +77,7 @@ const REVIEW_SCENE_ILLUSION_CHECKS = Object.freeze({
     'Map-travel sparkles remain attached to the organic reveal edge while the destination replaces the street with zero blank canvas or competing objective symbol.',
   ],
   'sp-brick-wall-review': [
-    'The intact courtyard wall opens center-out as one readable ten-by-eight mortar grid whose moving cells become individual opaque bricks, with full-canvas Diagon Alley continuously visible from frame zero at one stable world scale, the aperture naturally occluding the outgoing cast, zero courtyard border, zero rectangular painting edge, and zero second room-transition wipe.',
+    'The courtyard remains unchanged outside the wall while its readable ten-by-eight mortar grid opens center-out and each moving cell becomes one opaque brick; Diagon Alley appears only through the growing gaps before that same stable-scale reveal expands naturally across the outgoing room and cast, with zero exposed rectangular painting edge or second room-transition wipe.',
   ],
   'sp-wand-vase-review': [
     'The wrong-wand vase wobble, break, bounce, and settle remain a single readable mishap, with every shard inside the room and clear of Violet and the controls.',

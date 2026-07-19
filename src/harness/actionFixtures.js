@@ -106,7 +106,7 @@ registry
     ],
   ))
   .register('sp-brick-wall-review', createFixture(
-    'Hold the ten-by-eight individual-brick reveal and stable full-scale street aperture on their deterministic timeline.',
+    'Hold the intact-courtyard, individual-brick reveal and the following full-room street transition on their deterministic timeline.',
   ))
   .register('sp-wand-vase-review', createFixture(
     'Hold the second wrong-wand vase mishap on its deterministic timeline.',

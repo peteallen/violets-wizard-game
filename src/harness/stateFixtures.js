@@ -600,7 +600,7 @@ registry
     }),
   ))
   .register('sp-brick-wall-review', createFixture(
-    'The courtyard wall staged for its ten-by-eight, individual-brick center-out reveal.',
+    'The courtyard stays intact while its ten-by-eight wall opens onto Diagon Alley, before the revealed street expands to replace the room.',
     { chapter: 1, scene: 'sp-brick-wall-review' },
     createSave({
       scene: 'ch1.wallOpening',
