@@ -1,11 +1,13 @@
-import { access, readdir, stat } from 'node:fs/promises';
+import { access, readFile, readdir, stat } from 'node:fs/promises';
 import { dirname, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { assetManifest } from '../src/game/core/assetManifest.js';
 import { validateAssetManifestEntry } from '../src/game/contracts.js';
+import { verifyCharacterWebpBaseline } from './character-webp.mjs';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const PUBLIC = resolve(ROOT, 'public');
+const CHARACTER_WEBP_BASELINE = resolve(ROOT, 'scripts/character-webp-integrity.json');
 const requiredFoundation = [resolve(ROOT, 'index.html'), resolve(ROOT, 'src/main.js')];
 const failures = [];
 
@@ -39,12 +41,32 @@ for (const path of await walk(resolve(PUBLIC, 'assets'))) {
   if (!manifestedPaths.has(path)) failures.push(`orphaned public asset: ${relative(PUBLIC, path)}`);
 }
 
+const characterPaths = Object.values(assetManifest)
+  .map(({ path }) => path)
+  .filter((path) => path.startsWith('assets/art/characters/'));
+let characterWebpBaseline;
+try {
+  characterWebpBaseline = JSON.parse(await readFile(CHARACTER_WEBP_BASELINE, 'utf8'));
+} catch (error) {
+  failures.push(`character WebP baseline is unreadable: ${error.message}`);
+}
+if (characterWebpBaseline !== undefined) {
+  failures.push(...await verifyCharacterWebpBaseline({
+    publicRoot: PUBLIC,
+    characterPaths,
+    baseline: characterWebpBaseline,
+  }));
+}
+
 if (failures.length) {
   console.error(`Asset check failed with ${failures.length} problem${failures.length === 1 ? '' : 's'}:\n${failures.map((failure) => `- ${failure}`).join('\n')}`);
   process.exit(1);
 }
 
-console.log(`Asset check passed: ${Object.keys(assetManifest).length} manifest keys resolve to ${manifestedPaths.size} production files.`);
+console.log(
+  `Asset check passed: ${Object.keys(assetManifest).length} manifest keys resolve to `
+  + `${manifestedPaths.size} production files; ${characterPaths.length} character WebPs match their integrity baseline.`,
+);
 
 async function walk(root) {
   const paths = [];

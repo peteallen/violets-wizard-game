@@ -294,6 +294,10 @@ describe('Chapter Three set-piece visual contracts', () => {
 
     await expect(Game.prototype.preloadSetPieceAssets.call({
       setPieceRenderer: { loadImage },
+      setPieceImageKeys: Game.prototype.setPieceImageKeys,
+      assetRegistry: {
+        getAsset: (key) => ({ kind: key.startsWith('chapterCards/') ? 'image' : 'audio' }),
+      },
     }, {
       descriptor: close,
       logicalDescriptor: close,
@@ -364,7 +368,7 @@ describe('Chapter Three production presentation registration', () => {
     expect(registry.setPieceInputLockSeconds(active, { chapterId: 'ch9' })).toBe(1);
   });
 
-  it('loads presentation packages through chapter descriptors at production startup', async () => {
+  it('keeps presentation packages out of startup and activates only the requested chapter', async () => {
     const loadChapterPackage = vi.fn(async (chapterId, kind) => ({
       default: { chapterId, registrations: [], roomMusic: { default: `${chapterId}-music` } },
     }));
@@ -376,6 +380,8 @@ describe('Chapter Three production presentation registration', () => {
       loadChapterPackage,
     });
 
+    expect(loadChapterPackage).not.toHaveBeenCalled();
+    await registry.activateChapter('ch7');
     expect(loadChapterPackage).toHaveBeenCalledWith('ch7', 'presentation');
     expect(loadChapterPackage).toHaveBeenCalledTimes(1);
     expect(registry.resolveRoomMusic({ chapterId: 'ch7', roomId: 'any' })).toBe('ch7-music');

@@ -8,18 +8,18 @@ function still(path) {
 }
 
 const CLIPS = Object.freeze({
-  idle: still('default/neutral.png'),
-  neutral: still('default/neutral.png'),
-  'talk-a': still('default/talk-a.png'),
-  'talk-b': still('default/talk-b.png'),
+  idle: still('default/neutral.webp'),
+  neutral: still('default/neutral.webp'),
+  'talk-a': still('default/talk-a.webp'),
+  'talk-b': still('default/talk-b.webp'),
   speaking: Object.freeze({
     fps: 4,
-    frames: Object.freeze(['default/talk-a.png', 'default/talk-b.png']),
+    frames: Object.freeze(['default/talk-a.webp', 'default/talk-b.webp']),
     reducedMotionClip: 'talk-a',
   }),
-  demonstrate: still('default/demonstrate.png'),
-  'wand-cast': still('default/wand-cast.png'),
-  celebrate: still('default/celebrate.png'),
+  demonstrate: still('default/demonstrate.webp'),
+  'wand-cast': still('default/wand-cast.webp'),
+  celebrate: still('default/celebrate.webp'),
 });
 
 const ALIASES = Object.freeze({
@@ -72,12 +72,12 @@ export const flitwickCharacterDefinition = defineCharacter({
     portrait: { x: 179.2, y: 0, width: 537.6, height: 504 },
   },
   assets: characterImageAssets('flitwick', [
-    'default/neutral.png',
-    'default/talk-a.png',
-    'default/talk-b.png',
-    'default/demonstrate.png',
-    'default/wand-cast.png',
-    'default/celebrate.png',
+    'default/neutral.webp',
+    'default/talk-a.webp',
+    'default/talk-b.webp',
+    'default/demonstrate.webp',
+    'default/wand-cast.webp',
+    'default/celebrate.webp',
   ]),
 });
 

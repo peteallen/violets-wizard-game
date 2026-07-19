@@ -154,7 +154,7 @@ describe('Chapter Two first-pass character packages', () => {
       });
       expect(definition.assets).toEqual({
         [`characters/${slug}/default/neutral`]: {
-          path: `assets/art/characters/${slug}/default/neutral.png`,
+          path: `assets/art/characters/${slug}/default/neutral.webp`,
           kind: 'image',
         },
       });
@@ -164,7 +164,7 @@ describe('Chapter Two first-pass character packages', () => {
         ground: { x: 448, y: 1132 },
       });
       expect(source.appearances.default.clips.idle.frames).toEqual([
-        'default/neutral.png',
+        'default/neutral.webp',
       ]);
       expect(source.appearances.default.aliases).toEqual(Object.fromEntries(
         poses.slice(1).map((pose) => [pose, 'idle']),
@@ -185,7 +185,7 @@ describe('Chapter Two first-pass character packages', () => {
         resolveFrame: (path) => path,
       });
       expect(manifest.fullFrame.assetFiles).toEqual([
-        `assets/art/characters/${slug}/default/neutral.png`,
+        `assets/art/characters/${slug}/default/neutral.webp`,
       ]);
       for (const pose of poses) {
         expect(resolveFullFrameCharacterAnimation(manifest, {

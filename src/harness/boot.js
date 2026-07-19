@@ -5,8 +5,11 @@ import {
   productionCharacterCatalog,
   titleCharacterDependencies,
 } from '../game/characters/productionCatalog.js';
-import { loadChapterPackage } from '../game/content/index.js';
-import { getAsset } from '../game/core/assetManifest.js';
+import {
+  createChapterRuntimeRegistry,
+  loadChapterPackage,
+} from '../game/chapters/catalog.js';
+import { AssetRegistry } from '../game/core/AssetRegistry.js';
 import { loadGameFonts } from '../game/core/loadFonts.js';
 import { validateSaveV1 } from '../game/systems/Save.js';
 import { RegisteredCharacterRenderer } from '../game/render/RegisteredCharacterRenderer.js';
@@ -58,6 +61,11 @@ export const GUIDE_WALK_REVIEW_SCENES = Object.freeze([
   'ch1-follow-hagrid-review',
   'ch1-follow-hagrid-leaky-review',
 ]);
+
+export const COMPOSITION_REVIEW_SCENES = Object.freeze({
+  'composition-loading-review': 'loading',
+  'composition-failure-review': 'failed',
+});
 
 function integer(value, path, { min = 0, max = Number.MAX_SAFE_INTEGER } = {}) {
   const parsed = Number(value);
@@ -228,7 +236,7 @@ export async function preloadHarnessChapterImages(game) {
     ...(active?.logicalDescriptor?.assets ?? []),
   ])];
   const setPieceImageKeys = activeAssets.filter(
-    (key) => (assets[key] ?? getAsset(key))?.kind === 'image',
+    (key) => (assets[key] ?? game.assetRegistry?.getAsset(key))?.kind === 'image',
   );
   await Promise.all(setPieceImageKeys.map((key) => game.setPieceRenderer?.loadImage?.(key)));
   return Object.freeze({
@@ -297,6 +305,19 @@ export function prepareGuideWalkReview(game, scene) {
   return true;
 }
 
+export function prepareCompositionReview(game, scene) {
+  const status = COMPOSITION_REVIEW_SCENES[scene];
+  if (!status) return false;
+  const error = new Error('Deterministic composition review failure.');
+  game.presentationFailure = {
+    status,
+    error,
+    retry: async () => Object.freeze({ status: 'ready' }),
+  };
+  game.render();
+  return true;
+}
+
 export async function bootHarness({
   search = globalThis.location?.search ?? '',
   canvas = globalThis.document?.querySelector('#game'),
@@ -320,6 +341,14 @@ export async function bootHarness({
       characterDependencies,
     } = resolveHarnessScenario(request);
     const eventLog = [];
+    const chapterRuntime = createChapterRuntimeRegistry();
+    const assetRegistry = new AssetRegistry();
+    const preparedChapters = await chapterRuntime.prepare(
+      stateFixture.entry.chapter > 0 ? stateFixture.save.resume.chapter : 'ch1',
+    );
+    for (const chapterPackage of preparedChapters.packages) {
+      assetRegistry.registerChapterPackage(chapterPackage);
+    }
     const characterScopes = new CharacterScopeController({
       catalog: productionCharacterCatalog,
       loadChapterPackage,
@@ -357,6 +386,9 @@ export async function bootHarness({
       characterRenderer,
       characterReviewRenderer,
       characterScopes,
+      chapterRuntime,
+      assetRegistry,
+      reviewMap: chapterRuntime.getChapterMap('ch1'),
       enableSaveTransfer: request.scene === 'save-transfer',
       enablePetNameDialog: request.scene === 'pet-name-dialog',
     });
@@ -387,6 +419,7 @@ export async function bootHarness({
       });
     }
     game.start();
+    prepareCompositionReview(game, request.scene);
     const worldSnapshot = game.world?.snapshot();
     await game.uiRenderer.preloadUiImages({
       title: request.scene.startsWith('foundation'),
@@ -457,4 +490,14 @@ export async function bootHarness({
   return targetWindow.__harness;
 }
 
-if (typeof document !== 'undefined' && typeof window !== 'undefined') await bootHarness();
+export function shouldAutoBootHarness(
+  documentRef = globalThis.document,
+  windowRef = globalThis.window,
+) {
+  return Boolean(
+    windowRef
+    && documentRef?.documentElement?.dataset?.violetHarness === 'true',
+  );
+}
+
+if (shouldAutoBootHarness()) await bootHarness();

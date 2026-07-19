@@ -105,7 +105,7 @@ const npcs = [
   }),
 ];
 
-const assets = [
+export const chapter4AssetDefinitions = Object.freeze([
   {
     key: 'chapterCards/ch4/flying-lesson',
     path: 'assets/art/chapter-cards/ch4-flying-lesson.webp',
@@ -121,7 +121,7 @@ const assets = [
     path: 'assets/audio/sfx/ch4/flying-preview.mp3',
     kind: 'sfx',
   },
-];
+].map((asset) => Object.freeze(asset)));
 
 const characterDependencies = [...new Set(npcs.map(({ characterId }) => characterId))];
 
@@ -142,7 +142,7 @@ export const chapter4 = defineChapter({
     rooms: [previewRoom],
     scenes: [previewScene],
     npcs,
-    assets,
+    assets: chapter4AssetDefinitions,
     characterDependencies,
   }],
 });
@@ -152,6 +152,7 @@ export const chapter4ContentPackage = Object.freeze({
   chapter: chapter4,
   maps: chapter4.maps,
   resumeRecaps: chapter4.recaps,
+  assets: chapter4AssetDefinitions,
   assetKeys: Object.freeze(Object.keys(chapter4.assets)),
   codeResourceKeys: Object.freeze([]),
   characterDependencies: chapter4.characterDependencies,

@@ -1,5 +1,4 @@
 import { INPUT, PALETTE, WORLD } from '../config.js';
-import { chapter1Map } from '../content/chapters/ch1.js';
 import { childFacingUiText } from '../content/playerVisibleCopy.js';
 import { buildMapState } from '../core/MapState.js';
 import { ROBE_TRIMS, normalizeRobeTrim, robeTrimColor } from '../core/RobeTrims.js';
@@ -599,6 +598,17 @@ function requireCharacterRenderer(characterRenderer) {
   return characterRenderer;
 }
 
+function requireReviewMap(map, scene) {
+  if (!map || !Array.isArray(map.locations)) {
+    throw new TypeError(`UI review scene ${scene} requires an injected chapter map.`);
+  }
+  return map;
+}
+
+function defaultImageFactory() {
+  return typeof globalThis.Image === 'function' ? new globalThis.Image() : null;
+}
+
 function requirePortraitCharacterId(characterId) {
   if (typeof characterId !== 'string' || !characterId.startsWith('character.')) {
     throw new TypeError('Dialogue lines require an exact portraitCharacterId.');
@@ -618,6 +628,8 @@ export class UIRenderer {
     characterRenderer,
     mapRenderer = new IllustratedMapRenderer(),
     titleRenderer = null,
+    imageFactory = defaultImageFactory,
+    reviewMap = null,
   } = {}) {
     this.resolveAsset = resolveAsset;
     this.resolveMapVignetteAsset = resolveMapVignetteAsset;
@@ -626,8 +638,13 @@ export class UIRenderer {
     this.titleRenderer = titleRenderer ?? new StorybookTitleRenderer({
       characterRenderer: this.characterRenderer,
     });
+    this.imageFactory = imageFactory;
+    this.reviewMap = reviewMap;
     this.images = new Map();
     this.failedImages = new Set();
+    this.imageErrors = new Map();
+    this.imageLoads = new Map();
+    this.characterResults = [];
     this.yearbookImages = new Map();
     this.spellbookRenderer = new SpellbookRenderer({
       imageFor: (key) => this.imageFor(key),
@@ -658,7 +675,7 @@ export class UIRenderer {
         depth: 665,
         renderState: { x: 220, y: 665, facing: 'right', pose: 'speaking' },
       };
-      this.characterRenderer.draw(context, {
+      this.drawCharacter(context, {
         characterId: guide.characterId,
         surface: 'world',
         ...guide.renderState,
@@ -683,7 +700,7 @@ export class UIRenderer {
         depth: 665,
         renderState: { x: 1040, y: 665, facing: 'left', pose: 'speaking' },
       };
-      this.characterRenderer.draw(context, {
+      this.drawCharacter(context, {
         characterId: wandmaker.characterId,
         surface: 'world',
         ...wandmaker.renderState,
@@ -710,7 +727,7 @@ export class UIRenderer {
           x: 640, y: 665, facing: 'right', pose: 'curious', appearance: 'casual', wand: true,
         },
       };
-      this.characterRenderer.draw(context, {
+      this.drawCharacter(context, {
         characterId: player.characterId,
         surface: 'world',
         ...player.renderState,
@@ -728,13 +745,14 @@ export class UIRenderer {
         overlay: { surface: 'robe-picker', selectedTrim: 'gold' },
       }, time, reducedMotion);
     } else if (scene === 'ui-satchel-map-early-review') {
+      const map = requireReviewMap(this.reviewMap, scene);
       this.drawSatchel(context, {
         overlay: { surface: 'satchel', tab: 'map' },
-        roomId: chapter1Map.locations[0].to.room,
-        unlockedRooms: chapter1Map.locations.slice(1, 2).map(({ to }) => to.room),
+        roomId: map.locations[0].to.room,
+        unlockedRooms: map.locations.slice(1, 2).map(({ to }) => to.room),
         objective: {
           mapStar: {
-            room: chapter1Map.locations[0].to.room,
+            room: map.locations[0].to.room,
             hotspot: 'street.ollivandersDoor',
           },
         },
@@ -750,15 +768,16 @@ export class UIRenderer {
           },
         },
         cards: [],
-      }, [], { time, reducedMotion });
+      }, [], { map, time, reducedMotion });
     } else if (scene === 'ui-satchel-map-review') {
+      const map = requireReviewMap(this.reviewMap, scene);
       this.drawSatchel(context, {
         overlay: { surface: 'satchel', tab: 'map' },
-        roomId: chapter1Map.locations[0].to.room,
-        unlockedRooms: chapter1Map.locations.slice(1).map(({ to }) => to.room),
+        roomId: map.locations[0].to.room,
+        unlockedRooms: map.locations.slice(1).map(({ to }) => to.room),
         objective: {
           mapStar: {
-            room: chapter1Map.locations[0].to.room,
+            room: map.locations[0].to.room,
             hotspot: 'street.menagerieDoor',
           },
         },
@@ -794,7 +813,7 @@ export class UIRenderer {
         { id: 'merlin', name: 'Merlin', portraitAsset: 'cards/merlin/portrait' },
         { id: 'jocunda-sykes', name: 'Jocunda Sykes', portraitAsset: 'cards/jocunda-sykes/portrait' },
       ], {
-        map: scene === 'ui-satchel-cards-review' ? chapter1Map : null,
+        map: scene === 'ui-satchel-cards-review' ? this.reviewMap : null,
       });
     }
     return true;
@@ -866,7 +885,7 @@ export class UIRenderer {
       portraitSide: layout.portraitSide,
     });
 
-    this.characterRenderer.draw(context, {
+    this.drawCharacter(context, {
       ...scene.portraitRenderState,
       characterId: portraitCharacterId,
       surface: 'portrait',
@@ -936,7 +955,7 @@ export class UIRenderer {
       });
       drawDressingMirror(context, layout.preview, animationTime, reducedMotion);
     }
-    this.characterRenderer.draw(context, {
+    this.drawCharacter(context, {
       characterId: 'character.violet',
       surface: 'world',
       ...layout.previewCharacter,
@@ -982,7 +1001,7 @@ export class UIRenderer {
       choice.__rect = rect;
       drawIllustratedChoiceTag(context, rect, index, choice.icon, choiceTagImage);
       if (typeof choice.characterId === 'string' && choice.characterId.length > 0) {
-        this.characterRenderer.draw(context, {
+        this.drawCharacter(context, {
           characterId: choice.characterId,
           surface: 'world',
           x: rect.x + rect.width / 2,
@@ -1011,7 +1030,7 @@ export class UIRenderer {
   }
 
   drawSatchel(context, state, cardDefinitions = [], {
-    map = chapter1Map,
+    map = null,
     parentGateProgress = 0,
     time = 0,
     reducedMotion = false,
@@ -1076,12 +1095,12 @@ export class UIRenderer {
     return content;
   }
 
-  drawMap(context, state) {
-    return this.drawSatchel(context, state, []);
+  drawMap(context, state, { map = null } = {}) {
+    return this.drawSatchel(context, state, [], { map });
   }
 
   drawMapContent(context, state, time = 0, {
-    map = chapter1Map,
+    map = null,
     reducedMotion = false,
     paintedSpread = false,
   } = {}) {
@@ -1095,7 +1114,7 @@ export class UIRenderer {
   }
 
   mapPresentation(state, time = 0, {
-    map = chapter1Map,
+    map = null,
     reducedMotion = false,
   } = {}) {
     return createIllustratedMapPresentation(
@@ -1242,22 +1261,115 @@ export class UIRenderer {
   }
 
   imageFor(key) {
-    if (!key || this.failedImages.has(key) || typeof Image === 'undefined') return null;
+    if (!key || this.failedImages.has(key)) return null;
     if (this.images.has(key)) return this.images.get(key);
     const path = this.resolveAsset(key);
     if (!path) {
-      this.failedImages.add(key);
+      this.markImageFailed(key, new Error(`UI image ${key} has no resolved asset.`));
       return null;
     }
-    const image = new Image();
+    const image = this.imageFactory();
+    if (!image) {
+      this.markImageFailed(key, new Error(`UI image ${key} could not allocate an image.`));
+      return null;
+    }
     image.decoding = 'async';
     image.onerror = () => {
       this.images.delete(key);
-      this.failedImages.add(key);
+      this.markImageFailed(key, new Error(`UI image ${key} failed to load.`));
     };
     this.images.set(key, image);
     image.src = path;
     return image;
+  }
+
+  drawCharacter(context, request, time = 0) {
+    const result = this.characterRenderer.draw(context, request, time);
+    if (result && typeof result === 'object' && typeof result.status === 'string') {
+      this.characterResults.push(result);
+    }
+    return result;
+  }
+
+  consumeCharacterResults() {
+    const results = [
+      ...this.characterResults,
+      ...(this.titleRenderer.consumeCharacterResults?.() ?? []),
+    ];
+    this.characterResults = [];
+    return results;
+  }
+
+  markImageFailed(key, error) {
+    this.failedImages.add(key);
+    this.imageErrors.set(key, error);
+    return error;
+  }
+
+  resetImage(key) {
+    const image = this.images.get(key);
+    if (image) {
+      try {
+        image.src = '';
+      } catch {
+        // Minimal image adapters may expose a read-only source.
+      }
+    }
+    this.images.delete(key);
+    this.failedImages.delete(key);
+    this.imageErrors.delete(key);
+    this.imageLoads.delete(key);
+  }
+
+  async loadImage(key, { retry = false } = {}) {
+    if (!key) throw new TypeError('UI image preparation requires an asset key.');
+    if (retry) this.resetImage(key);
+    if (this.imageLoads.has(key)) return this.imageLoads.get(key);
+    if (this.failedImages.has(key)) {
+      throw this.imageErrors.get(key) ?? new Error(`UI image ${key} failed to load.`);
+    }
+    const image = this.imageFor(key);
+    if (!image) throw this.imageErrors.get(key) ?? new Error(`UI image ${key} is unavailable.`);
+    if (image.complete && image.naturalWidth > 0 && image.naturalHeight > 0) return image;
+
+    const loading = (async () => {
+      try {
+        if (typeof image.decode === 'function') await image.decode();
+        else if (!image.complete) {
+          await new Promise((resolve, reject) => {
+            image.addEventListener?.('load', resolve, { once: true });
+            image.addEventListener?.('error', () => reject(new Error(`UI image ${key} failed to load.`)), { once: true });
+          });
+        }
+        if (!image.complete || !(image.naturalWidth > 0) || !(image.naturalHeight > 0)) {
+          throw new Error(`UI image ${key} decoded without drawable pixels.`);
+        }
+        return image;
+      } catch (error) {
+        if (this.images.get(key) === image) this.images.delete(key);
+        throw this.markImageFailed(key, error);
+      }
+    })();
+    this.imageLoads.set(key, loading);
+    try {
+      return await loading;
+    } finally {
+      if (this.imageLoads.get(key) === loading) this.imageLoads.delete(key);
+    }
+  }
+
+  async prepareImages(keys, { retry = false } = {}) {
+    const uniqueKeys = [...new Set(keys.filter(Boolean))];
+    await Promise.all(uniqueKeys.map((key) => this.loadImage(key, { retry })));
+    return uniqueKeys;
+  }
+
+  async prepareTitle({ time = 0, reducedMotion = false, retry = false } = {}) {
+    await Promise.all([
+      this.prepareImages(TITLE_IMAGE_KEYS, { retry }),
+      this.titleRenderer.prepare?.(time, { reducedMotion, retry }) ?? Promise.resolve([]),
+    ]);
+    return Object.freeze({ status: 'ready', assets: TITLE_IMAGE_KEYS });
   }
 
   async preloadUiImages({
@@ -1274,23 +1386,7 @@ export class UIRenderer {
       ...(choices ? CHOICE_IMAGE_KEYS : []),
       ...(story ? STORY_SURFACE_IMAGE_KEYS : []),
     ]);
-    await Promise.all([...keys].map(async (key) => {
-      const image = this.imageFor(key);
-      if (!image) return;
-      if (typeof image.decode === 'function') {
-        try {
-          await image.decode();
-        } catch {
-          // The renderer retains its vector fallback when a UI image cannot decode.
-        }
-        return;
-      }
-      if (image.complete) return;
-      await new Promise((resolve) => {
-        image.addEventListener('load', resolve, { once: true });
-        image.addEventListener('error', resolve, { once: true });
-      });
-    }));
+    await Promise.allSettled([...keys].map((key) => this.loadImage(key)));
   }
 
   drawSelection(context, selection) {
@@ -1432,6 +1528,53 @@ export class UIRenderer {
       image: this.imageFor('ui/title/return-envelope-v2'),
     });
     return presentation;
+  }
+
+  drawCompositionStatus(context, {
+    status = 'loading',
+    message = status === 'failed'
+      ? 'The picture could not finish loading.'
+      : 'Preparing Violet’s adventure…',
+  } = {}) {
+    context.save();
+    context.fillStyle = 'rgba(20,17,38,0.7)';
+    context.fillRect(0, 0, WORLD.width, WORLD.height);
+    const panel = { x: 382, y: 256, width: 516, height: 208 };
+    drawDeckledParchment(context, panel, {
+      fill: '#ead8af',
+      edge: '#6e4b68',
+      ornament: false,
+    });
+    context.fillStyle = '#382a24';
+    context.textAlign = 'center';
+    context.font = '700 32px "Andika", "Trebuchet MS", sans-serif';
+    wrapText(
+      context,
+      childFacingUiText(message, 'story-object'),
+      panel.x + 44,
+      panel.y + 78,
+      panel.width - 88,
+      38,
+      2,
+      'center',
+    );
+    if (status === 'failed') {
+      context.font = '700 27px "Andika", "Trebuchet MS", sans-serif';
+      context.fillStyle = '#7a2940';
+      context.fillText(
+        childFacingUiText('Tap to try again', 'story-object'),
+        panel.x + panel.width / 2,
+        panel.y + 164,
+      );
+    } else {
+      context.fillStyle = 'rgba(122,41,64,0.55)';
+      for (let index = 0; index < 3; index += 1) {
+        context.beginPath();
+        context.arc(panel.x + panel.width / 2 - 30 + index * 30, panel.y + 157, 5, 0, Math.PI * 2);
+        context.fill();
+      }
+    }
+    context.restore();
   }
 
   drawDebugReset(context) {

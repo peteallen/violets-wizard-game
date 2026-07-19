@@ -3,8 +3,15 @@ import { resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { PNG } from 'pngjs';
 import {
+  applyAlignedAlphaMask,
   buildAlignedCharacterAssets,
+  CHARACTER_WEBP_COMPOSITE_BACKGROUNDS,
+  CHARACTER_WEBP_ENCODING,
   deriveAlphaEdgeDistances,
+  deriveCharacterWebpShippingPath,
+  deriveCyanAlphaMask,
+  deriveOpaqueEdgeDonors,
+  deriveTransparentBackgroundColor,
   validateAlignedCharacterAssetSpec,
 } from '../scripts/extract-aligned-character-assets.mjs';
 
@@ -18,6 +25,18 @@ describe('aligned character asset extraction', () => {
     expect(Object.keys(spec.variants)).toEqual([
       'neutral', 'blink', 'talk-a', 'talk-b', 'wonder', 'proud', 'curious',
     ]);
+    expect(deriveCharacterWebpShippingPath(spec.variants.neutral.output)).toBe(
+      'public/assets/art/characters/violet/casual/neutral.webp',
+    );
+    expect(CHARACTER_WEBP_ENCODING).toEqual({
+      command: 'cwebp',
+      arguments: ['-lossless', '-z', '9', '-quiet'],
+    });
+    expect(CHARACTER_WEBP_COMPOSITE_BACKGROUNDS).toEqual([
+      { name: 'black', rgb: [0, 0, 0] },
+      { name: 'white', rgb: [255, 255, 255] },
+      { name: 'saturated-magenta', rgb: [255, 0, 255] },
+    ]);
 
     const escaping = structuredClone(spec);
     escaping.variants.neutral.output = 'public/assets/art/rooms/not-a-character.png';
@@ -26,7 +45,7 @@ describe('aligned character asset extraction', () => {
     );
   });
 
-  it('rebuilds the committed full-canvas RGBA assets byte-for-byte', async () => {
+  it('keeps alpha, visible RGB, and rendered WebP pixels exact', async () => {
     const result = await buildAlignedCharacterAssets(SPEC_PATH, { check: true });
     expect(result.canvas).toEqual({ width: 896, height: 1200 });
     expect(result.mask).toEqual({
@@ -41,15 +60,45 @@ describe('aligned character asset extraction', () => {
     });
     expect(result.outputs).toHaveLength(7);
     expect(result.outputs.every(({ status }) => status === 'current')).toBe(true);
-  });
+    expect(result.outputs.every(({ output }) => output.endsWith('.webp'))).toBe(true);
+    for (const { verification } of result.outputs) {
+      expect(verification).toMatchObject({
+        alpha: 'exact',
+        visibleRgb: 'exact',
+        compositeBackgrounds: ['black', 'white', 'saturated-magenta'],
+      });
+    }
+  }, 60_000);
 
   it('keeps interior opaque art exact, despills the edge band, and aligns every accepted expression', async () => {
     const spec = JSON.parse(await readFile(resolve(ROOT, SPEC_PATH), 'utf8'));
+    const sources = new Map();
+    for (const [name, variant] of Object.entries(spec.variants)) {
+      sources.set(name, PNG.sync.read(await readFile(resolve(ROOT, variant.source))));
+    }
+    const mask = deriveCyanAlphaMask(sources.get(spec.alpha.maskSource), spec.alpha);
+    const background = deriveTransparentBackgroundColor(
+      sources.get(spec.alpha.maskSource),
+      mask.alpha,
+    );
+    const donors = deriveOpaqueEdgeDonors(sources.get(spec.alpha.maskSource), mask.alpha);
+    const sharedEdgeDistances = deriveAlphaEdgeDistances(
+      mask.alpha,
+      spec.canvas.width,
+      spec.canvas.height,
+    );
     let canonicalAlpha = null;
 
-    for (const variant of Object.values(spec.variants)) {
-      const source = PNG.sync.read(await readFile(resolve(ROOT, variant.source)));
-      const output = PNG.sync.read(await readFile(resolve(ROOT, variant.output)));
+    for (const [name] of Object.entries(spec.variants)) {
+      const source = sources.get(name);
+      const output = applyAlignedAlphaMask(
+        source,
+        mask.alpha,
+        background,
+        donors,
+        sharedEdgeDistances,
+        spec.alpha.edgeColorRadius,
+      );
       expect([output.width, output.height]).toEqual([source.width, source.height]);
 
       const alpha = Buffer.alloc(output.width * output.height);

@@ -60,7 +60,7 @@ function runtimeCandidate(value) {
 export function validateCharacterRuntime(value, definition, path = `Runtime for ${definition.id}`) {
   const runtime = runtimeCandidate(value);
   assertPlainObject(runtime, path);
-  const allowedRuntimeKeys = new Set(['renderers', 'preload', 'release']);
+  const allowedRuntimeKeys = new Set(['renderers', 'preparers', 'preload', 'release']);
   for (const key of Object.keys(runtime)) {
     if (!allowedRuntimeKeys.has(key)) throw new TypeError(`${path}.${key} is not part of the character runtime contract.`);
   }
@@ -79,6 +79,18 @@ export function validateCharacterRuntime(value, definition, path = `Runtime for 
       throw new TypeError(`${path}.renderers.${surface} has no matching surface in ${definition.id}.`);
     }
   }
+  if (runtime.preparers !== undefined) {
+    assertPlainObject(runtime.preparers, `${path}.preparers`);
+    for (const [surface, prepare] of Object.entries(runtime.preparers)) {
+      assertCharacterSurface(surface, `${path}.preparers key`);
+      if (!supported.has(surface)) {
+        throw new TypeError(`${path}.preparers.${surface} has no matching surface in ${definition.id}.`);
+      }
+      if (typeof prepare !== 'function') {
+        throw new TypeError(`${path}.preparers.${surface} must be a function when provided.`);
+      }
+    }
+  }
   for (const lifecycleMethod of ['preload', 'release']) {
     if (runtime[lifecycleMethod] !== undefined && typeof runtime[lifecycleMethod] !== 'function') {
       throw new TypeError(`${path}.${lifecycleMethod} must be a function when provided.`);
@@ -94,6 +106,15 @@ function freezeRuntime(value, definition) {
       surface,
       runtime.renderers[surface],
     ]))),
+    ...(runtime.preparers
+      ? {
+        preparers: Object.freeze(Object.fromEntries(
+          definition.surfaces
+            .filter((surface) => runtime.preparers[surface])
+            .map((surface) => [surface, runtime.preparers[surface]]),
+        )),
+      }
+      : {}),
     ...(runtime.preload ? { preload: runtime.preload } : {}),
     ...(runtime.release ? { release: runtime.release } : {}),
   });
@@ -236,6 +257,27 @@ export class CharacterRegistry {
     }
     const renderState = this.resolveRenderState(characterId, state);
     return runtime.renderers[surface](Object.freeze({ ...renderState, surface }), definition);
+  }
+
+  async prepare(reference, surface, state = {}, options = {}) {
+    const characterId = this.resolveId(reference);
+    const definition = this.#definitions.get(characterId);
+    assertCharacterSurface(surface);
+    if (!definition.surfaces.includes(surface)) {
+      throw new UnsupportedCharacterSurfaceError(characterId, surface, definition.surfaces);
+    }
+    const runtime = this.#runtimes.get(characterId);
+    if (!runtime) {
+      throw new CharacterRegistryError(`Character "${characterId}" is not loaded. Call loadRuntime() or preload() before preparing a frame.`);
+    }
+    const renderState = this.resolveRenderState(characterId, state);
+    const prepare = runtime.preparers?.[surface];
+    if (!prepare) return Object.freeze({ status: 'ready', characterId, surface });
+    await prepare(
+      Object.freeze({ ...renderState, surface }),
+      Object.freeze({ retry: options.retry === true }),
+    );
+    return Object.freeze({ status: 'ready', characterId, surface });
   }
 
   async preload(dependencies, context = undefined) {

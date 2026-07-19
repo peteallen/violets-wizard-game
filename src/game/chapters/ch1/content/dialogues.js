@@ -1,4 +1,4 @@
-import { chapter1LetterNarration } from '../../../content/chapters/ch1-letter.js';
+import { invitationLetterNarration } from '../../../content/invitationLetter.js';
 import {
   audioSfx,
   flagSet,
@@ -17,14 +17,14 @@ export const chapter1DialogueDefinitions = [
       invitation: voiceLine({
         speaker: 'npc.narrator',
         voice: 'voice/ch1/narrator/letterInvitation',
-        text: chapter1LetterNarration[0],
+        text: invitationLetterNarration[0],
         caption: 'Dear Violet',
         next: 'waiting',
       }),
       waiting: voiceLine({
         speaker: 'npc.narrator',
         voice: 'voice/ch1/narrator/letterWaiting',
-        text: chapter1LetterNarration[1],
+        text: invitationLetterNarration[1],
         caption: 'Your place',
         next: 'finish',
       }),

@@ -62,6 +62,7 @@ const allKeys = [...new Set(chapter1AssetKeys)];
 const chapterAssetEntries = Object.fromEntries(allKeys.map((key) => {
   const chapter = 'ch1';
   if (IMAGE_PATHS[key]) return [key, Object.freeze({ path: IMAGE_PATHS[key], kind: 'image', chapter })];
+  if (UI_IMAGE_PATHS[key]) return [key, Object.freeze({ path: UI_IMAGE_PATHS[key], kind: 'image', chapter })];
   if (AMBIENCE_ALIASES[key]) return [key, Object.freeze({ path: AMBIENCE_ALIASES[key], kind: 'music', chapter, volume: 0.38 })];
   if (key.startsWith('voice/')) return [key, Object.freeze({ path: `assets/audio/${key}.mp3`, kind: 'voice', chapter, volume: 1 })];
   if (key.startsWith('sfx/')) return [key, Object.freeze({ path: `assets/audio/${key}.mp3`, kind: 'sfx', chapter, volume: 0.8 })];

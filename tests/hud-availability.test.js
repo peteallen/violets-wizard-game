@@ -1,5 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { Game } from '../src/game/Game.js';
+import { chapter1Map } from '../src/game/content/chapters/ch1.js';
 import { UI_RECTS } from '../src/game/render/UIRenderer.js';
 
 function center(rect) {
@@ -30,6 +31,9 @@ function gameStub(state) {
     dialogue: { open: vi.fn() },
     tap: vi.fn(),
     snapshot: () => state,
+  };
+  game.chapterRuntime = {
+    getChapterMap: (chapterId) => (chapterId === 'ch1' ? chapter1Map : null),
   };
   return game;
 }

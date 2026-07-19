@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 import { ROOM_MEMORY_LIMITS, RoomRenderer } from '../src/game/render/RoomRenderer.js';
+import { productionPresentationRegistry } from '../src/game/presentation/productionRoomVariantOverlays.js';
 
 function room(id, layers = [`asset/${id}`]) {
   return {
@@ -161,6 +162,7 @@ describe('RoomRenderer WebKit memory lifecycle', () => {
   });
 
   it('layers persistent scarlet-and-gold side banners onto the Gryffindor Great Hall variant', async () => {
+    await productionPresentationRegistry.activateChapter('ch2');
     const { renderer } = createRenderer();
     const greatHall = room('ch2.greatHall', ['asset/great-hall']);
     greatHall.background.variants.gryffindor = ['asset/great-hall'];

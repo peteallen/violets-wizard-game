@@ -1,5 +1,8 @@
+import { execFile } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import { readFile } from 'node:fs/promises';
+import { fileURLToPath } from 'node:url';
+import { promisify } from 'node:util';
 
 import { describe, expect, it, vi } from 'vitest';
 import {
@@ -38,6 +41,8 @@ import {
   createFullFrameCharacterManifest,
   resolveFullFrameCharacterAnimation,
 } from '../src/game/render/FullFrameCharacterRig.js';
+
+const execFileAsync = promisify(execFile);
 
 const PACKAGES = Object.freeze([
   Object.freeze({
@@ -107,11 +112,17 @@ const TREVOR_BATCH_METADATA_URL = new URL(
   import.meta.url,
 );
 const TREVOR_HELD_ASSET_URL = new URL(
-  '../public/assets/art/characters/trevor/default/held.png',
+  '../public/assets/art/characters/trevor/default/held.webp',
   import.meta.url,
 );
-const ACCEPTED_TREVOR_HELD_SHA256 =
+const TREVOR_HELD_SOURCE_URL = new URL(
+  '../art/characters/trevor/edits/held-v2-frame.png',
+  import.meta.url,
+);
+const ACCEPTED_TREVOR_HELD_SOURCE_SHA256 =
   'f4113af0392bf2b2df21f35f3f021e08bdab91e4adfd6823d6c89db035a52f22';
+const ACCEPTED_TREVOR_HELD_WEBP_SHA256 =
+  '78043b7b71f0f3d0cd6b6871c37d08366d4698560e21ab063560d1641b7391d8';
 
 function authoredCapabilities(source) {
   const poses = new Set();
@@ -176,7 +187,7 @@ describe('Chapter Three character packages', () => {
       const manifest = createFullFrameCharacterManifest(source, { resolveFrame: (path) => path });
       expect(manifest.id).toBe(id);
       expect(manifest.fullFrame.assetFiles).toEqual(
-        frameNames.map((name) => `assets/art/characters/${slug}/default/${name}.png`),
+        frameNames.map((name) => `assets/art/characters/${slug}/default/${name}.webp`),
       );
       expect(Object.values(definition.assets).map(({ path }) => path).sort()).toEqual(
         [...manifest.fullFrame.assetFiles].sort(),
@@ -184,14 +195,25 @@ describe('Chapter Three character packages', () => {
     }
   });
 
-  it('pins Trevor held.png to the accepted held-v2 replacement provenance', async () => {
-    const [editMetadataText, batchMetadataText, shippingBytes] = await Promise.all([
+  it('pins Trevor held WebP to the rendered pixels of the accepted held-v2 replacement', async () => {
+    const [
+      editMetadataText,
+      batchMetadataText,
+      sourceBytes,
+      shippingBytes,
+      sourceRgba,
+      shippingRgba,
+    ] = await Promise.all([
       readFile(TREVOR_HELD_EDIT_METADATA_URL, 'utf8'),
       readFile(TREVOR_BATCH_METADATA_URL, 'utf8'),
+      readFile(TREVOR_HELD_SOURCE_URL),
       readFile(TREVOR_HELD_ASSET_URL),
+      decodeRgba(TREVOR_HELD_SOURCE_URL),
+      decodeRgba(TREVOR_HELD_ASSET_URL),
     ]);
     const editMetadata = JSON.parse(editMetadataText);
     const batchMetadata = JSON.parse(batchMetadataText);
+    const sourceHash = createHash('sha256').update(sourceBytes).digest('hex');
     const shippingHash = createHash('sha256').update(shippingBytes).digest('hex');
     const supersededBatchFrame = batchMetadata.deterministic_extraction.frames.find(
       ({ name }) => name === 'held',
@@ -202,22 +224,29 @@ describe('Chapter Three character packages', () => {
       deterministic_processing: {
         frame: {
           path: 'art/characters/trevor/edits/held-v2-frame.png',
-          sha256: ACCEPTED_TREVOR_HELD_SHA256,
+          sha256: ACCEPTED_TREVOR_HELD_SOURCE_SHA256,
         },
       },
       review: { result: 'accepted' },
       promotion: {
         source: 'art/characters/trevor/edits/held-v2-frame.png',
         path: 'public/assets/art/characters/trevor/default/held.png',
-        sha256: ACCEPTED_TREVOR_HELD_SHA256,
+        sha256: ACCEPTED_TREVOR_HELD_SOURCE_SHA256,
       },
     });
-    expect(shippingHash).toBe(ACCEPTED_TREVOR_HELD_SHA256);
+    expect(sourceHash).toBe(ACCEPTED_TREVOR_HELD_SOURCE_SHA256);
+    expect(shippingHash).toBe(ACCEPTED_TREVOR_HELD_WEBP_SHA256);
+    expect(renderedRgbaDifferences(sourceRgba, shippingRgba)).toEqual({
+      alpha: 0,
+      visibleRgb: 0,
+      hiddenRgb: 381409,
+      composites: { black: 0, white: 0, saturatedMagenta: 0 },
+    });
     expect(supersededBatchFrame).toMatchObject({
       path: 'public/assets/art/characters/trevor/default/held.png',
       sha256: '673a18a46ddfda69ee604b9ceca4064860fb2750aaf2ade6650950d87515a0f7',
     });
-    expect(shippingHash).not.toBe(supersededBatchFrame.sha256);
+    expect(sourceHash).not.toBe(supersededBatchFrame.sha256);
   });
 
   it('resolves every authored pose and set-piece action without fallback art', () => {
@@ -274,3 +303,50 @@ describe('Chapter Three character packages', () => {
     expect(JSON.stringify(friendlyGhostCharacterDefinition)).not.toMatch(/Peregrine|Parchment/u);
   });
 });
+
+async function decodeRgba(url) {
+  const { stdout } = await execFileAsync(
+    'ffmpeg',
+    ['-v', 'error', '-i', fileURLToPath(url), '-f', 'rawvideo', '-pix_fmt', 'rgba', 'pipe:1'],
+    { encoding: null, maxBuffer: 896 * 1200 * 4 + 1024 },
+  );
+  return stdout;
+}
+
+function renderedRgbaDifferences(expected, actual) {
+  const backgrounds = {
+    black: [0, 0, 0],
+    white: [255, 255, 255],
+    saturatedMagenta: [255, 0, 255],
+  };
+  const differences = {
+    alpha: 0,
+    visibleRgb: 0,
+    hiddenRgb: 0,
+    composites: Object.fromEntries(Object.keys(backgrounds).map((name) => [name, 0])),
+  };
+  for (let offset = 0; offset < expected.length; offset += 4) {
+    const expectedAlpha = expected[offset + 3];
+    const actualAlpha = actual[offset + 3];
+    if (actualAlpha !== expectedAlpha) differences.alpha += 1;
+    for (let channel = 0; channel < 3; channel += 1) {
+      if (actual[offset + channel] === expected[offset + channel]) continue;
+      if (expectedAlpha > 0) differences.visibleRgb += 1;
+      else differences.hiddenRgb += 1;
+    }
+    for (const [name, rgb] of Object.entries(backgrounds)) {
+      for (let channel = 0; channel < 3; channel += 1) {
+        const expectedComposite = Math.round((
+          expected[offset + channel] * expectedAlpha
+          + rgb[channel] * (255 - expectedAlpha)
+        ) / 255);
+        const actualComposite = Math.round((
+          actual[offset + channel] * actualAlpha
+          + rgb[channel] * (255 - actualAlpha)
+        ) / 255);
+        if (actualComposite !== expectedComposite) differences.composites[name] += 1;
+      }
+    }
+  }
+  return differences;
+}

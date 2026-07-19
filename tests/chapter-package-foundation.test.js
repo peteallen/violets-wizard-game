@@ -242,20 +242,29 @@ describe('chapter package descriptor', () => {
     const content = async () => ({ default: 'content' });
     const presentation = async () => ({ default: 'presentation' });
     const harness = async () => ({ default: 'harness' });
+    const presentationMetadata = {
+      roomMusic: {
+        default: 'music/ch12/stars',
+        rooms: { 'ch12.greatHall': 'music/ch12/feast' },
+      },
+    };
     const descriptor = defineChapterDescriptor({
       id: 'ch12',
       number: 12,
       title: 'The Returning Stars',
       availability: 'planned',
+      presentation: presentationMetadata,
       loaders: { content, presentation, harness },
     });
 
     expect(descriptor.loaders).toEqual({ content, presentation, harness });
+    expect(descriptor.presentation).toEqual(presentationMetadata);
     expect(validateChapterLoader(descriptor, 'content')).toBe(content);
     expect(validateChapterLoader(descriptor, 'presentation')).toBe(presentation);
     expect(validateChapterLoader(descriptor, 'harness')).toBe(harness);
     expect(Object.isFrozen(descriptor)).toBe(true);
     expect(Object.isFrozen(descriptor.loaders)).toBe(true);
+    expect(Object.isFrozen(descriptor.presentation.roomMusic.rooms)).toBe(true);
   });
 
   it('requires a content loader and validates optional loaders independently', () => {

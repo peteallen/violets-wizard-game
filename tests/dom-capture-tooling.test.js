@@ -93,6 +93,17 @@ describe('DOM snap command parsing', () => {
       learning: 'stretchy',
     });
   });
+
+  it('routes registered boot states through the dedicated pre-game DOM entrypoint', () => {
+    const options = parseDomSnapArgs([
+      '--scene', 'boot-failure-review',
+      '--size', '2560x1440',
+    ]);
+    const url = new URL(domHarnessUrl('http://127.0.0.1:4173', options, 42));
+    expect(url.pathname).toBe('/boot-review.html');
+    expect(url.searchParams.get('state')).toBe('boot-failure-review');
+    expect(url.searchParams.get('actions')).toBe('boot-failure-review');
+  });
 });
 
 describe('DOM screenshot output', () => {

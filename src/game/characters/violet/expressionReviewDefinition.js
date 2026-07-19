@@ -29,14 +29,14 @@ export const violetExpressionReviewDefinition = Object.freeze({
   appearances: Object.freeze({
     casual: Object.freeze({
       clips: Object.freeze({
-        idle: still('casual/neutral.png'),
-        neutral: still('casual/neutral.png'),
-        blink: still('casual/blink.png'),
-        'talk-a': still('casual/talk-a.png'),
-        'talk-b': still('casual/talk-b.png'),
-        wonder: still('casual/wonder.png'),
-        proud: still('casual/proud.png'),
-        curious: still('casual/curious.png'),
+        idle: still('casual/neutral.webp'),
+        neutral: still('casual/neutral.webp'),
+        blink: still('casual/blink.webp'),
+        'talk-a': still('casual/talk-a.webp'),
+        'talk-b': still('casual/talk-b.webp'),
+        wonder: still('casual/wonder.webp'),
+        proud: still('casual/proud.webp'),
+        curious: still('casual/curious.webp'),
       }),
     }),
   }),

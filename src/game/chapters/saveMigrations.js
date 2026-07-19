@@ -1,58 +1,24 @@
-import {
-  chapter2EndMarker,
-  chapter2ResumeRedirects,
-} from './ch2/content-v2/index.js';
-import {
-  chapter3,
-  chapter3EndMarker,
-  chapter3ResumeRedirects,
-} from './ch3/content.js';
-import { chapter4 } from './ch4/content.js';
-
-const chapter3StartMarker = Object.freeze({
-  chapter: chapter3.id,
-  scene: chapter3.start.scene,
-  room: chapter3.start.room,
-  spawn: chapter3.start.spawn,
-});
-
-const chapter4StartMarker = Object.freeze({
-  chapter: chapter4.id,
-  scene: chapter4.start.scene,
-  room: chapter4.start.room,
-  spawn: chapter4.start.spawn,
-});
-
-const chapter1ChapterCardMarker = Object.freeze({
-  chapter: 'ch1',
-  scene: 'ch1.chapterCard',
-  room: 'ch1.chapterCardRoom',
-  spawn: 'start',
-});
+import { chapter1SaveMetadata } from './ch1/saveMetadata.js';
+import { chapter2SaveMetadata } from './ch2/saveMetadata.js';
+import { chapter3SaveMetadata } from './ch3/saveMetadata.js';
+import { chapter4SaveMetadata } from './ch4/saveMetadata.js';
 
 export const saveMigrationOptions = Object.freeze({
   resumeRedirects: Object.freeze([
-    ...chapter2ResumeRedirects,
-    ...chapter3ResumeRedirects,
+    ...chapter2SaveMetadata.resumeRedirects,
+    ...chapter3SaveMetadata.resumeRedirects,
   ]),
   completionRedirects: Object.freeze([
     Object.freeze({
-      from: chapter2EndMarker,
-      to: chapter3StartMarker,
+      from: chapter2SaveMetadata.endMarker,
+      to: chapter3SaveMetadata.startMarker,
     }),
     Object.freeze({
-      from: chapter3EndMarker,
-      to: chapter4StartMarker,
+      from: chapter3SaveMetadata.endMarker,
+      to: chapter4SaveMetadata.startMarker,
     }),
   ]),
   checkpointRedirects: Object.freeze([
-    Object.freeze({
-      when: Object.freeze({
-        chapter: 'ch1',
-        allFlags: Object.freeze(['ch1.ticketReceived']),
-        noFlags: Object.freeze(['ch1.complete']),
-      }),
-      to: chapter1ChapterCardMarker,
-    }),
+    ...chapter1SaveMetadata.checkpointRedirects,
   ]),
 });

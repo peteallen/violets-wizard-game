@@ -99,29 +99,29 @@ describe('Hagrid production full-frame rig', () => {
 
   it('uses exactly the six aligned production paintings', () => {
     expect(framePaths('idle')).toEqual([
-      'assets/art/characters/hagrid/default/neutral.png',
+      'assets/art/characters/hagrid/default/neutral.webp',
     ]);
     expect(framePaths('neutral')).toEqual([
-      'assets/art/characters/hagrid/default/neutral.png',
+      'assets/art/characters/hagrid/default/neutral.webp',
     ]);
     expect(framePaths('blink')).toEqual([
-      'assets/art/characters/hagrid/default/blink.png',
+      'assets/art/characters/hagrid/default/blink.webp',
     ]);
     expect(framePaths('speaking')).toEqual([
-      'assets/art/characters/hagrid/default/talk-a.png',
-      'assets/art/characters/hagrid/default/talk-b.png',
+      'assets/art/characters/hagrid/default/talk-a.webp',
+      'assets/art/characters/hagrid/default/talk-b.webp',
     ]);
     expect(framePaths('walking')).toEqual([
-      'assets/art/characters/hagrid/default/profile-right.png',
-      'assets/art/characters/hagrid/default/walk-contact.png',
+      'assets/art/characters/hagrid/default/profile-right.webp',
+      'assets/art/characters/hagrid/default/walk-contact.webp',
     ]);
     expect(hagridFullFrameCharacterManifest.fullFrame.assetFiles).toEqual([
-      'assets/art/characters/hagrid/default/neutral.png',
-      'assets/art/characters/hagrid/default/blink.png',
-      'assets/art/characters/hagrid/default/talk-a.png',
-      'assets/art/characters/hagrid/default/talk-b.png',
-      'assets/art/characters/hagrid/default/profile-right.png',
-      'assets/art/characters/hagrid/default/walk-contact.png',
+      'assets/art/characters/hagrid/default/neutral.webp',
+      'assets/art/characters/hagrid/default/blink.webp',
+      'assets/art/characters/hagrid/default/talk-a.webp',
+      'assets/art/characters/hagrid/default/talk-b.webp',
+      'assets/art/characters/hagrid/default/profile-right.webp',
+      'assets/art/characters/hagrid/default/walk-contact.webp',
     ]);
   });
 

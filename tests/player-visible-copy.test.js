@@ -1,6 +1,7 @@
 import { readFileSync, readdirSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import { chapter1LetterLines } from '../src/game/content/chapters/ch1-letter.js';
+import { chapter1Map } from '../src/game/content/chapters/ch1.js';
 import { ROBE_TRIMS } from '../src/game/core/RobeTrims.js';
 import { ChapterPreviewRenderer } from '../src/game/render/ChapterPreviewRenderer.js';
 import {
@@ -175,7 +176,7 @@ describe('player-visible copy', () => {
           roomId: 'ch1.diagonStreet',
           unlockedRooms: ['ch1.ollivanders', 'ch1.malkins'],
           objective: { mapStar: { room: 'ch1.diagonStreet', hotspot: 'street.malkinsDoor' } },
-        }, [], { reducedMotion: true }),
+        }, [], { map: chapter1Map, reducedMotion: true }),
         expected: [
           'Violet’s Satchel',
           'Diagon Alley',
@@ -209,7 +210,7 @@ describe('player-visible copy', () => {
         }, [
           { id: 'morgana', name: 'Morgana', portraitAsset: null },
           { id: 'dumbledore', name: 'Dumbledore', portraitAsset: null },
-        ]),
+        ], { map: chapter1Map }),
         expected: [
           'Violet’s Satchel',
           'Morgana',

@@ -1,14 +1,16 @@
 import { createHash } from 'node:crypto';
-import { mkdtemp, mkdir, readFile, writeFile } from 'node:fs/promises';
+import { mkdtemp, mkdir, readFile, readdir, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
 import { describe, expect, it } from 'vitest';
 import { PNG } from 'pngjs';
 import {
   repairLowAlphaRedEdgeArtifacts,
+  renderCharacterFrame,
   runCharacterSheetSlice,
   validateCharacterSheetSpec,
 } from '../scripts/slice-character-sheet.mjs';
+import { deriveCharacterPixelInvariant } from '../scripts/character-webp.mjs';
 
 describe('batch character-sheet slicer', () => {
   it('repairs only low-alpha saturated red edge artifacts from opaque art donors', () => {
@@ -58,10 +60,12 @@ describe('batch character-sheet slicer', () => {
     const firstResult = await runCharacterSheetSlice({
       specPath: first.specPath,
       repoRoot: first.root,
+      encodeFrame: fixtureWebpEncoder,
     });
     const secondResult = await runCharacterSheetSlice({
       specPath: second.specPath,
       repoRoot: second.root,
+      encodeFrame: fixtureWebpEncoder,
     });
 
     expect(firstResult.outputs.map(({ name }) => name)).toEqual(['idle', 'step-right']);
@@ -73,9 +77,19 @@ describe('batch character-sheet slicer', () => {
       const secondBytes = await readFile(join(second.root, output.path));
       expect(firstBytes.equals(secondBytes)).toBe(true);
       expect(hash(firstBytes)).toBe(output.sha256);
-      const png = PNG.sync.read(firstBytes);
-      expect([png.width, png.height]).toEqual([16, 14]);
-      expect(visibleBounds(png).maxY).toBe(12);
+      expect(output.path.endsWith('.webp')).toBe(true);
+      expect(output.pixel_invariant).toEqual(expect.objectContaining({
+        alpha_sha256: expect.stringMatching(/^[a-f0-9]{64}$/u),
+        visible_rgba_sha256: expect.stringMatching(/^[a-f0-9]{64}$/u),
+      }));
+    }
+    expect(await readdir(join(first.root, 'public/assets/art/characters/test/casual'))).toEqual([
+      'idle.webp',
+      'step-right.webp',
+    ]);
+    const source = PNG.sync.read(await readFile(join(first.root, first.sourcePath)));
+    for (const frame of first.spec.frames) {
+      expect(visibleBounds(renderCharacterFrame({ source, frame, spec: first.spec }).png).maxY).toBe(12);
     }
 
     const firstProvenanceBytes = await readFile(join(first.root, firstResult.provenance.path));
@@ -83,8 +97,14 @@ describe('batch character-sheet slicer', () => {
     expect(firstProvenanceBytes.equals(secondProvenanceBytes)).toBe(true);
     expect(hash(firstProvenanceBytes)).toBe(firstResult.provenance.sha256);
     const provenance = JSON.parse(firstProvenanceBytes);
+    expect(provenance.schema_version).toBe(2);
     expect(provenance.algorithm).toMatchObject({
       id: 'cyan-flood-aligned-character-sheet-v1',
+      shipping_encoding: 'lossless-vp8l',
+      shipping_encoder: {
+        command: 'cwebp',
+        arguments: ['-lossless', '-z', '9', '-quiet'],
+      },
       deterministic: true,
     });
     expect(provenance.controls).toMatchObject({
@@ -109,6 +129,8 @@ describe('batch character-sheet slicer', () => {
     ]);
     for (const output of provenance.outputs) {
       expect(hash(await readFile(join(first.root, output.path)))).toBe(output.sha256);
+      expect(output.media_type).toBe('image/webp');
+      expect(output.source_png_sha256).toMatch(/^[a-f0-9]{64}$/u);
       expect(output.dimensions).toEqual({ width: 16, height: 14 });
     }
   });
@@ -118,6 +140,7 @@ describe('batch character-sheet slicer', () => {
     await expect(runCharacterSheetSlice({
       specPath: stale.specPath,
       repoRoot: stale.root,
+      encodeFrame: fixtureWebpEncoder,
     })).rejects.toThrow('Source sheet art/characters/test/sheet.png SHA-256 mismatch');
 
     const escaped = await createFixture();
@@ -129,12 +152,14 @@ describe('batch character-sheet slicer', () => {
     await expect(runCharacterSheetSlice({
       specPath: escaped.specPath,
       repoRoot: escaped.root,
+      encodeFrame: fixtureWebpEncoder,
     })).rejects.toThrow('output directory must stay under public/assets/art/characters');
 
     const existing = await createFixture();
     const installed = await runCharacterSheetSlice({
       specPath: existing.specPath,
       repoRoot: existing.root,
+      encodeFrame: fixtureWebpEncoder,
     });
     const before = await Promise.all(installed.outputs.map((output) => (
       readFile(join(existing.root, output.path))
@@ -142,11 +167,53 @@ describe('batch character-sheet slicer', () => {
     await expect(runCharacterSheetSlice({
       specPath: existing.specPath,
       repoRoot: existing.root,
+      encodeFrame: fixtureWebpEncoder,
     })).rejects.toThrow('Refusing to overwrite existing file');
     const after = await Promise.all(installed.outputs.map((output) => (
       readFile(join(existing.root, output.path))
     )));
     expect(after.map((bytes, index) => bytes.equals(before[index]))).toEqual([true, true]);
+  });
+
+  it('refuses a legacy public PNG instead of leaving mixed shipping formats', async () => {
+    const fixture = await createFixture();
+    await mkdir(join(fixture.root, 'public/assets/art/characters/test/casual'), { recursive: true });
+    await writeFile(
+      join(fixture.root, 'public/assets/art/characters/test/casual/idle.png'),
+      Buffer.from('legacy'),
+    );
+
+    await expect(runCharacterSheetSlice({
+      specPath: fixture.specPath,
+      repoRoot: fixture.root,
+      encodeFrame: fixtureWebpEncoder,
+    })).rejects.toThrow('Refusing to leave legacy public character PNG');
+    expect(await readdir(join(fixture.root, 'public/assets/art/characters/test/casual'))).toEqual([
+      'idle.png',
+    ]);
+  });
+
+  it('installs neither WebPs nor provenance when promotion fails', async () => {
+    const fixture = await createFixture();
+    let encodes = 0;
+    const failingEncoder = async (request) => {
+      encodes += 1;
+      if (encodes === 2) throw new Error('synthetic cwebp failure');
+      return fixtureWebpEncoder(request);
+    };
+
+    await expect(runCharacterSheetSlice({
+      specPath: fixture.specPath,
+      repoRoot: fixture.root,
+      encodeFrame: failingEncoder,
+    })).rejects.toThrow('synthetic cwebp failure');
+    for (const path of [
+      'public/assets/art/characters/test/casual/idle.webp',
+      'public/assets/art/characters/test/casual/step-right.webp',
+      'art/characters/test/sheet.slice-provenance.json',
+    ]) {
+      await expect(readFile(join(fixture.root, path))).rejects.toMatchObject({ code: 'ENOENT' });
+    }
   });
 });
 
@@ -248,23 +315,33 @@ function fill(png, x, y, width, height, rgba) {
   }
 }
 
+function hash(value) {
+  return createHash('sha256').update(value).digest('hex');
+}
+
 function visibleBounds(png) {
-  let minX = png.width;
-  let minY = png.height;
-  let maxX = -1;
   let maxY = -1;
   for (let y = 0; y < png.height; y += 1) {
     for (let x = 0; x < png.width; x += 1) {
-      if (png.data[(y * png.width + x) * 4 + 3] === 0) continue;
-      minX = Math.min(minX, x);
-      minY = Math.min(minY, y);
-      maxX = Math.max(maxX, x);
-      maxY = Math.max(maxY, y);
+      if (png.data[(y * png.width + x) * 4 + 3] > 0) maxY = y;
     }
   }
-  return { minX, minY, maxX, maxY };
+  return { maxY };
 }
 
-function hash(value) {
-  return createHash('sha256').update(value).digest('hex');
+async function fixtureWebpEncoder({ pngBytes, expectedRgba, width, height }) {
+  const bytes = Buffer.from(`fixture-webp:${hash(pngBytes)}`);
+  return Object.freeze({
+    bytes,
+    verification: Object.freeze({
+      alpha: 'exact',
+      visibleRgb: 'exact',
+      compositeBackgrounds: Object.freeze(['black', 'white', 'saturated-magenta']),
+      integrity: Object.freeze({
+        bytes: bytes.length,
+        container_sha256: hash(bytes),
+        ...deriveCharacterPixelInvariant(Buffer.from(expectedRgba), { width, height }),
+      }),
+    }),
+  });
 }

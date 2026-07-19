@@ -21,6 +21,8 @@ Prompts, source images, model details, hashes, and provenance stay under
 `art/characters/<character>/`; only reviewed runtime assets ship under
 `public/assets/art/characters/`.
 
+The two trees also mark an encoding boundary. Generated sheets, accepted PNG sources, prompts, and provenance remain under `art/characters/<character>/` unchanged. The deterministic extractor writes the transparent runtime frames under `public/assets/art/characters/` as lossless WebP, and production manifests reference only those WebP derivatives. The asset check compares dimensions, alpha, visible RGB, and composites over contrasting backgrounds; differences hidden entirely beneath zero alpha are harmless, but a visible pixel change fails the migration. Do not replace the source PNGs with their delivery derivatives or ship both encodings of the same runtime frame.
+
 Violet is the exception to creating a new identity during this pass because her
 identity is already decided. The exact pixels in
 `art/characters/violet/canonical/casual-approved.png` are Violet V8, the locked
@@ -78,11 +80,12 @@ After the proposed shipping subset is clean, slice its known panel rectangles
 with deterministic local tooling. Slicing may isolate connected components,
 remove the sheet background, normalize selected figures to a common scale,
 place them on the shared transparent canvas, clean extraction edges, apply a
-review-prescribed opaque-art donor repair to a matte defect, and record ground,
-portrait, hand, prop, and other runtime anchors. It may not generatively repaint
-or reinterpret the figure. The character manifest must map every state the
-current game requests and must fail visibly in development if a state is
-missing rather than silently returning to the legacy puppet.
+review-prescribed opaque-art donor repair to a matte defect, encode the runtime
+derivative as lossless WebP, and record ground, portrait, hand, prop, and other
+runtime anchors. It may not generatively repaint or reinterpret the figure. The
+character manifest must map every state the current game requests to its WebP
+derivative and must fail visibly in development if a state is missing rather
+than silently returning to the legacy puppet.
 
 Hook the complete character package into its real rooms, dialogue, movement,
 and story actions immediately. A standalone sheet or harness is not a finished
@@ -105,7 +108,7 @@ preview.
 ## Completion
 
 A character is complete when the inspected sheet covers every state the current
-game requests, deterministic slices and anchors are in the production manifest,
+game requests, lossless WebP slices and anchors are in the production manifest,
 the real game uses them for world and portrait rendering without a legacy-art
 fallback, both required capture sizes have been inspected as an assembled whole,
 and the full build is green. Chapter One is complete only when this is true for

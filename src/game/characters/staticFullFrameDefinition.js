@@ -2,7 +2,7 @@ import { defineCharacter } from './CharacterDefinition.js';
 import { characterImageAssets } from './packageSupport.js';
 
 const DEFAULT_APPEARANCE = 'default';
-const NEUTRAL_FRAME = 'default/neutral.png';
+const NEUTRAL_FRAME = 'default/neutral.webp';
 
 export const STATIC_FULL_FRAME_CANVAS = Object.freeze({
   width: 896,

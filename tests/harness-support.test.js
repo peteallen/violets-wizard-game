@@ -23,13 +23,16 @@ import {
   validateEnvironmentIdentity,
 } from '../src/harness/environment.js';
 import {
+  COMPOSITION_REVIEW_SCENES,
   GUIDE_WALK_REVIEW_SCENES,
   SET_PIECE_REVIEW_SCENES,
   WORLD_AFFORDANCE_REVIEW_SCENES,
   actionsThroughFrame,
   parseHarnessRequest,
+  prepareCompositionReview,
   prepareSetPieceReview,
   resolveHarnessScenario,
+  shouldAutoBootHarness,
 } from '../src/harness/boot.js';
 import {
   productionCharacterCatalog,
@@ -69,6 +72,10 @@ describe('ImmutableRegistry', () => {
 describe('state fixtures', () => {
   it('registers deterministic progression and visual-review states as immutable data', () => {
     expect(STATE_FIXTURE_IDS).toEqual([
+      'boot-loading-review',
+      'boot-failure-review',
+      'composition-loading-review',
+      'composition-failure-review',
       'foundation',
       'foundation-saved-review',
       'ch1-start',
@@ -295,6 +302,54 @@ describe('action fixtures', () => {
 });
 
 describe('registered harness scenarios', () => {
+  it('auto-boots only inside the explicitly marked visual harness document', () => {
+    const windowRef = {};
+    expect(shouldAutoBootHarness({
+      documentElement: { dataset: { violetHarness: 'true' } },
+    }, windowRef)).toBe(true);
+    expect(shouldAutoBootHarness({
+      documentElement: { dataset: {} },
+    }, windowRef)).toBe(false);
+    expect(shouldAutoBootHarness(undefined, windowRef)).toBe(false);
+    expect(shouldAutoBootHarness({
+      documentElement: { dataset: { violetHarness: 'true' } },
+    }, undefined)).toBe(false);
+  });
+
+  it('registers the real in-game composition loading and failure overlays for both motion profiles', () => {
+    expect(COMPOSITION_REVIEW_SCENES).toEqual({
+      'composition-loading-review': 'loading',
+      'composition-failure-review': 'failed',
+    });
+
+    for (const [scene, status] of Object.entries(COMPOSITION_REVIEW_SCENES)) {
+      expect(getStateFixture(scene).entry.chapter).toBe(1);
+      expect(getStateFixture(scene).characterDependencies).toEqual([
+        'character.violet',
+        'character.post-owl',
+      ]);
+      expect(getActionFixture(scene).actions).toEqual([]);
+      for (const motion of ['full', 'reduced']) {
+        expect(parseHarnessRequest(`?scene=${scene}&motion=${motion}`)).toMatchObject({
+          scene,
+          state: scene,
+          actions: scene,
+          motion,
+        });
+      }
+
+      const game = { presentationFailure: null, render: vi.fn() };
+      expect(prepareCompositionReview(game, scene)).toBe(true);
+      expect(game.presentationFailure).toMatchObject({
+        status,
+        error: expect.any(Error),
+        retry: expect.any(Function),
+      });
+      expect(Object.keys(game.presentationFailure).sort()).toEqual(['error', 'retry', 'status']);
+      expect(game.render).toHaveBeenCalledOnce();
+    }
+  });
+
   it('registers dedicated gameplay-scale review scenes for the cast, companions, portraits, and owl poses', () => {
     for (const id of [
       'character-cast-review',

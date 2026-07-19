@@ -51,6 +51,7 @@ export class RoomRenderer {
     this.imageUse = new Map();
     this.loads = new Map();
     this.failed = new Set();
+    this.errors = new Map();
     this.gradients = new WeakMap();
     this.roomCaches = new Map();
     this.canvasRecords = new Map();
@@ -105,8 +106,9 @@ export class RoomRenderer {
       this.touchImage(key);
       this.enforceDecodedImageLimit();
       return image;
-    } catch {
+    } catch (error) {
       this.failed.add(key);
+      this.errors.set(key, error);
       return null;
     }
   }
@@ -156,6 +158,49 @@ export class RoomRenderer {
     }
   }
 
+  async prepareRoomRequired(room, state = {}, { scale = 1, retry = false } = {}) {
+    const description = describeRoomCache(room, state, scale, this.resolveAsset);
+    if (description.missingKeys.length > 0) {
+      throw new Error(`Room ${description.roomId} is missing painted assets: ${description.missingKeys.join(', ')}.`);
+    }
+    if (description.declaredKeys.length === 0) {
+      return Object.freeze({ status: 'procedural', cache: null, description });
+    }
+    if (retry) {
+      this.evictCache(description.key, 'retry');
+      for (const key of description.keys) {
+        this.failed.delete(key);
+        this.errors.delete(key);
+      }
+    }
+    const cache = await this.prepareRoom(room, state, { scale });
+    if (!cache) {
+      const failedKey = description.keys.find((key) => this.failed.has(key));
+      throw this.errors.get(failedKey)
+        ?? new Error(`Room ${description.roomId} could not prepare its painted composition.`);
+    }
+    return Object.freeze({ status: 'ready', cache, description });
+  }
+
+  roomStatus(room, state = {}, { scale = 1 } = {}) {
+    const description = describeRoomCache(room, state, scale, this.resolveAsset);
+    const failedKey = description.keys.find((key) => this.failed.has(key));
+    if (failedKey || description.missingKeys.length > 0) {
+      return Object.freeze({
+        status: 'failed',
+        key: description.key,
+        error: this.errors.get(failedKey) ?? null,
+      });
+    }
+    if (this.roomCaches.has(description.key)) {
+      return Object.freeze({ status: 'ready', key: description.key, error: null });
+    }
+    if (this.preparations.has(description.key)) {
+      return Object.freeze({ status: 'loading', key: description.key, error: null });
+    }
+    return Object.freeze({ status: 'idle', key: description.key, error: null });
+  }
+
   async compositeRoom(description, generation) {
     let record = null;
     let drawnLayers = 0;
@@ -166,7 +211,10 @@ export class RoomRenderer {
         if (!path || paths.has(path)) continue;
         paths.add(path);
         const image = await this.load(key);
-        if (!image) continue;
+        if (!image) {
+          if (this.destroyed || generation !== this.lifecycleGeneration) return null;
+          throw this.errors.get(key) ?? new Error(`Room image ${key} could not be decoded.`);
+        }
         try {
           if (this.destroyed || generation !== this.lifecycleGeneration) return null;
           if (!record) {
@@ -297,6 +345,7 @@ export class RoomRenderer {
     for (const key of [...this.images.keys()]) this.releaseDecodedImage(key);
     this.preparations.clear();
     this.loads.clear();
+    this.errors.clear();
     this.currentCacheKey = null;
   }
 
@@ -306,6 +355,7 @@ export class RoomRenderer {
     this.clear();
     this.loads.clear();
     this.failed.clear();
+    this.errors.clear();
     this.gradients = new WeakMap();
   }
 
@@ -440,7 +490,9 @@ function describeRoomCache(room, state, scale, resolveAsset) {
   const variant = resolveRoomVariant(room, state?.roomVariant);
   const variantLayers = room?.background?.variants?.[variant];
   const layers = variantLayers?.length ? variantLayers : (room?.background?.layers ?? []);
-  const keys = [...new Set(layers.filter((key) => key && resolveAsset(key)))];
+  const declaredKeys = [...new Set(layers.filter(Boolean))];
+  const keys = declaredKeys.filter((key) => resolveAsset(key));
+  const missingKeys = declaredKeys.filter((key) => !keys.includes(key));
   const safeScale = Number.isFinite(scale) && scale > 0 ? Math.max(0.25, Math.min(2, scale)) : 1;
   const width = Math.max(1, Math.round(WORLD.width * safeScale));
   const height = Math.max(1, Math.round(WORLD.height * safeScale));
@@ -449,7 +501,9 @@ function describeRoomCache(room, state, scale, resolveAsset) {
     key,
     roomId,
     variant,
+    declaredKeys,
     keys,
+    missingKeys,
     width,
     height,
     fit: room?.background?.fit ?? 'cover',

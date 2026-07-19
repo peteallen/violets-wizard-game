@@ -5,6 +5,10 @@ import {
 } from '../src/game/content/chapterCatalog.js';
 import { defineChapterDescriptor } from '../src/game/content/chapterDescriptor.js';
 import {
+  ChapterRuntimeRegistry,
+  loadChapterRuntimeRegistry,
+} from '../src/game/chapters/catalog.js';
+import {
   chapter1,
   chapter1AssetKeys,
   chapter1CharacterIds,
@@ -110,6 +114,135 @@ describe('ChapterCatalog', () => {
       { contractVersion: 1, scenes: {} },
       { [villageMap.id]: villageMap },
     )).toBe(villageMap);
+  });
+
+  it('loads a resumed chapter and explicit transition targets into a synchronous World registry', async () => {
+    const calls = [];
+    const packageDescriptor = (number) => {
+      const id = `ch${number}`;
+      const map = { id: `${id}.map.castle` };
+      const sceneId = `${id}.scene.arrival`;
+      const chapter = {
+        id,
+        number,
+        contractVersion: 2,
+        scenes: { [sceneId]: { mapId: map.id } },
+        maps: { [map.id]: map },
+        recaps: [],
+        assets: {},
+      };
+      return defineChapterDescriptor({
+        id,
+        number,
+        title: `Chapter ${number}`,
+        availability: 'planned',
+        loaders: {
+          content: async () => {
+            calls.push(id);
+            return {
+              default: {
+                id,
+                chapter,
+                maps: chapter.maps,
+                resumeRecaps: chapter.recaps,
+                assetKeys: [],
+              },
+            };
+          },
+          presentation: null,
+          harness: null,
+        },
+      });
+    };
+    const catalog = buildChapterCatalog([
+      packageDescriptor(12),
+      packageDescriptor(13),
+      packageDescriptor(14),
+    ]);
+
+    const runtime = await loadChapterRuntimeRegistry('ch13', {
+      catalog,
+      preloadChapterIds: [14],
+    });
+
+    expect(calls).toEqual(['ch13', 'ch14']);
+    expect(runtime.activeChapterId).toBe('ch13');
+    expect(Object.keys(runtime.chapters)).toEqual(['ch13', 'ch14']);
+    expect(runtime.contentRegistry).toBe(runtime.chapters);
+    expect(runtime.getChapter(13)).toBe(runtime.chapters.ch13);
+    expect(runtime.getChapter('ch12')).toBeNull();
+    expect(runtime.getChapterMap('ch13', 'ch13.scene.arrival'))
+      .toBe(runtime.chapterMaps.ch13['ch13.map.castle']);
+    expect(Object.isFrozen(runtime)).toBe(true);
+    expect(Object.isFrozen(runtime.chapters)).toBe(true);
+  });
+
+  it('keeps one World-facing dictionary while preparing each active chapter and its successor', async () => {
+    const calls = [];
+    const packageDescriptor = (number, nextChapterId = null) => {
+      const id = `ch${number}`;
+      const map = { id: `${id}.map.castle` };
+      const chapter = {
+        id,
+        number,
+        contractVersion: 2,
+        scenes: {},
+        maps: { [map.id]: map },
+        recaps: [],
+        assets: {
+          [`rooms/${id}/castle`]: {
+            key: `rooms/${id}/castle`,
+            path: `assets/art/rooms/${id}-castle.webp`,
+            kind: 'image',
+          },
+        },
+      };
+      return defineChapterDescriptor({
+        id,
+        number,
+        title: `Chapter ${number}`,
+        availability: 'planned',
+        nextChapterId,
+        loaders: {
+          content: async () => {
+            calls.push(id);
+            return { default: { id, chapter, maps: chapter.maps } };
+          },
+          presentation: null,
+          harness: null,
+        },
+      });
+    };
+    const catalog = buildChapterCatalog([
+      packageDescriptor(12, 'ch13'),
+      packageDescriptor(13, 'ch14'),
+      packageDescriptor(14),
+    ]);
+    const runtime = new ChapterRuntimeRegistry({ catalog });
+    const worldChapters = runtime.chapters;
+
+    const [first, duplicate] = await Promise.all([
+      runtime.prepare('ch12'),
+      runtime.prepare(12),
+    ]);
+    expect(calls).toEqual(['ch12', 'ch13']);
+    expect(first.chapterIds).toEqual(['ch12', 'ch13']);
+    expect(duplicate.chapterIds).toEqual(['ch12', 'ch13']);
+    expect(runtime.chapters).toBe(worldChapters);
+    expect(Object.keys(worldChapters)).toEqual(['ch12', 'ch13']);
+    expect(runtime.chapterAssets.ch12).toEqual([
+      {
+        key: 'rooms/ch12/castle',
+        path: 'assets/art/rooms/ch12-castle.webp',
+        kind: 'image',
+      },
+    ]);
+
+    await runtime.prepare('ch13');
+    expect(calls).toEqual(['ch12', 'ch13', 'ch14']);
+    expect(runtime.chapters).toBe(worldChapters);
+    expect(Object.keys(worldChapters)).toEqual(['ch12', 'ch13', 'ch14']);
+    expect(runtime.getChapter('ch14')).toBe(worldChapters.ch14);
   });
 });
 

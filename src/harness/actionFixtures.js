@@ -44,6 +44,18 @@ function createFixture(description, actions = []) {
 const registry = new ImmutableRegistry('action', validateActionFixture);
 
 registry
+  .register('boot-loading-review', createFixture(
+    'Hold the production boot surface in its presentation-loading state.',
+  ))
+  .register('boot-failure-review', createFixture(
+    'Hold the production boot surface in its retryable presentation-failure state.',
+  ))
+  .register('composition-loading-review', createFixture(
+    'Hold the production in-game composition overlay while a first visible frame prepares.',
+  ))
+  .register('composition-failure-review', createFixture(
+    'Hold the production in-game composition overlay in its retryable failure state.',
+  ))
   .register('foundation', createFixture(
     'Tap the integrated storybook title’s new-player envelope after its initial animation settles.',
     [{ frame: 30, type: 'tap', target: 'foundation.start' }],

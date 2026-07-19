@@ -280,6 +280,11 @@ describe('Chapter Three deterministic review harness', () => {
       },
       uiRenderer: { imageFor },
       setPieceRenderer: { loadImage },
+      assetRegistry: {
+        getAsset: (key) => (
+          key === 'chapterCards/ch4/flying-lesson' ? { kind: 'image' } : null
+        ),
+      },
     };
 
     await expect(preloadHarnessChapterImages(game)).resolves.toEqual({

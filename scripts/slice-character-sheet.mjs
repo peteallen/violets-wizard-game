@@ -28,6 +28,10 @@ import {
   deriveCyanAlphaMask,
   deriveOpaqueEdgeDonors,
 } from './extract-aligned-character-assets.mjs';
+import {
+  CHARACTER_WEBP_ENCODING,
+  encodeLosslessCharacterWebp,
+} from './character-webp.mjs';
 
 // This is the full-frame counterpart to slice-parts.mjs. It keeps that spike's
 // useful border-flood and dominant-component approach, while reusing the
@@ -35,11 +39,13 @@ import {
 
 export const CHARACTER_SHEET_SLICER_POLICY = Object.freeze({
   schemaVersion: 1,
+  provenanceSchemaVersion: 2,
   algorithm: 'cyan-flood-aligned-character-sheet-v1',
   outputColorType: 6,
   outputBitDepth: 8,
   componentConnectivity: 8,
   scaleFilter: 'premultiplied-rgba-box-rational-v1',
+  shippingEncoding: 'lossless-vp8l',
 });
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
@@ -279,7 +285,14 @@ function validateOverlap(overlap, label) {
   }
 }
 
-export async function runCharacterSheetSlice({ specPath, repoRoot = ROOT }) {
+export async function runCharacterSheetSlice({
+  specPath,
+  repoRoot = ROOT,
+  encodeFrame = encodeLosslessCharacterWebp,
+}) {
+  if (typeof encodeFrame !== 'function') {
+    throw new TypeError('Character-sheet encodeFrame must be a function.');
+  }
   const root = resolve(repoRoot);
   const normalizedSpec = resolveRepositoryPath(root, specPath, 'character-sheet spec path');
   assertInLane(normalizedSpec, SOURCE_LANE, 'character-sheet spec path');
@@ -308,11 +321,18 @@ export async function runCharacterSheetSlice({ specPath, repoRoot = ROOT }) {
 
   const framePaths = spec.frames.map((frame) => resolveRepositoryPath(
     root,
-    posix.join(outputDirectory.relative, `${frame.name}.png`),
+    posix.join(outputDirectory.relative, `${frame.name}.webp`),
     `output path for frame ${frame.name}`,
+  ));
+  const legacyPngPaths = spec.frames.map((frame) => resolveRepositoryPath(
+    root,
+    posix.join(outputDirectory.relative, `${frame.name}.png`),
+    `legacy PNG path for frame ${frame.name}`,
   ));
   const allDestinations = [...framePaths, provenancePath];
   assertDistinctPaths(allDestinations);
+  await Promise.all(allDestinations.map((path) => assertFileMissing(path.absolute, path.relative)));
+  await Promise.all(legacyPngPaths.map((path) => assertLegacyPublicPngMissing(path)));
 
   const sourceBytes = await readFile(sourcePath.absolute);
   const actualSourceHash = sha256(sourceBytes);
@@ -323,31 +343,48 @@ export async function runCharacterSheetSlice({ specPath, repoRoot = ROOT }) {
   }
   const source = inspectOpaquePng(sourceBytes, `Source sheet ${sourcePath.relative}`);
 
-  const renderedFrames = spec.frames.map((frame, index) => {
+  const renderedFrames = [];
+  for (let index = 0; index < spec.frames.length; index += 1) {
+    const frame = spec.frames[index];
     const rendered = renderCharacterFrame({ source, frame, spec });
-    const outputBytes = PNG.sync.write(rendered.png, {
+    const sourcePngBytes = PNG.sync.write(rendered.png, {
       colorType: CHARACTER_SHEET_SLICER_POLICY.outputColorType,
       inputColorType: CHARACTER_SHEET_SLICER_POLICY.outputColorType,
       bitDepth: CHARACTER_SHEET_SLICER_POLICY.outputBitDepth,
     });
-    return Object.freeze({
+    const encoded = await encodeFrame({
+      pngBytes: sourcePngBytes,
+      expectedRgba: rendered.png.data,
+      width: rendered.png.width,
+      height: rendered.png.height,
+      outputLabel: framePaths[index].relative,
+    });
+    assertEncodedCharacterFrame(encoded, framePaths[index].relative);
+    renderedFrames.push(Object.freeze({
       name: frame.name,
       path: framePaths[index],
-      outputBytes,
+      outputBytes: encoded.bytes,
+      sourcePngBytes,
+      verification: encoded.verification,
       png: rendered.png,
       record: rendered.record,
-    });
-  });
+    }));
+  }
 
   const dimensions = { width: spec.output.canvas.width, height: spec.output.canvas.height };
   const provenance = {
-    schema_version: CHARACTER_SHEET_SLICER_POLICY.schemaVersion,
+    schema_version: CHARACTER_SHEET_SLICER_POLICY.provenanceSchemaVersion,
     algorithm: {
       id: CHARACTER_SHEET_SLICER_POLICY.algorithm,
       component_connectivity: CHARACTER_SHEET_SLICER_POLICY.componentConnectivity,
       scale_filter: CHARACTER_SHEET_SLICER_POLICY.scaleFilter,
       output_color_type: CHARACTER_SHEET_SLICER_POLICY.outputColorType,
       output_bit_depth: CHARACTER_SHEET_SLICER_POLICY.outputBitDepth,
+      shipping_encoding: CHARACTER_SHEET_SLICER_POLICY.shippingEncoding,
+      shipping_encoder: {
+        command: CHARACTER_WEBP_ENCODING.command,
+        arguments: [...CHARACTER_WEBP_ENCODING.arguments],
+      },
       deterministic: true,
     },
     slice_spec: {
@@ -374,10 +411,17 @@ export async function runCharacterSheetSlice({ specPath, repoRoot = ROOT }) {
     outputs: renderedFrames.map((rendered) => ({
       name: rendered.name,
       path: rendered.path.relative,
-      media_type: 'image/png',
+      media_type: 'image/webp',
       bytes: rendered.outputBytes.length,
       sha256: sha256(rendered.outputBytes),
+      source_png_bytes: rendered.sourcePngBytes.length,
+      source_png_sha256: sha256(rendered.sourcePngBytes),
       rgba_sha256: sha256(rendered.png.data),
+      pixel_invariant: {
+        alpha_sha256: rendered.verification.integrity.alpha_sha256,
+        visible_rgba_sha256: rendered.verification.integrity.visible_rgba_sha256,
+        composite_sha256: rendered.verification.integrity.composite_sha256,
+      },
       dimensions,
       ...rendered.record,
     })),
@@ -414,6 +458,7 @@ export async function runCharacterSheetSlice({ specPath, repoRoot = ROOT }) {
       bytes: output.bytes,
       sha256: output.sha256,
       rgba_sha256: output.rgba_sha256,
+      pixel_invariant: output.pixel_invariant,
     }))),
   });
 }
@@ -803,6 +848,33 @@ export async function installCharacterSheetOutputs(files) {
   await Promise.all(files.map((file) => access(file.path, fsConstants.R_OK)));
 }
 
+function assertEncodedCharacterFrame(encoded, label) {
+  if (!encoded || typeof encoded !== 'object' || !Buffer.isBuffer(encoded.bytes)) {
+    throw new TypeError(`Character WebP encoder returned no bytes for ${label}.`);
+  }
+  const verification = encoded.verification;
+  if (
+    !verification
+    || verification.alpha !== 'exact'
+    || verification.visibleRgb !== 'exact'
+    || !verification.integrity
+  ) {
+    throw new Error(`Character WebP encoder did not verify rendered pixels for ${label}.`);
+  }
+  const integrity = verification.integrity;
+  for (const field of ['alpha_sha256', 'visible_rgba_sha256']) {
+    if (typeof integrity[field] !== 'string' || !SHA256_PATTERN.test(integrity[field])) {
+      throw new Error(`Character WebP encoder returned invalid ${field} for ${label}.`);
+    }
+  }
+  const composites = integrity.composite_sha256;
+  for (const background of ['black', 'white', 'saturated-magenta']) {
+    if (typeof composites?.[background] !== 'string' || !SHA256_PATTERN.test(composites[background])) {
+      throw new Error(`Character WebP encoder returned invalid ${background} composite for ${label}.`);
+    }
+  }
+}
+
 function expandCrop(crop, overlap, sheetWidth, sheetHeight, frameName) {
   const padding = overlap ?? { top: 0, right: 0, bottom: 0, left: 0 };
   const expanded = Object.freeze({
@@ -1008,6 +1080,19 @@ async function assertFileMissing(path, label) {
     throw error;
   }
   throw new Error(`Refusing to overwrite existing file ${label}.`);
+}
+
+async function assertLegacyPublicPngMissing(path) {
+  try {
+    await lstat(path.absolute);
+  } catch (error) {
+    if (error?.code === 'ENOENT') return;
+    throw error;
+  }
+  throw new Error(
+    `Refusing to leave legacy public character PNG ${path.relative}; `
+    + 'remove or promote it before slicing.',
+  );
 }
 
 async function writeDurableTemporary(path, bytes) {

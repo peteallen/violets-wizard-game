@@ -92,6 +92,13 @@ describe('visual verification checklists', () => {
     expect(cast).toMatch(/Hagrid.*visible arms.*broad boots.*shaped coat.*moustache.*beard/s);
   });
 
+  it('keeps both in-game composition overlays meaningful with full or reduced motion', () => {
+    expect(visualReviewChecklist('composition-loading-review').join(' '))
+      .toMatch(/game composition remains visibly present.*Full and reduced motion.*identical waiting meaning.*without relying on movement/s);
+    expect(visualReviewChecklist('composition-failure-review').join(' '))
+      .toMatch(/game composition remains visibly present.*Tap to try again.*Full and reduced motion.*words and layout.*zero technical error text/s);
+  });
+
   it('keeps all six Chapter Two set pieces in the player-facing review contract', () => {
     const chapterTwoScenes = [
       'sp-ch2-barrier-run-review',

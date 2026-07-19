@@ -11,6 +11,7 @@ export const ARCHITECTURE_RULES = Object.freeze({
   HEADLESS_BROWSER_API: 'headless-browser-api',
   HEADLESS_NONDETERMINISM: 'headless-nondeterminism',
   GENERIC_CONCRETE_ROUTING: 'generic-concrete-routing',
+  PRODUCTION_AGGREGATE_IMPORT: 'production-aggregate-import',
   UNUSED_ALLOWLIST_ENTRY: 'unused-architecture-allowlist',
 });
 
@@ -61,6 +62,11 @@ const DEFAULT_SCOPES = Object.freeze({
     'src/game/systems/**/*.js',
     'src/game/world/**/*.js',
   ]),
+  productionRoots: Object.freeze([
+    'src/main.js',
+    'src/game/Game.js',
+    'src/game/render/**/*.js',
+  ]),
 });
 
 const DEFAULT_EXCLUSIONS = Object.freeze({
@@ -81,6 +87,10 @@ const DEFAULT_TARGETS = Object.freeze({
     'src/game/characters/*/**',
     'src/game/render/characters/*/**',
   ]),
+  productionAggregates: Object.freeze([
+    'src/game/content/index.js',
+    'src/game/core/assetManifest.js',
+  ]),
 });
 
 const CURRENT_ALLOWLIST = Object.freeze([
@@ -93,9 +103,6 @@ const CURRENT_ALLOWLIST = Object.freeze([
   ...allowMany(ARCHITECTURE_RULES.GENERIC_CONCRETE_ROUTING, 'src/game/core/VersionWatcher.js', [
     'ch1.chapterCardRoom',
     'ch2',
-  ]),
-  ...allowMany(ARCHITECTURE_RULES.GENERIC_CHAPTER_IMPORT, 'src/game/Game.js', [
-    './content/chapters/ch1.js',
   ]),
   ...allowMany(ARCHITECTURE_RULES.GENERIC_CONCRETE_ROUTING, 'src/game/Game.js', [
     'ch1.letter.read',
@@ -137,12 +144,6 @@ const CURRENT_ALLOWLIST = Object.freeze([
     'ch1.malkins',
     'ch1.menagerie',
     'ch1.bedroom',
-  ]),
-  ...allowMany(ARCHITECTURE_RULES.GENERIC_CHAPTER_IMPORT, 'src/game/render/SetPieceRenderer.js', [
-    '../content/chapters/ch1-letter.js',
-  ]),
-  ...allowMany(ARCHITECTURE_RULES.GENERIC_CHAPTER_IMPORT, 'src/game/render/UIRenderer.js', [
-    '../content/chapters/ch1.js',
   ]),
   ...allowMany(ARCHITECTURE_RULES.GENERIC_CONCRETE_ROUTING, 'src/game/render/UIRenderer.js', [
     'npc.violet',
@@ -223,6 +224,7 @@ export async function scanArchitecture({ rootDirectory = ROOT, config = {} } = {
       headless: matchesAny(file, matchers.scopes.headless),
       genericDispatch: matchesAny(file, matchers.scopes.genericDispatch)
         && !matchesAny(file, matchers.exclusions.genericDispatch),
+      productionRoots: matchesAny(file, matchers.scopes.productionRoots),
     };
     if (!Object.values(active).some(Boolean)) continue;
 
@@ -230,7 +232,7 @@ export async function scanArchitecture({ rootDirectory = ROOT, config = {} } = {
     const lexical = lexSource(source);
     const locate = createLocator(source);
 
-    if (active.runtime || active.genericEngine) {
+    if (active.runtime || active.genericEngine || active.productionRoots) {
       for (const imported of collectImports(lexical.tokens)) {
         const target = resolveImportTarget(root, file, imported.value);
         if (!target) continue;
@@ -244,7 +246,10 @@ export async function scanArchitecture({ rootDirectory = ROOT, config = {} } = {
             message: `Runtime code imports source-only ${topLevelFolder(target)} material through ${JSON.stringify(imported.value)}. Ship generated assets from public/assets and resolve them through a production asset catalog.`,
           }));
         }
-        if (active.genericEngine && matchesAny(target, matchers.targets.concreteChapters)) {
+        if (
+          (active.genericEngine || active.productionRoots)
+          && matchesAny(target, matchers.targets.concreteChapters)
+        ) {
           diagnostics.push(diagnostic({
             rule: ARCHITECTURE_RULES.GENERIC_CHAPTER_IMPORT,
             file,
@@ -252,6 +257,16 @@ export async function scanArchitecture({ rootDirectory = ROOT, config = {} } = {
             locate,
             match: imported.value,
             message: `Generic engine code imports concrete chapter implementation ${JSON.stringify(imported.value)}. Depend on a chapter catalog or injected chapter contract instead.`,
+          }));
+        }
+        if (active.productionRoots && matchesAny(target, matchers.targets.productionAggregates)) {
+          diagnostics.push(diagnostic({
+            rule: ARCHITECTURE_RULES.PRODUCTION_AGGREGATE_IMPORT,
+            file,
+            index: imported.start,
+            locate,
+            match: imported.value,
+            message: `Production startup code imports eager compatibility aggregate ${JSON.stringify(imported.value)}. Inject a scoped runtime registry instead.`,
           }));
         }
         if (active.genericEngine && matchesAny(target, matchers.targets.concreteCharacters)) {

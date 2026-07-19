@@ -177,7 +177,7 @@ describe('canonical full-frame character packages', () => {
 
       const retainedOnly = [...declared].filter((path) => !manifest.fullFrame.assetFiles.includes(path));
       expect(retainedOnly).toEqual(characterPackage.definition.id === 'character.violet'
-        ? ['assets/art/characters/violet/casual/walk-pass.png']
+        ? ['assets/art/characters/violet/casual/walk-pass.webp']
         : []);
     }
   });

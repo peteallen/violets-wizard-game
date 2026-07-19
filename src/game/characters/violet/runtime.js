@@ -8,10 +8,14 @@ import {
   defineCharacterPortraitPresentation,
 } from '../portraitRuntime.js';
 import { violetFullFrameCharacterDefinition } from './definition.js';
-import { VIOLET_EXPRESSION_REVIEW_VARIANT } from './expressionReviewDefinition.js';
 import { recolorVioletRobeFrame } from './robeRecolor.js';
 
 export { violetFullFrameCharacterDefinition } from './definition.js';
+
+// Keep this review-only discriminator local. Importing its descriptor here lets
+// Rollup connect Violet's production title runtime to the harness entry, whose
+// top-level boot intentionally waits for a complete deterministic review scene.
+const VIOLET_EXPRESSION_REVIEW_VARIANT = 'approved-expression-alignment';
 
 export const violetFullFrameCharacterManifest = createFullFrameCharacterManifest(
   violetFullFrameCharacterDefinition,
@@ -218,6 +222,7 @@ const drawVioletPortrait = createCharacterPortraitRenderer({
 export const violetCharacterRuntime = Object.freeze({
   preload: preloadViolet,
   release: releaseViolet,
+  preparers: violetFullFrameRuntime.preparers,
   renderers: Object.freeze({
     world: drawVioletWorld,
     portrait: drawVioletPortrait,

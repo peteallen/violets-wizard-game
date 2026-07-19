@@ -9,22 +9,18 @@ import {
 import { chapter2, chapter2AssetKeys } from './chapters/ch2.js';
 import { chapter3 } from './chapters/ch3.js';
 import { chapter4 } from './chapters/ch4.js';
-import { chapterCatalog, chapterDescriptors } from '../chapters/catalog.js';
-import { chapter1ContentPackage } from '../chapters/ch1/content.js';
-import { chapter2ContentPackage } from '../chapters/ch2/content.js';
-import { chapter3ContentPackage } from '../chapters/ch3/content.js';
-import { chapter4ContentPackage } from '../chapters/ch4/content.js';
+import {
+  chapterCatalog,
+  chapterDescriptors,
+  loadChapterRuntimeRegistry,
+} from '../chapters/catalog.js';
 
-const chapterContentPackages = Object.freeze([
-  chapter1ContentPackage,
-  chapter2ContentPackage,
-  chapter3ContentPackage,
-  chapter4ContentPackage,
-]);
-
-export const chapterMaps = Object.freeze(Object.fromEntries(
-  chapterContentPackages.map((chapterPackage) => [chapterPackage.id, chapterPackage.maps]),
-));
+export const chapterMaps = Object.freeze({
+  ch1: Object.freeze({ [chapter1Map.id]: chapter1Map }),
+  ch2: chapter2.maps,
+  ch3: chapter3.maps,
+  ch4: chapter4.maps,
+});
 
 export const contentRegistry = Object.freeze({
   ch1: chapter1,
@@ -94,4 +90,4 @@ export function getChapterMap(idOrNumber, sceneId = null) {
 }
 
 export { cards, cardsById };
-export { chapterCatalog, chapterDescriptors };
+export { chapterCatalog, chapterDescriptors, loadChapterRuntimeRegistry };

@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import {
   createStorybookTitlePresentation,
   drawStorybookTitlePresentation,
@@ -237,6 +237,26 @@ describe('painted storybook title illustration with a deterministic fallback', (
     expect(context.calls.some(([name]) => name === 'fill')).toBe(false);
     expect(actorCalls).toEqual(['character.violet', 'character.post-owl']);
     expect(context.depth).toBe(0);
+  });
+
+  it('prepares only Violet’s currently visible title sample at critical priority', async () => {
+    const prepare = vi.fn().mockResolvedValue({ status: 'ready' });
+    const renderer = new StorybookTitleRenderer({
+      characterRenderer: { draw: vi.fn(), prepare },
+    });
+
+    await renderer.prepare(2.75, { reducedMotion: false });
+
+    expect(prepare).toHaveBeenCalledOnce();
+    expect(prepare).toHaveBeenCalledWith(
+      expect.objectContaining({
+        characterId: 'character.violet',
+        pose: 'wonder',
+        loadPriority: 'visible',
+      }),
+      2.75,
+      { retry: false },
+    );
   });
 
   it('requires the generic character boundary instead of silently constructing a concrete renderer', () => {

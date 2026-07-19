@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 import { Game } from '../src/game/Game.js';
+import { productionPresentationRegistry } from '../src/game/presentation/productionRoomVariantOverlays.js';
 import { learningLayout } from '../src/game/render/LearningRenderer.js';
 import { compactSpellFanLayout } from '../src/game/render/SpellbookRenderer.js';
 
@@ -180,7 +181,8 @@ describe('Chapter Three Canvas input integration', () => {
     expect(ids).toContain('hud.wand');
   });
 
-  it('turns a Chapter Three blocking celebration into a tappable continue after one second', () => {
+  it('turns a Chapter Three blocking celebration into a tappable continue after one second', async () => {
+    await productionPresentationRegistry.activateChapter('ch3');
     const skip = vi.fn();
     const state = {
       chapterId: 'ch3',

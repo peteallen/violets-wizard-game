@@ -8,18 +8,18 @@ function still(path) {
 }
 
 const CLIPS = Object.freeze({
-  idle: still('default/neutral.png'),
-  neutral: still('default/neutral.png'),
-  'talk-a': still('default/talk-a.png'),
-  'talk-b': still('default/talk-b.png'),
+  idle: still('default/neutral.webp'),
+  neutral: still('default/neutral.webp'),
+  'talk-a': still('default/talk-a.webp'),
+  'talk-b': still('default/talk-b.webp'),
   speaking: Object.freeze({
     fps: 4,
-    frames: Object.freeze(['default/talk-a.png', 'default/talk-b.png']),
+    frames: Object.freeze(['default/talk-a.webp', 'default/talk-b.webp']),
     reducedMotionClip: 'talk-a',
   }),
-  tearful: still('default/tearful.png'),
-  relieved: still('default/relieved.png'),
-  reunion: still('default/reunion.png'),
+  tearful: still('default/tearful.webp'),
+  relieved: still('default/relieved.webp'),
+  reunion: still('default/reunion.webp'),
 });
 
 const ALIASES = Object.freeze({
@@ -68,12 +68,12 @@ export const nevilleCharacterDefinition = defineCharacter({
     portrait: { x: 179.2, y: 0, width: 537.6, height: 504 },
   },
   assets: characterImageAssets('neville', [
-    'default/neutral.png',
-    'default/talk-a.png',
-    'default/talk-b.png',
-    'default/tearful.png',
-    'default/relieved.png',
-    'default/reunion.png',
+    'default/neutral.webp',
+    'default/talk-a.webp',
+    'default/talk-b.webp',
+    'default/tearful.webp',
+    'default/relieved.webp',
+    'default/reunion.webp',
   ]),
 });
 

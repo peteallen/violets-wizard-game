@@ -8,18 +8,18 @@ function still(path) {
 }
 
 const CLIPS = Object.freeze({
-  idle: still('default/neutral.png'),
-  neutral: still('default/neutral.png'),
-  'hidden-eyes': still('default/hidden-eyes.png'),
-  croak: still('default/croak.png'),
+  idle: still('default/neutral.webp'),
+  neutral: still('default/neutral.webp'),
+  'hidden-eyes': still('default/hidden-eyes.webp'),
+  croak: still('default/croak.webp'),
   speaking: Object.freeze({
     fps: 2,
-    frames: Object.freeze(['default/croak.png', 'default/neutral.png']),
+    frames: Object.freeze(['default/croak.webp', 'default/neutral.webp']),
     reducedMotionClip: 'croak',
   }),
-  hop: still('default/hop.png'),
-  held: still('default/held.png'),
-  reunion: still('default/reunion.png'),
+  hop: still('default/hop.webp'),
+  held: still('default/held.webp'),
+  reunion: still('default/reunion.webp'),
 });
 
 const ALIASES = Object.freeze({
@@ -73,12 +73,12 @@ export const trevorCharacterDefinition = defineCharacter({
     portrait: { x: 89.6, y: 230, width: 716.8, height: 680 },
   },
   assets: characterImageAssets('trevor', [
-    'default/neutral.png',
-    'default/hidden-eyes.png',
-    'default/croak.png',
-    'default/hop.png',
-    'default/held.png',
-    'default/reunion.png',
+    'default/neutral.webp',
+    'default/hidden-eyes.webp',
+    'default/croak.webp',
+    'default/hop.webp',
+    'default/held.webp',
+    'default/reunion.webp',
   ]),
 });
 

@@ -5,8 +5,15 @@ import { readFile, mkdir, writeFile } from 'node:fs/promises';
 import { dirname, relative, resolve, sep } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { PNG } from 'pngjs';
+import {
+  CHARACTER_WEBP_COMPOSITE_BACKGROUNDS,
+  CHARACTER_WEBP_ENCODING,
+  encodeLosslessCharacterWebp,
+  verifyRenderedCharacterWebp,
+} from './character-webp.mjs';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
+export { CHARACTER_WEBP_COMPOSITE_BACKGROUNDS, CHARACTER_WEBP_ENCODING };
 
 function fail(message) {
   throw new Error(`Aligned character extraction failed: ${message}`);
@@ -39,6 +46,13 @@ function assertPathUnder(value, path, prefix) {
     fail(`${path} must stay under ${prefix}.`);
   }
   return absolute;
+}
+
+export function deriveCharacterWebpShippingPath(pngPath) {
+  if (typeof pngPath !== 'string' || !pngPath.endsWith('.png')) {
+    fail('production character output must end in .png so its historical source path remains explicit.');
+  }
+  return `${pngPath.slice(0, -'.png'.length)}.webp`;
 }
 
 export function validateAlignedCharacterAssetSpec(spec) {
@@ -90,6 +104,7 @@ export function validateAlignedCharacterAssetSpec(spec) {
     }
     assertPathUnder(variant.source, `spec.variants.${name}.source`, 'art/characters');
     assertPathUnder(variant.output, `spec.variants.${name}.output`, 'public/assets/art/characters');
+    deriveCharacterWebpShippingPath(variant.output);
     if (!/^[a-f0-9]{64}$/.test(variant.sha256 ?? '')) {
       fail(`spec.variants.${name}.sha256 must be a lowercase SHA-256 digest.`);
     }
@@ -459,32 +474,45 @@ export async function buildAlignedCharacterAssets(specPath, { check = false } = 
       inputColorType: 6,
       inputHasAlpha: true,
     });
+    const shippingOutput = deriveCharacterWebpShippingPath(variant.output);
     const outputPath = assertPathUnder(
-      variant.output,
+      shippingOutput,
       `spec.variants.${name}.output`,
       'public/assets/art/characters',
     );
     let status = 'written';
+    let committed;
+    let verification;
     if (check) {
-      let committed;
       try {
         committed = await readFile(outputPath);
       } catch {
-        fail(`${variant.output} is missing; run the extractor without --check.`);
+        fail(`${shippingOutput} is missing; run the extractor without --check.`);
       }
-      if (!committed.equals(outputBytes)) fail(`${variant.output} is stale; run the extractor without --check.`);
+      verification = await verifyRenderedCharacterWebp(outputPath, outputPng.data, {
+        width: outputPng.width,
+        height: outputPng.height,
+      });
       status = 'current';
     } else {
+      ({ bytes: committed, verification } = await encodeLosslessCharacterWebp({
+        pngBytes: outputBytes,
+        expectedRgba: outputPng.data,
+        width: outputPng.width,
+        height: outputPng.height,
+        outputLabel: shippingOutput,
+      }));
       await mkdir(dirname(outputPath), { recursive: true });
-      await writeFile(outputPath, outputBytes);
+      await writeFile(outputPath, committed);
     }
     outputs.push(Object.freeze({
       name,
       source: variant.source,
-      output: variant.output,
-      sha256: sha256(outputBytes),
-      bytes: outputBytes.length,
+      output: shippingOutput,
+      sha256: sha256(committed),
+      bytes: committed.length,
       status,
+      verification,
     }));
   }
 

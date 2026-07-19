@@ -9,7 +9,10 @@ import {
 } from '../src/game/chapters/ch2/presentation.js';
 import { chapter2V2 } from '../src/game/chapters/ch2/content-v2/index.js';
 import { sortingHatSpeechMotionState } from '../src/game/characters/sorting-hat/runtime.js';
-import { drawProductionRoomVariantBackground } from '../src/game/presentation/productionRoomVariantOverlays.js';
+import {
+  drawProductionRoomVariantBackground,
+  productionPresentationRegistry,
+} from '../src/game/presentation/productionRoomVariantOverlays.js';
 import {
   chapterTwoLakeMotionState,
   chapterTwoSortingCeremonyState,
@@ -47,7 +50,8 @@ describe('Chapter Two deterministic set-piece motion', () => {
     ]);
   });
 
-  it('moves the train painting and passing scenery only in full motion', () => {
+  it('moves the train painting and passing scenery only in full motion', async () => {
+    await productionPresentationRegistry.activateChapter('ch2');
     const first = trainCompartmentMotionState(1.25);
     const replayed = trainCompartmentMotionState(1.25);
     expect(first).toEqual(replayed);

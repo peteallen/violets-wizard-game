@@ -1,7 +1,9 @@
+import { chapter4PresentationMetadata } from './presentationMetadata.js';
+
 export const chapter4PresentationPackage = Object.freeze({
   chapterId: 'ch4',
+  ...chapter4PresentationMetadata,
   registrations: Object.freeze([]),
-  roomMusic: Object.freeze({ default: null, rooms: Object.freeze({}) }),
   roomVariantOverlays: Object.freeze([]),
 });
 

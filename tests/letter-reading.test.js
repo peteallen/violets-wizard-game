@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 import { Game } from '../src/game/Game.js';
 import { chapter1LetterNarration } from '../src/game/content/chapters/ch1-letter.js';
+import { chapter1 } from '../src/game/content/chapters/ch1.js';
 import {
   UI_RECTS,
   dialogueSceneContext,
@@ -22,6 +23,7 @@ function gameStub() {
   const game = Object.create(Game.prototype);
   const overlay = { surface: 'letter-reading', tab: null };
   game.world = {
+    chapter: chapter1,
     overlay,
     closeOverlay: vi.fn(() => { game.world.overlay = null; }),
     runAction: vi.fn(),

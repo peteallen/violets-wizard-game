@@ -471,6 +471,10 @@ export class AlignedSpriteRig {
     this.loading = null;
   }
 
+  retryFailures() {
+    this.failures.clear();
+  }
+
   sample(options = {}) {
     return sampleValidatedAlignedSpriteFrame(this.manifest, options);
   }

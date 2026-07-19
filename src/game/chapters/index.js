@@ -1,6 +1,10 @@
 export {
   chapterCatalog,
   chapterDescriptors,
+  ChapterRuntimeRegistry,
+  createChapterRuntimeRegistry,
+  loadChapterPackage,
+  loadChapterRuntimeRegistry,
 } from './catalog.js';
 
 export { chapter1Descriptor } from './ch1/descriptor.js';

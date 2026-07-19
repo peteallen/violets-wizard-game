@@ -10,10 +10,10 @@ export function characterImageAssets(characterSlug, relativePaths) {
   if (!Array.isArray(relativePaths)) throw new TypeError('Character asset paths must be an array.');
   const assets = {};
   for (const relativePath of relativePaths) {
-    if (typeof relativePath !== 'string' || !relativePath.endsWith('.png')) {
-      throw new TypeError(`Character asset ${relativePath} must be a PNG path.`);
+    if (typeof relativePath !== 'string' || !relativePath.endsWith('.webp')) {
+      throw new TypeError(`Character asset ${relativePath} must be a WebP path.`);
     }
-    const key = `characters/${characterSlug}/${relativePath.replace(/\.png$/u, '')}`;
+    const key = `characters/${characterSlug}/${relativePath.replace(/\.webp$/u, '')}`;
     if (Object.hasOwn(assets, key)) throw new TypeError(`Duplicate character asset ${key}.`);
     assets[key] = Object.freeze({
       path: `assets/art/characters/${characterSlug}/${relativePath}`,

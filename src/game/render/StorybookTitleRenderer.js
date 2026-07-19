@@ -50,16 +50,34 @@ const HALLS = Object.freeze([
 export class StorybookTitleRenderer {
   constructor({ characterRenderer } = {}) {
     this.characterRenderer = requireCharacterRenderer(characterRenderer);
+    this.characterResults = [];
   }
 
   draw(context, time = 0, options = {}) {
     const { backgroundImage = null, ...presentationOptions } = options;
     const presentation = createStorybookTitlePresentation(time, presentationOptions);
-    drawStorybookTitlePresentation(context, presentation, {
+    this.characterResults = drawStorybookTitlePresentation(context, presentation, {
       backgroundImage,
       characterRenderer: this.characterRenderer,
     });
     return presentation;
+  }
+
+  async prepare(time = 0, { reducedMotion = false, retry = false } = {}) {
+    if (typeof this.characterRenderer.prepare !== 'function') return [];
+    const presentation = createStorybookTitlePresentation(time, { reducedMotion });
+    await this.characterRenderer.prepare(
+      presentation.hero.violet,
+      presentation.sceneTime,
+      { retry },
+    );
+    return [presentation.hero.violet.characterId];
+  }
+
+  consumeCharacterResults() {
+    const results = this.characterResults;
+    this.characterResults = [];
+    return results;
   }
 }
 
@@ -100,6 +118,7 @@ export function createStorybookTitlePresentation(
       pose: 'wonder',
       wand: false,
       appearance: 'casual',
+      loadPriority: 'visible',
     }),
     owl: Object.freeze({
       characterId: 'character.post-owl',
@@ -168,9 +187,12 @@ export function drawStorybookTitlePresentation(
     drawHeroPerch(context);
   }
 
-  renderer.draw(context, presentation.hero.violet, presentation.sceneTime);
-  renderer.draw(context, presentation.hero.owl, presentation.sceneTime);
+  const characterResults = [
+    renderer.draw(context, presentation.hero.violet, presentation.sceneTime),
+    renderer.draw(context, presentation.hero.owl, presentation.sceneTime),
+  ];
   context.restore();
+  return characterResults;
 }
 
 function isReadyImage(image) {

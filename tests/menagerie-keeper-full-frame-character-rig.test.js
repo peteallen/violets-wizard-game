@@ -92,29 +92,29 @@ describe('Menagerie Keeper production full-frame rig', () => {
 
   it('uses exactly the four aligned animal-shop and dialogue paintings', () => {
     expect(framePaths('idle')).toEqual([
-      'assets/art/characters/menagerie-keeper/default/neutral.png',
+      'assets/art/characters/menagerie-keeper/default/neutral.webp',
     ]);
     expect(framePaths('neutral')).toEqual([
-      'assets/art/characters/menagerie-keeper/default/neutral.png',
+      'assets/art/characters/menagerie-keeper/default/neutral.webp',
     ]);
     expect(framePaths('blink')).toEqual([
-      'assets/art/characters/menagerie-keeper/default/blink.png',
+      'assets/art/characters/menagerie-keeper/default/blink.webp',
     ]);
     expect(framePaths('talk-a')).toEqual([
-      'assets/art/characters/menagerie-keeper/default/talk-a.png',
+      'assets/art/characters/menagerie-keeper/default/talk-a.webp',
     ]);
     expect(framePaths('talk-b')).toEqual([
-      'assets/art/characters/menagerie-keeper/default/talk-b.png',
+      'assets/art/characters/menagerie-keeper/default/talk-b.webp',
     ]);
     expect(framePaths('speaking')).toEqual([
-      'assets/art/characters/menagerie-keeper/default/talk-a.png',
-      'assets/art/characters/menagerie-keeper/default/talk-b.png',
+      'assets/art/characters/menagerie-keeper/default/talk-a.webp',
+      'assets/art/characters/menagerie-keeper/default/talk-b.webp',
     ]);
     expect(menagerieKeeperFullFrameCharacterManifest.fullFrame.assetFiles).toEqual([
-      'assets/art/characters/menagerie-keeper/default/neutral.png',
-      'assets/art/characters/menagerie-keeper/default/blink.png',
-      'assets/art/characters/menagerie-keeper/default/talk-a.png',
-      'assets/art/characters/menagerie-keeper/default/talk-b.png',
+      'assets/art/characters/menagerie-keeper/default/neutral.webp',
+      'assets/art/characters/menagerie-keeper/default/blink.webp',
+      'assets/art/characters/menagerie-keeper/default/talk-a.webp',
+      'assets/art/characters/menagerie-keeper/default/talk-b.webp',
     ]);
     expect(menagerieKeeperFullFrameCharacterManifest.layerOrder).toEqual(['figure']);
   });

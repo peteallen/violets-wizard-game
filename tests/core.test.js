@@ -778,8 +778,7 @@ describe('room transition choreography', () => {
     expect(game.world.update).not.toHaveBeenCalled();
   });
 
-  it('uses a bounded fallback when destination decoding never settles', async () => {
-    vi.useFakeTimers();
+  it('holds the outgoing frame indefinitely while destination decoding is merely slow', async () => {
     const { game } = transitionGame();
     game.dpr = 1;
     game.scale = 1;
@@ -789,24 +788,28 @@ describe('room transition choreography', () => {
       room: { id: 'ch1.courtyard' },
       snapshot: vi.fn(() => ({ roomId: 'ch1.courtyard' })),
     };
+    let resolveRoom;
     game.roomRenderer = {
-      preloadRoom: vi.fn(() => new Promise(() => {})),
+      preloadRoom: vi.fn(() => new Promise((resolve) => { resolveRoom = resolve; })),
       logger: { warn: vi.fn() },
     };
 
     const readiness = game.prepareRoomTransitionDestination();
-    await vi.advanceTimersByTimeAsync(2500);
-    await readiness;
+    while (!resolveRoom) await Promise.resolve();
+    game.update(30);
 
-    expect(game.roomTransition.ready).toBe(true);
-    expect(game.roomRenderer.logger.warn).toHaveBeenCalledWith(
-      'Destination room or character preparation timed out; revealing the procedural fallback.',
-    );
-    expect(vi.getTimerCount()).toBe(0);
+    expect(game.roomTransition.ready).toBe(false);
+    expect(game.roomTransition.elapsed).toBe(0);
+    expect(game.roomTransition.source).toEqual({ width: 1280, height: 720 });
+    expect(game.roomRenderer.logger.warn).not.toHaveBeenCalled();
     expect(game.characterScopes.activateChapter).toHaveBeenCalledWith('ch1', {
       source: 'room-transition',
       roomId: 'ch1.courtyard',
     });
+
+    resolveRoom('decoded-room');
+    await readiness;
+    expect(game.roomTransition.ready).toBe(true);
   });
 
   it('activates the destination chapter before transition readiness is released', async () => {
@@ -851,8 +854,7 @@ describe('room transition choreography', () => {
     expect(game.roomTransition.readinessTimer).toBeNull();
   });
 
-  it('uses the bounded fallback when destination character loading never settles', async () => {
-    vi.useFakeTimers();
+  it('holds the outgoing frame while destination character loading never settles', async () => {
     const { game } = transitionGame();
     game.dpr = 1;
     game.scale = 1;
@@ -869,17 +871,18 @@ describe('room transition choreography', () => {
     };
 
     const readiness = game.prepareRoomTransitionDestination();
-    await vi.advanceTimersByTimeAsync(2500);
-    await readiness;
+    await Promise.resolve();
+    await Promise.resolve();
+    game.update(30);
 
-    expect(game.roomTransition.ready).toBe(true);
-    expect(game.roomRenderer.logger.warn).toHaveBeenCalledWith(
-      'Destination room or character preparation timed out; revealing the procedural fallback.',
-    );
-    expect(vi.getTimerCount()).toBe(0);
+    expect(game.roomTransition.ready).toBe(false);
+    expect(game.roomTransition.elapsed).toBe(0);
+    expect(game.roomRenderer.logger.warn).not.toHaveBeenCalled();
+    game.cancelRoomTransitionReadiness();
+    await readiness;
   });
 
-  it('surfaces rejected destination character loading and releases transition readiness', async () => {
+  it('keeps a failed destination hidden and makes the transition retryable', async () => {
     const { game } = transitionGame();
     game.dpr = 1;
     game.scale = 1;
@@ -896,13 +899,20 @@ describe('room transition choreography', () => {
       logger: { warn: vi.fn() },
     };
 
-    await game.prepareRoomTransitionDestination();
+    await expect(game.prepareRoomTransitionDestination()).rejects.toBe(error);
 
-    expect(game.roomTransition.ready).toBe(true);
+    expect(game.roomTransition.ready).toBe(false);
+    expect(game.roomTransition.failed).toBe(true);
+    expect(game.hasRetryableCompositionFailure()).toBe(true);
     expect(game.roomRenderer.logger.warn).toHaveBeenCalledWith(
-      'Destination character preparation failed; revealing the safe fallback.',
+      'Destination composition failed; keeping the outgoing room visible.',
       error,
     );
+
+    game.characterScopes.activateChapter.mockResolvedValue(['character.violet']);
+    await game.prepareRoomTransitionDestination(game.roomTransition, { retry: true });
+    expect(game.roomTransition.ready).toBe(true);
+    expect(game.roomTransition.failed).toBe(false);
   });
 
   it('lets only the current scale preparation mark a transition ready', async () => {
@@ -922,9 +932,10 @@ describe('room transition choreography', () => {
     };
 
     const first = game.prepareRoomTransitionDestination();
+    while (completions.length < 1) await Promise.resolve();
     game.scale = 0.8;
     const second = game.prepareRoomTransitionDestination();
-    await Promise.resolve();
+    while (completions.length < 2) await Promise.resolve();
     completions[0]('stale-cache');
     await first;
     expect(game.roomTransition.ready).toBe(false);

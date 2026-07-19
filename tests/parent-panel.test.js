@@ -1,6 +1,8 @@
 import { describe, expect, it, vi } from 'vitest';
 import { Game, worldViewportSourceRect } from '../src/game/Game.js';
+import { chapterDescriptors } from '../src/game/chapters/catalog.js';
 import { INPUT, WORLD } from '../src/game/config.js';
+import { contentRegistry } from '../src/game/content/index.js';
 import { UI_RECTS } from '../src/game/render/UIRenderer.js';
 import { createSaveV1, createSaveV3 } from '../src/game/systems/Save.js';
 
@@ -68,6 +70,15 @@ function parentGame(save = saveFixture()) {
   game.render = vi.fn();
   game.updateStatus = vi.fn();
   game.roomRenderer = { logger: { warn: vi.fn() } };
+  game.chapterRuntime = {
+    chapters: contentRegistry,
+    descriptors: chapterDescriptors,
+    getDescriptor: (idOrNumber) => chapterDescriptors.find((descriptor) => (
+      descriptor.id === idOrNumber || descriptor.number === idOrNumber
+    )) ?? null,
+    getChapter: (id) => contentRegistry[id] ?? null,
+  };
+  game.prepareChapterRuntime = vi.fn().mockResolvedValue(null);
   game.characterScopes = {
     activateTitle: vi.fn().mockResolvedValue(['character.violet', 'character.post-owl']),
     activateChapter: vi.fn().mockResolvedValue(['character.violet']),
@@ -92,6 +103,7 @@ function preservedWorldGame(save) {
   game.updateMusic = vi.fn();
   game.setPieceRenderer = { preloadBrickWall: vi.fn() };
   game.preloadCurrentRoomSetPieceVariants = vi.fn();
+  game.chapterRuntime = { chapters: contentRegistry };
   return game;
 }
 

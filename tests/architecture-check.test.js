@@ -83,6 +83,35 @@ describe('architecture boundary check', () => {
     ]);
   });
 
+  it('keeps production roots away from eager content and asset compatibility aggregates', async () => {
+    const root = await fixture({
+      'src/main.js': "import './game/content/index.js';",
+      'src/game/Game.js': "import './core/assetManifest.js';",
+      'src/game/content/index.js': 'export const content = {};',
+      'src/game/core/assetManifest.js': 'export const assets = {};',
+    });
+
+    const diagnostics = await scanArchitecture({
+      rootDirectory: root,
+      config: {
+        ...testConfig({ productionRoots: ['src/main.js', 'src/game/Game.js'] }),
+        targets: {
+          concreteChapters: [],
+          concreteCharacters: [],
+          productionAggregates: [
+            'src/game/content/index.js',
+            'src/game/core/assetManifest.js',
+          ],
+        },
+      },
+    });
+
+    expect(diagnostics.map(({ rule, file }) => ({ rule, file }))).toEqual([
+      { rule: ARCHITECTURE_RULES.PRODUCTION_AGGREGATE_IMPORT, file: 'src/game/Game.js' },
+      { rule: ARCHITECTURE_RULES.PRODUCTION_AGGREGATE_IMPORT, file: 'src/main.js' },
+    ]);
+  });
+
   it('rejects browser and nondeterministic APIs in headless code without matching prose', async () => {
     const root = await fixture({
       'src/game/simulation.js': [
@@ -229,6 +258,7 @@ function testConfig(scopes = {}) {
       genericEngine: [],
       headless: [],
       genericDispatch: [],
+      productionRoots: [],
       ...scopes,
     },
     exclusions: {
@@ -239,6 +269,7 @@ function testConfig(scopes = {}) {
     targets: {
       concreteChapters: [],
       concreteCharacters: [],
+      productionAggregates: [],
     },
     allowlist: [],
   };

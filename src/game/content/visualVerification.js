@@ -25,6 +25,22 @@ export function storybookChecklist(...illusionChecks) {
 }
 
 const REVIEW_SCENE_ILLUSION_CHECKS = Object.freeze({
+  'boot-loading-review': [
+    'Before any game module or painted asset is ready, one owl-and-book folio, one plain-language loading sentence, and five stage marks remain readable with zero blank-screen dependency or false action.',
+    'The loading meaning remains complete with animation disabled and contains no percentage that can stall or imply false precision.',
+  ],
+  'boot-failure-review': [
+    'A failed critical request changes the same owl-and-book folio into one unmistakable paused state with exactly one 88px-or-larger Try again action.',
+    'The failure state remains distinct from enchanted-gold selection, preserves the loading surface identity, and explains recovery without exposing technical language.',
+  ],
+  'composition-loading-review': [
+    'The real game composition remains visibly present beneath one restrained dark veil and one centered parchment notice, with the preparation message and three waiting marks readable at both review sizes.',
+    'Full and reduced motion communicate the identical waiting meaning without relying on movement, false progress precision, a tappable-looking action, or a procedural-art substitution.',
+  ],
+  'composition-failure-review': [
+    'The held game composition remains visibly present beneath the same veil and parchment while one plain-language failure sentence and one separate Tap to try again instruction make recovery unmistakable.',
+    'Full and reduced motion preserve identical failure and retry meaning through words and layout rather than animation or color alone, with zero technical error text or hidden recovery action.',
+  ],
   foundation: [
     'Before play begins, one illustrated title, one casual-clothes Violet, one owl, and one obvious 88px-or-larger envelope action remain readable without overlapping.',
   ],

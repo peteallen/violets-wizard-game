@@ -392,6 +392,28 @@ function petChoiceReviewFixture(description) {
 }
 
 registry
+  .register('boot-loading-review', createFixture(
+    'The dependency-free storybook surface while the production presentation is still loading.',
+    { chapter: 0, scene: 'boot-loading-review' },
+    createSave(),
+  ))
+  .register('boot-failure-review', createFixture(
+    'The dependency-free storybook failure surface with its explicit retry action.',
+    { chapter: 0, scene: 'boot-failure-review' },
+    createSave(),
+  ))
+  .register('composition-loading-review', createFixture(
+    'The production in-game composition overlay while a newly visible picture is preparing.',
+    { chapter: 1, scene: 'composition-loading-review' },
+    createSave(),
+    TITLE_CHARACTERS,
+  ))
+  .register('composition-failure-review', createFixture(
+    'The production in-game composition overlay after a visible picture fails, with its retry instruction.',
+    { chapter: 1, scene: 'composition-failure-review' },
+    createSave(),
+    TITLE_CHARACTERS,
+  ))
   .register('foundation', createFixture(
     'The painted storybook castle-and-lake title before Violet begins, with live Violet, owl, and new-player envelope layers.',
     { chapter: 0, scene: 'foundation' },

@@ -8,17 +8,17 @@ function still(path) {
 }
 
 const CLIPS = Object.freeze({
-  idle: still('default/ambient.png'),
-  'talk-a': still('default/talk-a.png'),
-  'talk-b': still('default/talk-b.png'),
+  idle: still('default/ambient.webp'),
+  'talk-a': still('default/talk-a.webp'),
+  'talk-b': still('default/talk-b.webp'),
   speaking: Object.freeze({
     fps: 4,
-    frames: Object.freeze(['default/talk-a.png', 'default/talk-b.png']),
+    frames: Object.freeze(['default/talk-a.webp', 'default/talk-b.webp']),
     reducedMotionClip: 'talk-a',
   }),
-  emerge: still('default/emerge.png'),
-  'listening-reward': still('default/listening-reward.png'),
-  delighted: still('default/delighted.png'),
+  emerge: still('default/emerge.webp'),
+  'listening-reward': still('default/listening-reward.webp'),
+  delighted: still('default/delighted.webp'),
 });
 
 const ALIASES = Object.freeze({
@@ -67,12 +67,12 @@ export const friendlyGhostCharacterDefinition = defineCharacter({
     portrait: { x: 179.2, y: 0, width: 537.6, height: 504 },
   },
   assets: characterImageAssets('friendly-ghost', [
-    'default/ambient.png',
-    'default/talk-a.png',
-    'default/talk-b.png',
-    'default/emerge.png',
-    'default/listening-reward.png',
-    'default/delighted.png',
+    'default/ambient.webp',
+    'default/talk-a.webp',
+    'default/talk-b.webp',
+    'default/emerge.webp',
+    'default/listening-reward.webp',
+    'default/delighted.webp',
   ]),
 });
 

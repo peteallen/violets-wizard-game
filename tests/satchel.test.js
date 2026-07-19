@@ -35,6 +35,9 @@ function gameStub() {
     runActions: vi.fn(),
   };
   game.sound = { playSfx: vi.fn(), speak: vi.fn() };
+  game.chapterRuntime = {
+    getChapterMap: (chapterId) => (chapterId === 'ch1' ? chapter1Map : null),
+  };
   game.updateStatus = vi.fn();
   game.uiRenderer = new UIRenderer({ characterRenderer: { draw: () => {} } });
   game.simTime = 0;
@@ -186,7 +189,7 @@ describe('satchel card album', () => {
       unlockedRooms: ['ch1.ollivanders'],
     };
     const originalState = structuredClone(state);
-    const presentation = game.uiRenderer.mapPresentation(state);
+    const presentation = game.uiRenderer.mapPresentation(state, 0, { map: chapter1Map });
     const location = presentation.hitTargets.find(({ id }) => id === 'map.ch1.ollivanders');
 
     game.handleOverlayTap(center(location.hitArea), state);
@@ -204,7 +207,7 @@ describe('satchel card album', () => {
       roomId: 'ch1.diagonStreet',
       unlockedRooms: ['ch1.ollivanders'],
     };
-    const presentation = game.uiRenderer.mapPresentation(state);
+    const presentation = game.uiRenderer.mapPresentation(state, 0, { map: chapter1Map });
     const controls = [
       UI_RECTS.satchelMapTab,
       UI_RECTS.satchelCardsTab,
@@ -257,7 +260,7 @@ describe('satchel card album', () => {
       roomId: 'ch1.diagonStreet',
       unlockedRooms: ['ch1.ollivanders'],
     };
-    const presentation = game.uiRenderer.mapPresentation(state);
+    const presentation = game.uiRenderer.mapPresentation(state, 0, { map: chapter1Map });
     const location = presentation.hitTargets.find(({ id }) => id === 'map.ch1.menagerie');
 
     expect(location.enabled).toBe(false);
@@ -326,6 +329,7 @@ describe('satchel card album', () => {
     game.simTime = 0;
     game.reducedMotion = false;
     game.world = world;
+    game.chapterRuntime = { getChapterMap: () => null };
     game.sound = {
       unlock: vi.fn(() => Promise.resolve()),
       playSfx: vi.fn(),
@@ -347,7 +351,7 @@ describe('satchel card album', () => {
 
     world.overlay = { surface: 'satchel', tab: 'map' };
     const staleMapState = world.snapshot();
-    const staleLocation = game.uiRenderer.mapPresentation(staleMapState)
+    const staleLocation = game.uiRenderer.mapPresentation(staleMapState, 0, { map: chapter1Map })
       .hitTargets.find(({ id }) => id === 'map.ch1.diagonStreet');
     const chapterBeforeTap = world.chapter.id;
     const roomBeforeTap = world.roomId;

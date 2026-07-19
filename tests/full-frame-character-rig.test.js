@@ -242,6 +242,28 @@ describe('full-frame animation resolution', () => {
 });
 
 describe('full-frame character loader and renderer opt-in', () => {
+  it('decodes only the currently visible sample during critical composition preparation', async () => {
+    const created = [];
+    const rig = new FullFrameCharacterRig(definition(), {
+      resolveFrame: (path) => path,
+      maxConcurrentLoads: 20,
+      imageFactory: (url) => {
+        const image = {
+          url, onload: null, onerror: null, naturalWidth: 100, naturalHeight: 160,
+        };
+        created.push(image);
+        return image;
+      },
+    });
+
+    const loading = rig.prepareVisibleFrame({ pose: 'walking' }, 0.6, 'world');
+    expect(created.map(({ url }) => url)).toEqual([
+      'assets/art/characters/test/casual/walk-pass-a.png',
+    ]);
+    created[0].onload();
+    await loading;
+  });
+
   it('loads only the active clip and idle baseline, then holds the prior frame across a clip change', async () => {
     const created = [];
     const rig = new FullFrameCharacterRig(definition(), {

@@ -1,13 +1,5 @@
-import {
-  cards,
-  cardsById,
-  contentRegistry,
-  getChapterMap,
-  resumeRecaps,
-} from './content/index.js';
-import { chapter1ResumeRecaps } from './content/chapters/ch1.js';
+import { cards, cardsById } from './content/cards.js';
 import { INPUT, PALETTE, WORLD } from './config.js';
-import { getAsset, resolveAsset } from './core/assetManifest.js';
 import { conditionMatches } from './core/conditions.js';
 import { cleanPetName, PetNameDialog } from './core/PetNameDialog.js';
 import { SaveTransferDialog } from './core/SaveTransferDialog.js';
@@ -43,13 +35,15 @@ import { Save, YEARBOOK_MAX_BYTES, createSave } from './systems/Save.js';
 import { World } from './world/World.js';
 
 const FIXED_HARNESS_TIME = '2000-01-01T00:00:00.000Z';
-const ROOM_TRANSITION_READY_TIMEOUT_MS = 2500;
-const LETTER_NARRATION_CLIPS = Object.freeze(
-  ['invitation', 'waiting'].map((nodeId) => {
-    const node = contentRegistry.ch1.dialogues['ch1.letter.read'].nodes[nodeId];
-    return Object.freeze({ voice: node.voice, text: node.text });
-  }),
-);
+function letterNarrationClips(chapter) {
+  const nodes = chapter?.dialogues?.['ch1.letter.read']?.nodes ?? {};
+  return Object.freeze(
+    ['invitation', 'waiting']
+      .map((nodeId) => nodes[nodeId])
+      .filter(Boolean)
+      .map((node) => Object.freeze({ voice: node.voice, text: node.text })),
+  );
+}
 
 function isChapterTwoPreview(world, state) {
   return Boolean(
@@ -58,11 +52,11 @@ function isChapterTwoPreview(world, state) {
   );
 }
 
-function activeChapterMap(world, state) {
-  return getChapterMap(
+function activeChapterMap(chapterRuntime, world, state) {
+  return chapterRuntime?.getChapterMap(
     world?.chapter?.id ?? state?.chapterId,
     state?.sceneId,
-  );
+  ) ?? null;
 }
 
 export class Game {
@@ -92,6 +86,7 @@ export class Game {
     this.lastTapPoint = { x: WORLD.width / 2, y: WORLD.height / 2 };
     this.nextTransitionEffect = null;
     this.deferredTransitionAudio = [];
+    this.deferredSetPieceEvents = [];
     this.lastRenderState = null;
     this.parentGateProgress = 0;
     this.replayMode = false;
@@ -100,6 +95,40 @@ export class Game {
     this.letterNarrationRequest = null;
     this.sessionGeneration = 0;
     this.sessionTransitioning = false;
+    this.deferCompositionMusic = false;
+    this.titleComposition = {
+      status: this.harness || options.startImmediately ? 'ready' : 'idle',
+      attempt: 0,
+      promise: null,
+      error: null,
+    };
+    this.sessionComposition = null;
+    this.setPieceComposition = null;
+    this.presentationFailure = null;
+    this.frameCharacterResults = [];
+    this.observedRendererLoadings = new WeakSet();
+    this.presentationReadinessGeneration = 0;
+
+    if (
+      !options.chapterRuntime
+      || typeof options.chapterRuntime.prepare !== 'function'
+      || typeof options.chapterRuntime.getChapter !== 'function'
+      || typeof options.chapterRuntime.getChapterMap !== 'function'
+      || !options.chapterRuntime.chapters
+    ) {
+      throw new TypeError('Game requires an injected chapter runtime registry.');
+    }
+    if (
+      !options.assetRegistry
+      || typeof options.assetRegistry.getAsset !== 'function'
+      || typeof options.assetRegistry.resolveAsset !== 'function'
+      || typeof options.assetRegistry.registerChapterPackage !== 'function'
+    ) {
+      throw new TypeError('Game requires an injected asset registry.');
+    }
+    this.chapterRuntime = options.chapterRuntime;
+    this.assetRegistry = options.assetRegistry;
+    const resolveAsset = (key) => this.assetRegistry.resolveAsset(key);
 
     const storage = options.storage ?? safeStorage();
     this.saveManager = options.saveManager ?? new Save({
@@ -167,6 +196,7 @@ export class Game {
       resolveMapVignetteAsset: (request) => this.presentationRegistry
         .resolveMapVignetteAsset(request),
       characterRenderer: this.characterRenderer,
+      reviewMap: options.reviewMap ?? null,
     });
     this.setPieceRenderer = new SetPieceRenderer({
       resolveAsset,
@@ -223,16 +253,23 @@ export class Game {
   start() {
     if (this.running || this.destroyed) return;
     this.running = true;
+    if (!this.harness && this.screen === 'title' && this.titleComposition.status !== 'ready') {
+      void this.prepareTitleComposition().catch(() => {});
+    }
     this.render();
     if (!this.harness) requestAnimationFrame(this.boundFrame);
   }
 
-  createWorld(save = this.saveData, { preserveSave = false } = {}) {
+  createWorld(save = this.saveData, {
+    preserveSave = false,
+    reveal = true,
+    deferMusic = false,
+  } = {}) {
     this.saveData = save;
     const preservedSave = preserveSave ? structuredClone(save) : null;
     let initializing = true;
     this.world = new World({
-      chapters: contentRegistry,
+      chapters: this.chapterRuntime.chapters,
       save,
       seed: save.worldSeed,
       clock: this.clock,
@@ -252,15 +289,21 @@ export class Game {
       this.world.quests.initialize();
     }
     this.world.setPieces.reducedMotion = this.reducedMotion;
-    this.screen = 'playing';
+    this.deferCompositionMusic = Boolean(deferMusic);
+    if (reveal) this.screen = 'playing';
     this.processWorldEvents();
-    this.updateMusic();
-    if (this.world.roomId === 'ch1.courtyard') void this.setPieceRenderer.preloadBrickWall();
-    void this.preloadCurrentRoomSetPieceVariants();
+    if (!deferMusic) this.updateMusic();
+    if (!deferMusic && this.world.roomId === 'ch1.courtyard') {
+      void Promise.resolve(this.setPieceRenderer.preloadBrickWall()).catch((error) => {
+        this.roomRenderer?.logger?.warn?.('The courtyard set-piece paintings could not be warmed.', error);
+      });
+    }
+    if (!deferMusic) void this.preloadCurrentRoomSetPieceVariants();
   }
 
   beginSessionTransition() {
     if (this.destroyed || this.sessionTransitioning) return null;
+    this.invalidateRendererPresentation();
     this.sessionTransitioning = true;
     this.sessionGeneration += 1;
     return this.sessionGeneration;
@@ -274,6 +317,96 @@ export class Game {
     if (generation === this.sessionGeneration) this.sessionTransitioning = false;
   }
 
+  isSetPieceCompositionBlocking() {
+    const composition = this.setPieceComposition;
+    if (!composition || composition.status === 'ready') return false;
+    const active = this.world?.setPieces?.active;
+    return Boolean(active && composition.active === active);
+  }
+
+  isCompositionLoading() {
+    if (this.screen === 'title') {
+      if (this.sessionComposition?.status === 'loading') return true;
+      if (this.titleComposition?.status === 'idle' || this.titleComposition?.status === 'loading') return true;
+    }
+    if (this.presentationFailure?.status === 'loading') return true;
+    return this.isSetPieceCompositionBlocking()
+      && this.setPieceComposition.status === 'loading';
+  }
+
+  hasRetryableCompositionFailure() {
+    return Boolean(
+      (this.screen === 'title' && this.sessionComposition?.status === 'failed')
+      || (this.screen === 'title' && this.titleComposition?.status === 'failed')
+      || this.roomTransition?.failed
+      || (this.isSetPieceCompositionBlocking() && this.setPieceComposition.status === 'failed')
+      || this.presentationFailure?.status === 'failed',
+    );
+  }
+
+  async retryComposition() {
+    if (this.screen === 'title' && this.sessionComposition?.status === 'failed') {
+      return this.startAdventure({ retry: true });
+    }
+    if (this.screen === 'title' && this.titleComposition?.status === 'failed') {
+      try {
+        await this.prepareTitleComposition({ retry: true });
+        return true;
+      } catch {
+        return false;
+      }
+    }
+    if (this.roomTransition?.failed) {
+      try {
+        await this.prepareRoomTransitionDestination(this.roomTransition, { retry: true });
+        return true;
+      } catch {
+        return false;
+      }
+    }
+    if (this.isSetPieceCompositionBlocking() && this.setPieceComposition.status === 'failed') {
+      try {
+        await this.prepareSetPieceComposition(this.world.setPieces.active, { retry: true });
+        return true;
+      } catch {
+        return false;
+      }
+    }
+    const failure = this.presentationFailure;
+    if (failure?.status === 'failed' && typeof failure.retry === 'function') {
+      const retrying = {
+        ...failure,
+        status: 'loading',
+        retrying: true,
+        generation: this.nextPresentationReadinessGeneration(),
+        sessionGeneration: this.sessionGeneration,
+        world: this.world,
+        error: null,
+        pending: new Set(),
+      };
+      this.presentationFailure = retrying;
+      this.cancelPointerInteraction();
+      this.updateStatus('Trying that picture again…');
+      this.render?.();
+      try {
+        await failure.retry();
+        if (!this.isCurrentRendererPresentation(retrying)) return false;
+        this.presentationFailure = null;
+        this.updateStatus(this.world?.dialoguePresentation?.text ?? this.world?.objective?.text ?? 'Continue Violet’s adventure.');
+        this.render?.();
+        return true;
+      } catch (error) {
+        if (!this.isCurrentRendererPresentation(retrying)) return false;
+        retrying.status = 'failed';
+        retrying.retrying = false;
+        retrying.error = error;
+        this.updateStatus('A picture could not finish loading. Tap to try again.');
+        this.render?.();
+      }
+    }
+    return false;
+  }
+
   async activateSessionCharacterScope({ chapterId, toTitle = false, source }) {
     if (toTitle) {
       if (this.titleCharacterDependencies.length === 0) {
@@ -284,27 +417,210 @@ export class Game {
     return this.characterScopes.activateChapter(chapterId, { source });
   }
 
-  async startAdventure() {
+  async activateChapterPresentation(chapterId) {
+    if (typeof this.presentationRegistry?.activateChapter !== 'function') return null;
+    return this.presentationRegistry.activateChapter(chapterId);
+  }
+
+  async prepareChapterRuntime(chapterId) {
+    const prepared = await this.chapterRuntime.prepare(chapterId);
+    for (const chapterPackage of prepared.packages) {
+      this.assetRegistry.registerChapterPackage(chapterPackage);
+    }
+    return prepared;
+  }
+
+  prepareTitleComposition({ retry = false } = {}) {
+    if (this.destroyed) return Promise.reject(new Error('The game has been destroyed.'));
+    if (this.harness) {
+      this.titleComposition.status = 'ready';
+      return Promise.resolve(Object.freeze({ status: 'ready', harness: true }));
+    }
+    const current = this.titleComposition;
+    if (!retry && current.status === 'ready') {
+      return Promise.resolve(Object.freeze({ status: 'ready' }));
+    }
+    if (!retry && current.status === 'loading' && current.promise) return current.promise;
+
+    const attempt = (current.attempt ?? 0) + 1;
+    current.status = 'loading';
+    current.attempt = attempt;
+    current.error = null;
+    this.updateStatus('Preparing Violet’s letter…');
+    this.render?.();
+
+    const pending = Promise.resolve().then(async () => {
+      if (typeof this.uiRenderer?.prepareTitle === 'function') {
+        await this.uiRenderer.prepareTitle({
+          time: this.simTime,
+          reducedMotion: this.reducedMotion,
+          retry,
+        });
+      }
+      if (this.destroyed || current.attempt !== attempt) return { status: 'superseded' };
+      current.status = 'ready';
+      current.error = null;
+      this.presentationFailure = null;
+      this.updateStatus(this.hasStoredSave
+        ? 'Continue Violet’s saved adventure.'
+        : 'Violet’s letter is waiting. Open the letter to begin.');
+      this.render?.();
+      return Object.freeze({ status: 'ready' });
+    }).catch((error) => {
+      if (!this.destroyed && current.attempt === attempt) {
+        current.status = 'failed';
+        current.error = error;
+        this.updateStatus('Violet’s letter could not finish loading. Tap to try again.');
+        this.render?.();
+      }
+      throw error;
+    });
+    current.promise = pending;
+    return pending;
+  }
+
+  async prepareVisibleActorFrames(state = this.world?.snapshot?.(), {
+    retry = false,
+    extraRequests = [],
+  } = {}) {
+    if (!state || typeof this.characterRenderer?.prepare !== 'function') return [];
+    const cameraX = Number.isFinite(state.cameraX) ? state.cameraX : 0;
+    const requests = (state.actors ?? [])
+      .filter((actor) => {
+        const x = actor?.renderState?.x;
+        return Number.isFinite(x) && x >= cameraX - 360 && x <= cameraX + WORLD.width + 360;
+      })
+      .map((actor) => ({
+        ...actor.renderState,
+        characterId: actor.characterId,
+        surface: 'world',
+        x: actor.renderState.x - cameraX,
+        reducedMotion: this.reducedMotion,
+        lightSide: state.keyLight,
+        loadPriority: 'visible',
+      }));
+
+    if (state.dialogue?.type !== 'choice' && state.dialogue?.portraitCharacterId) {
+      const scene = dialogueSceneContext(state);
+      requests.push({
+        ...scene.portraitRenderState,
+        characterId: state.dialogue.portraitCharacterId,
+        surface: 'portrait',
+        pose: state.dialogue.portraitPose === undefined || state.dialogue.portraitPose === 'talk'
+          ? 'speaking'
+          : state.dialogue.portraitPose,
+        reducedMotion: this.reducedMotion,
+        lightSide: scene.lightSide,
+        loadPriority: 'visible',
+      });
+    }
+    if (state.dialogue?.type === 'choice') {
+      for (const choice of state.dialogue.choices ?? []) {
+        if (!choice.characterId) continue;
+        requests.push({
+          characterId: choice.characterId,
+          surface: 'world',
+          ...(choice.characterAppearance ? { appearance: choice.characterAppearance } : {}),
+          reducedMotion: this.reducedMotion,
+          loadPriority: 'visible',
+        });
+      }
+    }
+    requests.push(...extraRequests.map((request) => ({
+      ...request,
+      reducedMotion: this.reducedMotion,
+      loadPriority: 'visible',
+    })));
+
+    await Promise.all(requests.map((request) => this.characterRenderer.prepare(
+      request,
+      this.simTime + (request.timeOffset ?? 0),
+      { retry },
+    )));
+    return requests.map(({ characterId }) => characterId);
+  }
+
+  async prepareCurrentComposition({ retry = false, extraCharacterRequests = [] } = {}) {
+    if (!this.world) return Object.freeze({ status: 'ready', empty: true });
+    const chapterId = this.world.chapter?.id;
+    if (chapterId) await this.activateChapterPresentation(chapterId);
+    const state = this.world.snapshot();
+    const scale = (this.dpr ?? 1) * (this.scale ?? 1);
+    const roomPreparation = typeof this.roomRenderer?.prepareRoomRequired === 'function'
+      ? this.roomRenderer.prepareRoomRequired(this.world.room, state, { scale, retry })
+      : this.roomRenderer?.preloadRoom?.(this.world.room, state, { scale });
+    await Promise.all([
+      roomPreparation ?? Promise.resolve(null),
+      this.prepareVisibleActorFrames(state, { retry, extraRequests: extraCharacterRequests }),
+    ]);
+    return Object.freeze({ status: 'ready', chapterId, roomId: state.roomId });
+  }
+
+  async startAdventure({ retry = false } = {}) {
+    if (this.titleComposition && this.titleComposition.status !== 'ready' && !retry) return false;
+    const reuseWorld = Boolean(retry && this.world && this.screen === 'title');
     const generation = this.beginSessionTransition();
-    if (generation === null) return;
+    if (generation === null) return false;
+    const composition = {
+      status: 'loading',
+      generation,
+      error: null,
+      retry,
+    };
+    this.sessionComposition = composition;
+    this.updateStatus(retry ? 'Trying Violet’s adventure again…' : 'Opening Violet’s adventure…');
+    this.render?.();
     try {
       await this.sound.unlock();
       if (!this.isCurrentSessionTransition(generation)) return;
-      await this.characterScopes.activateChapter(this.saveData.resume.chapter, {
-        source: 'start-adventure',
-      });
+      const chapterId = this.saveData.resume.chapter;
+      await Promise.all([
+        this.prepareChapterRuntime(chapterId),
+        this.activateChapterPresentation(chapterId),
+        this.characterScopes.activateChapter(chapterId, {
+          source: retry ? 'retry-adventure' : 'start-adventure',
+        }),
+      ]);
       if (!this.isCurrentSessionTransition(generation)) return;
-      const recap = this.hasStoredSave ? selectResumeRecap(this.saveData) : null;
-      this.createWorld(this.saveData);
+      const recap = this.hasStoredSave
+        ? selectResumeRecap(
+            this.saveData,
+            this.chapterRuntime.chapters,
+            this.chapterRuntime.resumeRecaps,
+          )
+        : null;
+      if (!reuseWorld) {
+        this.createWorld(this.saveData, { reveal: false, deferMusic: true });
+      }
+      this.updateStatus(retry ? 'Trying Violet’s adventure again…' : 'Opening Violet’s adventure…');
+      await this.prepareCurrentComposition({
+        retry,
+        extraCharacterRequests: recap
+          ? [{
+            characterId: 'character.narrator',
+            surface: 'portrait',
+            pose: 'speaking',
+          }]
+          : [],
+      });
+      if (!this.isCurrentSessionTransition(generation)) return false;
       try {
         await this.characterScopes.releaseTitle();
       } catch (error) {
         this.roomRenderer?.logger?.warn?.('The title character scope could not be released.', error);
       }
       if (!this.isCurrentSessionTransition(generation)) return;
+      this.screen = 'playing';
+      this.deferCompositionMusic = false;
+      composition.status = 'ready';
+      composition.error = null;
+      this.render?.();
+      this.updateMusic();
+      this.flushDeferredCompositionAudio();
+      void this.preloadCurrentRoomSetPieceVariants();
       if (recap) {
         this.beginResumeRecap(recap);
-        return;
+        return true;
       }
       this.particles.emit('sparkle', WORLD.width / 2, WORLD.height / 2, 28);
       this.updateStatus(this.hasStoredSave
@@ -312,12 +628,16 @@ export class Game {
           ?? this.world?.objective?.text
           ?? 'Continue Violet’s adventure.'
         : 'Violet’s letter is waiting by the window.');
+      return true;
     } catch (error) {
       if (this.isCurrentSessionTransition(generation)) {
-        this.roomRenderer?.logger?.warn?.('The adventure character scope could not be activated.', error);
-        this.updateStatus('Violet’s adventure could not open. Please try again.');
-        this.render();
+        composition.status = 'failed';
+        composition.error = error;
+        this.roomRenderer?.logger?.warn?.('The adventure composition could not be prepared.', error);
+        this.updateStatus('Violet’s adventure could not open. Tap to try again.');
+        this.render?.();
       }
+      return false;
     } finally {
       this.finishSessionTransition(generation);
     }
@@ -350,7 +670,16 @@ export class Game {
     }
     const transitionWasActive = Boolean(this.roomTransition);
     this.updateRoomTransition(dt);
-    if (!transitionWasActive && !this.sessionTransitioning && this.screen === 'playing' && this.world && !this.resumeRecap) {
+    if (
+      !transitionWasActive
+      && !this.sessionTransitioning
+      && !this.isSetPieceCompositionBlocking()
+      && this.presentationFailure?.status !== 'loading'
+      && this.presentationFailure?.status !== 'failed'
+      && this.screen === 'playing'
+      && this.world
+      && !this.resumeRecap
+    ) {
       this.world.update(dt);
       this.processWorldEvents();
     }
@@ -381,7 +710,7 @@ export class Game {
     const renderScale = this.dpr * this.scale;
     if (transition && Math.abs((transition.preparedScale ?? renderScale) - renderScale) > 1e-6) {
       this.roomRenderer?.clear?.();
-      this.prepareRoomTransitionDestination(transition);
+      void this.prepareRoomTransitionDestination(transition).catch(() => {});
     }
     this.render();
   }
@@ -395,7 +724,12 @@ export class Game {
   }
 
   onPointerDown(event) {
-    if (this.pointer !== null || this.roomTransition || this.sessionTransitioning) return;
+    if (
+      this.pointer !== null
+      || this.sessionTransitioning
+      || (this.roomTransition && !this.roomTransition.failed)
+      || this.isCompositionLoading()
+    ) return;
     this.canvas.setPointerCapture?.(event.pointerId);
     const point = this.toWorld(event);
     const holdsParentKeyhole = this.isParentKeyholeAvailable()
@@ -481,18 +815,26 @@ export class Game {
   }
 
   handleTap(point) {
+    if (this.isCompositionLoading()) return;
     this.lastTapPoint = { x: point.x, y: point.y };
     if (this.shouldShowDebugReset() && pointInUiRect(point, UI_RECTS.debugReset)) {
       this.resetGame();
       return;
     }
     this.sound.unlock().catch(() => {});
+    if (this.hasRetryableCompositionFailure()) {
+      this.sound.playSfx?.('sfx/ui/tap', 'tap');
+      void this.retryComposition();
+      return;
+    }
     if (this.replayMode && this.shouldShowReplayExit() && pointInUiRect(point, UI_RECTS.replayExit)) {
       this.exitReplay();
       return;
     }
     if (this.screen === 'title') {
-      this.startAdventure();
+      if (!this.titleComposition || this.titleComposition.status === 'ready') {
+        void this.startAdventure();
+      }
       return;
     }
     if (this.resumeRecap) {
@@ -608,7 +950,7 @@ export class Game {
       return;
     }
     if (state.hasSatchel && pointInUiRect(point, UI_RECTS.satchel)) {
-      const map = activeChapterMap(this.world, state);
+      const map = activeChapterMap(this.chapterRuntime, this.world, state);
       this.world.overlay = {
         surface: 'satchel',
         tab: map ? 'map' : 'cards',
@@ -789,7 +1131,8 @@ export class Game {
 
   playLetterNarrationClip(request, index) {
     if (!this.isLetterNarrationCurrent(request)) return;
-    const clip = LETTER_NARRATION_CLIPS[index];
+    const clips = letterNarrationClips(request.world?.chapter);
+    const clip = clips[index];
     if (!clip) {
       this.letterNarrationRequest = null;
       return;
@@ -797,7 +1140,7 @@ export class Game {
     this.sound.speak(clip.voice, clip.text, {
       onEnded: () => {
         if (!this.isLetterNarrationCurrent(request)) return;
-        if (index + 1 >= LETTER_NARRATION_CLIPS.length) {
+        if (index + 1 >= clips.length) {
           this.letterNarrationRequest = null;
           return;
         }
@@ -902,7 +1245,7 @@ export class Game {
       return;
     }
     if (state.overlay.surface === 'satchel') {
-      const map = activeChapterMap(this.world, state);
+      const map = activeChapterMap(this.chapterRuntime, this.world, state);
       const mapAvailable = Boolean(map);
       if (pointInUiRect(point, UI_RECTS.satchelStartOver)) {
         this.sound.playSfx('sfx/ui/parchment', 'chime');
@@ -1050,6 +1393,7 @@ export class Game {
         else {
           const chapterId = latestReplayChapterId(
             this.replayMode && this.canonicalSave ? this.canonicalSave : this.saveData,
+            this.chapterRuntime.descriptors,
           );
           if (chapterId) this.beginReplay(chapterId);
           else this.setParentNotice('A finished chapter unlocks replay.', 'error');
@@ -1167,6 +1511,13 @@ export class Game {
   }
 
   handleWorldEvent(event) {
+    if (
+      this.isSetPieceCompositionBlocking()
+      && ['audio.command', 'feedback.command'].includes(event.type)
+    ) {
+      this.deferredSetPieceEvents.push(event);
+      return;
+    }
     switch (event.type) {
       case 'dialogue.lineChanged': {
         const line = this.world.dialoguePresentation;
@@ -1245,8 +1596,7 @@ export class Game {
         break;
       }
       case 'setPiece.started':
-        void this.preloadSetPieceAssets(this.world.setPieces.active);
-        void this.preloadSetPieceRoomVariant(this.world.setPieces.active);
+        void this.prepareSetPieceComposition(this.world.setPieces.active).catch(() => {});
         if (event.payload.id.includes('previewTicket')) {
           this.playOrDeferTransitionAudio({
             type: 'sfx',
@@ -1255,9 +1605,18 @@ export class Game {
           });
         }
         break;
+      case 'setPiece.completed': {
+        const composition = this.setPieceComposition;
+        if (composition) {
+          this.releaseCompositionSource(composition.source);
+          this.setPieceRenderer.releaseImages?.(composition.assetKeys ?? []);
+          this.setPieceComposition = null;
+        }
+        this.deferredSetPieceEvents = [];
+        break;
+      }
       case 'audio.command':
-        if (event.payload.command === 'music') this.handleAudioCommand(event.payload);
-        else this.playOrDeferTransitionAudio({ type: 'command', command: { ...event.payload } });
+        this.playOrDeferTransitionAudio({ type: 'command', command: { ...event.payload } });
         break;
       case 'feedback.command':
         this.particles.emit('sparkle', event.payload.x, event.payload.y, 5, { size: 4 });
@@ -1277,8 +1636,12 @@ export class Game {
       case 'room.entered':
         this.particles.clear();
         this.updateMusic();
-        if (event.payload.room === 'ch1.courtyard') void this.setPieceRenderer.preloadBrickWall();
-        void this.preloadCurrentRoomSetPieceVariants();
+        if (!this.deferCompositionMusic && event.payload.room === 'ch1.courtyard') {
+          void Promise.resolve(this.setPieceRenderer.preloadBrickWall()).catch((error) => {
+            this.roomRenderer?.logger?.warn?.('The courtyard set-piece paintings could not be warmed.', error);
+          });
+        }
+        if (!this.deferCompositionMusic) void this.preloadCurrentRoomSetPieceVariants();
         break;
       case 'ui.openRequested':
         if (event.payload.surface === 'chapter-replay') this.beginReplay();
@@ -1287,6 +1650,9 @@ export class Game {
         }
         break;
       case 'chapter.completed':
+        void this.prepareChapterRuntime(event.payload.nextChapter).catch((error) => {
+          this.roomRenderer?.logger?.warn?.('The following chapter could not be prepared.', error);
+        });
         if (this.world.chapter.id !== event.payload.nextChapter) {
           this.world.adoptPersistedResume(event.payload.nextChapter);
           this.processWorldEvents();
@@ -1352,7 +1718,7 @@ export class Game {
   }
 
   updateMusic() {
-    if (!this.world) return;
+    if (!this.world || this.deferCompositionMusic || (this.roomTransition && !this.roomTransition.ready)) return;
     const key = (this.presentationRegistry ?? productionPresentationRegistry).resolveRoomMusic({
       chapterId: this.world.chapter?.id,
       roomId: this.world.roomId,
@@ -1362,47 +1728,116 @@ export class Game {
   }
 
   preloadCurrentRoomSetPieceVariants() {
-    if (!this.world || this.roomTransition) return Promise.resolve([]);
+    if (!this.world || this.roomTransition || this.deferCompositionMusic) return Promise.resolve([]);
     const variants = [...new Set(Object.values(this.world.chapter?.setPieces ?? {})
       .map((descriptor) => descriptor.params?.preloadRoomVariant)
       .filter((variant) => roomHasVariant(this.world.room, variant)))];
-    return Promise.all(variants.map((variant) => this.preloadRoomVariant(variant)));
+    return Promise.all(variants.map((variant) => this.preloadRoomVariant(variant).catch((error) => {
+      this.roomRenderer?.logger?.warn?.(`Set-piece room variant ${variant} could not be warmed.`, error);
+      return null;
+    })));
   }
 
-  preloadSetPieceAssets(active) {
-    const keys = [...new Set([
+  preloadSetPieceAssets(active, { retry = false } = {}) {
+    const keys = this.setPieceImageKeys(active);
+    if (typeof this.setPieceRenderer?.prepareImages === 'function') {
+      return this.setPieceRenderer.prepareImages(keys, { retry });
+    }
+    return Promise.all(keys.map((key) => this.setPieceRenderer.loadImage(key, { retry })));
+  }
+
+  setPieceImageKeys(active) {
+    return [...new Set([
       ...(active?.descriptor?.assets ?? []),
       ...(active?.logicalDescriptor?.assets ?? []),
-    ])].filter((key) => getAsset(key)?.kind === 'image');
-    return Promise.all(keys.map((key) => this.setPieceRenderer.loadImage(key)));
+    ])].filter((key) => this.assetRegistry.getAsset(key)?.kind === 'image');
   }
 
-  preloadSetPieceRoomVariant(active) {
+  preloadSetPieceRoomVariant(active, { retry = false } = {}) {
     const variant = setPieceParam(active, 'preloadRoomVariant');
-    if (this.roomTransition || !roomHasVariant(this.world?.room, variant)) {
+    if (!roomHasVariant(this.world?.room, variant)) {
       return Promise.resolve(null);
     }
-    return this.preloadRoomVariant(variant);
+    return this.preloadRoomVariant(variant, { required: true, retry });
   }
 
-  preloadRoomVariant(variant) {
+  preloadRoomVariant(variant, { required = false, retry = false } = {}) {
     if (!this.world || typeof this.roomRenderer?.preloadRoom !== 'function') {
       return Promise.resolve(null);
     }
     const state = { ...this.world.snapshot(), roomVariant: variant };
     const scale = (this.dpr ?? 1) * (this.scale ?? 1);
-    return Promise.resolve()
-      .then(() => this.roomRenderer.preloadRoom(this.world.room, state, { scale }))
-      .catch((error) => {
-        this.roomRenderer?.logger?.warn?.(
-          `Set-piece destination room variant ${variant} could not be prepared.`,
-          error,
-        );
-        return null;
-      });
+    return Promise.resolve().then(() => {
+      if (required && typeof this.roomRenderer.prepareRoomRequired === 'function') {
+        return this.roomRenderer.prepareRoomRequired(this.world.room, state, { scale, retry });
+      }
+      return this.roomRenderer.preloadRoom(this.world.room, state, { scale });
+    });
+  }
+
+  prepareSetPieceComposition(active, { retry = false } = {}) {
+    if (!active || active !== this.world?.setPieces?.active) return Promise.resolve(null);
+    const current = this.setPieceComposition;
+    if (!retry && current?.active === active && current.status === 'loading') return current.promise;
+    if (!retry && current?.active === active && current.status === 'ready') return Promise.resolve(active);
+
+    let source = null;
+    if (retry && current?.active === active) source = current.source;
+    else {
+      if (current?.source) this.releaseCompositionSource(current.source);
+      if (!this.roomTransition) source = this.captureRoomTransitionSource();
+    }
+    const attempt = (current?.active === active ? current.attempt : 0) + 1;
+    const composition = {
+      active,
+      status: 'loading',
+      attempt,
+      source,
+      assetKeys: this.setPieceImageKeys(active),
+      error: null,
+      promise: null,
+    };
+    this.setPieceComposition = composition;
+    this.updateStatus(retry ? 'Trying that scene again…' : 'Preparing the next magical moment…');
+
+    const pending = Promise.all([
+      this.preloadSetPieceAssets(active, { retry }),
+      this.preloadSetPieceRoomVariant(active, { retry }),
+      this.prepareVisibleActorFrames(this.world.snapshot(), { retry }),
+    ]).then(() => {
+      if (this.setPieceComposition !== composition || this.world?.setPieces?.active !== active) return null;
+      composition.status = 'ready';
+      composition.error = null;
+      this.releaseCompositionSource(composition.source);
+      composition.source = null;
+      const deferred = this.deferredSetPieceEvents;
+      this.deferredSetPieceEvents = [];
+      for (const event of deferred) this.handleWorldEvent(event);
+      this.flushDeferredCompositionAudio();
+      this.render?.();
+      return active;
+    }).catch((error) => {
+      if (this.setPieceComposition === composition && this.world?.setPieces?.active === active) {
+        composition.status = 'failed';
+        composition.error = error;
+        this.roomRenderer?.logger?.warn?.('Set-piece composition failed before its timeline became visible.', error);
+        this.updateStatus('This magical moment could not finish loading. Tap to try again.');
+        this.render?.();
+      }
+      throw error;
+    });
+    composition.promise = pending;
+    return pending;
+  }
+
+  releaseCompositionSource(source) {
+    if (!source) return;
+    source.width = 1;
+    source.height = 1;
   }
 
   beginRoomTransition(effect = 'ink') {
+    this.invalidateRendererPresentation();
     this.releaseRoomTransition();
     if (effect === 'none') return false;
     this.cancelPointerInteraction();
@@ -1423,7 +1858,7 @@ export class Game {
         preparedScale: null,
       };
       this.roomTransition = transition;
-      this.prepareRoomTransitionDestination(transition);
+      void this.prepareRoomTransitionDestination(transition).catch(() => {});
       return false;
     }
     const transition = {
@@ -1439,70 +1874,60 @@ export class Game {
       preparedScale: null,
     };
     this.roomTransition = transition;
-    this.prepareRoomTransitionDestination(transition);
+    void this.prepareRoomTransitionDestination(transition).catch(() => {});
     return true;
   }
 
-  prepareRoomTransitionDestination(transition = this.roomTransition) {
+  prepareRoomTransitionDestination(transition = this.roomTransition, { retry = false } = {}) {
     if (!transition) return Promise.resolve(null);
     this.cancelRoomTransitionReadiness(transition);
     const attempt = (transition.readinessAttempt ?? 0) + 1;
     transition.readinessAttempt = attempt;
     transition.ready = false;
+    transition.failed = false;
+    transition.error = null;
     transition.elapsed = 0;
     transition.preparedScale = this.dpr * this.scale;
-    const characterPreparation = Promise.resolve()
-      .then(() => this.world
-        ? this.characterScopes.activateChapter(this.world.chapter.id, {
-          source: 'room-transition',
+    const prepared = Promise.resolve().then(async () => {
+      if (!this.world) return { result: null, cancelled: false };
+      await Promise.all([
+        this.activateChapterPresentation(this.world.chapter.id),
+        this.characterScopes.activateChapter(this.world.chapter.id, {
+          source: retry ? 'room-transition-retry' : 'room-transition',
           roomId: this.world.roomId,
-        })
-        : [])
-      .catch((error) => {
-        this.roomRenderer?.logger?.warn?.('Destination character preparation failed; revealing the safe fallback.', error);
-        return [];
-      });
-    const roomPreparation = Promise.resolve()
-      .then(() => {
-        if (!this.world || typeof this.roomRenderer?.preloadRoom !== 'function') return null;
-        return this.roomRenderer.preloadRoom(
-          this.world.room,
-          this.world.snapshot(),
-          { scale: this.dpr * this.scale },
-        );
-      })
-      .catch((error) => {
-        this.roomRenderer?.logger?.warn?.('Destination room preparation failed; revealing the safe fallback.', error);
-        return null;
-      });
-    const prepared = Promise.all([roomPreparation, characterPreparation])
-      .then(([result]) => ({ result, timedOut: false, cancelled: false }));
-    let readinessTimer = null;
-    const deadline = new Promise((resolve) => {
-      readinessTimer = setTimeout(() => {
-        if (transition.readinessTimer === readinessTimer) transition.readinessTimer = null;
-        resolve({ result: null, timedOut: true, cancelled: false });
-      }, ROOM_TRANSITION_READY_TIMEOUT_MS);
-      transition.readinessTimer = readinessTimer;
+        }),
+      ]);
+      const result = await this.prepareCurrentComposition({ retry });
+      return { result, cancelled: false };
     });
     let cancelReadiness = null;
     const cancellation = new Promise((resolve) => {
-      cancelReadiness = () => resolve({ result: null, timedOut: false, cancelled: true });
+      cancelReadiness = () => resolve({ result: null, cancelled: true });
       transition.cancelReadiness = cancelReadiness;
     });
 
-    transition.readiness = Promise.race([prepared, deadline, cancellation]).then((outcome) => {
-      if (readinessTimer !== null) clearTimeout(readinessTimer);
-      if (transition.readinessTimer === readinessTimer) transition.readinessTimer = null;
+    transition.readiness = Promise.race([prepared, cancellation]).then((outcome) => {
       if (transition.cancelReadiness === cancelReadiness) transition.cancelReadiness = null;
       if (outcome.cancelled) return null;
       if (this.roomTransition === transition && transition.readinessAttempt === attempt) {
-        if (outcome.timedOut) {
-          this.roomRenderer?.logger?.warn?.('Destination room or character preparation timed out; revealing the procedural fallback.');
-        }
         transition.ready = true;
+        transition.failed = false;
+        transition.error = null;
+        this.updateStatus(this.world?.dialoguePresentation?.text ?? this.world?.objective?.text ?? 'Continue Violet’s adventure.');
+        this.render?.();
       }
       return outcome.result;
+    }).catch((error) => {
+      if (transition.cancelReadiness === cancelReadiness) transition.cancelReadiness = null;
+      if (this.roomTransition === transition && transition.readinessAttempt === attempt) {
+        transition.ready = false;
+        transition.failed = true;
+        transition.error = error;
+        this.roomRenderer?.logger?.warn?.('Destination composition failed; keeping the outgoing room visible.', error);
+        this.updateStatus('The next room could not finish loading. Tap to try again.');
+        this.render?.();
+      }
+      throw error;
     });
     return transition.readiness;
   }
@@ -1628,16 +2053,34 @@ export class Game {
     const deferred = [...this.deferredTransitionAudio];
     this.releaseRoomTransition();
     if (this.destroyed) return;
+    this.updateMusic();
     void this.preloadCurrentRoomSetPieceVariants();
     for (const entry of deferred) this.playTransitionAudio(entry);
   }
 
   playOrDeferTransitionAudio(entry) {
-    if (this.roomTransition) {
+    if (
+      this.roomTransition
+      || this.sessionComposition?.status === 'loading'
+      || (this.isSetPieceCompositionBlocking() && this.setPieceComposition.status !== 'ready')
+    ) {
+      this.deferredTransitionAudio ??= [];
       this.deferredTransitionAudio.push(entry);
       return false;
     }
     this.playTransitionAudio(entry);
+    return true;
+  }
+
+  flushDeferredCompositionAudio() {
+    if (
+      this.roomTransition
+      || this.sessionComposition?.status === 'loading'
+      || (this.isSetPieceCompositionBlocking() && this.setPieceComposition.status !== 'ready')
+    ) return false;
+    const deferred = this.deferredTransitionAudio ?? [];
+    this.deferredTransitionAudio = [];
+    for (const entry of deferred) this.playTransitionAudio(entry);
     return true;
   }
 
@@ -1767,11 +2210,16 @@ export class Game {
     if (generation === null) return null;
     const nextSave = structuredClone(save);
     try {
-      await this.activateSessionCharacterScope({
-        chapterId: nextSave.resume.chapter,
-        toTitle,
-        source: toTitle ? 'return-to-title' : 'adopt-save',
-      });
+      await Promise.all([
+        toTitle
+          ? Promise.resolve(null)
+          : this.prepareChapterRuntime(nextSave.resume.chapter),
+        this.activateSessionCharacterScope({
+          chapterId: nextSave.resume.chapter,
+          toTitle,
+          source: toTitle ? 'return-to-title' : 'adopt-save',
+        }),
+      ]);
       if (!this.isCurrentSessionTransition(generation)) return null;
 
       this.petNameDialog?.close?.(null, 'game-changed');
@@ -1891,20 +2339,35 @@ export class Game {
 
   async beginReplay(chapterId = null) {
     if (this.replayMode) return { ok: false, status: 'already-replaying' };
-    const requestedChapterId = chapterId ?? latestReplayChapterId(this.saveData);
-    const chapter = requestedChapterId ? contentRegistry[requestedChapterId] : null;
-    if (!chapter || !this.saveData.progress.completedChapters.includes(requestedChapterId)) {
+    const requestedChapterId = chapterId ?? latestReplayChapterId(
+      this.saveData,
+      this.chapterRuntime.descriptors,
+    );
+    const descriptor = requestedChapterId
+      ? this.chapterRuntime.getDescriptor(requestedChapterId)
+      : null;
+    if (!descriptor || !this.saveData.progress.completedChapters.includes(requestedChapterId)) {
       return { ok: false, status: 'chapter-locked' };
     }
     const generation = this.beginSessionTransition();
     if (generation === null) return { ok: false, status: 'session-transitioning' };
     const saved = this.saveManager.write(this.saveData);
     const canonicalSave = structuredClone(saved.ok ? saved.save : this.saveData);
-    const replay = createReplaySave(canonicalSave, chapter, this.clock());
-    const chapterLabel = chapterReplayLabel(chapter);
+    const chapterLabel = chapterReplayLabel(descriptor);
     try {
-      await this.activateSessionCharacterScope({ chapterId: requestedChapterId, source: 'chapter-replay' });
+      await Promise.all([
+        this.prepareChapterRuntime(requestedChapterId),
+        this.activateSessionCharacterScope({ chapterId: requestedChapterId, source: 'chapter-replay' }),
+      ]);
       if (!this.isCurrentSessionTransition(generation)) return { ok: false, status: 'superseded' };
+      const chapter = this.chapterRuntime.getChapter(requestedChapterId);
+      if (!chapter) throw new Error(`Chapter ${requestedChapterId} did not load for replay.`);
+      const replay = createReplaySave(
+        canonicalSave,
+        chapter,
+        this.clock(),
+        this.chapterRuntime.descriptors,
+      );
       this.canonicalSave = canonicalSave;
       this.replayMode = true;
       this.createWorld(replay);
@@ -1930,10 +2393,13 @@ export class Game {
     let canonical = structuredClone(this.canonicalSave);
     const foundNewKeepsake = mergeReplayCollections(canonical, this.saveData);
     try {
-      await this.activateSessionCharacterScope({
-        chapterId: canonical.resume.chapter,
-        source: 'exit-replay',
-      });
+      await Promise.all([
+        this.prepareChapterRuntime(canonical.resume.chapter),
+        this.activateSessionCharacterScope({
+          chapterId: canonical.resume.chapter,
+          source: 'exit-replay',
+        }),
+      ]);
       if (!this.isCurrentSessionTransition(generation)) return { ok: false, status: 'superseded' };
       this.replayMode = false;
       this.canonicalSave = null;
@@ -1963,6 +2429,7 @@ export class Game {
 
   render() {
     if (this.destroyed || !this.context) return;
+    this.frameCharacterResults = [];
     const context = this.context;
     context.setTransform(1, 0, 0, 1, 0, 0);
     context.fillStyle = PALETTE.ink;
@@ -1984,7 +2451,175 @@ export class Game {
         this.uiRenderer.drawTitle(ctx, this.simTime, this.hasStoredSave, this.reducedMotion);
       } else this.renderWorld(ctx);
       if (this.shouldShowDebugReset()) this.uiRenderer.drawDebugReset(ctx);
+      this.observeRendererResults([
+        ...this.frameCharacterResults,
+        ...(this.uiRenderer.consumeCharacterResults?.() ?? []),
+        ...(this.setPieceRenderer.consumeCharacterResults?.() ?? []),
+      ]);
+      const composition = this.visibleCompositionStatus();
+      if (composition) this.uiRenderer.drawCompositionStatus(ctx, composition);
     });
+  }
+
+  visibleCompositionStatus() {
+    if (this.screen === 'title') {
+      if (this.sessionComposition?.status === 'failed') {
+        return { status: 'failed', message: 'Violet’s adventure could not open.' };
+      }
+      if (this.sessionComposition?.status === 'loading') {
+        return { status: 'loading', message: 'Opening Violet’s adventure…' };
+      }
+      if (this.titleComposition?.status === 'failed') {
+        return { status: 'failed', message: 'Violet’s letter could not finish loading.' };
+      }
+      if (this.titleComposition?.status !== 'ready') {
+        return { status: 'loading', message: 'Preparing Violet’s letter…' };
+      }
+    }
+    if (this.roomTransition?.failed) {
+      return { status: 'failed', message: 'The next room could not finish loading.' };
+    }
+    if (this.isSetPieceCompositionBlocking()) {
+      return this.setPieceComposition.status === 'failed'
+        ? { status: 'failed', message: 'This magical moment could not finish loading.' }
+        : { status: 'loading', message: 'Preparing the next magical moment…' };
+    }
+    if (this.presentationFailure?.status === 'failed') {
+      return { status: 'failed', message: 'A picture could not finish loading.' };
+    }
+    if (this.presentationFailure?.status === 'loading') {
+      return {
+        status: 'loading',
+        message: this.presentationFailure.retrying
+          ? 'Trying that picture again…'
+          : 'Preparing that picture…',
+      };
+    }
+    return null;
+  }
+
+  nextPresentationReadinessGeneration() {
+    this.presentationReadinessGeneration = (this.presentationReadinessGeneration ?? 0) + 1;
+    return this.presentationReadinessGeneration;
+  }
+
+  invalidateRendererPresentation() {
+    this.nextPresentationReadinessGeneration();
+    if (this.presentationFailure?.kind === 'renderer') this.presentationFailure = null;
+  }
+
+  isCurrentRendererPresentation(presentation) {
+    return Boolean(
+      presentation
+      && !this.destroyed
+      && this.presentationFailure === presentation
+      && this.presentationReadinessGeneration === presentation.generation
+      && this.sessionGeneration === presentation.sessionGeneration
+      && this.world === presentation.world,
+    );
+  }
+
+  canObserveRendererPresentation() {
+    return Boolean(
+      !this.destroyed
+      && !this.sessionTransitioning
+      && !this.roomTransition
+      && !this.isSetPieceCompositionBlocking()
+      && this.screen === 'playing'
+      && this.world,
+    );
+  }
+
+  rendererResultRetry(result) {
+    return result.retry
+      ?? (() => this.prepareVisibleActorFrames(this.world?.snapshot?.(), { retry: true }));
+  }
+
+  failRendererPresentation(result) {
+    const presentation = {
+      kind: 'renderer',
+      status: 'failed',
+      retrying: false,
+      generation: this.nextPresentationReadinessGeneration(),
+      sessionGeneration: this.sessionGeneration,
+      world: this.world,
+      pending: new Set(),
+      error: result.error ?? new Error('A character frame failed to render.'),
+      retry: this.rendererResultRetry(result),
+    };
+    this.presentationFailure = presentation;
+    this.cancelPointerInteraction();
+    this.updateStatus('A picture could not finish loading. Tap to try again.');
+    return presentation;
+  }
+
+  settleRendererPresentation(presentation, ticket, error = null) {
+    presentation.pending.delete(ticket);
+    if (
+      !this.isCurrentRendererPresentation(presentation)
+      || presentation.status !== 'loading'
+      || presentation.retrying
+    ) return;
+
+    if (error) {
+      presentation.status = 'failed';
+      presentation.error = error;
+      presentation.retry = ticket.retry;
+      presentation.pending.clear();
+      this.updateStatus('A picture could not finish loading. Tap to try again.');
+      this.render?.();
+      return;
+    }
+    if (presentation.pending.size > 0) return;
+
+    this.presentationFailure = null;
+    this.updateStatus(this.world?.dialoguePresentation?.text ?? this.world?.objective?.text ?? 'Continue Violet’s adventure.');
+    this.render?.();
+  }
+
+  observeRendererResults(results) {
+    for (const result of results) {
+      if (!result || typeof result !== 'object') continue;
+      if (result.status === 'failed') {
+        if (this.canObserveRendererPresentation()) this.failRendererPresentation(result);
+        continue;
+      }
+      if (result.status !== 'loading' || !this.canObserveRendererPresentation()) continue;
+      const loading = result.loading;
+      if (!loading || typeof loading.then !== 'function' || this.observedRendererLoadings.has(loading)) continue;
+      const current = this.presentationFailure;
+      if (current?.status === 'failed' || current?.retrying) continue;
+      this.observedRendererLoadings.add(loading);
+      const presentation = current?.kind === 'renderer'
+        && current.status === 'loading'
+        && this.isCurrentRendererPresentation(current)
+        ? current
+        : {
+            kind: 'renderer',
+            status: 'loading',
+            retrying: false,
+            generation: this.nextPresentationReadinessGeneration(),
+            sessionGeneration: this.sessionGeneration,
+            world: this.world,
+            pending: new Set(),
+            error: null,
+            retry: this.rendererResultRetry(result),
+          };
+      if (presentation !== current) {
+        this.presentationFailure = presentation;
+        this.cancelPointerInteraction();
+        this.updateStatus('Preparing that picture…');
+      }
+      const ticket = {
+        loading,
+        retry: this.rendererResultRetry(result),
+      };
+      presentation.pending.add(ticket);
+      loading.then(
+        () => this.settleRendererPresentation(presentation, ticket),
+        (error) => this.settleRendererPresentation(presentation, ticket, error),
+      );
+    }
   }
 
   renderWorld(context) {
@@ -1994,6 +2629,16 @@ export class Game {
     }
     const state = this.world.snapshot();
     this.lastRenderState = state;
+    if (this.isSetPieceCompositionBlocking()) {
+      const source = this.setPieceComposition.source;
+      if (source?.width > 1 && source?.height > 1) {
+        context.drawImage(source, 0, 0, WORLD.width, WORLD.height);
+      } else {
+        context.fillStyle = PALETTE.ink;
+        context.fillRect(0, 0, WORLD.width, WORLD.height);
+      }
+      return;
+    }
     const room = this.world.room;
     const presentedState = roomStateDuringSetPiece(state, room);
     const setPieceId = String(state.setPiece?.requestedId ?? state.setPiece?.id ?? '').toLowerCase();
@@ -2119,7 +2764,7 @@ export class Game {
         );
       }
       if (state.overlay?.surface === 'satchel') {
-        const map = activeChapterMap(this.world, state);
+        const map = activeChapterMap(this.chapterRuntime, this.world, state);
         this.uiRenderer.drawSatchel(context, state, cards, {
           map,
           parentGateProgress: this.parentGateProgress,
@@ -2164,8 +2809,10 @@ export class Game {
 
   parentPanelModel(overlay = this.world?.overlay) {
     const durableSave = this.replayMode && this.canonicalSave ? this.canonicalSave : this.saveData;
-    const replayChapterId = latestReplayChapterId(durableSave);
-    const replayChapter = replayChapterId ? contentRegistry[replayChapterId] : null;
+    const replayChapterId = latestReplayChapterId(durableSave, this.chapterRuntime.descriptors);
+    const replayChapter = replayChapterId
+      ? this.chapterRuntime.getDescriptor(replayChapterId)
+      : null;
     return {
       overlay,
       settings: this.saveData.settings,
@@ -2194,7 +2841,7 @@ export class Game {
       if (!renderState || !Number.isFinite(renderState.x)) {
         throw new TypeError(`Actor ${actor?.actorId ?? '(unknown)'} requires a finite renderState.x.`);
       }
-      this.characterRenderer.draw(context, {
+      const result = this.characterRenderer.draw(context, {
         ...renderState,
         characterId: actor.characterId,
         surface: 'world',
@@ -2202,6 +2849,9 @@ export class Game {
         reducedMotion: this.reducedMotion,
         lightSide: state.keyLight,
       }, this.simTime + (renderState.timeOffset ?? 0));
+      if (result && typeof result === 'object' && typeof result.status === 'string') {
+        this.frameCharacterResults.push(result);
+      }
     }
   }
 
@@ -2302,7 +2952,7 @@ export class Game {
       if (!chapterTwoPreview && choice.__rect) targets.push({ id: `dialogue.${choice.id}`, x: choice.__rect.x + choice.__rect.width / 2, y: choice.__rect.y + choice.__rect.height / 2 });
     }
     if (state.overlay?.surface === 'satchel') {
-      const map = activeChapterMap(this.world, state);
+      const map = activeChapterMap(this.chapterRuntime, this.world, state);
       const mapAvailable = Boolean(map);
       if (mapAvailable) {
         targets.push({
@@ -2486,6 +3136,8 @@ export class Game {
     this.roomRenderer.destroy?.();
     this.setPieceRenderer.destroy?.();
     this.roomEffectsRenderer?.destroy?.();
+    this.releaseCompositionSource(this.setPieceComposition?.source);
+    if (this.setPieceComposition) this.setPieceComposition.source = null;
     this.releaseRoomTransition();
     this.saveTransferDialog?.destroy?.();
     this.petNameDialog?.destroy?.();
@@ -2928,7 +3580,7 @@ function hasMeaningfulProgress(save) {
   return !['ch1.letter', 'ch1.letterScene'].includes(save.resume?.scene);
 }
 
-export function selectChapter1ResumeRecap(save, recaps = chapter1ResumeRecaps) {
+export function selectChapter1ResumeRecap(save, recaps = []) {
   if (save?.resume?.chapter !== 'ch1') return null;
   if (save.progress?.completedChapters?.includes('ch1')) return null;
 
@@ -2946,8 +3598,8 @@ export function selectChapter1ResumeRecap(save, recaps = chapter1ResumeRecaps) {
 
 export function selectResumeRecap(
   save,
-  chaptersById = contentRegistry,
-  recapsByChapter = resumeRecaps,
+  chaptersById,
+  recapsByChapter,
 ) {
   const chapterId = save?.resume?.chapter;
   const chapter = chaptersById?.[chapterId];
@@ -3004,10 +3656,13 @@ function activeQuestStep(chapter, save) {
   return null;
 }
 
-function latestReplayChapterId(save) {
+function latestReplayChapterId(save, descriptors = []) {
+  const descriptorById = new Map(descriptors.map((descriptor) => [descriptor.id, descriptor]));
   return [...(save?.progress?.completedChapters ?? [])]
-    .filter((chapterId) => Boolean(contentRegistry[chapterId]))
-    .sort((left, right) => contentRegistry[right].number - contentRegistry[left].number)[0] ?? null;
+    .filter((chapterId) => descriptorById.has(chapterId))
+    .sort((left, right) => (
+      descriptorById.get(right).number - descriptorById.get(left).number
+    ))[0] ?? null;
 }
 
 function spellbookStatusText(payload = {}) {
@@ -3032,7 +3687,7 @@ export function mergeReplayCollections(canonical, replay) {
   return changed;
 }
 
-function createReplaySave(canonicalSave, chapter, now) {
+function createReplaySave(canonicalSave, chapter, now, descriptors = []) {
   const replay = createSave({
     now,
     appVersion: canonicalSave.appVersion,
@@ -3047,8 +3702,9 @@ function createReplaySave(canonicalSave, chapter, now) {
     replay.character.house = null;
     replay.character.commonRoomPassword = [];
 
+    const descriptorById = new Map(descriptors.map((descriptor) => [descriptor.id, descriptor]));
     const priorChapterIds = canonicalSave.progress.completedChapters.filter((chapterId) => (
-      contentRegistry[chapterId]?.number < chapter.number
+      descriptorById.get(chapterId)?.number < chapter.number
     ));
     replay.progress.completedChapters = [...priorChapterIds];
     replay.progress.highestUnlockedChapter = chapter.number;

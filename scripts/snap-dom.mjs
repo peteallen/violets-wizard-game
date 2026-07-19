@@ -27,7 +27,10 @@ function serverOrigin(server) {
 }
 
 export function domHarnessUrl(origin, options, seed) {
-  const url = new URL('/harness.html', origin);
+  const reviewPage = options.scene.startsWith('boot-')
+    ? '/boot-review.html'
+    : '/harness.html';
+  const url = new URL(reviewPage, origin);
   url.searchParams.set('scene', options.scene);
   url.searchParams.set('state', options.state);
   url.searchParams.set('actions', options.actions);

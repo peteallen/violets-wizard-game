@@ -89,6 +89,7 @@ export const chapter2ContentPackageV2 = Object.freeze({
   chapter: chapter2V2,
   maps: chapter2V2.maps,
   resumeRecaps: chapter2V2.recaps,
+  assets: chapter2AssetDefinitions,
   assetKeys: chapter2AssetKeys,
   codeResourceKeys: Object.freeze([]),
   characterDependencies: chapter2V2.characterDependencies,

@@ -2,6 +2,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { Game, selectChapter1ResumeRecap, selectResumeRecap } from '../src/game/Game.js';
 import { chapter1ResumeRecaps } from '../src/game/content/chapters/ch1.js';
 import { chapter2RecapDefinitions } from '../src/game/chapters/ch2/content-v2/recaps.js';
+import { contentRegistry, resumeRecaps } from '../src/game/content/index.js';
 import { dialogueScrollLayout } from '../src/game/render/UIRenderer.js';
 import { createSave, createSaveV1 } from '../src/game/systems/Save.js';
 
@@ -30,6 +31,8 @@ function adventureStub(save, hasStoredSave = true) {
     activateChapter: vi.fn().mockResolvedValue([]),
     releaseTitle: vi.fn().mockResolvedValue([]),
   };
+  game.chapterRuntime = { chapters: contentRegistry, resumeRecaps };
+  game.prepareChapterRuntime = vi.fn().mockResolvedValue(null);
   game.createWorld = vi.fn();
   game.updateStatus = vi.fn();
   game.persistSave = vi.fn(() => ({ ok: true, status: 'saved', save }));
@@ -50,13 +53,16 @@ describe('Chapter 1 resume recaps', () => {
     for (const [flags, expectedStep] of stages) {
       const save = saveWithFlags(...flags);
       save.resume.room = 'ch1.bedroom';
-      expect(selectChapter1ResumeRecap(save)?.step).toBe(expectedStep);
+      expect(selectChapter1ResumeRecap(save, chapter1ResumeRecaps)?.step).toBe(expectedStep);
     }
 
-    expect(selectChapter1ResumeRecap(saveWithFlags('ch1.ticketReceived'))).toBeNull();
+    expect(selectChapter1ResumeRecap(
+      saveWithFlags('ch1.ticketReceived'),
+      chapter1ResumeRecaps,
+    )).toBeNull();
     const chapterTwo = saveWithFlags('ch1.petNamed');
     chapterTwo.resume.chapter = 'ch2';
-    expect(selectChapter1ResumeRecap(chapterTwo)).toBeNull();
+    expect(selectChapter1ResumeRecap(chapterTwo, chapter1ResumeRecaps)).toBeNull();
   });
 
   it('voices one recap when a stored Chapter 1 adventure is continued, but not on a fresh start', async () => {
@@ -157,26 +163,26 @@ describe('chapter-owned resume recaps', () => {
       chapter: 'ch2', scene: 'ch2.scene.kingsCross', room: 'ch2.kingsCross', spawn: 'start',
     };
 
-    expect(selectResumeRecap(save)).toBeNull();
+    expect(selectResumeRecap(save, contentRegistry, resumeRecaps)).toBeNull();
 
     for (const flag of ['ch2.barrierCrossed', 'ch2.boardedTrain', 'ch2.friendsMet']) {
       save.progress.questFlags[flag] = true;
     }
-    expect(selectResumeRecap(save)).toEqual(chapter2RecapDefinitions[0]);
+    expect(selectResumeRecap(save, contentRegistry, resumeRecaps)).toEqual(chapter2RecapDefinitions[0]);
 
     for (const flag of [
       'ch2.sweetReactionSeen', 'ch2.trainComplete', 'ch2.lakeSeen',
       'ch2.greatHallEntered', 'ch2.sortedGryffindor',
     ]) save.progress.questFlags[flag] = true;
-    expect(selectResumeRecap(save)).toEqual(chapter2RecapDefinitions[1]);
+    expect(selectResumeRecap(save, contentRegistry, resumeRecaps)).toEqual(chapter2RecapDefinitions[1]);
 
     for (const flag of ['ch2.feastAwarded', 'ch2.feastComplete', 'ch2.commonRoomArrived']) {
       save.progress.questFlags[flag] = true;
     }
-    expect(selectResumeRecap(save)).toEqual(chapter2RecapDefinitions[2]);
+    expect(selectResumeRecap(save, contentRegistry, resumeRecaps)).toEqual(chapter2RecapDefinitions[2]);
 
     save.progress.completedChapters.push('ch2');
-    expect(selectResumeRecap(save)).toBeNull();
+    expect(selectResumeRecap(save, contentRegistry, resumeRecaps)).toBeNull();
   });
 
   it('presents each recap milestone once instead of replaying a stale recap on every resume', async () => {
@@ -220,6 +226,6 @@ describe('chapter-owned resume recaps', () => {
     expect(repeatedResume.updateStatus).toHaveBeenCalledWith('Continue Violet’s adventure.');
 
     save.progress.questFlags['ch2.sortedGryffindor'] = true;
-    expect(selectResumeRecap(save)).toEqual(chapter2RecapDefinitions[1]);
+    expect(selectResumeRecap(save, contentRegistry, resumeRecaps)).toEqual(chapter2RecapDefinitions[1]);
   });
 });

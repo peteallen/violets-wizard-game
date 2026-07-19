@@ -9,6 +9,7 @@ import {
   drawTrevorReunion,
   drawTrevorReveal,
 } from '../../render/ChapterThreeSetPieceRenderer.js';
+import { chapter3PresentationMetadata } from './presentationMetadata.js';
 
 function setPieceRegistration(id, renderer, draw) {
   return Object.freeze({
@@ -108,22 +109,13 @@ export const chapter3SetPieceRegistrations = Object.freeze([
 
 export const chapter3PresentationPackage = Object.freeze({
   chapterId: 'ch3',
+  ...chapter3PresentationMetadata,
   registrations: Object.freeze([
     chapter3PropRegistration,
     chapter3FeatherRegistration,
     chapter3LightMaskRegistration,
     ...chapter3SetPieceRegistrations,
   ]),
-  roomMusic: Object.freeze({
-    default: null,
-    rooms: Object.freeze({
-      'ch3.commonRoom': 'music/ch2/common-room',
-      'ch3.charmsClassroom': 'music/ch3/classroom-brightness',
-      'ch3.corridorOne': 'music/ch3/night-corridors',
-      'ch3.corridorTwo': 'music/ch3/night-corridors',
-      'ch3.corridorThree': 'music/ch3/night-corridors',
-    }),
-  }),
 });
 
 export default chapter3PresentationPackage;

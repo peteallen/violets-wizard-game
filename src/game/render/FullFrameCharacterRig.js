@@ -597,6 +597,20 @@ export class FullFrameCharacterRig {
     return this.prepareFrame(character, time, requestedSurface).loading;
   }
 
+  prepareVisibleFrame(character = {}, time = 0, requestedSurface = 'world', { retry = false } = {}) {
+    if (retry) {
+      this.loadingError = null;
+      this.alignedRig.retryFailures();
+    }
+    const animation = resolveFullFrameCharacterAnimation(this.manifest, character, time);
+    const renderSurface = surface(requestedSurface, 'Full-frame render surface');
+    const options = this.drawOptions(character, animation, renderSurface);
+    const sample = this.alignedRig.sample(options);
+    this.alignedRig.protectSamples([this.lastReadyFrame?.sample, sample].filter(Boolean));
+    const request = this.alignedRig.requestFrame(options, { sample });
+    return this.trackLoading(request.loading);
+  }
+
   rememberReadyFrame(sample, animation) {
     this.lastReadyFrame = Object.freeze({ sample, animation });
     this.alignedRig.protectSamples([sample]);
@@ -606,7 +620,12 @@ export class FullFrameCharacterRig {
     const animation = resolveFullFrameCharacterAnimation(this.manifest, character, time);
     const renderSurface = surface(requestedSurface, 'Full-frame render surface');
     if (this.loadingError) {
-      return Object.freeze({ status: 'failed', error: this.loadingError, animation });
+      return Object.freeze({
+        status: 'failed',
+        error: this.loadingError,
+        animation,
+        retry: () => this.prepareVisibleFrame(character, time, requestedSurface, { retry: true }),
+      });
     }
 
     const options = this.drawOptions(character, animation, renderSurface);
@@ -623,8 +642,8 @@ export class FullFrameCharacterRig {
     this.alignedRig.protectSamples([this.lastReadyFrame?.sample, targetSample].filter(Boolean));
     const request = this.alignedRig.requestFrame(options, {
       sample: targetSample,
-      includeClip: true,
-      baselinePoses: this.baselinePoses(animation),
+      includeClip: character.loadPriority !== 'visible',
+      baselinePoses: character.loadPriority === 'visible' ? [] : this.baselinePoses(animation),
     });
     this.trackLoading(request.loading);
 
@@ -649,10 +668,16 @@ export class FullFrameCharacterRig {
         pending: true,
         displayedAnimation: displayed.animation,
         loading: request.loading,
+        retry: () => this.prepareVisibleFrame(character, time, requestedSurface, { retry: true }),
       });
     }
 
     this.lastReadyFrame = null;
-    return Object.freeze({ status: 'loading', animation, loading: request.loading });
+    return Object.freeze({
+      status: 'loading',
+      animation,
+      loading: request.loading,
+      retry: () => this.prepareVisibleFrame(character, time, requestedSurface, { retry: true }),
+    });
   }
 }

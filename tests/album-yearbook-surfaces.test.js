@@ -1,5 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { cards } from '../src/game/content/cards.js';
+import { chapter1Map } from '../src/game/content/chapters/ch1.js';
 import { WORLD } from '../src/game/config.js';
 import {
   albumCardLayout,
@@ -138,7 +139,7 @@ describe('storybook satchel card album', () => {
     renderer.drawSatchel(context, {
       overlay: { surface: 'satchel', tab: 'cards' },
       cards: [],
-    });
+    }, [], { map: chapter1Map });
 
     const expected = [
       ['Map', UI_RECTS.satchelMapTab, 'tab'],

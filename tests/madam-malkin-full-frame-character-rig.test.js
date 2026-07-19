@@ -92,29 +92,29 @@ describe('Madam Malkin production full-frame rig', () => {
 
   it('uses exactly the four aligned robe-shop and dialogue paintings', () => {
     expect(framePaths('idle')).toEqual([
-      'assets/art/characters/madam-malkin/default/neutral.png',
+      'assets/art/characters/madam-malkin/default/neutral.webp',
     ]);
     expect(framePaths('neutral')).toEqual([
-      'assets/art/characters/madam-malkin/default/neutral.png',
+      'assets/art/characters/madam-malkin/default/neutral.webp',
     ]);
     expect(framePaths('blink')).toEqual([
-      'assets/art/characters/madam-malkin/default/blink.png',
+      'assets/art/characters/madam-malkin/default/blink.webp',
     ]);
     expect(framePaths('talk-a')).toEqual([
-      'assets/art/characters/madam-malkin/default/talk-a.png',
+      'assets/art/characters/madam-malkin/default/talk-a.webp',
     ]);
     expect(framePaths('talk-b')).toEqual([
-      'assets/art/characters/madam-malkin/default/talk-b.png',
+      'assets/art/characters/madam-malkin/default/talk-b.webp',
     ]);
     expect(framePaths('speaking')).toEqual([
-      'assets/art/characters/madam-malkin/default/talk-a.png',
-      'assets/art/characters/madam-malkin/default/talk-b.png',
+      'assets/art/characters/madam-malkin/default/talk-a.webp',
+      'assets/art/characters/madam-malkin/default/talk-b.webp',
     ]);
     expect(madamMalkinFullFrameCharacterManifest.fullFrame.assetFiles).toEqual([
-      'assets/art/characters/madam-malkin/default/neutral.png',
-      'assets/art/characters/madam-malkin/default/blink.png',
-      'assets/art/characters/madam-malkin/default/talk-a.png',
-      'assets/art/characters/madam-malkin/default/talk-b.png',
+      'assets/art/characters/madam-malkin/default/neutral.webp',
+      'assets/art/characters/madam-malkin/default/blink.webp',
+      'assets/art/characters/madam-malkin/default/talk-a.webp',
+      'assets/art/characters/madam-malkin/default/talk-b.webp',
     ]);
     expect(madamMalkinFullFrameCharacterManifest.layerOrder).toEqual(['figure']);
     for (const clip of Object.values(madamMalkinFullFrameCharacterManifest.clips)) {

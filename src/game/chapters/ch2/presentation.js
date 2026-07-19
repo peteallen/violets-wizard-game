@@ -1,3 +1,5 @@
+import { chapter2PresentationMetadata } from './presentationMetadata.js';
+
 const WORLD_WIDTH = 1280;
 const WORLD_HEIGHT = 720;
 const TRAIN_WINDOW = Object.freeze({ left: 758, top: 126, right: 995, bottom: 397 });
@@ -35,17 +37,7 @@ export const gryffindorGreatHallOverlay = Object.freeze({
 export const chapter2PresentationPackage = Object.freeze({
   chapterId: 'ch2',
   registrations: Object.freeze([]),
-  roomMusic: Object.freeze({
-    default: null,
-    rooms: Object.freeze({
-      'ch2.kingsCross': 'music/ch2/platform',
-      'ch2.trainCompartment': 'music/ch2/platform',
-      'ch2.lakeVista': 'music/ch2/lake-wonder',
-      'ch2.greatHall': 'music/ch2/sorting',
-      'ch2.gryffindorCommonRoom': 'music/ch2/common-room',
-      'ch2.chapterCardRoom': 'music/ch2/common-room',
-    }),
-  }),
+  ...chapter2PresentationMetadata,
   roomVariantOverlays: Object.freeze([
     trainCompartmentOverlay,
     sortingGreatHallOverlay,

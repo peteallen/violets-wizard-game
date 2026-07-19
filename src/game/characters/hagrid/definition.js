@@ -32,22 +32,22 @@ export const hagridFullFrameCharacterDefinition = Object.freeze({
   appearances: Object.freeze({
     [DEFAULT]: Object.freeze({
       clips: Object.freeze({
-        idle: still('default/neutral.png'),
-        neutral: still('default/neutral.png'),
-        blink: still('default/blink.png'),
-        'talk-a': still('default/talk-a.png'),
-        'talk-b': still('default/talk-b.png'),
+        idle: still('default/neutral.webp'),
+        neutral: still('default/neutral.webp'),
+        blink: still('default/blink.webp'),
+        'talk-a': still('default/talk-a.webp'),
+        'talk-b': still('default/talk-b.webp'),
         speaking: Object.freeze({
           fps: 4,
-          frames: Object.freeze(['default/talk-a.png', 'default/talk-b.png']),
+          frames: Object.freeze(['default/talk-a.webp', 'default/talk-b.webp']),
           reducedMotionClip: 'talk-a',
         }),
-        'profile-right': still('default/profile-right.png'),
+        'profile-right': still('default/profile-right.webp'),
         walking: Object.freeze({
           fps: 4,
           frames: Object.freeze([
-            'default/profile-right.png',
-            'default/walk-contact.png',
+            'default/profile-right.webp',
+            'default/walk-contact.webp',
           ]),
           reducedMotionClip: 'profile-right',
         }),
@@ -80,12 +80,12 @@ export const hagridCharacterDefinition = defineCharacter({
     portrait: { x: 179.2, y: 0, width: 537.6, height: 504 },
   },
   assets: characterImageAssets('hagrid', [
-    'default/neutral.png',
-    'default/blink.png',
-    'default/talk-a.png',
-    'default/talk-b.png',
-    'default/profile-right.png',
-    'default/walk-contact.png',
+    'default/neutral.webp',
+    'default/blink.webp',
+    'default/talk-a.webp',
+    'default/talk-b.webp',
+    'default/profile-right.webp',
+    'default/walk-contact.webp',
   ]),
 });
 

@@ -1,6 +1,6 @@
 import { easeInOutCubic, easeOutBack, easeOutCubic, lerp } from '../core/math.js';
 import { PALETTE, WORLD } from '../config.js';
-import { chapter1LetterLines } from '../content/chapters/ch1-letter.js';
+import { invitationLetterLines } from '../content/invitationLetter.js';
 import { productionPresentationRegistry } from '../presentation/productionRoomVariantOverlays.js';
 import {
   LETTER_ENVELOPE_POSE,
@@ -139,6 +139,7 @@ export class SetPieceRenderer {
     this.imageFactory = imageFactory;
     this.characterRenderer = requireCharacterRenderer(characterRenderer);
     this.imageRecords = new Map();
+    this.characterResults = [];
     this.brickWallWasActive = false;
   }
 
@@ -188,36 +189,90 @@ export class SetPieceRenderer {
   }
 
   async preloadBrickWall() {
-    await Promise.all(BRICK_IMAGE_KEYS.map((key) => this.loadImage(key)));
+    await this.prepareImages(BRICK_IMAGE_KEYS);
   }
 
-  async loadImage(key) {
+  async loadImage(key, { retry = false } = {}) {
+    if (!key) throw new TypeError('Set-piece image preparation requires an asset key.');
+    if (retry) this.releaseImages([key]);
     const current = this.imageRecords.get(key);
+    if (current?.status === 'failed') throw current.error;
     if (current) return current.promise;
     const path = this.resolveAsset(key);
     const image = path ? this.imageFactory() : null;
-    if (!image) return null;
-    const record = { image, ready: false, promise: null };
+    if (!image) {
+      const error = new Error(`Set-piece image ${key} is unavailable.`);
+      this.imageRecords.set(key, {
+        image: null,
+        ready: false,
+        status: 'failed',
+        error,
+        promise: Promise.reject(error),
+      });
+      this.imageRecords.get(key).promise.catch(() => {});
+      throw error;
+    }
+    const record = {
+      image,
+      ready: false,
+      status: 'loading',
+      error: null,
+      promise: null,
+    };
     record.promise = (async () => {
       try {
         image.decoding = 'async';
         image.src = path;
         if (typeof image.decode === 'function') await image.decode();
         record.ready = Boolean(image.complete && image.naturalWidth > 0 && image.naturalHeight > 0);
-        return record.ready ? image : null;
-      } catch {
-        return null;
+        if (!record.ready) throw new Error(`Set-piece image ${key} decoded without drawable pixels.`);
+        record.status = 'ready';
+        return image;
+      } catch (error) {
+        record.status = 'failed';
+        record.error = error;
+        throw error;
       }
     })();
     this.imageRecords.set(key, record);
     return record.promise;
   }
 
+  async prepareImages(keys, { retry = false } = {}) {
+    const uniqueKeys = [...new Set(keys.filter(Boolean))];
+    await Promise.all(uniqueKeys.map((key) => this.loadImage(key, { retry })));
+    return uniqueKeys;
+  }
+
+  imageStatus(key) {
+    const record = this.imageRecords.get(key);
+    if (!record) return Object.freeze({ status: 'idle', key });
+    return Object.freeze({
+      status: record.status ?? (record.ready ? 'ready' : 'loading'),
+      key,
+      error: record.error ?? null,
+    });
+  }
+
   readyImage(key) {
     const record = this.imageRecords.get(key);
     if (record?.ready) return record.image;
-    void this.loadImage(key);
+    if (record?.status !== 'failed') void this.loadImage(key).catch(() => {});
     return null;
+  }
+
+  drawCharacter(context, request, time = 0) {
+    const result = this.characterRenderer.draw(context, request, time);
+    if (result && typeof result === 'object' && typeof result.status === 'string') {
+      this.characterResults.push(result);
+    }
+    return result;
+  }
+
+  consumeCharacterResults() {
+    const results = this.characterResults;
+    this.characterResults = [];
+    return results;
   }
 
   destroy() {
@@ -255,7 +310,7 @@ export class SetPieceRenderer {
     context.fillRect(0, 0, WORLD.width, WORLD.height);
 
     if (delivery.owl.opacity > 0) {
-      this.characterRenderer.draw(context, {
+      this.drawCharacter(context, {
         ...delivery.owl,
         characterId: 'character.post-owl',
         surface: 'world',
@@ -1722,7 +1777,7 @@ function drawInvitation(context, state) {
   context.fillStyle = '#4d342b';
   context.textAlign = 'left';
   context.font = '700 28px "Andika", "Trebuchet MS", sans-serif';
-  context.fillText(chapter1LetterLines[0], -270, -97);
+  context.fillText(invitationLetterLines[0], -270, -97);
   context.restore();
 
   context.save();
@@ -1730,9 +1785,9 @@ function drawInvitation(context, state) {
   context.fillStyle = '#4d342b';
   context.textAlign = 'left';
   context.font = '700 23px "Andika", "Trebuchet MS", sans-serif';
-  context.fillText(chapter1LetterLines[1], -270, -38);
-  context.fillText(chapter1LetterLines[2], -270, -2);
-  context.fillText(chapter1LetterLines[3], -270, 49);
+  context.fillText(invitationLetterLines[1], -270, -38);
+  context.fillText(invitationLetterLines[2], -270, -2);
+  context.fillText(invitationLetterLines[3], -270, 49);
   context.restore();
 
   context.save();
@@ -1740,7 +1795,7 @@ function drawInvitation(context, state) {
   context.fillStyle = '#4d342b';
   context.textAlign = 'left';
   context.font = '700 23px "Andika", "Trebuchet MS", sans-serif';
-  context.fillText(chapter1LetterLines[4], -270, 115);
+  context.fillText(invitationLetterLines[4], -270, 115);
   context.restore();
 }
 

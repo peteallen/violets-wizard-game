@@ -98,16 +98,16 @@ describe('Violet production full-frame rig', () => {
   it('uses the approved casual expressions and mirrors one coherent profile walk', () => {
     for (const expression of ['neutral', 'blink', 'talk-a', 'talk-b', 'wonder', 'proud', 'curious']) {
       expect(sampledPath({ appearance: 'casual', pose: 'idle', expression })).toBe(
-        `assets/art/characters/violet/casual/${expression}.png`,
+        `assets/art/characters/violet/casual/${expression}.webp`,
       );
     }
     expect(framePaths('casual', 'speaking')).toEqual([
-      'assets/art/characters/violet/casual/talk-a.png',
-      'assets/art/characters/violet/casual/talk-b.png',
+      'assets/art/characters/violet/casual/talk-a.webp',
+      'assets/art/characters/violet/casual/talk-b.webp',
     ]);
     expect(framePaths('casual', 'walking')).toEqual([
-      'assets/art/characters/violet/casual/profile-right.png',
-      'assets/art/characters/violet/casual/walk-contact.png',
+      'assets/art/characters/violet/casual/profile-right.webp',
+      'assets/art/characters/violet/casual/walk-contact.webp',
     ]);
     expect(resolveFullFrameCharacterAnimation(violetFullFrameCharacterManifest, {
       appearance: 'casual', pose: 'walking', facing: 'right',
@@ -130,31 +130,31 @@ describe('Violet production full-frame rig', () => {
       actionTime: progress * 2.6,
       actionProgress: progress,
     });
-    expect(wrongWand('wrong-wand-one', 0)).toContain('/wand-hold.png');
-    expect(wrongWand('wrong-wand-one', 0.99)).toContain('/wand-hold.png');
-    expect(wrongWand('wrong-wand-two', 0)).toContain('/tumble.png');
-    expect(wrongWand('wrong-wand-two', 0.99)).toContain('/tumble.png');
+    expect(wrongWand('wrong-wand-one', 0)).toContain('/wand-hold.webp');
+    expect(wrongWand('wrong-wand-one', 0.99)).toContain('/wand-hold.webp');
+    expect(wrongWand('wrong-wand-two', 0)).toContain('/tumble.webp');
+    expect(wrongWand('wrong-wand-two', 0.99)).toContain('/tumble.webp');
     expect(sampledPath({
       appearance: 'casual', action: 'chosen-wand', actionProgress: 0.5,
-    })).toContain('/cheer.png');
+    })).toContain('/cheer.webp');
   });
 
   it('provides the complete robed vocabulary from aligned robed frames', () => {
     for (const expression of ['neutral', 'blink', 'talk-a', 'talk-b', 'wonder', 'proud', 'curious']) {
       expect(sampledPath({ appearance: 'robes', pose: 'idle', expression })).toBe(
-        `assets/art/characters/violet/robes/${expression}.png`,
+        `assets/art/characters/violet/robes/${expression}.webp`,
       );
     }
     expect(framePaths('robes', 'walking')).toEqual([
-      'assets/art/characters/violet/robes/profile-right.png',
-      'assets/art/characters/violet/robes/walk-contact.png',
-      'assets/art/characters/violet/robes/walk-pass.png',
+      'assets/art/characters/violet/robes/profile-right.webp',
+      'assets/art/characters/violet/robes/walk-contact.webp',
+      'assets/art/characters/violet/robes/walk-pass.webp',
     ]);
-    expect(sampledPath({ appearance: 'robes', pose: 'talk' })).toContain('/talk-a.png');
-    expect(sampledPath({ appearance: 'robes', pose: 'wonder' })).toContain('/wonder.png');
+    expect(sampledPath({ appearance: 'robes', pose: 'talk' })).toContain('/talk-a.webp');
+    expect(sampledPath({ appearance: 'robes', pose: 'wonder' })).toContain('/wonder.webp');
     expect(sampledPath({
       appearance: 'robes', action: 'admire-robes', actionProgress: 0.5,
-    })).toContain('/robe-present.png');
+    })).toContain('/robe-present.webp');
   });
 
   it('passes the saved robe color through the aligned-frame draw hook', () => {
