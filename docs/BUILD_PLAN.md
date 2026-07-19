@@ -59,9 +59,10 @@ focused presentation seam.
    friendships and distinct sweets; the eight-second lake reveal with a
    player-held continuation; head-anchored Sorting Hat and the feast; password
    ritual and lingerable common room; then owl post, Chapter Two end card, and
-   the truthful Chapter Three preview. Mum and Dad use generated placeholder
-   voices behind stable replacement keys so later family recordings do not
-   change authored dialogue or saves.
+   the truthful Chapter Three preview. Mum and Dad use committed, generated
+   placeholder recordings behind stable replacement keys, never browser
+   text-to-speech, so later family recordings do not change authored dialogue
+   or saves.
 6. Run the complete Chapter Two walkthrough and every save migration under
    normal and reduced motion. Capture every affected registered scene at
    1280×720 and 2560×1440, inspect the assembled chapter against its illusion

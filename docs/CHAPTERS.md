@@ -80,8 +80,9 @@ dedicated Chapter Three preview.
 
 > **LOCKED (D68):** Violet is a Gryffindor. Chapter Two builds the Gryffindor result and common room; other house variants are not part of its initial production scope.
 
-The owl-post letter is voiced with generated Mum and Dad placeholders held
-behind stable replacement keys. Its exact text is:
+The owl-post letter is voiced with committed, generated Mum and Dad MP3
+placeholders held behind stable replacement keys, never browser text-to-speech.
+Its exact text is:
 
 > Dear Violet, We heard you made it to Hogwarts and found your new house. We are
 > proud of you for trying something brave, and glad you found good friends beside

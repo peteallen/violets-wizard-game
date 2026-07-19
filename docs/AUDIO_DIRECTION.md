@@ -1,6 +1,6 @@
 # Audio Direction
 
-Audio is half this game. Dialogue is voice-first (she reads 1–3 words; the game *talks*), the score carries the wonder, and every interaction answers with sound. All audio is generated offline with ElevenLabs (voices, SFX, music), keys from env, nothing generated at runtime, no credentials near the browser (house rules). Per the family standard, the game must remain fully playable with zero audio files present — synth fallback beeps and captions carry meaning — but voice is the intended experience.
+Audio is half this game. Dialogue is voice-first (she reads 1–3 words; the game *talks*), the score carries the wonder, and every interaction answers with sound. All audio is generated offline with ElevenLabs (voices, SFX, music), keys from env, nothing generated at runtime, no credentials near the browser (house rules). Every spoken line, including a placeholder, preview, recap, and temporary development line, must use a committed recorded asset. Browser text-to-speech is forbidden: runtime code must never call the Web Speech API or any platform voice, even when a clip is missing or fails to play. The game remains fully playable with zero audio files present because captions carry the words; an unavailable recording may produce a brief nonverbal chime and then continue, but it must never synthesize speech.
 
 ## Voice cast (all speaking roles British, per the client)
 
@@ -67,8 +67,8 @@ Generation via ElevenLabs SFX with per-effect prompt + duration; normalized with
 
 ## Pipeline and QA
 
-- `scripts/generate_voice.mjs` — line table: `{ id, role, text, caption }`; idempotent (skips existing, `--force` regenerates); one subdirectory per role under `public/assets/voice/`.
-- **Transcription QA loop** (robotgame's hard-won lesson): every generated line is transcribed back by a speech model and diffed against the script — catches takes where the TTS *answered* the line instead of reading it, or mispronounced an incantation. Failures regenerate automatically up to N times, then land in a human-review list.
+- `scripts/generate_voice.mjs` derives the canonical text and role from chapter content, skips existing files unless `--force` is supplied, and writes one subdirectory per role under `public/assets/audio/voice/`. A missing spoken line is fixed by generating and committing its recording with transcription QA, never by adding a runtime speech placeholder.
+- **Transcription QA loop** (robotgame's hard-won lesson): every generated line is transcribed back by a speech model and diffed against the script — catches takes where the TTS *answered* the line instead of reading it, or mispronounced an incantation. A mismatch fails the build and must be regenerated or deliberately corrected before deployment.
 - **Pronunciation lock:** incantations get phonetic spellings in the generation text ("win-GAR-dee-um lev-ee-OH-sah") — the caption text and spoken text are separate fields precisely for this.
 - `scripts/generate_sfx.mjs`, `scripts/generate_music.mjs` — same idempotent shape.
 - `src/game/core/assetManifest.js` is the single source of truth; `npm run check:assets` fails the build if manifest ⇄ disk ⇄ generation scripts drift (see [ARCHITECTURE.md](ARCHITECTURE.md)).

@@ -74,6 +74,72 @@ describe('SoundEngine', () => {
     expect(sound.musicKey).toBeNull();
   });
 
+  it('settles a missing recorded voice without ever invoking browser speech', async () => {
+    const browserSpeak = vi.fn();
+    const browserUtterance = vi.fn();
+    const onEnded = vi.fn();
+    vi.stubGlobal('speechSynthesis', { cancel: vi.fn(), speak: browserSpeak });
+    vi.stubGlobal('SpeechSynthesisUtterance', browserUtterance);
+    const sound = new SoundEngine({ resolveAsset: () => null });
+    const synth = vi.spyOn(sound, 'synth');
+
+    await sound.speak('voice/missing', 'This line needs a recorded asset.', { onEnded });
+
+    expect(browserUtterance).not.toHaveBeenCalled();
+    expect(browserSpeak).not.toHaveBeenCalled();
+    expect(synth).toHaveBeenCalledWith('chime');
+    expect(sound.musicDucked).toBe(false);
+    expect(onEnded).toHaveBeenCalledOnce();
+  });
+
+  it('ignores an interrupted stale voice while the replacement recording plays', async () => {
+    const createdAudio = [];
+    class FakeAudio {
+      constructor(source) {
+        this.source = source;
+        this.currentTime = 0;
+        this.volume = 1;
+        this.pauseCalls = 0;
+        this.rejectPlay = null;
+        createdAudio.push(this);
+      }
+
+      play() {
+        if (createdAudio[0] === this) {
+          return new Promise((_resolve, reject) => {
+            this.rejectPlay = reject;
+          });
+        }
+        return Promise.resolve();
+      }
+
+      pause() {
+        this.pauseCalls += 1;
+        this.rejectPlay?.(new Error('interrupted by replacement voice'));
+        this.rejectPlay = null;
+      }
+    }
+    vi.stubGlobal('Audio', FakeAudio);
+    const firstEnded = vi.fn();
+    const secondEnded = vi.fn();
+    const sound = new SoundEngine({ resolveAsset: (key) => `/assets/${key}.mp3` });
+    sound.music = { volume: 1 };
+
+    const first = sound.speak('voice/first', 'First.', { onEnded: firstEnded });
+    await sound.speak('voice/second', 'Second.', { onEnded: secondEnded });
+    await first;
+
+    expect(createdAudio[0].pauseCalls).toBe(1);
+    expect(sound.voice).toBe(createdAudio[1]);
+    expect(sound.music.volume).toBeCloseTo(0.4);
+    expect(firstEnded).not.toHaveBeenCalled();
+
+    createdAudio[1].onended();
+    expect(secondEnded).toHaveBeenCalledOnce();
+    expect(sound.voice).toBeNull();
+    expect(sound.music.volume).toBe(1);
+  });
+
   it('crossfades two music elements and keeps the mix correct through runtime controls', async () => {
     vi.useFakeTimers();
     const createdAudio = [];

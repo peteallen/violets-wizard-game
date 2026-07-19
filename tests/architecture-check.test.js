@@ -137,6 +137,25 @@ describe('architecture boundary check', () => {
     ]);
   });
 
+  it('rejects browser text-to-speech anywhere in runtime code', async () => {
+    const root = await fixture({
+      'src/game/audio.js': [
+        "const line = new SpeechSynthesisUtterance('Temporary line');",
+        'globalThis.speechSynthesis.speak(line);',
+      ].join('\n'),
+    });
+
+    const diagnostics = await scanArchitecture({
+      rootDirectory: root,
+      config: testConfig({ runtime: ['src/**/*.js'] }),
+    });
+
+    expect(diagnostics.map(({ rule, match }) => ({ rule, match }))).toEqual([
+      { rule: ARCHITECTURE_RULES.BROWSER_TTS, match: 'SpeechSynthesisUtterance' },
+      { rule: ARCHITECTURE_RULES.BROWSER_TTS, match: 'speechSynthesis' },
+    ]);
+  });
+
   it('finds concrete chapter and character identifiers only in configured generic dispatch scopes', async () => {
     const root = await fixture({
       'src/game/engine.js': [

@@ -12,8 +12,14 @@ export const ARCHITECTURE_RULES = Object.freeze({
   HEADLESS_NONDETERMINISM: 'headless-nondeterminism',
   GENERIC_CONCRETE_ROUTING: 'generic-concrete-routing',
   PRODUCTION_AGGREGATE_IMPORT: 'production-aggregate-import',
+  BROWSER_TTS: 'browser-tts',
   UNUSED_ALLOWLIST_ENTRY: 'unused-architecture-allowlist',
 });
+
+const FORBIDDEN_RUNTIME_APIS = Object.freeze([
+  api('speechSynthesis', /\bspeechSynthesis\b/g, 'Ship a recorded voice asset; browser text-to-speech is forbidden, including for placeholders and failure recovery.'),
+  api('SpeechSynthesisUtterance', /\bSpeechSynthesisUtterance\b/g, 'Ship a recorded voice asset; browser text-to-speech is forbidden, including for placeholders and failure recovery.'),
+]);
 
 const BROWSER_APIS = Object.freeze([
   api('document', /\bdocument\b/g, 'Pass browser state through an adapter instead of reading document in headless code.'),
@@ -202,6 +208,7 @@ export const DEFAULT_ARCHITECTURE_CONFIG = Object.freeze({
   scopes: DEFAULT_SCOPES,
   exclusions: DEFAULT_EXCLUSIONS,
   targets: DEFAULT_TARGETS,
+  forbiddenRuntimeApis: FORBIDDEN_RUNTIME_APIS,
   browserApis: BROWSER_APIS,
   nondeterministicApis: NONDETERMINISTIC_APIS,
   allowlist: CURRENT_ALLOWLIST,
@@ -231,6 +238,16 @@ export async function scanArchitecture({ rootDirectory = ROOT, config = {} } = {
     const source = await readFile(absoluteFile, 'utf8');
     const lexical = lexSource(source);
     const locate = createLocator(source);
+
+    if (active.runtime) {
+      diagnostics.push(...findApiDiagnostics({
+        descriptors: settings.forbiddenRuntimeApis,
+        code: source,
+        file,
+        locate,
+        rule: ARCHITECTURE_RULES.BROWSER_TTS,
+      }));
+    }
 
     if (active.runtime || active.genericEngine || active.productionRoots) {
       for (const imported of collectImports(lexical.tokens)) {

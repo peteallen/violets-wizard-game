@@ -64,8 +64,8 @@ src/
     core/
       math.js                 clamp/lerp/easing (crib soccer's, add easeOutBack users)
       rng.js                  seeded PRNG (mulberry32) — all sim randomness goes through it
-      SoundEngine.js          WebAudio SFX buffers + <audio> music loops, ducking,
-                              unlock-on-first-tap, mute persistence, synth fallback
+      SoundEngine.js          WebAudio SFX buffers + <audio> voice/music, ducking,
+                              unlock-on-first-tap, mute persistence, nonverbal failure cue
       assetManifest.js        SINGLE SOURCE OF TRUTH for every art/voice/sfx/music file
       assetUrl.js             BASE_URL-relative paths + ?v=<build SHA> busting
       ServiceWorkerManager.js post-title registration for bounded revision caches
@@ -167,7 +167,7 @@ Schema in [GAME_DESIGN.md](GAME_DESIGN.md#save-and-persistence). Implementation 
   - every hotspot/exit/mapStar/flag/spell/card id resolves;
   - every quest graph is completable (topological reachability from chapter start);
   - every manifest entry exists on disk with sane size (> 1KB), and every disk asset is in the manifest (`npm run check:assets`, robotgame pattern — build fails on drift).
-- **Architecture lint**: the generic engine may not import concrete chapter or character implementations, runtime code may not import reference-only `art` or `audio`, headless code may not touch browser or nondeterministic APIs, and generic dispatch may not route on chapter or named-character literals. The temporary allowance is exact and stale-entry checked, so each extraction visibly reduces the remaining debt.
+- **Architecture lint**: the generic engine may not import concrete chapter or character implementations, runtime code may not import reference-only `art` or `audio`, headless code may not touch browser or nondeterministic APIs, and generic dispatch may not route on chapter or named-character literals. Browser text-to-speech is banned across all runtime source: dialogue must resolve to committed recorded audio, while an unavailable clip leaves its caption readable and may use only a nonverbal cue. The temporary allowance is exact and stale-entry checked, so each extraction visibly reduces the remaining debt.
 
 ## Deploy
 

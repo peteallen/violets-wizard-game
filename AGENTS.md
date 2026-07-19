@@ -4,6 +4,8 @@ Keep reports conversational and explain player-visible behavior in context. Pres
 
 The documentation under `docs/` is the product source of truth. Shared contracts live in `src/game/contracts.js`; change them deliberately and update their tests and the decision log together. Simulation code must remain deterministic and independent of Canvas, audio, the DOM, wall-clock APIs, and unseeded randomness.
 
+Every spoken line, including a placeholder or temporary development line, must be a committed generated or family-recorded asset. Never use browser text-to-speech or an operating-system voice. When a recording is unavailable, keep the caption readable and use at most a nonverbal cue; generate and commit the missing voice before treating the line as complete.
+
 Visual changes require a registered harness scene and captured review frames at both 1280×720 and 2560×1440. The author inspects those captures against the documented illusion checklist before pushing; there is no separate reviewer or approval gate. Generated art (character sheets and room paintings) is inspected at source and again in the assembled game before shipping. Generated assets that the game ships belong in `public/assets`; reference-only material (character sheets, style targets) and all prompts/source metadata belong under `art` or `audio` and never ship. Do not commit `dist`, `node_modules`, keys, runtime saves, or review scratch files.
 
 When appending to the decision log, re-read the tail of `docs/DECISIONS.md` immediately before writing and take the next free number — concurrent sessions have collided on numbers before (see D34/D35).

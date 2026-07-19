@@ -18,6 +18,7 @@ export class SoundEngine {
     this.musicFadeTimer = null;
     this.musicDucked = false;
     this.paused = false;
+    this.voiceRequestId = 0;
     this.musicRequestId = 0;
     this.playbackGeneration = 0;
     this.eventLog = [];
@@ -133,6 +134,7 @@ export class SoundEngine {
 
   async speak(key, text = '', { onEnded } = {}) {
     this.stopVoice();
+    const requestId = ++this.voiceRequestId;
     this.eventLog.push({ type: 'voice', key, text });
     this.duckMusic(true);
     const path = this.resolveAsset(key);
@@ -140,48 +142,42 @@ export class SoundEngine {
       const voice = new Audio(path);
       this.voice = voice;
       voice.volume = this.effectiveVolume('voice');
-      voice.onended = () => {
-        if (this.voice === voice) this.voice = null;
-        this.duckMusic(false);
-        onEnded?.();
-      };
-      voice.onerror = () => this.speakFallback(text, onEnded);
+      voice.onended = () => this.settleVoiceRequest(requestId, voice, onEnded);
+      voice.onerror = () => this.settleVoiceRequest(requestId, voice, onEnded, { unavailable: true });
       try {
         await voice.play();
         return;
       } catch {
-        this.speakFallback(text, onEnded);
+        this.settleVoiceRequest(requestId, voice, onEnded, { unavailable: true });
         return;
       }
     }
-    this.speakFallback(text, onEnded);
+    this.settleVoiceRequest(requestId, null, onEnded, { unavailable: true });
   }
 
-  speakFallback(text, onEnded) {
-    if (!this.muted && text && 'speechSynthesis' in globalThis && typeof SpeechSynthesisUtterance !== 'undefined') {
-      const utterance = new SpeechSynthesisUtterance(text);
-      utterance.rate = 0.88;
-      utterance.pitch = 1.03;
-      utterance.onend = () => {
-        this.duckMusic(false);
-        onEnded?.();
-      };
-      globalThis.speechSynthesis.cancel();
-      globalThis.speechSynthesis.speak(utterance);
-      return;
+  settleVoiceRequest(requestId, voice, onEnded, { unavailable = false } = {}) {
+    if (requestId !== this.voiceRequestId) return false;
+    if (voice && this.voice !== voice) return false;
+    if (voice) {
+      voice.onended = null;
+      voice.onerror = null;
+      if (unavailable) this.releaseAudio(voice);
+      this.voice = null;
     }
-    this.synth('chime');
+    if (unavailable) this.synth('chime');
     this.duckMusic(false);
     onEnded?.();
+    return true;
   }
 
   stopVoice() {
+    this.voiceRequestId += 1;
     if (this.voice) {
-      this.voice.pause();
-      this.voice.currentTime = 0;
+      this.voice.onended = null;
+      this.voice.onerror = null;
+      this.releaseAudio(this.voice);
       this.voice = null;
     }
-    globalThis.speechSynthesis?.cancel?.();
     this.duckMusic(false);
   }
 
