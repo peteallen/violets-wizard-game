@@ -5,6 +5,7 @@ import { chapter1 } from '../src/game/content/chapters/ch1.js';
 import {
   UI_RECTS,
   dialogueSceneContext,
+  letterReadingActionState,
   letterReadingLayout,
 } from '../src/game/render/UIRenderer.js';
 
@@ -35,6 +36,7 @@ function gameStub() {
     stopVoice: vi.fn(),
   };
   game.processWorldEvents = vi.fn();
+  game.updateStatus = vi.fn();
   game.letterNarrationRequest = null;
   game.destroyed = false;
   return { game, state: { overlay } };
@@ -47,6 +49,17 @@ function endedCallback(game, callIndex) {
 }
 
 describe('optional invitation narration', () => {
+  it('publishes a static material-and-label state for idle and active narration', () => {
+    expect(letterReadingActionState(false)).toEqual({
+      hearLabel: 'Hear the letter',
+      hearPressed: false,
+    });
+    expect(letterReadingActionState(true)).toEqual({
+      hearLabel: 'Reading…',
+      hearPressed: true,
+    });
+  });
+
   it('keeps the settled paper and both reading actions clear of live Violet', () => {
     const layout = letterReadingLayout();
     const violet = dialogueSceneContext({
@@ -101,12 +114,14 @@ describe('optional invitation narration', () => {
     expect(game.world.setFlag).not.toHaveBeenCalled();
     expect(game.world.runAction).not.toHaveBeenCalled();
     expect(game.processWorldEvents).not.toHaveBeenCalled();
+    expect(game.updateStatus).toHaveBeenCalledWith('Reading Violet’s letter.');
     expect(game.sound.speak).toHaveBeenNthCalledWith(
       1,
       'voice/ch1/narrator/letterInvitation',
       chapter1LetterNarration[0],
       { onEnded: expect.any(Function) },
     );
+    expect(game.isLetterNarrationCurrent(game.letterNarrationRequest)).toBe(true);
 
     endedCallback(game, 0)();
     expect(game.sound.speak).toHaveBeenNthCalledWith(
@@ -115,30 +130,34 @@ describe('optional invitation narration', () => {
       chapter1LetterNarration[1],
       { onEnded: expect.any(Function) },
     );
+    expect(game.isLetterNarrationCurrent(game.letterNarrationRequest)).toBe(true);
 
     endedCallback(game, 1)();
     expect(game.sound.speak).toHaveBeenCalledTimes(2);
     expect(game.world.overlay).toBe(state.overlay);
     expect(game.world.setFlag).not.toHaveBeenCalled();
     expect(game.letterNarrationRequest).toBeNull();
+    expect(game.updateStatus).toHaveBeenLastCalledWith(
+      'Violet’s letter is ready. Choose Let’s go! to continue.',
+    );
   });
 
-  it('restarts safely and ignores completion callbacks from an interrupted playback', () => {
+  it('ignores repeated Hear taps while the two-clip reading is active', () => {
     const { game, state } = gameStub();
 
     game.handleOverlayTap(center(UI_RECTS.letterHear), state);
-    const staleCompletion = endedCallback(game, 0);
+    const firstCompletion = endedCallback(game, 0);
 
     game.handleOverlayTap(center(UI_RECTS.letterHear), state);
-    expect(game.sound.speak).toHaveBeenCalledTimes(2);
-    expect(game.sound.speak.mock.calls[1][0]).toBe('voice/ch1/narrator/letterInvitation');
+    expect(game.sound.speak).toHaveBeenCalledTimes(1);
+    expect(game.sound.stopVoice).toHaveBeenCalledTimes(1);
+    expect(game.sound.playSfx).toHaveBeenCalledTimes(1);
 
-    staleCompletion();
+    firstCompletion();
     expect(game.sound.speak).toHaveBeenCalledTimes(2);
-
-    endedCallback(game, 1)();
-    expect(game.sound.speak).toHaveBeenCalledTimes(3);
-    expect(game.sound.speak.mock.calls[2][0]).toBe('voice/ch1/narrator/letterWaiting');
+    expect(game.sound.speak.mock.calls[1][0]).toBe('voice/ch1/narrator/letterWaiting');
+    game.handleOverlayTap(center(UI_RECTS.letterHear), state);
+    expect(game.sound.speak).toHaveBeenCalledTimes(2);
     expect(game.world.overlay).toBe(state.overlay);
     expect(game.world.runAction).not.toHaveBeenCalled();
   });

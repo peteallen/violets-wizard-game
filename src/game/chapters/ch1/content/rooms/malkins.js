@@ -45,6 +45,17 @@ export const malkinsRoom = freezePureData({
       requiredSpell: null,
       onInteract: [dialogueStart('ch1.tailor.fitting')],
     },
+    {
+      id: 'malkins.tailor',
+      kind: 'talk',
+      hitArea: circle(310, 455, 95),
+      approach: { x: 470, y: 610, facing: 'left' },
+      when: when({ noFlags: ['ch1.trimChosen'] }),
+      presentation: { icon: 'talk', glow: 'none' },
+      repeat: 'until-condition',
+      requiredSpell: null,
+      onInteract: [dialogueStart('ch1.tailor.fitting')],
+    },
   ],
   ambientSetPieces: ['am.inkTransitions'],
 }, 'Chapter One Madam Malkin room draft');

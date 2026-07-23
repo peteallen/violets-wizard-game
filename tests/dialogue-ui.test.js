@@ -420,6 +420,22 @@ describe('adaptive dialogue card', () => {
     expect(first.calls.some(([name]) => name === 'rotate')).toBe(false);
   });
 
+  it('renders a runtime pet name without allowing unsupported authored captions', () => {
+    const renderer = new UIRenderer({ characterRenderer: { draw: vi.fn() } });
+    const dialogue = {
+      type: 'line', speaker: 'npc.guide', portraitCharacterId: 'character.hagrid',
+      caption: 'Juniper!',
+    };
+    const namedPet = recordingDialogueContext();
+    const authoredCaption = recordingDialogueContext();
+
+    renderer.drawDialogue(namedPet, { ...dialogue, captionRole: 'proper-name' }, 0, true, true);
+    renderer.drawDialogue(authoredCaption, dialogue, 0, true, true);
+
+    expect(namedPet.texts).toEqual(['Juniper!', 'Again']);
+    expect(authoredCaption.texts).toEqual(['Again']);
+  });
+
   it('keeps day and night materials distinct while full motion only animates the advance medallion', () => {
     const renderer = new UIRenderer({ characterRenderer: { draw: vi.fn() } });
     const dialogue = {

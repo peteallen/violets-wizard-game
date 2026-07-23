@@ -107,6 +107,7 @@ export const coreVocabulary = Object.freeze([
   'plenty',
   'points',
   'protect',
+  'reading',
   'reload',
   'return',
   'room',

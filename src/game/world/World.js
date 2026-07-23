@@ -164,14 +164,14 @@ export class World {
     if (!presentation.speaker) {
       return {
         ...presentation,
-        ...(namedPetCaption ? { caption: namedPetCaption } : {}),
+        ...(namedPetCaption ? { caption: namedPetCaption, captionRole: 'proper-name' } : {}),
         portraitCharacterId: null,
       };
     }
     const speaker = requireNpcDefinition(this.chapter, presentation.speaker);
     return {
       ...presentation,
-      ...(namedPetCaption ? { caption: namedPetCaption } : {}),
+      ...(namedPetCaption ? { caption: namedPetCaption, captionRole: 'proper-name' } : {}),
       speakerLabel: speaker.displayName ?? presentation.speakerLabel ?? 'Friend',
       portraitCharacterId: speaker.characterId,
     };

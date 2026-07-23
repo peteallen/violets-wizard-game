@@ -92,6 +92,7 @@ describe('player-visible copy', () => {
     expect(isAllowedChildFacingUiText('Choose a pet', 'caption')).toBe(true);
     expect(isAllowedChildFacingUiText('Open Violet’s letter', 'action')).toBe(true);
     expect(isAllowedChildFacingUiText('Hear the letter', 'action')).toBe(true);
+    expect(isAllowedChildFacingUiText('Reading…', 'action')).toBe(true);
     expect(isAllowedChildFacingUiText('Start fresh', 'action')).toBe(true);
     expect(isAllowedChildFacingUiText('Tap this glowing picture now', 'action')).toBe(false);
     expect(isAllowedChildFacingUiText('Shimmering destination marker', 'caption')).toBe(false);
@@ -133,6 +134,15 @@ describe('player-visible copy', () => {
         roles: {
           storyObjects: [...chapter1LetterLines],
           actions: ['Hear the letter', 'Let’s go!'],
+        },
+      },
+      {
+        name: 'letter narration active',
+        draw: (context) => renderer.drawLetterReading(context, { narrationActive: true }),
+        expected: [...chapter1LetterLines, 'Reading…', 'Let’s go!'],
+        roles: {
+          storyObjects: [...chapter1LetterLines],
+          actions: ['Reading…', 'Let’s go!'],
         },
       },
       {

@@ -278,6 +278,29 @@ export async function prepareSetPieceReview(game, scene) {
   return true;
 }
 
+export function preparePetNameWelcomeReview(game, scene) {
+  if (scene !== 'ui-pet-name-welcome-review' || !game.world) return false;
+  if (game.world.dialogue.active) game.world.dialogue.close('harness-pet-name-welcome-review');
+  game.world.pendingPetType = 'owl';
+  game.world.dialogue.open('ch1.keeper.petAndName');
+  game.world.dialogue.nodeId = 'done';
+  game.world.setPetName('Juniper');
+  game.processWorldEvents();
+  return true;
+}
+
+export function prepareLetterReadingPlayingReview(game, scene) {
+  if (scene !== 'ui-letter-reading-playing-review' || !game.world) return false;
+  game.world.player.x = 760;
+  game.world.player.targetX = 760;
+  game.world.player.facing = 'left';
+  game.world.player.walking = false;
+  game.world.runAction({ type: 'ui.open', surface: 'letter-reading' });
+  game.processWorldEvents();
+  game.startLetterNarration();
+  return true;
+}
+
 export function prepareWorldAffordanceReview(game, scene) {
   if (!Object.hasOwn(WORLD_AFFORDANCE_REVIEW_SCENES, scene) || !game.world) return false;
   if (game.world.dialogue.active) game.world.dialogue.close('harness-world-affordance-review');
@@ -407,6 +430,8 @@ export async function bootHarness({
       });
       game.createWorld(stateFixture.save);
       await characterScopes.releaseTitle();
+      preparePetNameWelcomeReview(game, request.scene);
+      prepareLetterReadingPlayingReview(game, request.scene);
       await prepareSetPieceReview(game, request.scene);
       prepareWorldAffordanceReview(game, request.scene);
       prepareGuideWalkReview(game, request.scene);

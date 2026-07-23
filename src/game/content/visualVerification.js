@@ -223,6 +223,13 @@ const REVIEW_SCENE_ILLUSION_CHECKS = Object.freeze({
     'The complete invitation remains visible beside Violet and above two distinct, non-overlapping 88px-or-larger reading actions; paper and actions cover no part of her puppet.',
     'The written invitation matches its narration and contains zero unrelated dialogue captions.',
   ],
+  'ui-letter-reading-playing-review': [
+    'The complete invitation remains visible while the active narration action reads Reading… and shows one static depressed-paper treatment that remains unmistakable with motion reduced.',
+    'The active narration action and the separate Let’s go! action remain non-overlapping, at least 88px tall, and equally usable without hiding any written invitation text or covering Violet.',
+  ],
+  'ui-pet-name-welcome-review': [
+    'The keeper’s post-name dialogue visibly reads Juniper! beside one keeper portrait, one replay control, and one continue control, while Violet and her owl remain recognizable in the painted Menagerie.',
+  ],
   'ui-robe-picker-review': [
     'Violet’s real full-body robe puppet remains visible from hair to shoes inside the dressing mirror, with the selected trim applied to the preview.',
     'Exactly twelve named swatches appear in a four-column, three-row tailoring grid as distinct, non-overlapping targets that are each at least 88×88.',

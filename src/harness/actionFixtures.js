@@ -349,6 +349,12 @@ registry
     'Open the delivered envelope and hold the real readable invitation with both painted actions.',
     [{ frame: 30, type: 'tap', target: 'letter.envelope' }],
   ))
+  .register('ui-letter-reading-playing-review', createFixture(
+    'Hold the visible active reading state while the optional narration remains in flight.',
+  ))
+  .register('ui-pet-name-welcome-review', createFixture(
+    'Hold the Menagerie Keeper’s post-name welcome for Juniper without advancing its dialogue.',
+  ))
   .register('ui-robe-picker-review', createFixture(
     'Hold the real robe picker with Gold selected for deterministic full-body, swatch, and control review.',
   ))

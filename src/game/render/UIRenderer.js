@@ -306,6 +306,19 @@ export function letterReadingLayout() {
   });
 }
 
+const LETTER_READING_ACTION_IDLE = Object.freeze({
+  hearLabel: 'Hear the letter',
+  hearPressed: false,
+});
+const LETTER_READING_ACTION_ACTIVE = Object.freeze({
+  hearLabel: 'Reading…',
+  hearPressed: true,
+});
+
+export function letterReadingActionState(narrationActive = false) {
+  return narrationActive ? LETTER_READING_ACTION_ACTIVE : LETTER_READING_ACTION_IDLE;
+}
+
 function visibleCharacterBounds(state, cameraX) {
   return Object.freeze((state?.actors ?? []).map((actor) => characterLayoutBounds(actor, cameraX)));
 }
@@ -900,7 +913,10 @@ export class UIRenderer {
     drawDialogueCaption(
       context,
       captionRect,
-      childFacingUiText(dialogue.caption, 'caption'),
+      childFacingUiText(
+        dialogue.caption,
+        dialogue.captionRole === 'proper-name' ? 'proper-name' : 'caption',
+      ),
       Boolean(scene.night),
     );
 
@@ -913,16 +929,18 @@ export class UIRenderer {
     return layout;
   }
 
-  drawLetterReading(context) {
+  drawLetterReading(context, { narrationActive = false } = {}) {
     const layout = letterReadingLayout();
+    const actionState = letterReadingActionState(narrationActive);
     const actionNoteImage = this.imageFor('ui/story/action-note-v2');
     context.fillStyle = 'rgba(20,17,38,0.66)';
     context.fillRect(0, 0, WORLD.width, WORLD.height);
     drawReadableInvitation(context, layout.invitationPose);
     drawParchmentAction(context, layout.hear, {
-      label: childFacingUiText('Hear the letter', 'action'),
+      label: childFacingUiText(actionState.hearLabel, 'action'),
       icon: vectorControlIcon('speaker'),
       selected: true,
+      pressed: actionState.hearPressed,
       image: actionNoteImage,
     });
     drawParchmentAction(context, layout.continue, {

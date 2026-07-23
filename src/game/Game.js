@@ -1122,9 +1122,11 @@ export class Game {
 
   startLetterNarration() {
     if (this.world?.overlay?.surface !== 'letter-reading') return false;
+    if (this.isLetterNarrationCurrent(this.letterNarrationRequest)) return false;
     this.stopLetterNarration();
     const request = Object.freeze({ world: this.world });
     this.letterNarrationRequest = request;
+    this.updateStatus('Reading Violet’s letter.');
     this.playLetterNarrationClip(request, 0);
     return true;
   }
@@ -1142,6 +1144,7 @@ export class Game {
         if (!this.isLetterNarrationCurrent(request)) return;
         if (index + 1 >= clips.length) {
           this.letterNarrationRequest = null;
+          this.updateStatus('Violet’s letter is ready. Choose Let’s go! to continue.');
           return;
         }
         this.playLetterNarrationClip(request, index + 1);
@@ -1167,8 +1170,7 @@ export class Game {
   handleOverlayTap(point, state) {
     if (state.overlay.surface === 'letter-reading') {
       if (pointInUiRect(point, UI_RECTS.letterHear)) {
-        this.sound.playSfx('sfx/ui/tap', 'tap');
-        this.startLetterNarration();
+        if (this.startLetterNarration()) this.sound.playSfx('sfx/ui/tap', 'tap');
         return;
       }
       if (!pointInUiRect(point, UI_RECTS.letterContinue)) return;
@@ -2772,7 +2774,11 @@ export class Game {
           reducedMotion: this.reducedMotion,
         });
       }
-      if (state.overlay?.surface === 'letter-reading') this.uiRenderer.drawLetterReading(context);
+      if (state.overlay?.surface === 'letter-reading') {
+        this.uiRenderer.drawLetterReading(context, {
+          narrationActive: this.isLetterNarrationCurrent(this.letterNarrationRequest),
+        });
+      }
       if (state.overlay?.surface === 'robe-picker') {
         this.uiRenderer.drawRobePicker(context, state, this.simTime, this.reducedMotion);
       }

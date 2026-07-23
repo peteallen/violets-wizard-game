@@ -324,56 +324,78 @@ export function drawParchmentAction(context, rect, {
   detail = null,
   icon = '✦',
   selected = false,
+  pressed = false,
   disabled = false,
   danger = false,
   compact = false,
   image = null,
 } = {}) {
   const { x, y, width, height } = rect;
+  const placed = pressed
+    ? { x: x + 2, y: y + 6, width: width - 4, height: height - 6 }
+    : rect;
   context.save();
   context.globalAlpha = disabled ? 0.48 : 1;
 
   if (isReadyActionNoteImage(image)) {
-    drawActionNoteThreeSlice(context, image, rect);
+    drawActionNoteThreeSlice(context, image, placed);
+    if (pressed) {
+      context.save();
+      traceClippedCard(context, placed.x + 3, placed.y + 3, placed.width - 6, placed.height - 6);
+      context.clip();
+      context.fillStyle = 'rgba(74,45,55,0.18)';
+      context.fillRect(placed.x, placed.y, placed.width, placed.height);
+      drawControlGrain(context, placed, 'rgba(65,39,44,0.2)');
+      context.restore();
+
+      context.strokeStyle = '#644253';
+      context.lineWidth = 5;
+      traceClippedCard(context, placed.x, placed.y, placed.width, placed.height);
+      context.stroke();
+      context.strokeStyle = 'rgba(255,236,189,0.48)';
+      context.lineWidth = 1.5;
+      traceClippedCard(context, placed.x + 8, placed.y + 7, placed.width - 16, placed.height - 14);
+      context.stroke();
+    }
   } else {
     context.fillStyle = 'rgba(47,30,31,0.38)';
-    traceClippedCard(context, x + 5, y + 8, width, height);
+    traceClippedCard(context, placed.x + (pressed ? 2 : 5), placed.y + (pressed ? 3 : 8), placed.width, placed.height);
     context.fill();
 
     context.fillStyle = selected ? '#f2dfae' : '#ead9b7';
-    traceClippedCard(context, x, y, width, height);
+    traceClippedCard(context, placed.x, placed.y, placed.width, placed.height);
     context.fill();
 
     context.save();
-    traceClippedCard(context, x + 3, y + 3, width - 6, height - 6);
+    traceClippedCard(context, placed.x + 3, placed.y + 3, placed.width - 6, placed.height - 6);
     context.clip();
-    drawControlPaperLight(context, rect, selected);
-    drawControlPaperShade(context, rect);
-    drawControlGrain(context, rect, selected ? 'rgba(116,77,40,0.16)' : 'rgba(111,75,43,0.13)');
+    drawControlPaperLight(context, placed, selected);
+    drawControlPaperShade(context, placed);
+    drawControlGrain(context, placed, selected ? 'rgba(116,77,40,0.16)' : 'rgba(111,75,43,0.13)');
     context.restore();
 
     context.strokeStyle = selected ? PALETTE.interactive : '#8a6b44';
     context.lineWidth = selected ? 6 : 4.2;
-    traceClippedCard(context, x, y, width, height);
+    traceClippedCard(context, placed.x, placed.y, placed.width, placed.height);
     context.stroke();
     context.strokeStyle = selected ? 'rgba(255,242,193,0.62)' : 'rgba(121,82,45,0.38)';
     context.lineWidth = 1.5;
-    traceClippedCard(context, x + 9, y + 8, width - 18, height - 16);
+    traceClippedCard(context, placed.x + 9, placed.y + 8, placed.width - 18, placed.height - 16);
     context.stroke();
   }
 
-  const sealX = x + (compact ? 44 : 56);
-  const sealY = y + height / 2;
+  const sealX = placed.x + (compact ? 44 : 56);
+  const sealY = placed.y + placed.height / 2;
   drawWaxMedallion(context, sealX, sealY, compact ? 28 : 34, icon, { danger });
 
   context.textAlign = 'left';
   context.fillStyle = danger ? WAX_DARK : INK;
   context.font = `700 ${compact ? 24 : 27}px "Andika", "Trebuchet MS", sans-serif`;
-  fitText(context, label ?? '', x + (compact ? 82 : 104), y + height / 2 + (detail ? -3 : 10), width - (compact ? 104 : 130));
+  fitText(context, label ?? '', placed.x + (compact ? 82 : 104), placed.y + placed.height / 2 + (detail ? -3 : 10), placed.width - (compact ? 104 : 130));
   if (detail) {
     context.fillStyle = MUTED_INK;
     context.font = '20px "Andika", "Trebuchet MS", sans-serif';
-    fitText(context, detail, x + 104, y + height / 2 + 27, width - 130);
+    fitText(context, detail, placed.x + 104, placed.y + placed.height / 2 + 27, placed.width - 130);
   }
   context.restore();
 }

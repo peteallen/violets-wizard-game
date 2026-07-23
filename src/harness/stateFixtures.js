@@ -1166,6 +1166,32 @@ registry
       questFlags: { 'ch1.owlTapped': true },
     }),
   ))
+  .register('ui-letter-reading-playing-review', createFixture(
+    'The real Chapter One bedroom with the optional letter narration visibly active while the invitation and continuation stay available.',
+    { chapter: 1, scene: 'ch1.letter' },
+    createSave({
+      scene: 'ch1.letter',
+      room: 'ch1.bedroom',
+      spawn: 'bedroom.letter',
+      questFlags: { 'ch1.owlTapped': true },
+    }),
+  ))
+  .register('ui-pet-name-welcome-review', createFixture(
+    'The Menagerie Keeper’s post-name welcome for Juniper beside Violet and her newly named owl.',
+    { chapter: 1, scene: 'ch1.petShopping' },
+    createSave({
+      scene: 'ch1.petShopping',
+      room: 'ch1.menagerie',
+      spawn: 'keeper',
+      questFlags: {
+        ...throughWandFlags,
+        'ch1.trimChosen': true,
+      },
+      wandId: 'violet-first-wand',
+      robeTrim: 'lavender',
+    }),
+    ['character.violet', 'character.menagerie-keeper', 'character.pet-owl'],
+  ))
   .register('ui-robe-picker-review', createFixture(
     'The real dressing-mirror robe picker with a full-body Violet preview, all twelve trims, and Gold selected but not yet committed.',
     { chapter: 1, scene: 'ui-robe-picker-review' },

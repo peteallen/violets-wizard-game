@@ -144,6 +144,8 @@ describe('state fixtures', () => {
       'ui-dialogue-live-review',
       'ui-dialogue-night-live-review',
       'ui-letter-reading-review',
+      'ui-letter-reading-playing-review',
+      'ui-pet-name-welcome-review',
       'ui-robe-picker-review',
       'ui-choices-review',
       'ui-choice-icons-review',
@@ -269,6 +271,42 @@ describe('action fixtures', () => {
     expect(getActionFixture('ui-letter-reading-review').actions).toEqual([
       { frame: 30, type: 'tap', target: 'letter.envelope' },
     ]);
+    expect(getStateFixture('ui-letter-reading-playing-review')).toMatchObject({
+      entry: { chapter: 1, scene: 'ch1.letter' },
+      save: {
+        resume: {
+          chapter: 'ch1',
+          scene: 'ch1.letter',
+          room: 'ch1.bedroom',
+          spawn: 'bedroom.letter',
+        },
+        progress: { questFlags: { 'ch1.owlTapped': true } },
+      },
+    });
+    expect(getActionFixture('ui-letter-reading-playing-review').actions).toEqual([]);
+    expect(getStateFixture('ui-pet-name-welcome-review')).toMatchObject({
+      entry: { chapter: 1, scene: 'ch1.petShopping' },
+      characterDependencies: [
+        'character.violet',
+        'character.menagerie-keeper',
+        'character.pet-owl',
+      ],
+      save: {
+        schemaVersion: 1,
+        resume: {
+          chapter: 'ch1',
+          scene: 'ch1.petShopping',
+          room: 'ch1.menagerie',
+          spawn: 'keeper',
+        },
+        progress: {
+          questFlags: {
+            'ch1.trimChosen': true,
+          },
+        },
+      },
+    });
+    expect(getActionFixture('ui-pet-name-welcome-review').actions).toEqual([]);
     expect(getStateFixture('ui-chapter-card-review')).toMatchObject({
       entry: { chapter: 1, scene: 'ch1.chapterCard' },
       save: {

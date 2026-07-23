@@ -113,7 +113,7 @@ export const chapter1DialogueDefinitions = [
         speaker: 'npc.wandmaker',
         voice: 'voice/ch1/wandmaker/welcome',
         text: 'Ah, Violet. Let us see which wand has been waiting for you.',
-        caption: 'Try a wand!',
+        caption: 'Try this one!',
         next: 'finish',
       }),
       finish: { type: 'end', actions: [] },

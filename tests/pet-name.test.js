@@ -44,10 +44,11 @@ describe('parent-assisted pet naming', () => {
     world.pendingPetType = 'owl';
     world.dialogue.open('ch1.keeper.petAndName');
     world.dialogue.nodeId = 'done';
-    world.setPetName('Moonbeam');
+    world.setPetName('Juniper');
 
     expect(world.dialoguePresentation).toMatchObject({
-      caption: 'Moonbeam!',
+      caption: 'Juniper!',
+      captionRole: 'proper-name',
       speakerLabel: 'Keeper',
     });
   });

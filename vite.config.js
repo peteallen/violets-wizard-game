@@ -1,9 +1,15 @@
 import { defineConfig } from 'vite';
+import { configDefaults } from 'vitest/config';
 import { execFileSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 
 const FULL_GIT_SHA = /^[a-f0-9]{40}$/;
 const PUBLIC_ART_REFERENCE = /(?:\.\/|\/)assets\/art\/[^\s"'()?#]+(?:\?[^\s"'()#]*)?(?:#[^\s"'()]*)?/gu;
+
+export const testExcludePatterns = Object.freeze([
+  ...configDefaults.exclude,
+  '**/.claude/worktrees/**',
+]);
 
 export function currentGitSha({ cwd = process.cwd(), exec = execFileSync, env = process.env } = {}) {
   try {
@@ -299,6 +305,9 @@ export default defineConfig(() => {
       host: true,
       port: 4173,
       strictPort: true,
+    },
+    test: {
+      exclude: testExcludePatterns,
     },
     build: {
       target: 'es2022',

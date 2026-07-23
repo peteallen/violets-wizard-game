@@ -8,6 +8,7 @@ import {
 import {
   createBuildIdentity,
   productionHtmlInputs,
+  testExcludePatterns,
   versionFilePlugin,
 } from '../vite.config.js';
 
@@ -25,6 +26,10 @@ async function nextTask() {
 }
 
 describe('deployed build identity', () => {
+  it('does not discover nested tool worktrees as a second copy of the test suite', () => {
+    expect(testExcludePatterns).toContain('**/.claude/worktrees/**');
+  });
+
   it('ships the deterministic review harness beside the playable game', () => {
     expect(productionHtmlInputs()).toEqual({
       game: expect.stringMatching(/\/index\.html$/),
