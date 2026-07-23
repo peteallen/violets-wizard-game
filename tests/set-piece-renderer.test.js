@@ -18,6 +18,7 @@ import {
   vaseShardPose,
   wandChosenState,
 } from '../src/game/render/SetPieceRenderer.js';
+import { STORYBOOK_INK, STORYBOOK_LINE_WEIGHT } from '../src/game/render/storybookInk.js';
 
 function recordingTicketContext() {
   const calls = [];
@@ -371,11 +372,12 @@ describe('SetPieceRenderer dispatch', () => {
     expectOrganicSetPiece(intactVase, 'intact vase');
     expect(intactVase.assignments.filter(([property]) => property === 'fillStyle').map(([, value]) => value))
       .toEqual(expect.arrayContaining([
-        '#7e72aa',
-        '#a99bc7',
-        '#514768',
-        'rgba(51,43,82,0.32)',
-        'rgba(225,215,247,0.28)',
+        '#5b5268',
+        '#75677b',
+        '#342d3b',
+        'rgba(45,35,52,0.48)',
+        'rgba(216,183,148,0.28)',
+        '#9b7a43',
       ]));
 
     const fragments = recordingTicketContext();
@@ -387,6 +389,101 @@ describe('SetPieceRenderer dispatch', () => {
     expect(fragments.calls.filter(([method]) => [
       'bezierCurveTo', 'quadraticCurveTo',
     ].includes(method)).length).toBeGreaterThan(120);
+  });
+
+  it('paints the intact vase as deterministic layered ceramic with shared storybook ink', () => {
+    const renderer = setPieceRenderer();
+    const first = recordingTicketContext();
+    const replayed = recordingTicketContext();
+    const active = { time: 0.8, descriptor: { duration: 2 } };
+
+    renderer.drawVaseChaos(first, active, { reducedMotion: true });
+    renderer.drawVaseChaos(replayed, active, { reducedMotion: true });
+
+    expect(first.calls).toEqual(replayed.calls);
+    expect(first.assignments).toEqual(replayed.assignments);
+    expect(first.calls.filter(([method]) => method === 'clip')).toHaveLength(1);
+    expect(first.calls.filter(([method]) => method === 'bezierCurveTo').length)
+      .toBeGreaterThan(45);
+
+    const fillStyles = first.assignments
+      .filter(([property]) => property === 'fillStyle')
+      .map(([, value]) => value);
+    expect(fillStyles).toEqual(expect.arrayContaining([
+      'rgba(43,30,25,0.34)',
+      '#5b5268',
+      'rgba(45,35,52,0.48)',
+      'rgba(216,183,148,0.28)',
+      '#9b7a43',
+      '#81663c',
+    ]));
+    expect(fillStyles).not.toEqual(expect.arrayContaining([
+      '#7e72aa',
+      '#a99bc7',
+    ]));
+
+    const strokeStyles = first.assignments
+      .filter(([property]) => property === 'strokeStyle')
+      .map(([, value]) => value);
+    expect(strokeStyles).toEqual(expect.arrayContaining([
+      STORYBOOK_INK.primary,
+      STORYBOOK_INK.deep,
+      STORYBOOK_INK.soft,
+      '#9b7a43',
+    ]));
+    const lineWeights = first.assignments
+      .filter(([property]) => property === 'lineWidth')
+      .map(([, value]) => value);
+    expect(lineWeights).toEqual(expect.arrayContaining([
+      STORYBOOK_LINE_WEIGHT.detail,
+      STORYBOOK_LINE_WEIGHT.feature,
+      STORYBOOK_LINE_WEIGHT.contour,
+      STORYBOOK_LINE_WEIGHT.bold,
+      STORYBOOK_LINE_WEIGHT.emphasis,
+    ]));
+  });
+
+  it('carries the ceramic glaze, dull-gold wear, and exposed clay into all seven shards', () => {
+    const renderer = setPieceRenderer();
+    const first = recordingTicketContext();
+    const replayed = recordingTicketContext();
+    const active = { time: 1.4, descriptor: { duration: 2 } };
+
+    renderer.drawVaseChaos(first, active);
+    renderer.drawVaseChaos(replayed, active);
+
+    expect(first.calls).toEqual(replayed.calls);
+    expect(first.assignments).toEqual(replayed.assignments);
+    expect(first.calls.filter(([method]) => method === 'clip')).toHaveLength(7);
+    expect(first.calls.filter(([method]) => method === 'quadraticCurveTo').length)
+      .toBeGreaterThan(120);
+
+    const fillStyles = first.assignments
+      .filter(([property]) => property === 'fillStyle')
+      .map(([, value]) => value);
+    expect(fillStyles).toEqual(expect.arrayContaining([
+      '#5b5268',
+      '#65586d',
+      '#514b60',
+      'rgba(45,35,52,0.38)',
+      'rgba(216,183,148,0.2)',
+    ]));
+    expect(fillStyles).not.toEqual(expect.arrayContaining([
+      '#6f6aa1',
+      '#8b7db2',
+      '#9485ba',
+    ]));
+
+    const strokeStyles = first.assignments
+      .filter(([property]) => property === 'strokeStyle')
+      .map(([, value]) => value);
+    expect(strokeStyles).toEqual(expect.arrayContaining([
+      STORYBOOK_INK.primary,
+      '#a47859',
+      '#976b52',
+      'rgba(155,122,67,0.62)',
+      'rgba(201,174,143,0.18)',
+    ]));
   });
 
   it('builds the chosen-wand crescendo without white clipping or reduced-motion camera drift', () => {

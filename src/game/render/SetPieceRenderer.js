@@ -10,6 +10,7 @@ import {
   drawLetterEnvelopeFront,
   envelopeWorldBounds,
 } from './LetterRenderer.js';
+import { STORYBOOK_INK, STORYBOOK_LINE_WEIGHT } from './storybookInk.js';
 
 export const BRICK_GRID = Object.freeze({
   x: 278,
@@ -2265,13 +2266,16 @@ function drawPaperChaos(context, time, duration, { reducedMotion = false } = {})
 }
 
 function drawVase(context) {
-  context.fillStyle = 'rgba(35,28,48,0.22)';
-  traceOrganicOval(context, 3, 63, 39, 8, 0.62);
+  context.fillStyle = 'rgba(43,30,25,0.34)';
+  traceOrganicOval(context, 4, 63, 45, 10, 0.62);
+  context.fill();
+  context.fillStyle = 'rgba(28,22,27,0.3)';
+  traceOrganicOval(context, 6, 63, 31, 5.5, 0.18);
   context.fill();
 
-  context.fillStyle = '#7e72aa';
-  context.strokeStyle = '#403958';
-  context.lineWidth = 5;
+  context.fillStyle = '#5b5268';
+  context.strokeStyle = STORYBOOK_INK.primary;
+  context.lineWidth = STORYBOOK_LINE_WEIGHT.emphasis;
   traceVaseBody(context);
   context.fill();
   context.stroke();
@@ -2279,47 +2283,47 @@ function drawVase(context) {
   context.save();
   traceVaseBody(context);
   context.clip();
-  context.fillStyle = 'rgba(51,43,82,0.32)';
+
+  context.fillStyle = 'rgba(45,35,52,0.48)';
   context.beginPath();
-  context.moveTo(8, -46);
-  context.bezierCurveTo(34, -28, 45, -1, 35, 32);
-  context.bezierCurveTo(30, 49, 18, 61, 5, 65);
-  context.bezierCurveTo(18, 29, 18, -10, 8, -46);
+  context.moveTo(5, -50);
+  context.bezierCurveTo(28, -32, 46, -5, 38, 31);
+  context.bezierCurveTo(34, 49, 20, 62, 3, 68);
+  context.bezierCurveTo(16, 31, 17, -15, 5, -50);
   context.closePath();
   context.fill();
 
-  context.fillStyle = 'rgba(225,215,247,0.28)';
+  context.fillStyle = 'rgba(216,183,148,0.28)';
   context.beginPath();
-  context.moveTo(-17, -42);
-  context.bezierCurveTo(-34, -24, -35, 7, -26, 29);
-  context.bezierCurveTo(-21, 39, -16, 43, -12, 38);
-  context.bezierCurveTo(-19, 8, -17, -19, -7, -39);
-  context.bezierCurveTo(-9, -44, -13, -45, -17, -42);
+  context.moveTo(-20, -43);
+  context.bezierCurveTo(-35, -25, -37, 6, -28, 30);
+  context.bezierCurveTo(-24, 42, -17, 48, -12, 40);
+  context.bezierCurveTo(-19, 8, -17, -19, -6, -41);
+  context.bezierCurveTo(-10, -45, -16, -46, -20, -43);
   context.closePath();
   context.fill();
+
+  drawVaseBotanicalDetail(context);
+  drawVaseGlazeMarks(context);
   context.restore();
 
-  context.fillStyle = '#a99bc7';
+  context.fillStyle = '#75677b';
+  context.strokeStyle = STORYBOOK_INK.primary;
+  context.lineWidth = STORYBOOK_LINE_WEIGHT.bold;
   traceOrganicOval(context, 0, -52, 24, 8.5, 0.34);
   context.fill();
   context.stroke();
-  context.fillStyle = '#514768';
+  context.fillStyle = '#342d3b';
+  context.strokeStyle = STORYBOOK_INK.deep;
+  context.lineWidth = STORYBOOK_LINE_WEIGHT.contour;
   traceOrganicOval(context, 1, -53, 17, 4.8, 0.91);
   context.fill();
-  context.strokeStyle = 'rgba(235,220,248,0.5)';
-  context.lineWidth = 2;
+  context.stroke();
+  context.strokeStyle = 'rgba(226,192,157,0.42)';
+  context.lineWidth = STORYBOOK_LINE_WEIGHT.feature;
   context.beginPath();
   context.moveTo(-17, -55);
   context.bezierCurveTo(-8, -60, 5, -59, 15, -55);
-  context.stroke();
-
-  context.strokeStyle = '#d3b86e';
-  context.lineWidth = 4;
-  context.beginPath();
-  context.moveTo(-34, 1);
-  context.bezierCurveTo(-12, -14, 12, 18, 35, 0);
-  context.moveTo(-30, 27);
-  context.bezierCurveTo(-8, 12, 10, 44, 31, 26);
   context.stroke();
 }
 
@@ -2327,22 +2331,29 @@ function drawVaseShard(context, shard, pose) {
   context.save();
   context.translate(pose.x, pose.y);
   context.rotate(pose.rotation);
-  context.fillStyle = shard.color;
-  context.strokeStyle = '#403958';
-  context.lineWidth = 3;
   const points = shard.points.map(([x, y]) => ({
     x: x - shard.offset[0],
     y: y - shard.offset[1],
   }));
+  const shardIndex = Math.max(0, VASE_SHARDS.indexOf(shard));
+  const ceramicTones = ['#5b5268', '#65586d', '#514b60'];
+  context.fillStyle = ceramicTones[shardIndex % ceramicTones.length];
+  context.strokeStyle = STORYBOOK_INK.primary;
+  context.lineWidth = STORYBOOK_LINE_WEIGHT.bold;
   traceSoftLoop(context, points);
   context.fill();
+  context.stroke();
+
+  context.strokeStyle = shardIndex % 2 ? '#a47859' : '#976b52';
+  context.lineWidth = STORYBOOK_LINE_WEIGHT.feature;
+  traceSoftLoop(context, points);
   context.stroke();
 
   const bounds = pointBounds(points);
   context.save();
   traceSoftLoop(context, points);
   context.clip();
-  context.fillStyle = 'rgba(43,34,69,0.2)';
+  context.fillStyle = 'rgba(45,35,52,0.38)';
   context.beginPath();
   context.moveTo(bounds.minX - 4, bounds.centerY);
   context.bezierCurveTo(
@@ -2356,14 +2367,152 @@ function drawVaseShard(context, shard, pose) {
   context.bezierCurveTo(bounds.centerX, bounds.maxY + 8, bounds.minX - 5, bounds.maxY + 3, bounds.minX - 4, bounds.centerY);
   context.closePath();
   context.fill();
-  context.strokeStyle = 'rgba(237,225,255,0.34)';
-  context.lineWidth = 1.35;
+
+  context.fillStyle = 'rgba(216,183,148,0.2)';
   context.beginPath();
-  context.moveTo(bounds.minX + 4, bounds.minY + 7);
-  context.bezierCurveTo(bounds.centerX - 2, bounds.minY + 2, bounds.centerX + 5, bounds.centerY, bounds.maxX - 4, bounds.centerY - 3);
+  context.moveTo(bounds.minX - 2, bounds.minY + 2);
+  context.bezierCurveTo(
+    bounds.minX + (bounds.maxX - bounds.minX) * 0.18,
+    bounds.minY - 2,
+    bounds.centerX - 3,
+    bounds.centerY - 4,
+    bounds.centerX + 1,
+    bounds.maxY + 3,
+  );
+  context.bezierCurveTo(
+    bounds.centerX - 8,
+    bounds.centerY + 5,
+    bounds.minX + 2,
+    bounds.centerY,
+    bounds.minX - 2,
+    bounds.minY + 2,
+  );
+  context.closePath();
+  context.fill();
+
+  drawVaseShardMarks(context, bounds, shardIndex);
+  context.beginPath();
+  context.strokeStyle = 'rgba(217,188,153,0.34)';
+  context.lineWidth = STORYBOOK_LINE_WEIGHT.detail;
+  context.moveTo(bounds.minX + 3, bounds.minY + 6);
+  context.bezierCurveTo(
+    bounds.centerX - 3,
+    bounds.minY + 1,
+    bounds.centerX + 4,
+    bounds.centerY,
+    bounds.maxX - 3,
+    bounds.centerY - 3,
+  );
   context.stroke();
   context.restore();
   context.restore();
+}
+
+function drawVaseBotanicalDetail(context) {
+  context.strokeStyle = '#9b7a43';
+  context.lineWidth = STORYBOOK_LINE_WEIGHT.feature;
+  context.beginPath();
+  context.moveTo(-31, 29);
+  context.bezierCurveTo(-18, 14, -11, -6, -2, -22);
+  context.moveTo(-2, 35);
+  context.bezierCurveTo(5, 19, 11, 2, 25, -12);
+  context.stroke();
+
+  const leaves = [
+    [-23, 19, -0.62, 0.82],
+    [-14, 7, 0.68, 0.92],
+    [-8, -8, -0.57, 0.72],
+    [5, 25, -0.5, 0.8],
+    [11, 12, 0.58, 0.76],
+    [18, -2, -0.54, 0.68],
+  ];
+  for (let index = 0; index < leaves.length; index += 1) {
+    const [x, y, tilt, scale] = leaves[index];
+    context.fillStyle = index % 3 === 1 ? '#81663c' : '#9b7a43';
+    traceVaseLeaf(context, x, y, tilt, scale);
+    context.fill();
+    context.strokeStyle = STORYBOOK_INK.soft;
+    context.lineWidth = STORYBOOK_LINE_WEIGHT.detail;
+    context.stroke();
+  }
+}
+
+function traceVaseLeaf(context, x, y, tilt, scale) {
+  const direction = tilt < 0 ? -1 : 1;
+  const reach = 10 * scale;
+  const width = 4.8 * scale;
+  context.beginPath();
+  context.moveTo(x, y);
+  context.bezierCurveTo(
+    x + direction * width,
+    y - reach * 0.2,
+    x + direction * (width + 1.5),
+    y - reach * 0.72,
+    x + Math.sin(tilt) * reach,
+    y - Math.cos(tilt) * reach,
+  );
+  context.bezierCurveTo(
+    x + direction * width * 0.2,
+    y - reach * 0.62,
+    x - direction * width * 0.42,
+    y - reach * 0.2,
+    x,
+    y,
+  );
+  context.closePath();
+}
+
+function drawVaseGlazeMarks(context) {
+  const brushMarks = [
+    [-28, -30, -8, -33, 5, -31, 17, -36],
+    [-36, 43, -17, 38, -6, 44, 10, 39],
+    [5, 54, 16, 50, 24, 45, 31, 36],
+  ];
+  context.strokeStyle = 'rgba(201,174,143,0.17)';
+  context.lineWidth = STORYBOOK_LINE_WEIGHT.contour;
+  for (const [startX, startY, controlX1, controlY1, controlX2, controlY2, endX, endY] of brushMarks) {
+    context.beginPath();
+    context.moveTo(startX, startY);
+    context.bezierCurveTo(controlX1, controlY1, controlX2, controlY2, endX, endY);
+    context.stroke();
+  }
+
+  context.strokeStyle = 'rgba(54,41,54,0.3)';
+  context.lineWidth = STORYBOOK_LINE_WEIGHT.detail;
+  const scuffs = [
+    [-24, 48, -18, 45, -12, 49, -7, 46],
+    [17, 29, 22, 26, 27, 29, 31, 25],
+    [-29, -17, -24, -20, -20, -17, -16, -20],
+  ];
+  for (const [startX, startY, controlX1, controlY1, controlX2, controlY2, endX, endY] of scuffs) {
+    context.beginPath();
+    context.moveTo(startX, startY);
+    context.bezierCurveTo(controlX1, controlY1, controlX2, controlY2, endX, endY);
+    context.stroke();
+  }
+}
+
+function drawVaseShardMarks(context, bounds, shardIndex) {
+  const width = bounds.maxX - bounds.minX;
+  const height = bounds.maxY - bounds.minY;
+  const direction = shardIndex % 2 ? -1 : 1;
+  context.strokeStyle = shardIndex % 3 === 0
+    ? 'rgba(155,122,67,0.62)'
+    : 'rgba(201,174,143,0.18)';
+  context.lineWidth = shardIndex % 3 === 0
+    ? STORYBOOK_LINE_WEIGHT.feature
+    : STORYBOOK_LINE_WEIGHT.detail;
+  context.beginPath();
+  context.moveTo(bounds.minX + width * 0.18, bounds.minY + height * 0.36);
+  context.bezierCurveTo(
+    bounds.centerX - direction * width * 0.18,
+    bounds.minY + height * 0.18,
+    bounds.centerX + direction * width * 0.08,
+    bounds.maxY - height * 0.22,
+    bounds.maxX - width * 0.16,
+    bounds.maxY - height * 0.34,
+  );
+  context.stroke();
 }
 
 function drawShardPlinks(context, time, { reducedMotion = false } = {}) {
